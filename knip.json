@@ -4,6 +4,7 @@
     "src/routes/**/+*.{ts,js,svelte}",
     "src/app.html",
     "src/lib/*/index.ts",
+    "src/lib/game/flight/index.ts",
     "src/lib/screens/*/Screen.svelte",
     "src/lib/screens/*/system.ts",
     "src/**/*.test.ts",
@@ -11,11 +12,7 @@
     "tools/**/*.mjs",
     "*.config.{ts,js}"
   ],
-  "project": [
-    "src/**/*.{ts,js,svelte}",
-    "tests/**/*.ts",
-    "tools/**/*.mjs"
-  ],
+  "project": ["src/**/*.{ts,js,svelte}", "tests/**/*.ts", "tools/**/*.mjs"],
   "ignoreExportsUsedInFile": true,
   "typescript": false
 }

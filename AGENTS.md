@@ -16,17 +16,17 @@ Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` synta
 
 ## Layout of `src/lib/`
 
-| Path                      | What it holds                                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------------------------- |
-| `game/`                   | game state, clock, systems and the tick loop; `game/index.ts` is its public face                    |
-| `game/mock/<domain>.ts`   | mock world data, one file per domain                                                                |
-| `game/systems/`           | simulation systems every screen relies on (orbits, fleet movement)                                  |
-| `gfx/`                    | pixel framebuffer, noise and dither, planets, sun, ship class specs, scenes, icons                  |
-| `gfx/topdown/`            | top-down ships, turrets, craft, stations and props generated from a design, and their renderer      |
-| `ui/`                     | shared primitives, the window manager, the frame bus, the shell state, the layout check             |
-| `shell/`                  | the app shell: top bar, screen stage, keyboard, URL query states                                    |
-| `screens/list.ts`         | the nine screens, their icons and F keys                                                            |
-| `screens/<id>/`           | one folder per screen; `Screen.svelte` is its root                                                  |
+| Path                    | What it holds                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `game/`                 | game state, clock, systems and the tick loop; `game/index.ts` is its public face               |
+| `game/mock/<domain>.ts` | mock world data, one file per domain                                                           |
+| `game/systems/`         | simulation systems every screen relies on (orbits, fleet movement)                             |
+| `gfx/`                  | pixel framebuffer, noise and dither, planets, sun, ship class specs, scenes, icons             |
+| `gfx/topdown/`          | top-down ships, turrets, craft, stations and props generated from a design, and their renderer |
+| `ui/`                   | shared primitives, the window manager, the frame bus, the shell state, the layout check        |
+| `shell/`                | the app shell: top bar, screen stage, keyboard, URL query states                               |
+| `screens/list.ts`       | the nine screens, their icons and F keys                                                       |
+| `screens/<id>/`         | one folder per screen; `Screen.svelte` is its root                                             |
 
 `gfx/index.ts`, `ui/index.ts` and `game/index.ts` re-export everything another folder should use. Import from those, or from the one module you need.
 
@@ -74,12 +74,12 @@ The API, from `#lib/gfx/index.ts` or `#lib/gfx/topdown/index.ts`, takes any `Pix
 
 The economy runs on JSON in `src/lib/game/data/`, so that a Rust simulation can read the same files later. `#lib/game/data/index.ts` loads them and exports the records (`materials`, `recipes`, `buildings`, `shipComponents`, `milestones`), lookups by id (`material(id)`, `building(id)`, ...), and the derived graphs: `recipesProducing`, `recipesConsuming`, `recipesAt`, `materialSites` (where a material is extracted and where it can be made), `unlockedAt`, and `reach`, which computes what exists from extraction alone up to a milestone, on the thin path or the whole set, or on one site.
 
-| Folder or file      | Holds                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------- |
-| `materials/<category>.json` | one small record per material; a category that outgrows about 400 lines gets `<category>-<part>.json` |
-| `recipes/<group>.json`      | a building turns `inputs` into `outputs`, each a map of material id to amount                   |
-| `buildings/<kind>.json`     | where it stands, what it costs, who works it; extractors name the materials they work through `sources` |
-| `components.json`, `milestones.json` | ship components; the 29 gates from present-day Earth to a stabilised jump point |
+| Folder or file                       | Holds                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `materials/<category>.json`          | one small record per material; a category that outgrows about 400 lines gets `<category>-<part>.json`   |
+| `recipes/<group>.json`               | a building turns `inputs` into `outputs`, each a map of material id to amount                           |
+| `buildings/<kind>.json`              | where it stands, what it costs, who works it; extractors name the materials they work through `sources` |
+| `components.json`, `milestones.json` | ship components; the 29 gates from present-day Earth to a stabilised jump point                         |
 
 Ids are `snake_case` and unique across materials, buildings, components and recipes. Amounts are kg unless the material has a `unit` (`cu` compute, `model` trained model). A recipe's `power` is kW while it runs, `hours` is the batch time, and `generates` is kW produced by a generator.
 
@@ -90,6 +90,30 @@ Ids are `snake_case` and unique across materials, buildings, components and reci
 - Politics never restricts supply; scarcity comes from physics, geology and industry only.
 
 `src/lib/game/data/data.test.ts` is the gate: unique ids, known references, every material extractable or produced, mass balance, the thin path closing on itself, every milestone 1 to 29 reachable in order, and no material, building, component or recipe stranded by a cycle. Add data, then run `pnpm exec vitest run src/lib/game/data` until it is green.
+
+### Flight planning
+
+`src/lib/game/flight/` is the movement rule of #8 as pure functions: SI units (metres, seconds, kilograms, m/s), float64, no Svelte, no globals, nothing wired into the game loop yet. Import from `#lib/game/flight/index.ts`. Time is game seconds (`game.elapsed`). It takes bodies as arguments (`FlightBody`: `gm`, `radius`, `orbit`, `angle`, `angularSpeed`, optional `parent`, `lowOrbitAltitude`, `atmosphere`), so it does not import the mock world; `reference.ts` holds real Sun, Earth, Moon, Mars and Jupiter constants for tests.
+
+- **Engines**: `components.json` gives each propulsion component a `performance` record (`isp` s, `thrust` N vacuum, `thrustSeaLevel`, `mass` kg, `power` kW, `basis` flown, ground-tested or design-study, `source` URL). A `Ship` is `{ dryMass, payload, propellant, engine, count?, powerAvailable? }`; an electric engine's thrust is scaled by `powerAvailable / power` when that is given.
+- **Rocket equation** (`rocket.ts`): `propellantForDv`, `dvFromMasses`, `shipDeltaV`, `massAfterBurn`, `burnTime`, `meanAcceleration`, `legBudget(ship, [dv1, dv2])` for out-and-back, `roundTripFeasible`.
+- **Wells** (`wells.ts`): `surfaceToOrbit`, `orbitToSurface({ aero })`, `escapeFromOrbit(gm, r, vInf)` and `captureIntoOrbit(...)` with the Oberth effect, `lowOrbitRadius`, `circularSpeed`, `orbitalPeriod`.
+- **Transfers** (`kepler.ts`, `line.ts`, `spiral.ts`): `hohmann`, `synodicPeriod`, `crossingTransfer` (departure burn tangential, arrival crossing the target orbit; reduces to Hohmann), `brachistochroneTime`, `burnFlipBurn`, `burnCoastBurn`, `solveLine` (moving target), `lineThresholdAcceleration`.
+- **Planner**: `planTrip({ from, to, departAfter, ship, system, aerobrake? })` returns `{ options, reasons }`. A `Place` is `{ kind: 'surface', body }`, `{ kind: 'orbit', body, altitude? }` or `{ kind: 'point', id, primary?, orbit, angle, angularSpeed? }` (a jump point or station at fixed elements). Each `TripOption` has `profile` (`cheapest`, `balanced`, `fastest`), `model`, `departure`, `window`, `arrival`, `duration`, `dv`, `propellant`, `propellantLeft`, `canStop`, `canReturn`, `returnDv`, `aerobraked`, `maneuvers` (kind, mode, dv, duration, start) and `stamps`. `reasons` carries a code (`delta-v`, `thrust-surface`, `thrust-landing`, `no-path`, `same-place`, `unknown-body`) with `need` and `have`; when a ship can leave but not stop, one option with `canStop: false` comes with the `delta-v` reason.
+- **Ship state**: `positionAt(option, t)` gives `pos`, `vel` (system frame), `phase` (`parked`, `departing`, `accelerating`, `coasting`, `decelerating`, `transfer`, `arriving`, `arrived`), `thrusting`. It is a function of absolute `t` only, so a 30-day step and thirty 1-day steps give the same position. `eventsOf(option)` lists burn starts and ends, the flip and the arrival.
+
+Approximations, all deliberate:
+
+- **Common primary.** A trip is planned around the deepest body both places orbit (Sun for planets, a planet for its moons). Moon-to-planet legs climb out stage by stage: escape the moon to zero excess speed, then escape the planet from the moon's orbit radius. Circular coplanar orbits only, prograde, no gravity assists, patched conics.
+- **Ascent and landing.** Ideal energy cost `sqrt(2 gm (1/R - 1/(2 r)))` times `1 + 0.085` (gravity loss calibrated on the Moon's 1.87 km/s) plus the body's `atmosphere.ascentLoss` (calibrated net of rotation so Earth gives 9.4 km/s). Lift-off needs thrust-to-weight 1.2 on sea-level thrust; landing needs 1.0 at the final mass unless the body's air does it (`landingDv`). Aerobraking is `captureIntoOrbit` with `residualDv` instead of the burn, only below `aerobrake.maxVInf`, and only when `aerobrake: true`.
+- **Orbit model (impulsive).** Burns happen at the periapsis of the parking orbit as up to 24 passes of at most 30 degrees of arc each, with a finite-burn loss of `arc^2 / 8` per pass (velocity-aligned thrust). More passes than that makes the leg a continuous spiral costing `vc + vInf`. If the thrusting at a planet spans more than 30 degrees of that planet's orbit, the whole trip becomes a spiral.
+- **Spiral model.** Edelbaum tangential thrust between circular orbits, `|vc1 - vc2|`; position is `r = gm / v^2` with the swept angle integrated numerically. Valid while the acceleration is well below local gravity; the arrival velocity then has a radial part of about `2 a / g` of the circular speed (measured 9 percent for two NEXT thrusters on a 5.5-tonne ship going to Mars, 37 percent for eight). `TripOption.approximate` is true when `a / g` at the outer orbit exceeds 0.1.
+- **Windows.** The target must lead the origin by the angle that makes the ship meet it: `sweep - omega_target * T`. Windows repeat at the synodic period. A ship parked at a planet departs from any phase of its parking orbit; the wait of up to one parking period is not added.
+- **Fast transfers.** `crossingTransfer` raises the departure burn above Hohmann: faster, costlier, arriving across the target's orbit instead of tangent. It is only used while burns take at most 25 percent of the flight (impulsive assumption).
+- **Straight-line model.** The primary's gravity is ignored. Thrust is constant at the mass-averaged acceleration of the burn, found by fixed point with the rocket equation; with a delta-v budget below the full burn it is burn-coast-burn. The target moves, so the flight time is solved by iterating the arrival point; arrival matches the target's velocity. Used only when `g(r_closest) * T / (a * t1) <= 0.05` (equivalently `a >= 2 g / 0.05` for a full burn, `lineThresholdAcceleration`: 0.24 m/s2 at 1 AU for the Sun), and the straight path stays outside the primary. Integrated under the Sun's gravity at the threshold the miss is 3.8 percent of the distance; at ten times the threshold it is 0.4 percent, at a tenth it is 30 percent (`line.test.ts`). The planner delays a straight-line departure up to one synodic period to clear the Sun.
+- **Why the models are not compared at a boundary.** Hohmann minimises delta-v and the straight line minimises time, so for one ship they differ by orders of magnitude in both (259 days at 5.6 km/s against days at hundreds of km/s). What the tests check is each model against numerical integration of its own physics, and that a very fast crossing orbit reduces to a straight coast.
+- **Profiles.** `cheapest` is Hohmann (or the spiral); `fastest` spends the ship's whole delta-v on whichever of the crossing family and the straight line arrives first; `balanced` is the same at the geometric mean of the two delta-v. `canReturn` plans the return from the arrival time with the propellant left and without aerobraking.
+- **Positions.** The ship follows the primary-centred path from the origin level's centre to the target level's centre; during local burns it is on the place's own parking ring. Jumps between the two are at most a parking radius.
 
 ## Adding a system
 
@@ -115,7 +139,7 @@ A grid screen's root is `ScreenGrid`, which renders `<main class="screen" data-s
 ```svelte
 <ScreenGrid id="economy" columns="320px minmax(0,1fr)">
   <Stack>
-    <Panel title="Colonies"><Table head={['Colony', '>People']} rows={rows} /></Panel>
+    <Panel title="Colonies"><Table head={['Colony', '>People']} {rows} /></Panel>
     <Panel title="Mars" grow body="col"><CanvasView scale={2} bg="stars" draw={drawPlanet} /></Panel>
   </Stack>
   <Stack>...</Stack>
@@ -128,18 +152,18 @@ Only the map stays mounted when another screen is shown; any other screen is mou
 
 Reuse these; never copy one into a screen. Each matches a helper in `mockup/screens.js`.
 
-| Primitive                | Mockup         | Use                                                                                                                       |
-| ------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `Panel`                  | `pan()`        | `title` or `head` snippet, `tools` snippet for selects in the title bar, `grow`, `body` = `''`, `col`, `fill`, `center`   |
-| `Table`                  | `tbl()`        | `head` (a leading `>` right-aligns a column), `rows` of cells, `selected`, `onpick(row)`, `numeric` when there is no head |
-| `Meter`, `Pct`           | `bar()`, `pct()` | a meter bar; a meter followed by its percentage                                                                         |
-| `DefList`                | `dl()`         | `rows` of `[term, value]`, `two` for four columns                                                                         |
-| `Tabs`                   | `.tabs2`       | `tabs`, `bind:active`; render the active pane yourself                                                                    |
-| `CanvasView`             | `fitv()`+`fit()` | a pixel framebuffer that fits its frame: `scale`, `vignette`, `bg`, `height`, `draw(fb, t)`, `onfit`, `labels` snippet  |
-| `PixelCanvas`            |                | a framebuffer of fixed size (`width`, `height`, `scale`)                                                                  |
-| `ScreenGrid`, `Stack`, `Split` | `.screen`, `.stack`, `.split` | the screen grid and its columns                                                                   |
-| `Window`, `Desk`         | `wm.js`        | dockable windows on a desk: `home` (`left`, `right`, `bottom`), `width`, `grow`, `heading`, `tools` snippet               |
-| `Icon`                   | `icons.js`     | a pixel icon by name                                                                                                      |
+| Primitive                      | Mockup                        | Use                                                                                                                       |
+| ------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Panel`                        | `pan()`                       | `title` or `head` snippet, `tools` snippet for selects in the title bar, `grow`, `body` = `''`, `col`, `fill`, `center`   |
+| `Table`                        | `tbl()`                       | `head` (a leading `>` right-aligns a column), `rows` of cells, `selected`, `onpick(row)`, `numeric` when there is no head |
+| `Meter`, `Pct`                 | `bar()`, `pct()`              | a meter bar; a meter followed by its percentage                                                                           |
+| `DefList`                      | `dl()`                        | `rows` of `[term, value]`, `two` for four columns                                                                         |
+| `Tabs`                         | `.tabs2`                      | `tabs`, `bind:active`; render the active pane yourself                                                                    |
+| `CanvasView`                   | `fitv()`+`fit()`              | a pixel framebuffer that fits its frame: `scale`, `vignette`, `bg`, `height`, `draw(fb, t)`, `onfit`, `labels` snippet    |
+| `PixelCanvas`                  |                               | a framebuffer of fixed size (`width`, `height`, `scale`)                                                                  |
+| `ScreenGrid`, `Stack`, `Split` | `.screen`, `.stack`, `.split` | the screen grid and its columns                                                                                           |
+| `Window`, `Desk`               | `wm.js`                       | dockable windows on a desk: `home` (`left`, `right`, `bottom`), `width`, `grow`, `heading`, `tools` snippet               |
+| `Icon`                         | `icons.js`                    | a pixel icon by name                                                                                                      |
 
 Table cells are a string, a number, a snippet, `{ text, warn }`, `{ meter, label }` or `{ pct }`.
 

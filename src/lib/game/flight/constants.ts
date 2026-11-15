@@ -1,0 +1,13 @@
+export const G0 = 9.80665;
+export const TWO_PI = Math.PI * 2;
+export const MIN_LIFTOFF_TWR = 1.2;
+export const MIN_LANDING_TWR = 1;
+export const GRAVITY_LOSS_FRACTION = 0.085;
+export const PASS_ARC_LIMIT = Math.PI / 6;
+export const MAX_PERIGEE_PASSES = 24;
+export const FINITE_BURN_LOSS_COEFFICIENT = 1 / 8;
+export const LINE_GRAVITY_RATIO_LIMIT = 0.05;
+export const DEFAULT_ALTITUDE = 100e3;
+export const DEFAULT_ATMOSPHERE_ALTITUDE = 200e3;
+export const MAX_BURN_SHARE = 0.25;
+export const SPIRAL_ACCURACY_LIMIT = 0.1;
