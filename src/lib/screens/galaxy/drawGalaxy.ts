@@ -2,6 +2,7 @@ import type { FB } from '#lib/gfx/framebuffer.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import { PAL, shade } from '#lib/gfx/palette.ts';
 import { toScreen, type Camera } from './camera.ts';
+import { systemCounts } from './counts.ts';
 import { LINKS, SYSTEMS, type StarSystem } from './stars.ts';
 
 export const GALAXY_SCALE = 2;
@@ -49,8 +50,9 @@ export function drawGalaxy(f: FB, c: Camera, selected: string, t: number): void 
         [0, -R - 2]
       ] as const)
         f.px(x + i, y + j, (t + s.x) % 14 < 7 ? s.color : shade(s.color, 0.5));
-    if (s.colonies) f.rect(x - R - 5, y + R + 1, 3, 3, PAL.sel);
-    if (s.fleets)
+    const counts = systemCounts(s);
+    if (counts.colonies) f.rect(x - R - 5, y + R + 1, 3, 3, PAL.sel);
+    if (counts.fleets)
       for (const [i, j] of [
         [3, 2],
         [4, 3],

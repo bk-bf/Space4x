@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Colony } from '#lib/game/types.ts';
   import { Table, type Cell } from '#lib/ui/index.ts';
-  import { COMPONENTS, INSTALLATIONS, MINERALS, SHIP_CLASSES } from './catalog.ts';
+  import { buildClasses, COMPONENTS, INSTALLATIONS, MINERALS } from './catalog.ts';
   import Cols from './Cols.svelte';
   import { formatCount, formatSigned, formatTons, formatYears } from './format.ts';
   import { annualUse, fuelOutput, mineOutput } from './sim.ts';
@@ -51,7 +51,7 @@
   const installationRows = $derived<Cell[][]>(
     INSTALLATIONS.map((i) => [i.name, colony.installations[i.id], queued(i.id)])
   );
-  const shipRows = $derived<Cell[][]>(SHIP_CLASSES.map((c) => [c.name, c.role, colony.built[c.id] ?? 0]));
+  const shipRows = $derived<Cell[][]>(buildClasses().map((c) => [c.name, c.role, colony.built[c.id] ?? 0]));
 </script>
 
 <h3>Minerals and fuel</h3>

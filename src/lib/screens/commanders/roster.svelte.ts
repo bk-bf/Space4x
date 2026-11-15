@@ -1,6 +1,5 @@
-import { DAY, game, START_TIME, type Game } from '#lib/game/index.ts';
+import { className, DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
 import { hash } from '#lib/gfx/math.ts';
-import { shell } from '#lib/ui/index.ts';
 
 export const RANKS = [
   { id: 'lieutenant', label: 'Lieutenant', pips: 1 },
@@ -72,11 +71,11 @@ export function postOptions(kind: PostKind, g: Game): PostOption[] {
   if (kind === 'fleet') return g.world.fleets.map((f) => ({ kind, ref: f.id, label: f.name, where: '' }));
   if (kind === 'ship')
     return g.world.fleets.flatMap((f) =>
-      f.ships.map((s) => ({ kind, ref: s.name, label: s.name, where: `${s.className}, ${f.name}` }))
+      f.ships.map((s) => ({ kind, ref: s.name, label: s.name, where: `${className(s.classId)}, ${f.name}` }))
     );
   if (kind === 'governor')
     return g.world.bodies
-      .filter((b) => b.facts.people !== 'None')
+      .filter(isColony)
       .map((b) => ({ kind, ref: b.id, label: `Governor, ${b.name}`, where: '' }));
   if (kind === 'staff') return STAFF_POSTS.map((p) => ({ kind, ref: p.id, label: p.label, where: '' }));
   return [];
@@ -216,12 +215,8 @@ export class Roster {
 
 export const roster = new Roster();
 
-let queryApplied = false;
-
-export function applyCommandersQuery(): void {
-  if (queryApplied) return;
-  queryApplied = true;
-  const index = Number(shell.param('cmd'));
-  const found = roster.officers[index];
-  if (shell.param('cmd') !== null && found) roster.select(found.id);
+export function applyCommandersParams(params: URLSearchParams): void {
+  const raw = params.get('cmd');
+  const found = raw === null ? undefined : roster.officers[Number(raw)];
+  if (found) roster.select(found.id);
 }

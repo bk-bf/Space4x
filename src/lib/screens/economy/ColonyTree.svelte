@@ -2,12 +2,12 @@
   import { game } from '#lib/game/index.ts';
   import { Icon, Panel } from '#lib/ui/index.ts';
   import { formatPeople } from './format.ts';
-  import { colonyWarnings } from './lookup.ts';
+  import { colonyName, colonySystem, colonyWarnings } from './lookup.ts';
   import { economy, ui } from './state.svelte.ts';
 
   const groups = $derived(
     game.world.systems
-      .map((s) => ({ system: s, colonies: economy.colonies.filter((c) => c.system === s.id) }))
+      .map((s) => ({ system: s, colonies: economy.colonies.filter((c) => colonySystem(c) === s.id) }))
       .filter((g) => g.colonies.length)
   );
   const plural = (n: number) => `${n} ${n === 1 ? 'colony' : 'colonies'}`;
@@ -40,7 +40,7 @@
             onkeydown={(e) => onkey(e, c.id)}
           >
             <span class="name"
-              >{#if colonyWarnings(c).length}<Icon name="warn" />{/if}{c.name}</span
+              >{#if colonyWarnings(c).length}<Icon name="warn" />{/if}{colonyName(c)}</span
             >
             <span>{formatPeople(c.population)}</span>
           </div>

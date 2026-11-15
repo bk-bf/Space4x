@@ -1,5 +1,4 @@
 import { game, type Game } from '#lib/game/index.ts';
-import { shell } from '#lib/ui/index.ts';
 import { isFieldId, TECHS, techById, techsOf, type FieldId, type Tech } from './tech.ts';
 
 export interface Scientist {
@@ -148,17 +147,15 @@ export class Research {
       'flask',
       `${tech.name} started under ${lead?.name ?? 'a scientist'} with ${labs} ${labs === 1 ? 'lab' : 'labs'}.`
     );
-    syncLabsChip(g, this);
     return true;
   }
 
-  setLabs(id: string, labs: number, g: Game = game): boolean {
+  setLabs(id: string, labs: number): boolean {
     const p = this.project(id);
     if (!p || !Number.isInteger(labs) || labs < 0) return false;
     const grow = labs - p.labs;
     if (grow > this.labsFree || grow > this.capacityLeft(p.lead)) return false;
     p.labs = labs;
-    syncLabsChip(g, this);
     return true;
   }
 
@@ -168,7 +165,6 @@ export class Research {
     if (i < 0 || !tech) return false;
     this.running.splice(i, 1);
     g.log('flask', `${tech.name} was set aside at ${Math.round(this.fraction(id) * 100)}%.`);
-    syncLabsChip(g, this);
     return true;
   }
 
@@ -195,7 +191,6 @@ export class Research {
       if (total >= tech.cost) finished.push(p);
     }
     for (const p of finished) this.finish(g, p);
-    syncLabsChip(g, this);
   }
 
   private finish(g: Game, p: Project): void {
@@ -216,18 +211,9 @@ export class Research {
   }
 }
 
-export function syncLabsChip(g: Game, research: Research): void {
-  const chip = g.status.find((c) => c.id === 'labs');
-  if (chip) chip.value = `${research.labsUsed}/${research.totalLabs}`;
-}
-
 export const research = new Research();
 
-let queryApplied = false;
-
-export function applyResearchQuery(): void {
-  if (queryApplied) return;
-  queryApplied = true;
-  const field = shell.param('field');
+export function applyResearchParams(params: URLSearchParams): void {
+  const field = params.get('field');
   if (isFieldId(field)) research.showField(field);
 }

@@ -59,7 +59,7 @@ describe('Research', () => {
     const r = new Research();
     const g = new Game();
     r.totalLabs = 10;
-    r.setLabs('fuel-refining-ii', 1, g);
+    r.setLabs('fuel-refining-ii', 1);
     expect(r.start('orbital-smelting', 'moreau', 1, g)).toBe(true);
     expect(r.stateOf('deep-mining')).toBe('locked');
     const usedBefore = r.labsUsed;
@@ -73,13 +73,11 @@ describe('Research', () => {
   });
 
   it('keeps the top bar labs chip equal to the labs in use', () => {
-    const r = new Research();
     const g = new Game();
-    r.advance(g, DAY);
     expect(labsChip(g)).toBe('4/5');
-    expect(r.start('fusion-torch', 'okafor', 1, g)).toBe(true);
+    expect(research.start('fusion-torch', 'okafor', 1, g)).toBe(true);
     expect(labsChip(g)).toBe('5/5');
-    r.cancel('fusion-torch', g);
+    research.cancel('fusion-torch', g);
     expect(labsChip(g)).toBe('4/5');
   });
 
@@ -98,14 +96,13 @@ describe('Research', () => {
 
   it('moves labs between projects within the free labs and the lead capacity', () => {
     const r = new Research();
-    const g = new Game();
-    expect(r.setLabs('ion-drive', 3, g)).toBe(true);
+    expect(r.setLabs('ion-drive', 3)).toBe(true);
     expect(r.labsFree).toBe(0);
-    expect(r.setLabs('ion-drive', 4, g)).toBe(false);
-    expect(r.setLabs('composite-armour', 2, g)).toBe(false);
-    expect(r.setLabs('ion-drive', 1, g)).toBe(true);
-    expect(r.setLabs('composite-armour', 2, g)).toBe(true);
-    expect(r.setLabs('composite-armour', 3, g)).toBe(false);
+    expect(r.setLabs('ion-drive', 4)).toBe(false);
+    expect(r.setLabs('composite-armour', 2)).toBe(false);
+    expect(r.setLabs('ion-drive', 1)).toBe(true);
+    expect(r.setLabs('composite-armour', 2)).toBe(true);
+    expect(r.setLabs('composite-armour', 3)).toBe(false);
   });
 
   it('keeps the progress of a cancelled project so that starting it again resumes it', () => {

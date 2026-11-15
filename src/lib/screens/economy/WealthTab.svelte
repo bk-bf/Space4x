@@ -6,6 +6,7 @@
   import { GOODS } from './catalog.ts';
   import { drawFlowChart } from './chart.ts';
   import Cols from './Cols.svelte';
+  import { colonyName } from './lookup.ts';
   import { formatCount, formatMoney, formatPercent, formatSigned } from './format.ts';
   import {
     SHIP_TRADE_CAPACITY,
@@ -75,7 +76,7 @@
 
 <Cols columns="minmax(0,1fr) minmax(0,1.5fr)">
   <div>
-    <h3>Wealth at {colony.name}, a year</h3>
+    <h3>Wealth at {colonyName(colony)}, a year</h3>
     <Table head={['Line', '>Amount']} rows={wealthRows} />
     <h3>Empire income and spending, last 12 months</h3>
     <CanvasView scale={2} height={150} draw={(fb) => drawFlowChart(fb, economy.history)} />

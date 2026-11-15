@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Panel, ScreenGrid, Stack, Tabs, shell } from '#lib/ui/index.ts';
+  import { Panel, ScreenGrid, Stack, Tabs } from '#lib/ui/index.ts';
   import ColonyTree from './ColonyTree.svelte';
   import IndustryTab from './IndustryTab.svelte';
   import MiningTab from './MiningTab.svelte';
@@ -8,10 +8,8 @@
   import StockpilesTab from './StockpilesTab.svelte';
   import SummaryTab from './SummaryTab.svelte';
   import WealthTab from './WealthTab.svelte';
-  import { systemName } from './lookup.ts';
-  import { TABS, applyParams, selectedColony, ui } from './state.svelte.ts';
-
-  applyParams((name) => shell.param(name));
+  import { colonyName, colonySystem, systemName } from './lookup.ts';
+  import { TABS, selectedColony, ui } from './state.svelte.ts';
 
   const colony = $derived(selectedColony());
 </script>
@@ -23,7 +21,7 @@
   </Stack>
   <Stack>
     <Panel grow>
-      {#snippet head()}{colony.name} <small>{systemName(colony.system)}</small>{/snippet}
+      {#snippet head()}{colonyName(colony)} <small>{systemName(colonySystem(colony))}</small>{/snippet}
       <Tabs tabs={TABS} bind:active={ui.tab} />
       {#key colony.id}
         {#if ui.tab === 'summary'}<SummaryTab {colony} />

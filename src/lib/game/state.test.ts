@@ -83,9 +83,9 @@ describe('Game', () => {
 
   it('moves bodies along their orbits as time passes', () => {
     const g = new Game();
-    const before = bodyPosition(g.body('earth')!);
+    const before = bodyPosition(g.body('earth')!, g.world.bodies);
     g.advance(30 * DAY);
-    const after = bodyPosition(g.body('earth')!);
+    const after = bodyPosition(g.body('earth')!, g.world.bodies);
     expect(after).not.toEqual(before);
     expect(Math.hypot(...after)).toBeCloseTo(74, 6);
   });

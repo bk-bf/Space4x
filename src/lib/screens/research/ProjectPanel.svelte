@@ -98,11 +98,11 @@
       <button
         id="labsDown"
         disabled={project.labs < 1}
-        onclick={() => research.setLabs(project.tech, project.labs - 1, game)}>Fewer labs</button
+        onclick={() => research.setLabs(project.tech, project.labs - 1)}>Fewer labs</button
       ><button
         id="labsUp"
         disabled={research.labsFree < 1 || research.capacityLeft(project.lead) < 1}
-        onclick={() => research.setLabs(project.tech, project.labs + 1, game)}>More labs</button
+        onclick={() => research.setLabs(project.tech, project.labs + 1)}>More labs</button
       ><button id="projectCancel" onclick={() => research.cancel(project.tech, game)}>Cancel</button>
     </div>
   {/if}

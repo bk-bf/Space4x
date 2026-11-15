@@ -4,6 +4,7 @@
   import { DefList, Table, type Cell } from '#lib/ui/index.ts';
   import { INSTALLATIONS, MINERALS, SECTORS, item } from './catalog.ts';
   import Cols from './Cols.svelte';
+  import { colonyEnvironment } from './lookup.ts';
   import { formatCount, formatDate, formatPeople, formatPercent, formatRate, formatTons } from './format.ts';
   import {
     allocate,
@@ -33,6 +34,7 @@
   const mined = $derived(MINERALS.reduce((a, m) => a + mineOutput(colony, m.id, economy), 0));
   const wealth = $derived(wealthIncome(wealthLines(colony, economy, trade(economy))));
   const plan = $derived(allocate(colony, economy));
+  const environment = $derived(colonyEnvironment(colony));
 
   const output = (id: string): string => {
     if (id === 'mine') return `${formatTons(mined)} t a year, all minerals`;
@@ -96,10 +98,10 @@
     <h3>Environment</h3>
     <DefList
       rows={[
-        ['Air', colony.environment.air],
-        ['Gravity', colony.environment.gravity],
-        ['Surface', colony.environment.surface],
-        ['Setting', colony.environment.note]
+        ['Air', environment.air],
+        ['Gravity', environment.gravity],
+        ['Surface', environment.surface],
+        ['Setting', environment.note]
       ]}
     />
   </div>

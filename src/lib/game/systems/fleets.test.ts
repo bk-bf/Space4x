@@ -19,7 +19,7 @@ describe('fleet orders', () => {
   it('flies a fleet toward its move target and parks it there on arrival', () => {
     const g = new Game();
     const survey = g.fleet('survey')!;
-    const mars = () => bodyPosition(g.body('mars')!);
+    const mars = () => bodyPosition(g.body('mars')!, g.world.bodies);
     const gap = () => Math.hypot(survey.x - mars()[0], survey.y - mars()[1]);
     const start = gap();
     g.advance(3600);
@@ -129,7 +129,9 @@ describe('fleet orders', () => {
 
   it('offers cargo orders only to civilian fleets and only colonies as their targets', () => {
     const g = new Game();
-    expect(orderTargets(g, g.fleet('convoy')!, 'load').map((t) => t.name)).toEqual(['Earth', 'Mars']);
+    const colonies = g.world.bodies.filter((b) => b.system === 'sol' && b.colony).map((b) => b.name);
+    expect(colonies).toContain('Luna');
+    expect(orderTargets(g, g.fleet('convoy')!, 'load').map((t) => t.name)).toEqual(colonies);
     expect(orderTargets(g, g.fleet('survey')!, 'move').map((t) => t.name)).toContain('Jump point A');
     expect(orderTargets(g, g.fleet('survey')!, 'join').map((t) => t.name)).toEqual([
       'Freight convoy',

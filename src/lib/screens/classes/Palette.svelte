@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PixelCanvas, requestRender } from '#lib/ui/index.ts';
-  import { PALETTE, paletteId } from './design.ts';
+  import { PALETTE, paletteId } from '#lib/game/design.ts';
   import { designer } from './designer.svelte.ts';
   import { CELL_H, CELL_W, PARTS_COLUMNS, PARTS_H, PARTS_SCALE, PARTS_W, drawParts } from './drawDesign.ts';
 

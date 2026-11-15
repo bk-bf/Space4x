@@ -18,8 +18,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.38 g',
       surface: '167 °C',
       air: 'None',
-      size: '4,879 km',
-      people: 'None'
+      size: '4,879 km'
     }
   },
   {
@@ -37,13 +36,13 @@ export const mockBodies = (): Body[] => [
       gravity: '0.90 g',
       surface: '464 °C',
       air: 'Dense CO2',
-      size: '12,104 km',
-      people: 'None'
+      size: '12,104 km'
     }
   },
   {
     system: 'sol',
     id: 'earth',
+    colony: true,
     surveyed: true,
     name: 'Earth',
     type: 'terran',
@@ -57,13 +56,13 @@ export const mockBodies = (): Body[] => [
       gravity: '1.00 g',
       surface: '15 °C',
       air: 'Breathable',
-      size: '12,742 km',
-      people: '1.2 bn'
+      size: '12,742 km'
     }
   },
   {
     system: 'sol',
     id: 'mars',
+    colony: true,
     surveyed: true,
     name: 'Mars',
     type: 'mars',
@@ -77,8 +76,27 @@ export const mockBodies = (): Body[] => [
       gravity: '0.38 g',
       surface: '-63 °C',
       air: 'Thin CO2',
-      size: '6,779 km',
-      people: '2.4 M'
+      size: '6,779 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'ceres',
+    colony: true,
+    name: 'Ceres',
+    type: 'rock',
+    radius: 3,
+    orbit: 130,
+    angle: 3.6,
+    angularSpeed: 0.0008 * RATE,
+    tilt: 0.1,
+    surveyed: true,
+    facts: {
+      kind: 'Dwarf planet',
+      gravity: '0.03 g',
+      surface: '-105 °C',
+      air: 'None',
+      size: '939 km'
     }
   },
   {
@@ -96,8 +114,7 @@ export const mockBodies = (): Body[] => [
       gravity: '2.53 g',
       surface: '-108 °C',
       air: 'Hydrogen',
-      size: '139,820 km',
-      people: 'None'
+      size: '139,820 km'
     }
   },
   {
@@ -115,8 +132,47 @@ export const mockBodies = (): Body[] => [
       gravity: '1.06 g',
       surface: '-139 °C',
       air: 'Hydrogen',
-      size: '116,460 km',
-      people: 'None'
+      size: '116,460 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'luna',
+    colony: true,
+    parent: 'earth',
+    name: 'Luna',
+    type: 'rock',
+    radius: 2,
+    orbit: 15,
+    angle: 1,
+    angularSpeed: 6e-6,
+    surveyed: true,
+    facts: {
+      kind: 'Moon',
+      gravity: '0.16 g',
+      surface: '-23 °C',
+      air: 'None',
+      size: '3,474 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'europa',
+    colony: true,
+    parent: 'jupiter',
+    name: 'Europa',
+    type: 'rock',
+    radius: 3,
+    orbit: 27,
+    angle: 2.2,
+    angularSpeed: 4e-6,
+    surveyed: true,
+    facts: {
+      kind: 'Icy moon',
+      gravity: '0.13 g',
+      surface: '-160 °C',
+      air: 'None',
+      size: '3,122 km'
     }
   },
   {
@@ -134,13 +190,13 @@ export const mockBodies = (): Body[] => [
       gravity: '0.52 g',
       surface: '312 °C',
       air: 'None',
-      size: '6,120 km',
-      people: 'None'
+      size: '6,120 km'
     }
   },
   {
     system: 'acen',
     id: 'acen-2',
+    colony: true,
     name: 'Centauri II',
     type: 'mars',
     radius: 6,
@@ -154,8 +210,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.71 g',
       surface: '-12 °C',
       air: 'Thin N2',
-      size: '9,840 km',
-      people: '18,000'
+      size: '9,840 km'
     }
   },
   {
@@ -173,8 +228,7 @@ export const mockBodies = (): Body[] => [
       gravity: '1.84 g',
       surface: '-96 °C',
       air: 'Hydrogen',
-      size: '121,400 km',
-      people: 'None'
+      size: '121,400 km'
     }
   },
   {
@@ -192,8 +246,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.44 g',
       surface: '-171 °C',
       air: 'Trace CH4',
-      size: '7,310 km',
-      people: 'None'
+      size: '7,310 km'
     }
   },
   {
@@ -210,8 +263,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.41 g',
       surface: '127 °C',
       air: 'None',
-      size: '4,410 km',
-      people: 'None'
+      size: '4,410 km'
     }
   },
   {
@@ -229,8 +281,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.58 g',
       surface: '88 °C',
       air: 'Dense CO2',
-      size: '5,950 km',
-      people: 'None'
+      size: '5,950 km'
     }
   },
   {
@@ -248,8 +299,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.66 g',
       surface: '-58 °C',
       air: 'Thin CO2',
-      size: '8,200 km',
-      people: 'None'
+      size: '8,200 km'
     }
   },
   {
@@ -267,8 +317,7 @@ export const mockBodies = (): Body[] => [
       gravity: '0.93 g',
       surface: '-182 °C',
       air: 'Hydrogen',
-      size: '96,200 km',
-      people: 'None'
+      size: '96,200 km'
     }
   }
 ];

@@ -1,7 +1,9 @@
 import {
   bodyPosition,
   FLEET_SENSOR,
+  fleetClassId,
   resolveGoal,
+  shipClass,
   type Contact,
   type Fleet,
   type Game,
@@ -13,7 +15,6 @@ import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { planet } from '#lib/gfx/planets.ts';
 import { C } from '#lib/gfx/ships/colors.ts';
 import { drawShip, measure } from '#lib/gfx/ships/draw.ts';
-import { spec } from '#lib/gfx/ships/specs.ts';
 import { sun } from '#lib/gfx/sun.ts';
 import { select } from '#lib/ui/index.ts';
 import { camera, layers, SHIP_ZOOM, viewCentre } from './camera.svelte';
@@ -28,8 +29,8 @@ const SHIP_ICONS = {
 const FLAME_HOT: RGB = [255, 214, 120];
 const FLAME_COOL: RGB = [240, 130, 60];
 const BELT_ROCKS = 230;
+const CORONA = 8;
 const TRAIL_UNITS = 44;
-const MOON_ORBIT = 15;
 
 type Project = (wx: number, wy: number) => readonly [number, number];
 
@@ -129,21 +130,22 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
     contacts = here(world.contacts);
   const an: Anchor[] = [];
   f.start();
-  if (layers.Orbits) for (const b of bodies) f.ring(X(0), Y(0), b.orbit * z, PAL.orbit, 3);
+  if (layers.Orbits) for (const b of bodies) if (!b.parent) f.ring(X(0), Y(0), b.orbit * z, PAL.orbit, 3);
   if (layers.Asteroids && system?.belt) drawBelt(f, P, S, system.belt);
   const sf = sel.kind === 'fleet' ? fleets.find((x) => x.id === sel.id) : undefined;
   if (sf) {
     if (layers.Course) polyline(f, P, course(game, sf), PAL.course, 3, A >> 1);
     if (layers.Sensors) f.ring(X(sf.x), Y(sf.y), FLEET_SENSOR * z, PAL.sensor, 3, A >> 2);
   }
-  for (const s of system?.stars ?? []) {
+  for (const [i, s] of (system?.stars ?? []).entries()) {
     const sr = Math.round(s.radius * z),
       x = Math.round(X(s.x)),
       y = Math.round(Y(s.y));
-    if (on(x, y, sr + 8)) sun(f, x, y, sr, A, s.tint);
+    if (on(x, y, sr + CORONA)) sun(f, x, y, sr, A, s.tint);
+    an.push({ id: `star-${i}`, x, y, rx: sr + CORONA, ry: sr + CORONA });
   }
   for (const b of bodies) {
-    const [wx, wy] = bodyPosition(b);
+    const [wx, wy] = bodyPosition(b, world.bodies);
     const x = Math.round(X(wx)),
       y = Math.round(Y(wy)),
       R = Math.max(2, Math.round(b.radius * z)),
@@ -160,32 +162,18 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
       pick: () => select('body', b.id),
       centre: () => {
         const body = game.body(b.id);
-        if (body) centreOn(...bodyPosition(body));
+        if (body) centreOn(...bodyPosition(body, game.world.bodies));
       }
     });
-  }
-  const earth = bodies.find((b) => b.id === 'earth');
-  if (earth) {
-    const [ex, ey] = bodyPosition(earth),
-      la = S * 0.012 + 1,
-      mr = Math.max(1, Math.round(2 * z));
-    planet(
-      f,
-      Math.round(X(ex + Math.cos(la) * MOON_ORBIT)),
-      Math.round(Y(ey + Math.sin(la) * MOON_ORBIT)),
-      mr,
-      'rock',
-      0
-    );
   }
   for (const fl of fleets) {
     const x = X(fl.x),
       y = Y(fl.y),
       chosen = sel.kind === 'fleet' && sel.id === fl.id;
+    const sp = shipClass(fleetClassId(fl) ?? '');
     let bw: number, bh: number;
-    if (z >= SHIP_ZOOM) {
-      const sp = spec(fl.classId),
-        m = measure(sp);
+    if (z >= SHIP_ZOOM && sp) {
+      const m = measure(sp);
       drawShip(f, Math.round(x - m.w / 2) - m.x0, Math.round(y - (m.y0 + m.y1) / 2), sp, A);
       bw = m.w / 2 + 3;
       bh = m.h / 2 + 3;

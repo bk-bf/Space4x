@@ -2,14 +2,19 @@
   import type { Colony } from '#lib/game/types.ts';
   import { CanvasView, DefList, Panel, shell } from '#lib/ui/index.ts';
   import { formatPeople, formatRate } from './format.ts';
+  import { colonyName, colonyPlanet } from './lookup.ts';
   import { drawColonyPlanet } from './planetView.ts';
   import { growthRate, workersFree } from './sim.ts';
 
   let { colony }: { colony: Colony } = $props();
 </script>
 
-<Panel title={colony.name} grow body="col">
-  <CanvasView scale={2} bg="stars" draw={(fb, t) => drawColonyPlanet(fb, t, colony.planet, colony.moon)} />
+<Panel title={colonyName(colony)} grow body="col">
+  <CanvasView
+    scale={2}
+    bg="stars"
+    draw={(fb, t) => drawColonyPlanet(fb, t, colonyPlanet(colony), colony.moon)}
+  />
   <DefList
     rows={[
       ['People', formatPeople(colony.population)],

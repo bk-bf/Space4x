@@ -8,7 +8,7 @@
     attachmentName,
     cargoLayers,
     targetLabel
-  } from './design.ts';
+  } from '#lib/game/design.ts';
   import { designer } from './designer.svelte.ts';
 
   const sel = $derived(designer.selection);

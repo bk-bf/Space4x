@@ -1,5 +1,5 @@
-import { SPECS } from '#lib/gfx/ships/specs.ts';
-import type { ComponentId, GoodId, InstallationId, ItemId, MineralId, YardKind } from '#lib/game/types.ts';
+import { buildOf, shipClasses, statsFor, type ClassBuild } from '#lib/game/index.ts';
+import type { ComponentId, GoodId, InstallationId, ItemId, MineralId } from '#lib/game/types.ts';
 
 export type Sector = 'industry' | 'mining' | 'research' | 'shipyards' | 'services';
 
@@ -178,33 +178,17 @@ export const GOODS: readonly { id: GoodId; name: string; price: number }[] = [
   { id: 'luxury', name: 'Luxuries', price: 60 }
 ];
 
-export interface ShipClass {
+export interface BuildClass extends ClassBuild {
   id: string;
   name: string;
   role: string;
-  tons: number;
-  bp: number;
-  kind: YardKind;
 }
 
-const SHIP_BUILD: Readonly<Record<string, Pick<ShipClass, 'tons' | 'bp' | 'kind'>>> = {
-  pathfinder: { tons: 3_000, bp: 600, kind: 'commercial' },
-  atlas: { tons: 40_000, bp: 1_200, kind: 'commercial' },
-  mule: { tons: 20_000, bp: 800, kind: 'commercial' },
-  bastion: { tons: 18_000, bp: 3_600, kind: 'naval' },
-  lancer: { tons: 6_000, bp: 1_500, kind: 'naval' },
-  pike: { tons: 8_000, bp: 1_900, kind: 'naval' },
-  ark: { tons: 30_000, bp: 2_000, kind: 'commercial' },
-  lighthouse: { tons: 25_000, bp: 1_400, kind: 'commercial' }
-};
+export const buildClasses = (): readonly BuildClass[] =>
+  shipClasses().map((c) => ({ id: c.id, name: c.name, role: c.role, ...buildOf(statsFor(c)) }));
 
-export const SHIP_CLASSES: readonly ShipClass[] = SPECS.flatMap((s) => {
-  const build = SHIP_BUILD[s.id];
-  return build ? [{ id: s.id, name: s.name ?? s.id, role: s.role ?? '', ...build }] : [];
-});
-
-export function shipClass(id: string): ShipClass {
-  const cls = SHIP_CLASSES.find((c) => c.id === id);
+export function buildClass(id: string): BuildClass {
+  const cls = buildClasses().find((c) => c.id === id);
   if (!cls) throw new Error(`no ship class ${id}`);
   return cls;
 }

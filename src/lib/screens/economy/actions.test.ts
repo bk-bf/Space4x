@@ -13,6 +13,7 @@ import {
   startBuild,
   toggleSubsidy
 } from './actions.ts';
+import { buildClass } from './catalog.ts';
 import { economy, resetEconomy, selectedColony } from './state.svelte.ts';
 import './system.ts';
 
@@ -67,7 +68,11 @@ describe('shipyard actions', () => {
   it('lays down the tooled class on a free slipway and logs it', () => {
     const yard = luna().yards[0]!;
     startBuild(luna(), yard.id, 2, 'atlas');
-    expect(yard.slipways[1]!.build).toMatchObject({ classId: 'atlas', done: 0, total: 1200 });
+    expect(yard.slipways[1]!.build).toMatchObject({
+      classId: 'atlas',
+      done: 0,
+      total: buildClass('atlas').bp
+    });
     expect(game.events[0]!.text).toBe('Luna yard 1 laid down an Atlas bulk freighter.');
   });
 

@@ -1,4 +1,5 @@
 import { game } from '#lib/game/index.ts';
+import { showSystem } from '#lib/screens/map/focus.ts';
 import { shell } from '#lib/ui/index.ts';
 import { fitAll, type Camera } from './camera.ts';
 import { SYSTEMS, systemById } from './stars.ts';
@@ -30,18 +31,14 @@ class GalaxyState {
 
   openOnMap(id: string): void {
     if (!this.canOpenOnMap(id)) return;
-    game.world.system = id;
+    showSystem(id);
     shell.setScreen('map');
   }
 }
 
 export const galaxy = new GalaxyState();
 
-let applied = false;
-
 export function applyGalaxyParams(params: URLSearchParams): void {
-  if (applied) return;
-  applied = true;
   const id = params.get('sys');
   if (id) galaxy.select(id);
 }

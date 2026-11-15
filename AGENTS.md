@@ -34,13 +34,22 @@ Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` synta
 `game` (from `#lib/game/index.ts`) is the one `Game`. Its fields are runes, so components read them directly and update when they change.
 
 - `game.time` (ms, UTC), `game.elapsed` (game seconds since the start), `game.running`, `game.step` (seconds)
-- `game.world`: `bodies`, `fleets`, `contacts` (each names its `system`), `systems` (stars, belt, jump points), `system` (the one the map shows); `game.events`; `game.status` (the top bar chips)
+- `game.world`: `bodies`, `fleets`, `contacts` (each names its `system`), `systems` (stars, belt, jump points), `system` (the one the map shows); `game.events`; `game.status` (the top bar chips, read-only: see below)
+- a body with `colony: true` is a colony, and the Economy holds one `Colony` with the same id for it: name, system and picture come from the body (`colonyName`, `colonySystem`, `colonyPlanet`, `colonyEnvironment` in `screens/economy/lookup.ts`), so add a colony as a colonised body and an Economy colony together. A body with `parent` is a moon and `bodyPosition(body, bodies)` places it around that body
 - `game.body(id)`, `game.fleet(id)`, `game.contact(id)`, `game.starSystem(id)`, `game.jump(id)`, `game.systemOf(selection)`
 - a fleet's `orders` are `{ id, type, target, done }`; `addOrder`, `moveOrder`, `removeOrder`, `clearOrders`, `orderLabel`, `orderTargets` and `orderEtas` from `#lib/game/index.ts` edit and describe them, and the `fleets` system carries them out
 - `game.selection`: `{ kind: 'fleet' | 'body' | 'contact', id }`; set it with `select(kind, id)` from `#lib/ui/index.ts`, which also shows the Selection window
 - `game.advance(seconds)`, `game.setStep(seconds)` (single-steps when paused), `game.run()`, `game.pause()`, `game.toggleRunning()`, `game.log(category, text, warn, { at, subject })` (an event files by its time; a `subject` makes it select that object when clicked)
 
 While running, the loop advances `game.step` of game time per real second, ten ticks a second.
+
+### Ship classes
+
+`game/classes.svelte.ts` holds the one registry of ship classes (`shipClasses()`, `shipClass(id)`, `classStats(id)`, `classBuild(id)`). The designer edits it; shipyards, fleets, the map and Intelligence read it. `game/design.ts` holds the per-part stat tables that every class stat comes from: tons, build points and yard kind (`buildOf`) and speed (`designStats`). A ship keeps only its `classId`, `className(id)` gives the name, and `fleetSpeed(fleet)` is the speed of its slowest class. A screen that keeps a class in use (a yard tooled for it) registers `registerClassUse` so the designer will not delete it.
+
+### Top bar chips
+
+`game.status` is evaluated from sources a screen registers with `registerStatus(id, () => ({ icon, value, title, warn? }))` from its `system.ts`; the ids and their order are `STATUS_IDS`. Economy owns wealth, people, fuel, the warning and shipyards, research owns labs. Read the state the chip describes; never store a chip's value.
 
 ### Adding a system
 
@@ -73,7 +82,7 @@ A grid screen's root is `ScreenGrid`, which renders `<main class="screen" data-s
 </ScreenGrid>
 ```
 
-Only the map stays mounted when another screen is shown; any other screen is mounted when it opens and dropped when it closes, so state that must survive a switch lives in a module-level `$state` in the screen's folder. A screen reads its own URL parameters with `shell.param('cls')`.
+Only the map stays mounted when another screen is shown; any other screen is mounted when it opens and dropped when it closes, so state that must survive a switch lives in a module-level `$state` in the screen's folder. A screen's URL parameters are applied once at load, not when the screen mounts: export an `applyXParams(params: URLSearchParams)` from the screen's state module and call it from `screens/params.ts`. After that the module state wins, so a button that sets that state and then opens the screen (`showColony(id)`, then `shell.setScreen('economy')`) is not overridden.
 
 ## Shared primitives (`#lib/ui/index.ts`)
 

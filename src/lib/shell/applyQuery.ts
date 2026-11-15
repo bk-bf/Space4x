@@ -3,9 +3,11 @@ import { game } from '#lib/game/index.ts';
 import { select, shell, wm } from '#lib/ui/index.ts';
 import { setZoom } from '#lib/screens/map/camera.svelte.ts';
 import { showSystem } from '#lib/screens/map/focus.ts';
+import { applyScreenParams } from '#lib/screens/params.ts';
 import type { QueryState } from './query';
 
-export function applyQuery(q: QueryState): void {
+export function applyQuery(q: QueryState, params: URLSearchParams): void {
+  applyScreenParams(params);
   wm.arrange(q.arrangement);
   const system = q.system ?? game.systemOf(q.selection);
   if (system) showSystem(system);

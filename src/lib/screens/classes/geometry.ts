@@ -1,6 +1,6 @@
 import { measure } from '#lib/gfx/ships/draw.ts';
 import type { ShipSpec } from '#lib/gfx/ships/specs.ts';
-import { layout, type LaidPart } from './design.ts';
+import { layout, type LaidPart } from '#lib/game/design.ts';
 
 export const LABEL_ROOM = 96;
 export const SIDE_MARGIN = 30;

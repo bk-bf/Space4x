@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { FB } from '#lib/gfx/framebuffer.ts';
   import { CanvasView, requestRender } from '#lib/ui/index.ts';
-  import { insertIndex, targetLabel, type LaidPart } from './design.ts';
+  import { insertIndex, targetLabel, type LaidPart } from '#lib/game/design.ts';
   import { designer } from './designer.svelte.ts';
   import { drawDesign } from './drawDesign.ts';
   import { frameOf, pickScale } from './geometry.ts';

@@ -1,6 +1,6 @@
 import { game } from '#lib/game/index.ts';
 import type { Colony, ItemId } from '#lib/game/types.ts';
-import { shipClass } from './catalog.ts';
+import { buildClass } from './catalog.ts';
 import {
   canYardBuild,
   expansionCost,
@@ -58,7 +58,7 @@ export function startBuild(colony: Colony, yardId: number, slipwayId: number, cl
   const slip = yard?.slipways.find((s) => s.id === slipwayId);
   if (!yard || !slip || !slipwayIdle(yard, slip) || yard.tooled !== classId || !canYardBuild(yard, classId))
     return;
-  const cls = shipClass(classId);
+  const cls = buildClass(classId);
   slip.build = { classId, done: 0, total: cls.bp };
   game.log(
     'factory',

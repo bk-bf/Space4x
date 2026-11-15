@@ -26,7 +26,8 @@ import {
   setStern,
   weaponSummary,
   type ShipClass
-} from './design.ts';
+} from '#lib/game/design.ts';
+import { ClassRegistry } from '#lib/game/index.ts';
 import { GALLERY_PAGE, Designer } from './designer.svelte.ts';
 
 const blank: Surface = { w: 0, h: 0, px() {}, rect() {} };
@@ -227,14 +228,14 @@ describe('editing a design', () => {
 
 describe('the designer store', () => {
   it('starts on the first shipped class and lists the shipped classes', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     expect(d.saved.map((c) => c.id)).toEqual(SPECS.map((s) => s.id));
     expect(d.baseId).toBe('bastion');
     expect(d.dirty).toBe(false);
   });
 
   it('marks a draft dirty after an edit and clean again after saving', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.addCore('ring');
     expect(d.dirty).toBe(true);
     d.save();
@@ -243,7 +244,7 @@ describe('the designer store', () => {
   });
 
   it('adds a new class to the saved list with its name and role', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.start('hauler');
     expect(d.baseId).toBeNull();
     expect(d.dirty).toBe(true);
@@ -259,7 +260,7 @@ describe('the designer store', () => {
   });
 
   it('renames a saved class in place', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('pike');
     d.rename('Spear');
     d.save();
@@ -268,7 +269,7 @@ describe('the designer store', () => {
   });
 
   it('copies a class under its own id and selects the copy', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('mule');
     d.copy();
     expect(d.saved).toHaveLength(SPECS.length + 1);
@@ -278,7 +279,7 @@ describe('the designer store', () => {
   });
 
   it('deletes a class nothing uses and keeps one a fleet is using', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('bastion');
     expect(d.inService).toBe(true);
     d.remove();
@@ -290,7 +291,7 @@ describe('the designer store', () => {
   });
 
   it('adds a section after the selected one and selects it', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('pathfinder');
     d.select({ kind: 'section', index: 1, slot: 'top' });
     d.addCore('armor');
@@ -299,7 +300,7 @@ describe('the designer store', () => {
   });
 
   it('places a hardpoint in the selected slot and removes the selected section', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('lancer');
     d.select({ kind: 'section', index: 3, slot: 'bottom' });
     d.place({ kind: 'att', key: 'cargo', name: 'Cargo' });
@@ -314,7 +315,7 @@ describe('the designer store', () => {
   });
 
   it('reorders by moving the selected section one place at a time', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     d.pick('pathfinder');
     d.select({ kind: 'section', index: 0, slot: 'top' });
     d.shift(1);
@@ -325,7 +326,7 @@ describe('the designer store', () => {
   });
 
   it('pages the gallery so a ninth class opens on the second page and deleting it goes back', () => {
-    const d = new Designer();
+    const d = new Designer(new ClassRegistry());
     expect(d.pageCount).toBe(1);
     expect(d.visible).toHaveLength(GALLERY_PAGE);
     d.start('frame');

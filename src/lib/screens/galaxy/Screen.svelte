@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { DefList, Panel, ScreenGrid, Stack, Table, requestRender, shell } from '#lib/ui/index.ts';
-  import { applyGalaxyParams, galaxy } from './galaxy.svelte.ts';
+  import { DefList, Panel, ScreenGrid, Stack, Table, requestRender } from '#lib/ui/index.ts';
+  import { systemCounts } from './counts.ts';
+  import { galaxy } from './galaxy.svelte.ts';
   import GalaxyView from './GalaxyView.svelte';
   import { SYSTEMS, systemById } from './stars.ts';
 
-  applyGalaxyParams(shell.params);
-
   const system = $derived(systemById(galaxy.selected) ?? SYSTEMS[0]!);
+  const counts = $derived(systemCounts(system));
   const count = (n: number | null) => (n === null ? '?' : n);
   const rows = $derived<[string, string | number][]>([
     ['Star', system.star],
-    ['Bodies', count(system.bodies)],
-    ['Colonies', count(system.colonies)],
-    ['Fleets', count(system.fleets)],
+    ['Bodies', count(counts.bodies)],
+    ['Colonies', count(counts.colonies)],
+    ['Fleets', count(counts.fleets)],
     ['Jump points', system.jumps]
   ]);
   const table = $derived(SYSTEMS.map((s) => [s.name, s.jumps]));

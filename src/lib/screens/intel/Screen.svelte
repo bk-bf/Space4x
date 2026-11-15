@@ -13,9 +13,7 @@
     type Cell
   } from '#lib/ui/index.ts';
   import { drawClass } from './drawClass.ts';
-  import { applyIntelQuery, intel, STANCES, type Stance } from './intel.svelte.ts';
-
-  applyIntelQuery();
+  import { factsOf, intel, STANCES, type Stance } from './intel.svelte.ts';
 
   const group = $derived(intel.groupOf(intel.group));
   const classes = $derived((group?.classes ?? []).map((id) => intel.classOf(id)));
@@ -89,7 +87,7 @@
         <Panel title={c ? `${c.name}, ${c.likely}` : ''} body="col">
           {#if c}
             <CanvasView scale={4} height={200} draw={(fb, t) => drawClass(fb, c.look, t)} />
-            <DefList rows={c.facts} />
+            <DefList rows={factsOf(c)} />
           {/if}
         </Panel>
       {/each}

@@ -15,7 +15,6 @@ export interface BodyFacts {
   surface: string;
   air: string;
   size: string;
-  people: string;
 }
 
 export interface Body {
@@ -30,12 +29,13 @@ export interface Body {
   tilt?: number;
   rings?: boolean;
   surveyed?: boolean;
+  parent?: string;
+  colony?: boolean;
   facts: BodyFacts;
 }
 
 export interface Ship {
   name: string;
-  className: string;
   classId: string;
   fuel: number;
   status: string;
@@ -63,13 +63,11 @@ export interface Fleet {
   system: string;
   name: string;
   kind: FleetKind;
-  classId: string;
   note: string;
   activity: string;
   meters: FleetMeters;
   orders: Order[];
   ships: Ship[];
-  speedKmS: number;
   cargo?: string;
   at?: string;
   x: number;
@@ -217,9 +215,7 @@ export interface Governor {
 }
 
 export interface ColonyEnvironment {
-  air: string;
-  gravity: string;
-  surface: string;
+  domed: boolean;
   note: string;
 }
 
@@ -230,9 +226,6 @@ export interface TradeBalance {
 
 export interface Colony {
   id: string;
-  name: string;
-  system: string;
-  planet: PlanetType;
   moon: boolean;
   population: number;
   birthRate: number;
