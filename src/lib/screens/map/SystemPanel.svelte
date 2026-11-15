@@ -34,7 +34,7 @@
   }
 </script>
 
-<Window id="side" title="System" icon="map" home="left" width={290} floatAt={() => [10, 10]}>
+<Window id="side" title="System" heading="" icon="map" home="left" width={290} floatAt={() => [10, 10]}>
   {#snippet tools()}
     <select
       class="tools"
@@ -116,6 +116,10 @@
 </Window>
 
 <style>
+  #sysSel {
+    flex: none;
+    field-sizing: content;
+  }
   [data-ship] {
     cursor: pointer;
   }

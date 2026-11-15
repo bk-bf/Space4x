@@ -4,6 +4,7 @@ import {
   canCarry,
   FUEL_PER_UNIT,
   orderLabel,
+  parkingSlot,
   REFUEL_PER_DAY,
   resolveGoal,
   workSeconds,
@@ -46,8 +47,8 @@ function burn(f: Fleet, units: number): void {
   for (const s of f.ships) s.fuel = Math.max(0, s.fuel - used);
 }
 
-function park(f: Fleet, body: Body, elapsed: number): void {
-  Object.assign(f, parkingSpot(f, body, elapsed));
+function park(game: Game, f: Fleet, body: Body): void {
+  Object.assign(f, parkingSpot(f, body, game.elapsed, parkingSlot(game, f, body.id)));
 }
 
 function travel(r: Run, goal: Goal): boolean {
@@ -223,7 +224,7 @@ function runFleet(game: Game, f: Fleet, dt: number): void {
   }
   if (!f.orders.length) idle(game, f);
   const home = f.at ? game.body(f.at) : undefined;
-  if (home) park(f, home, game.elapsed);
+  if (home) park(game, f, home);
 }
 
 registerSystem('fleets', (game, dt) => {

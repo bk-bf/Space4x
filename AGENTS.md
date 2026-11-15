@@ -34,9 +34,11 @@ Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` synta
 `game` (from `#lib/game/index.ts`) is the one `Game`. Its fields are runes, so components read them directly and update when they change.
 
 - `game.time` (ms, UTC), `game.elapsed` (game seconds since the start), `game.running`, `game.step` (seconds)
-- `game.world`: `bodies`, `fleets`, `contacts`, `systems`, `system`; `game.events`; `game.status` (the top bar chips)
+- `game.world`: `bodies`, `fleets`, `contacts` (each names its `system`), `systems` (stars, belt, jump points), `system` (the one the map shows); `game.events`; `game.status` (the top bar chips)
+- `game.body(id)`, `game.fleet(id)`, `game.contact(id)`, `game.starSystem(id)`, `game.jump(id)`, `game.systemOf(selection)`
+- a fleet's `orders` are `{ id, type, target, done }`; `addOrder`, `moveOrder`, `removeOrder`, `clearOrders`, `orderLabel`, `orderTargets` and `orderEtas` from `#lib/game/index.ts` edit and describe them, and the `fleets` system carries them out
 - `game.selection`: `{ kind: 'fleet' | 'body' | 'contact', id }`; set it with `select(kind, id)` from `#lib/ui/index.ts`, which also shows the Selection window
-- `game.advance(seconds)`, `game.setStep(seconds)` (single-steps when paused), `game.run()`, `game.pause()`, `game.toggleRunning()`, `game.log(category, text, warn)`
+- `game.advance(seconds)`, `game.setStep(seconds)` (single-steps when paused), `game.run()`, `game.pause()`, `game.toggleRunning()`, `game.log(category, text, warn, { at, subject })` (an event files by its time; a `subject` makes it select that object when clicked)
 
 While running, the loop advances `game.step` of game time per real second, ten ticks a second.
 
@@ -53,7 +55,7 @@ registerSystem('research', (_game, dt) => {
 });
 ```
 
-`screens/index.ts` loads every `screens/*/system.ts`, so nothing shared needs editing. Registering a name again replaces the earlier function. Systems run in the order they are registered; `orbits` and `fleets` run first. Test a system with vitest by building a `new Game()` and calling `advance`.
+`screens/index.ts` loads every `screens/*/system.ts`, so nothing shared needs editing. Registering a name again replaces the earlier function. Systems run in the order they are registered; `orbits`, `fleets` and `contacts` run first. Test a system with vitest by building a `new Game()` and calling `advance`.
 
 ## Adding a screen
 

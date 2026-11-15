@@ -75,7 +75,11 @@ export class LabelLayer {
         [cx - rx - 6 - w, cy - h / 2, 0, 0],
         [cx - w / 2, cy - ry - 4 - h, 0, 0],
         [cx + rx + 6, cy + ry, 0, 0],
-        [cx + rx + 6, cy - ry - h, 0, 0]
+        [cx + rx + 6, cy - ry - h, 0, 0],
+        [cx - rx - 6 - w, cy + ry, 0, 0],
+        [cx - rx - 6 - w, cy - ry - h, 0, 0],
+        [cx - w / 2, cy + ry + 6 + h, 0, 0],
+        [cx - w / 2, cy - ry - 6 - 2 * h, 0, 0]
       ];
       const visible =
         names &&

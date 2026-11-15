@@ -19,7 +19,7 @@ pnpm dev
 
 `pnpm build` writes a single-page static site to `build/`; `pnpm preview` serves it.
 
-The URL query selects a state, the same as in the mockup: `?screen=economy`, `?sel=body:mars`, `?sel=contact:C-014`, `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&cls=lighthouse`. Adding `check` runs the layout check and prints its result in the bottom left corner.
+The URL query selects a state, the same as in the mockup: `?screen=economy`, `?sel=body:mars`, `?sel=contact:C-014`, `?sys=acen` (the system the map shows), `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&cls=lighthouse`. Adding `check` runs the layout check and prints its result in the bottom left corner.
 
 `/dev/primitives` shows the shared panel, table, meter, tab and canvas primitives on one page.
 

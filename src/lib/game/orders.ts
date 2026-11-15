@@ -44,6 +44,10 @@ export function orderTargets(game: Game, f: Fleet, type: OrderType): OrderTarget
   return named(bodies.filter(isColony));
 }
 
+export function parkingSlot(game: Game, f: Fleet, bodyId: string): number {
+  return game.world.fleets.filter((o) => o === f || (o.at === bodyId && o.system === f.system)).indexOf(f);
+}
+
 export interface Goal {
   x: number;
   y: number;
@@ -63,7 +67,7 @@ export function resolveGoal(game: Game, f: Fleet, o: Order): Goal | undefined {
   const b = game.body(o.target);
   if (b) {
     if (b.system !== f.system) return undefined;
-    const spot = parkingSpot(f, b, game.elapsed);
+    const spot = parkingSpot(f, b, game.elapsed, parkingSlot(game, f, b.id));
     return { x: spot.x, y: spot.y, name: b.name, body: b };
   }
   const j = o.type === 'move' ? game.jump(o.target) : undefined;
