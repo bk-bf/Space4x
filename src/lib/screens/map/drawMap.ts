@@ -448,7 +448,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     }
     const b = under(P);
     if (b) {
-      b.list.push(line);
+      if (cam.tier !== 'far') b.list.push(line);
       continue;
     }
     if (host || !vis(P, 20)) continue;
@@ -466,6 +466,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       ry: half,
       sel: chosen,
       pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      solid: cam.tier !== 'far',
       target: key,
       ...picks
     });

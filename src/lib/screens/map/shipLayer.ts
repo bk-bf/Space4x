@@ -66,9 +66,17 @@ const FRAMES_PER_TICK = 3;
 export const classSpec = (id: string | undefined): ShipSpec | undefined =>
   id ? (shipClass(id) ?? ALIEN_SPECS[id]) : undefined;
 
+const lengths = new WeakMap<ShipSpec, number>();
+
+function lengthOf(spec: ShipSpec): number {
+  let m = lengths.get(spec);
+  if (m === undefined) lengths.set(spec, (m = shipLengthMetres(spec)));
+  return m;
+}
+
 export function shipLook(spec: ShipSpec | undefined, pxPerMetre: number, tier: Tier): ShipLook {
   if (!spec || tier === 'far') return 'marker';
-  return shipLengthMetres(spec) * pxPerMetre > ICON_PX ? 'true' : 'icon';
+  return lengthOf(spec) * pxPerMetre > ICON_PX ? 'true' : 'icon';
 }
 
 export function fleetShips(fleet: Fleet): ShipPlace[] {
@@ -156,7 +164,7 @@ export function drawShip(
     return [ICON_PX / 2, ICON_PX / 2];
   }
   drawTopdown(f, spec, { ...o, x: X, y: Y, angle: ship.heading, pxPerMetre: view.pxPerMetre });
-  const half = (shipLengthMetres(spec) * view.pxPerMetre) / 2,
+  const half = (lengthOf(spec) * view.pxPerMetre) / 2,
     beam = (shipBeamMetres(spec) * view.pxPerMetre) / 2,
     c = Math.abs(Math.cos(ship.heading)),
     s = Math.abs(Math.sin(ship.heading));
