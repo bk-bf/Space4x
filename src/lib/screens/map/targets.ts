@@ -1,4 +1,5 @@
 import { bodyPosition, game, parkingRadius, type Game } from '#lib/game/index.ts';
+import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { Located, Point, Target } from './mapCamera';
 
 export const target = (kind: string, id: string | number): Target => `${kind}:${id}`;
@@ -60,6 +61,7 @@ const STAR_FILL = 0.3;
 const BODY_FILL = 0.25;
 const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
+const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
 
 export function systemExtent(g: Game, system: string): number {
   const sys = g.starSystem(system);
@@ -73,7 +75,7 @@ export function systemExtent(g: Game, system: string): number {
 
 function innerExtent(g: Game, system: string): number {
   const rocky = g.world.bodies
-    .filter((b) => b.system === system && !b.parent && b.type !== 'gas' && b.type !== 'saturn')
+    .filter((b) => b.system === system && !b.parent && !GIANTS.includes(b.type))
     .map((b) => b.orbit);
   return rocky.length ? Math.max(...rocky) * INNER_MARGIN : systemExtent(g, system) / 4;
 }

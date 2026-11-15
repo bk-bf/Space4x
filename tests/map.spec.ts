@@ -10,6 +10,21 @@ const label = (page: Page, text: string) =>
 const zoomNow = (page: Page) => page.locator('#zoomNow');
 const mpp = async (page: Page) => Number(await zoomNow(page).getAttribute('data-mpp'));
 const camFocus = (page: Page) => page.locator('#mapCam dd').first();
+
+async function settled(page: Page): Promise<number> {
+  await expect
+    .poll(
+      async () => {
+        const at = async () => `${await mpp(page)} ${await page.locator('#mapCam').textContent()}`;
+        const a = await at();
+        await page.waitForTimeout(250);
+        return a === (await at());
+      },
+      { timeout: 10_000 }
+    )
+    .toBe(true);
+  return mpp(page);
+}
 const orderRows = (page: Page) => win(page, 'sel').locator('table').nth(1).locator('tr');
 const step = (page: Page, text: string) =>
   page.locator('#steps button', { hasText: new RegExp(`^${text}$`) });
@@ -259,7 +274,7 @@ test('the map pans by drag, flies to a double-clicked label and moves contacts a
   await label(page, 'Jupiter').dblclick();
   await expect(heading(page)).toHaveText('Jupiter');
   await expect(camFocus(page)).toHaveText('Jupiter');
-  await expect.poll(() => mpp(page), { timeout: 6000 }).toBeLessThan(2e6);
+  expect(await settled(page)).toBeLessThan(2e6);
   const jupiter = (await label(page, 'Jupiter').boundingBox())!;
   expect(Math.abs(jupiter.y + jupiter.height / 2 - centre.y)).toBeLessThan(40);
 
@@ -289,7 +304,7 @@ test('the wheel eases the zoom about the cursor and snaps to the body under it',
   await expect(camFocus(page)).toHaveText('free');
 
   await page.locator('[data-zoom="0"]').click();
-  await expect.poll(() => mpp(page), { timeout: 6000 }).toBeGreaterThan(1e10);
+  expect(await settled(page)).toBeGreaterThan(1e10);
   const saturn = await centreOf(page, 'Saturn');
   await page.mouse.move(saturn.x, saturn.y);
   await page.mouse.wheel(0, -100);
@@ -304,12 +319,12 @@ test('a preset flies the camera to its target and the scale box keeps its width'
   await expect(page.locator('#presets button')).toContainText(['System', 'Inner system', 'Sun', 'Earth']);
   await page.locator('#presets [data-preset="earth"]').click();
   await expect(camFocus(page)).toHaveText('Earth');
-  await expect.poll(() => mpp(page), { timeout: 6000 }).toBeLessThan(2e5);
-  const earthMpp = await mpp(page);
+  const earthMpp = await settled(page);
+  expect(earthMpp).toBeLessThan(2e5);
   expect((await page.locator('#mapScale').boundingBox())!.width).toBe(width);
   await page.locator('#presets [data-preset="convoy"]').click();
   await expect(camFocus(page)).toHaveText('Freight convoy');
-  await expect.poll(() => mpp(page), { timeout: 6000 }).toBeGreaterThan(earthMpp * 1.2);
+  expect(await settled(page)).toBeGreaterThan(earthMpp * 1.2);
   await expect(label(page, 'Freight convoy')).toBeVisible();
   await expect(label(page, 'Earth')).toBeVisible();
   await shoot(page, 'map-fleet-in-earth-orbit');
@@ -323,11 +338,9 @@ test('zooming into the Sun stops at its surface and fills the view with it', asy
   const centre = await freeCentre(page);
   await page.mouse.move(centre.x, centre.y);
   for (let i = 0; i < 30; i++) await page.mouse.wheel(0, -150);
-  await page.waitForTimeout(800);
-  const floor = await mpp(page);
+  const floor = await settled(page);
   for (let i = 0; i < 10; i++) await page.mouse.wheel(0, -150);
-  await page.waitForTimeout(800);
-  expect(await mpp(page)).toBeCloseTo(floor, -2);
+  expect(await settled(page)).toBeCloseTo(floor, -2);
   const hot = await page.evaluate(() => {
     const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
     const d = cv.getContext('2d')!.getImageData(cv.width / 2 - 40, cv.height / 2 - 40, 80, 80).data;

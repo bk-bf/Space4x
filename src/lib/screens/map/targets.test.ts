@@ -15,6 +15,13 @@ describe('map presets', () => {
     expect(extent / 10 ** p.L).toBeGreaterThan(H / 2 - 20);
   });
 
+  it('fits the rocky bodies and the belt, not the giants, in the Inner system view', () => {
+    const p = presetFor(g, 'inner', W, H)!,
+      ceres = g.body('ceres')!.orbit;
+    expect(ceres / 10 ** p.L).toBeLessThan(H / 2);
+    expect(ceres / 10 ** p.L).toBeGreaterThan(H / 4);
+  });
+
   it('offers the star, every colony and every fleet of the shown system', () => {
     const ids = presets(g, W, H).map((p) => p.label);
     expect(ids.slice(0, 3)).toEqual(['System', 'Inner system', 'Sun']);
