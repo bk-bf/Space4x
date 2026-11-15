@@ -3,6 +3,22 @@ import './systems/fleets';
 import './systems/contacts';
 
 export { Game, game, advance } from './state.svelte';
+export {
+  buildOf,
+  className,
+  classBuild,
+  classes,
+  ClassRegistry,
+  classInUse,
+  classStats,
+  fleetClassId,
+  fleetSpeed,
+  registerClassUse,
+  shipClass,
+  shipClasses,
+  statsFor,
+  type ClassBuild
+} from './classes.svelte';
 export { registerSystem, systemNames, type System } from './systems';
 export { registerStatus, STATUS_IDS, type StatusId, type StatusSource } from './status';
 export { startLoop, TICK_MS } from './loop';

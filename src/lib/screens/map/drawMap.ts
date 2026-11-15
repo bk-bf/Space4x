@@ -1,7 +1,9 @@
 import {
   bodyPosition,
   FLEET_SENSOR,
+  fleetClassId,
   resolveGoal,
+  shipClass,
   type Contact,
   type Fleet,
   type Game,
@@ -13,7 +15,6 @@ import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { planet } from '#lib/gfx/planets.ts';
 import { C } from '#lib/gfx/ships/colors.ts';
 import { drawShip, measure } from '#lib/gfx/ships/draw.ts';
-import { spec } from '#lib/gfx/ships/specs.ts';
 import { sun } from '#lib/gfx/sun.ts';
 import { select } from '#lib/ui/index.ts';
 import { camera, layers, SHIP_ZOOM, viewCentre } from './camera.svelte';
@@ -167,10 +168,10 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
     const x = X(fl.x),
       y = Y(fl.y),
       chosen = sel.kind === 'fleet' && sel.id === fl.id;
+    const sp = shipClass(fleetClassId(fl) ?? '');
     let bw: number, bh: number;
-    if (z >= SHIP_ZOOM) {
-      const sp = spec(fl.classId),
-        m = measure(sp);
+    if (z >= SHIP_ZOOM && sp) {
+      const m = measure(sp);
       drawShip(f, Math.round(x - m.w / 2) - m.x0, Math.round(y - (m.y0 + m.y1) / 2), sp, A);
       bw = m.w / 2 + 3;
       bh = m.h / 2 + 3;

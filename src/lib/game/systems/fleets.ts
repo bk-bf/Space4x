@@ -1,3 +1,4 @@
+import { fleetSpeed } from '../classes.svelte';
 import { DAY } from '../clock';
 import { KM_PER_UNIT, parkingSpot } from '../orbits';
 import {
@@ -65,7 +66,7 @@ function travel(r: Run, goal: Goal): boolean {
     return false;
   }
   if (Math.abs(dx) > 1e-9) f.heading = dx > 0 ? 1 : -1;
-  const speed = f.speedKmS / KM_PER_UNIT,
+  const speed = fleetSpeed(f) / KM_PER_UNIT,
     need = dist / speed;
   if (need <= left(r)) {
     f.x = goal.x;

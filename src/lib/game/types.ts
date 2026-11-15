@@ -36,7 +36,6 @@ export interface Body {
 
 export interface Ship {
   name: string;
-  className: string;
   classId: string;
   fuel: number;
   status: string;
@@ -64,13 +63,11 @@ export interface Fleet {
   system: string;
   name: string;
   kind: FleetKind;
-  classId: string;
   note: string;
   activity: string;
   meters: FleetMeters;
   orders: Order[];
   ships: Ship[];
-  speedKmS: number;
   cargo?: string;
   at?: string;
   x: number;

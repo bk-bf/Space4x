@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CanvasView } from '#lib/ui/index.ts';
-  import type { ShipClass } from './design.ts';
+  import type { ShipClass } from '#lib/game/design.ts';
   import { cardScale, drawCard } from './drawDesign.ts';
 
   let { ship, on, onpick }: { ship: ShipClass; on: boolean; onpick: () => void } = $props();

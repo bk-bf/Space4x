@@ -1,6 +1,6 @@
-import { game } from '#lib/game/index.ts';
-import type { BowKey, CoreKey } from '#lib/gfx/ships/parts.ts';
 import { SPECS } from '#lib/gfx/ships/specs.ts';
+import { classInUse, classes, ClassRegistry, game } from '#lib/game/index.ts';
+import type { BowKey, CoreKey } from '#lib/gfx/ships/parts.ts';
 import {
   HULLS,
   MAX_SECTIONS,
@@ -25,7 +25,7 @@ import {
   type Selection,
   type ShipClass,
   type Slot
-} from './design.ts';
+} from '#lib/game/design.ts';
 
 export type Drag = { kind: 'palette'; item: PaletteItem } | { kind: 'section'; index: number };
 
@@ -34,16 +34,20 @@ export const GALLERY_PAGE = 8;
 const FIRST_CLASS = 'bastion';
 
 export class Designer {
-  saved = $state.raw<readonly ShipClass[]>(SPECS.map((s) => asClass(s)));
   draft = $state.raw<ShipClass>(asClass(SPECS.find((s) => s.id === FIRST_CLASS)!));
   baseId = $state<string | null>(FIRST_CLASS);
   selection = $state.raw<Selection>({ kind: 'section', index: 0, slot: 'top' });
   drag = $state.raw<Drag | null>(null);
   page = $state(0);
-  private counter = 0;
+
+  constructor(private readonly registry: ClassRegistry = classes) {}
+
+  get saved(): readonly ShipClass[] {
+    return this.registry.saved;
+  }
 
   get base(): ShipClass | undefined {
-    return this.saved.find((c) => c.id === this.baseId);
+    return this.baseId ? this.registry.find(this.baseId) : undefined;
   }
 
   get pageCount(): number {
@@ -69,7 +73,7 @@ export class Designer {
   }
 
   get inService(): boolean {
-    return !!this.baseId && game.world.fleets.some((f) => f.classId === this.baseId);
+    return !!this.baseId && classInUse(game, this.baseId);
   }
 
   get canDelete(): boolean {
@@ -98,20 +102,20 @@ export class Designer {
     const role = this.draft.role.trim() || 'Unassigned';
     if (this.base) {
       const next = { ...this.draft, id: this.base.id, name, role };
-      this.saved = this.saved.map((c) => (c.id === next.id ? next : c));
+      this.registry.replace(next);
       this.draft = next;
       return;
     }
-    const next = { ...this.draft, id: `custom-${++this.counter}`, name, role };
-    this.saved = [...this.saved, next];
+    const next = { ...this.draft, id: this.registry.newId(), name, role };
+    this.registry.add(next);
     this.draft = next;
     this.baseId = next.id;
     this.showBase();
   }
 
   copy(): void {
-    const next = { ...this.draft, id: `custom-${++this.counter}`, name: `${this.draft.name} copy` };
-    this.saved = [...this.saved, next];
+    const next = { ...this.draft, id: this.registry.newId(), name: `${this.draft.name} copy` };
+    this.registry.add(next);
     this.open(next, next.id);
   }
 
@@ -119,7 +123,7 @@ export class Designer {
     if (!this.canDelete) return;
     const id = this.baseId;
     const at = this.saved.findIndex((c) => c.id === id);
-    this.saved = this.saved.filter((c) => c.id !== id);
+    if (id) this.registry.remove(id);
     this.setPage(this.page);
     const next = this.saved[Math.min(at, this.saved.length - 1)];
     if (next) this.open(next, next.id);

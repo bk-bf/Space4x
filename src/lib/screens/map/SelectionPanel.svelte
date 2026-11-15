@@ -2,8 +2,10 @@
   import {
     addOrder,
     bearing,
+    className,
     clearOrders,
     formatAu,
+    fleetSpeed,
     formatEventTime,
     game,
     isColony,
@@ -61,7 +63,7 @@
   function fleetFacts(f: Fleet): [string, string][] {
     const rows: [string, string][] = [
       ['Doing', f.activity],
-      ['Speed', km(f.speedKmS)]
+      ['Speed', km(fleetSpeed(f))]
     ];
     if (f.kind === 'civ')
       rows.push(
@@ -124,7 +126,7 @@
   const shipRows = $derived(
     (fleet?.ships ?? []).map((s): Cell[] => [
       s.name,
-      s.className,
+      className(s.classId),
       { meter: Math.round(s.fuel) },
       { text: s.status, warn: s.status === 'Low fuel' || s.status === 'Out of fuel' }
     ])

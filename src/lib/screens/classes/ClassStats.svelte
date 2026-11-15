@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DefList } from '#lib/ui/index.ts';
-  import { designStats, weaponSummary } from './design.ts';
+  import { designStats, weaponSummary } from '#lib/game/design.ts';
   import { designer } from './designer.svelte.ts';
 
   const stats = $derived(designStats(designer.draft));

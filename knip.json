@@ -6,7 +6,6 @@
     "src/lib/*/index.ts",
     "src/lib/screens/*/Screen.svelte",
     "src/lib/screens/*/system.ts",
-    "src/lib/screens/*/index.ts",
     "src/**/*.test.ts",
     "tests/**/*.spec.ts",
     "tools/**/*.mjs",

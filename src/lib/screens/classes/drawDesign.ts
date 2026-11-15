@@ -15,7 +15,7 @@ import {
   type SternKey
 } from '#lib/gfx/ships/parts.ts';
 import type { ShipSpec } from '#lib/gfx/ships/specs.ts';
-import { PALETTE, type Selection } from './design.ts';
+import { PALETTE, type Selection } from '#lib/game/design.ts';
 import { frameOf } from './geometry.ts';
 
 export const PARTS_W = 120;

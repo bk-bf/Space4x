@@ -1,4 +1,5 @@
-import { game, type Game } from '#lib/game/index.ts';
+import { classStats, game, registerClassUse, type Game } from '#lib/game/index.ts';
+import { weaponSummary } from '#lib/game/design.ts';
 import { shell } from '#lib/ui/index.ts';
 
 export const STANCES = ['Unknown', 'Hostile', 'Wary', 'Neutral', 'Friendly', 'Allied'] as const;
@@ -10,7 +11,7 @@ export interface ContactClass {
   name: string;
   likely: string;
   look: string;
-  facts: readonly (readonly [string, string])[];
+  facts?: readonly (readonly [string, string])[];
 }
 
 export interface Group {
@@ -67,23 +68,13 @@ export const CLASSES: readonly ContactClass[] = [
     id: 'hauler',
     name: 'Hauler',
     likely: 'bulk freight',
-    look: 'atlas',
-    facts: [
-      ['Length', 'about 240 m'],
-      ['Top speed seen', '900 km/s'],
-      ['Weapons seen', 'None']
-    ]
+    look: 'atlas'
   },
   {
     id: 'tanker',
     name: 'Tanker',
     likely: 'fuel transport',
-    look: 'mule',
-    facts: [
-      ['Length', 'about 180 m'],
-      ['Top speed seen', '1,100 km/s'],
-      ['Weapons seen', 'None']
-    ]
+    look: 'mule'
   }
 ];
 
@@ -247,6 +238,18 @@ export class Intel {
     return true;
   }
 }
+
+export function factsOf(c: ContactClass): readonly (readonly [string, string])[] {
+  const stats = classStats(c.look);
+  if (!stats) return c.facts ?? [];
+  return [
+    ['Length', `about ${stats.length} m`],
+    ['Top speed seen', `${stats.speed.toLocaleString('en-US')} km/s`],
+    ['Weapons seen', weaponSummary(stats.weapons)]
+  ];
+}
+
+registerClassUse((id) => CLASSES.some((c) => c.look === id));
 
 export const intel = new Intel();
 

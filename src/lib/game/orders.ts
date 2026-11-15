@@ -1,3 +1,4 @@
+import { fleetSpeed } from './classes.svelte';
 import { DAY } from './clock';
 import { KM_PER_UNIT, parkingSpot, type Point } from './orbits';
 import type { Game } from './state.svelte';
@@ -112,9 +113,10 @@ export function workSeconds(game: Game, f: Fleet, o: Order, fuel = f.meters.fuel
   return 0;
 }
 
-export const travelSeconds = (f: Fleet, units: number): number => (units * KM_PER_UNIT) / f.speedKmS;
+export const travelSeconds = (f: Fleet, units: number): number => (units * KM_PER_UNIT) / fleetSpeed(f);
 
 function formatEta(seconds: number): string {
+  if (!Number.isFinite(seconds)) return 'never';
   if (seconds < 60) return 'now';
   if (seconds < DAY) return `+${Math.max(1, Math.round(seconds / 3600))} h`;
   return `+${(seconds / DAY).toFixed(1)} d`;

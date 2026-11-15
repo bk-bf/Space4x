@@ -4,7 +4,7 @@
   import { DefList, Table, type Cell } from '#lib/ui/index.ts';
   import { addSlipway, cancelBuild, cancelTask, expandYard, retoolYard, startBuild } from './actions.ts';
   import Bar from './Bar.svelte';
-  import { SHIP_CLASSES, shipClass } from './catalog.ts';
+  import { buildClass, buildClasses } from './catalog.ts';
   import Cols from './Cols.svelte';
   import { colonyName } from './lookup.ts';
   import { formatCount, formatDate, formatYears } from './format.ts';
@@ -35,7 +35,7 @@
   const slip = $derived(
     yard?.slipways.find((s) => s.id === slipId) ?? yard?.slipways.find((s) => !s.build) ?? yard?.slipways[0]
   );
-  const classes = $derived(yard ? SHIP_CLASSES.filter((c) => canYardBuild(yard, c.id)) : []);
+  const classes = $derived(yard ? buildClasses().filter((c) => canYardBuild(yard, c.id)) : []);
   const chosen = $derived(
     classes.find((c) => c.id === classId) ?? classes.find((c) => c.id === yard?.tooled) ?? classes[0]
   );
@@ -56,7 +56,7 @@
       y.kind === 'commercial' ? 'Commercial' : 'Naval',
       formatCount(y.capacity),
       y.slipways.length,
-      shipClass(y.tooled).name,
+      buildClass(y.tooled).name,
       yardStatus(y)
     ])
   );
@@ -67,7 +67,7 @@
           const b = s.build;
           return [
             s.id,
-            b ? shipClass(b.classId).name : retooling(yard) ? 'Retooling' : 'Free',
+            b ? buildClass(b.classId).name : retooling(yard) ? 'Retooling' : 'Free',
             b ? { pct: Math.round((b.done / b.total) * 100) } : '-',
             b ? formatCount(b.total) : '-',
             b ? formatDate(buildFinish(colony, economy, yard, s, game.time)) : '-',
@@ -89,7 +89,9 @@
   );
 
   const builtRows = $derived<Cell[][]>(
-    SHIP_CLASSES.filter((c) => colony.built[c.id]).map((c) => [c.name, c.role, colony.built[c.id] ?? 0])
+    buildClasses()
+      .filter((c) => colony.built[c.id])
+      .map((c) => [c.name, c.role, colony.built[c.id] ?? 0])
   );
 
   const build = () => yard && slip && chosen && startBuild(colony, yard.id, slip.id, chosen.id);
@@ -157,7 +159,7 @@
       </Bar>
       <DefList
         rows={[
-          ['Tooled for', shipClass(yard.tooled).name],
+          ['Tooled for', buildClass(yard.tooled).name],
           ['Size', chosen ? `${formatCount(chosen.tons)} t` : '-'],
           ['Cost', chosen ? `${formatCount(chosen.bp)} BP` : '-'],
           ['Time on a slipway', chosen ? formatYears(chosen.bp / slipwayRate(colony, economy)) : '-']

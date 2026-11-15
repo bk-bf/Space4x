@@ -1,4 +1,4 @@
-import { DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
+import { className, DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
 import { hash } from '#lib/gfx/math.ts';
 import { shell } from '#lib/ui/index.ts';
 
@@ -72,7 +72,7 @@ export function postOptions(kind: PostKind, g: Game): PostOption[] {
   if (kind === 'fleet') return g.world.fleets.map((f) => ({ kind, ref: f.id, label: f.name, where: '' }));
   if (kind === 'ship')
     return g.world.fleets.flatMap((f) =>
-      f.ships.map((s) => ({ kind, ref: s.name, label: s.name, where: `${s.className}, ${f.name}` }))
+      f.ships.map((s) => ({ kind, ref: s.name, label: s.name, where: `${className(s.classId)}, ${f.name}` }))
     );
   if (kind === 'governor')
     return g.world.bodies

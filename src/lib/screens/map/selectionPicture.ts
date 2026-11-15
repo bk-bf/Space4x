@@ -1,10 +1,10 @@
-import type { Game, Selection } from '#lib/game/index.ts';
+import { fleetClassId, shipClass, type Game, type Selection } from '#lib/game/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { planet } from '#lib/gfx/planets.ts';
 import { stars } from '#lib/gfx/scenes.ts';
 import { shipCentered, silhouette } from '#lib/gfx/ships/draw.ts';
-import { ALIEN_SPECS, spec } from '#lib/gfx/ships/specs.ts';
+import { ALIEN_SPECS } from '#lib/gfx/ships/specs.ts';
 
 export const PICTURE_W = 140;
 export const PICTURE_H = 72;
@@ -23,7 +23,8 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
   if (sel.kind === 'fleet') {
     const fleet = game.fleet(sel.id);
     stars(f, t, 26);
-    if (fleet) shipCentered(f, spec(fleet.classId), t);
+    const cls = fleet ? shipClass(fleetClassId(fleet) ?? '') : undefined;
+    if (cls) shipCentered(f, cls, t);
   } else if (sel.kind === 'body') {
     const b = game.body(sel.id);
     f.start();

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { game, type Selection } from '#lib/game/index.ts';
+  import { className, game, type Selection } from '#lib/game/index.ts';
   import { select, Table, Tabs, Window } from '#lib/ui/index.ts';
   import { camera, layers, resetCamera, toggleLayer, zoomBy, type Layer } from './camera.svelte';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
@@ -67,7 +67,7 @@
                   onclick={() => focus(fleetSel(f.id))}
                   onkeydown={(e) => onKey(e, f.id)}
                 >
-                  <span>{s.name}</span><span>{s.className}</span>
+                  <span>{s.name}</span><span>{className(s.classId)}</span>
                 </div>
               {/each}
             </details>

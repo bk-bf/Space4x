@@ -13,7 +13,7 @@ import type {
   Yard,
   YardTask
 } from '#lib/game/types.ts';
-import { GOODS, ITEMS, MINERALS, SECTORS, item, shipClass, type ItemDef, type Sector } from './catalog.ts';
+import { GOODS, ITEMS, MINERALS, SECTORS, item, buildClass, type ItemDef, type Sector } from './catalog.ts';
 
 export const YEAR = 365 * DAY;
 export const MINE_OUTPUT = 250;
@@ -184,10 +184,10 @@ export const expansionCost = (y: Yard): number =>
   Math.round(expansionStep(y) * (y.kind === 'commercial' ? 0.12 : 0.7));
 
 export const retoolCost = (y: Yard, classId: string): number =>
-  Math.round(200 + Math.abs(shipClass(classId).tons - shipClass(y.tooled).tons) * 0.05);
+  Math.round(200 + Math.abs(buildClass(classId).tons - buildClass(y.tooled).tons) * 0.05);
 
 export const canYardBuild = (y: Yard, classId: string): boolean => {
-  const cls = shipClass(classId);
+  const cls = buildClass(classId);
   return cls.tons <= y.capacity && (y.kind === 'naval' || cls.kind === 'commercial');
 };
 
@@ -220,7 +220,7 @@ export const taskLabel = (t: YardTask, y: Yard): string => {
   if (t.kind === 'slipway') return 'Add slipway';
   if (t.kind === 'capacity')
     return `Expand capacity by ${(t.amount ?? expansionStep(y)).toLocaleString('en-US')} t`;
-  return `Retool to ${t.classId ? shipClass(t.classId).name : ''}`;
+  return `Retool to ${t.classId ? buildClass(t.classId).name : ''}`;
 };
 
 export interface TradeSummary {
@@ -437,7 +437,7 @@ function runYard(
     if (build.done < build.total - 1e-9) continue;
     slip.build = null;
     c.built[build.classId] = (c.built[build.classId] ?? 0) + 1;
-    const cls = shipClass(build.classId);
+    const cls = buildClass(build.classId);
     log('factory', `${yard.name} finished ${article(cls.name)} ${cls.role.toLowerCase()}.`);
   }
 }
@@ -455,7 +455,7 @@ function finishTask(yard: Yard, task: YardTask, log: Log): void {
     log('factory', `${yard.name} can now build ships up to ${yard.capacity.toLocaleString('en-US')} t.`);
   } else if (task.classId) {
     yard.tooled = task.classId;
-    log('factory', `${yard.name} finished retooling for the ${shipClass(task.classId).name}.`);
+    log('factory', `${yard.name} finished retooling for the ${buildClass(task.classId).name}.`);
   }
 }
 
