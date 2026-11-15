@@ -87,7 +87,7 @@ describe('Game', () => {
     g.advance(30 * DAY);
     const after = bodyPosition(g.body('earth')!, g.world.bodies);
     expect(after).not.toEqual(before);
-    expect(Math.hypot(...after)).toBeCloseTo(74, 6);
+    expect(Math.hypot(...after) / g.body('earth')!.orbit).toBeCloseTo(1, 9);
   });
 
   it('records events at the current game time, newest first', () => {

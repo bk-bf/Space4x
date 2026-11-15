@@ -1,9 +1,9 @@
 import { fleetSpeed } from '../classes.svelte';
 import { DAY } from '../clock';
-import { KM_PER_UNIT, parkingSpot } from '../orbits';
+import { parkingSpot } from '../orbits';
 import {
   canCarry,
-  FUEL_PER_UNIT,
+  FUEL_PER_METRE,
   isColony,
   orderLabel,
   parkingSlot,
@@ -15,6 +15,7 @@ import {
 import type { Game } from '../state.svelte';
 import { registerSystem } from '../systems';
 import type { Body, Fleet, Order } from '../types';
+import { KM } from '../units';
 
 const MAX_STEPS = 32;
 const LOW_FUEL = 50;
@@ -43,8 +44,8 @@ function setActivity(f: Fleet, activity: string): void {
   for (const s of f.ships) s.status = s.fuel < LOW_FUEL ? 'Low fuel' : activity;
 }
 
-function burn(f: Fleet, units: number): void {
-  const used = units * FUEL_PER_UNIT;
+function burn(f: Fleet, metres: number): void {
+  const used = metres * FUEL_PER_METRE;
   f.meters.fuel = Math.max(0, f.meters.fuel - used);
   for (const s of f.ships) s.fuel = Math.max(0, s.fuel - used);
 }
@@ -58,15 +59,15 @@ function travel(r: Run, goal: Goal): boolean {
     dx = goal.x - f.x,
     dy = goal.y - f.y,
     dist = Math.hypot(dx, dy);
-  if (dist < 1e-6) return true;
+  if (dist < 1e-3) return true;
   if (f.meters.fuel <= 0) {
     if (f.activity !== 'Out of fuel') say(r, `${f.name} ran out of fuel.`, true);
     setActivity(f, 'Out of fuel');
     r.used = r.dt;
     return false;
   }
-  if (Math.abs(dx) > 1e-9) f.heading = dx > 0 ? 1 : -1;
-  const speed = fleetSpeed(f) / KM_PER_UNIT,
+  f.heading = Math.atan2(dy, dx);
+  const speed = fleetSpeed(f) * KM,
     need = dist / speed;
   if (need <= left(r)) {
     f.x = goal.x;
