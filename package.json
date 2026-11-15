@@ -18,7 +18,7 @@
     "knip": "svelte-kit sync && knip --no-progress",
     "format": "prettier --write src tests tools *.ts *.js",
     "format:check": "prettier --check src tests tools *.ts *.js",
-    "test": "node tools/remote/run.mjs vitest run",
+    "test": "node tools/remote/run.mjs sh -c 'vitest run && node --test tools/ci/*.test.mjs'",
     "test:layout": "node tools/remote/run.mjs playwright test"
   },
   "devDependencies": {
