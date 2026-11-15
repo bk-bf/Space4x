@@ -1,0 +1,10 @@
+[Unit]
+Description=Space4x: rebuild when dev moves
+
+[Path]
+PathChanged=@ROOT@/.git/refs/heads/dev
+PathChanged=@ROOT@/.git/refs/remotes/origin/dev
+Unit=space4x-update.service
+
+[Install]
+WantedBy=default.target

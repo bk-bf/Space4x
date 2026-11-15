@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+head=$(git rev-parse HEAD)
+if [[ ${1:-} == --if-stale ]] && [[ $(cat build/.built-head 2>/dev/null || true) == "$head" ]]; then
+  exit 0
+fi
+
+pnpm install --frozen-lockfile
+pnpm build
+echo "$head" > build/.built-head

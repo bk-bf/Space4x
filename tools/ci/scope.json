@@ -1,5 +1,6 @@
 {
   "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"],
+  "full": [".github/workflows/promote.yml"],
   "rules": [
     {
       "paths": [
@@ -8,7 +9,8 @@
         ".github/ISSUE_TEMPLATE/**",
         ".github/issue-schema.json",
         "mockup/**",
-        "deploy/**"
+        "deploy/**",
+        "install.sh"
       ],
       "legs": []
     },
@@ -27,6 +29,7 @@
       ],
       "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"]
     },
+    { "paths": ["tools/promote.mjs", "tools/serve.mjs"], "legs": ["lint", "knip", "format"] },
     { "paths": ["eslint.config.js"], "legs": ["lint"] },
     { "paths": ["knip.json"], "legs": ["knip"] },
     { "paths": [".prettierrc", ".prettierignore"], "legs": ["format"] },

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { manifest, scopeFor } from './scope.mjs';
-import { LEG_SCRIPTS, planLegs } from './gate.mjs';
+import { BASE_REF, LEG_SCRIPTS, planLegs } from './gate.mjs';
 
 const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\n').filter(Boolean);
 const ALL = Object.fromEntries(manifest.legs.map((leg) => [leg, true]));
@@ -76,4 +76,19 @@ test('every leg maps to the package script CI runs', () => {
   assert.deepEqual(Object.keys(LEG_SCRIPTS).sort(), [...manifest.legs].sort());
   for (const script of Object.values(LEG_SCRIPTS))
     assert.ok(scripts[script], `package.json has no ${script}`);
+});
+
+test('the gate diffs against dev, where changes land', () => {
+  assert.equal(BASE_REF, 'origin/dev');
+});
+
+test('the promotion workflow runs every leg on purpose and is listed as full', () => {
+  assert.deepEqual(manifest.full, ['.github/workflows/promote.yml']);
+  assert.ok(tracked.includes('.github/workflows/promote.yml'));
+});
+
+test('the browser-build files have scope rules', () => {
+  assert.deepEqual(legsOf(['install.sh', 'deploy/update', 'deploy/build']), NONE);
+  assert.deepEqual(legsOf(['tools/serve.mjs']), { ...NONE, lint: true, knip: true, format: true });
+  assert.deepEqual(legsOf(['tools/promote.mjs']), { ...NONE, lint: true, knip: true, format: true });
 });

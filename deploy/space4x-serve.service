@@ -1,0 +1,16 @@
+[Unit]
+Description=Space4x: the build that follows dev, at https://space4x.callmedaddy.dedyn.io/
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=@ROOT@
+Environment=PATH=@NODE_BIN@:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStartPre=@ROOT@/deploy/build --if-stale
+ExecStart=@NODE_BIN@/node @ROOT@/tools/serve.mjs --dir @ROOT@/build --host @HOST@ --port @PORT@
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

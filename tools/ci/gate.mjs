@@ -2,6 +2,8 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { manifest, scopeFor } from './scope.mjs';
 
+export const BASE_REF = 'origin/dev';
+
 export const LEG_SCRIPTS = {
   typecheck: 'check:types',
   lint: 'lint',
@@ -40,9 +42,9 @@ const parseArgs = (argv) => {
 };
 
 const defaultBase = () => {
-  if (!resolves('origin/main')) return null;
+  if (!resolves(BASE_REF)) return null;
   try {
-    return git('merge-base', 'HEAD', 'origin/main')[0] ?? null;
+    return git('merge-base', 'HEAD', BASE_REF)[0] ?? null;
   } catch {
     return null;
   }
@@ -73,7 +75,7 @@ const main = () => {
   const describe = all
     ? 'every leg (--all)'
     : base === null
-      ? 'no base to diff against (origin/main missing); every leg'
+      ? `no base to diff against (${BASE_REF} missing); every leg`
       : `${base} (${files.length} changed path(s): committed, staged, unstaged and untracked)`;
   process.stdout.write(`[gate] scope against ${describe}\n`);
   for (const p of runs) process.stdout.write(`[gate] run   ${p.leg}  (pnpm run ${p.script})\n`);
