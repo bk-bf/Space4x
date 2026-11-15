@@ -5,7 +5,7 @@
 </script>
 
 <div id="gallery">
-  {#each designer.saved as ship (ship.id)}
+  {#each designer.visible as ship (ship.id)}
     <ClassCard
       {ship}
       on={ship.id === designer.baseId}
@@ -19,11 +19,8 @@
 
 <style>
   #gallery {
-    max-height: 340px;
-    overflow-y: auto;
-    padding: 2px;
-    margin: -2px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--line) transparent;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 </style>

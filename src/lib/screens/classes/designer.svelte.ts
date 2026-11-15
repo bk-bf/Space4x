@@ -29,6 +29,8 @@ import {
 
 export type Drag = { kind: 'palette'; item: PaletteItem } | { kind: 'section'; index: number };
 
+export const GALLERY_PAGE = 8;
+
 const FIRST_CLASS = 'bastion';
 
 export class Designer {
@@ -37,10 +39,28 @@ export class Designer {
   baseId = $state<string | null>(FIRST_CLASS);
   selection = $state.raw<Selection>({ kind: 'section', index: 0, slot: 'top' });
   drag = $state.raw<Drag | null>(null);
+  page = $state(0);
   private counter = 0;
 
   get base(): ShipClass | undefined {
     return this.saved.find((c) => c.id === this.baseId);
+  }
+
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.saved.length / GALLERY_PAGE));
+  }
+
+  get visible(): readonly ShipClass[] {
+    return this.saved.slice(this.page * GALLERY_PAGE, (this.page + 1) * GALLERY_PAGE);
+  }
+
+  setPage(page: number): void {
+    this.page = Math.max(0, Math.min(this.pageCount - 1, page));
+  }
+
+  private showBase(): void {
+    const at = this.saved.findIndex((c) => c.id === this.baseId);
+    if (at >= 0) this.page = Math.floor(at / GALLERY_PAGE);
   }
 
   get dirty(): boolean {
@@ -59,6 +79,7 @@ export class Designer {
   private open(c: ShipClass, baseId: string | null): void {
     this.draft = c;
     this.baseId = baseId;
+    this.showBase();
     this.selection = c.parts.length ? { kind: 'section', index: 0, slot: 'top' } : { kind: 'bow' };
   }
 
@@ -85,6 +106,7 @@ export class Designer {
     this.saved = [...this.saved, next];
     this.draft = next;
     this.baseId = next.id;
+    this.showBase();
   }
 
   copy(): void {
@@ -98,6 +120,7 @@ export class Designer {
     const id = this.baseId;
     const at = this.saved.findIndex((c) => c.id === id);
     this.saved = this.saved.filter((c) => c.id !== id);
+    this.setPage(this.page);
     const next = this.saved[Math.min(at, this.saved.length - 1)];
     if (next) this.open(next, next.id);
     else this.start(HULLS[0]!.id);

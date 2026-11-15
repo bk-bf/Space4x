@@ -146,10 +146,12 @@ test.describe('ship designer', () => {
     await expect(page.locator('[data-slot="top"]')).toContainText('Cargo x3');
     await page.locator('[data-act="save"]').click();
     await expect(page.locator('#clsDirty')).toHaveCount(0);
-    await expect(cards(page)).toHaveCount(9);
+    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
+    await expect(cards(page)).toHaveCount(1);
     const card = cards(page).filter({ hasText: 'Dray' });
     await expect(card).toContainText('Ore hauler');
     await expect(card).toHaveClass(/on/);
+    await expectCleanLayout(page);
     if (SHOTS) {
       mkdirSync(SHOTS, { recursive: true });
       await page.mouse.move(0, 0);
@@ -158,9 +160,12 @@ test.describe('ship designer', () => {
 
     await page.locator('[data-nav="economy"]').click();
     await page.locator('[data-nav="classes"]').click();
-    await expect(cards(page)).toHaveCount(9);
+    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
     await expect(cards(page).filter({ hasText: 'Dray' })).toHaveClass(/on/);
     await expect(page.locator('#clsName')).toHaveValue('Dray');
+    await page.locator('[data-page="prev"]').click();
+    await expect(cards(page)).toHaveCount(8);
+    await expect(cards(page).filter({ hasText: 'Pathfinder' })).toHaveCount(1);
     await expect(sections(page)).toHaveText(['Reactor', 'Tank', 'Tank', 'Truss', 'Crew']);
     await expectCleanLayout(page);
   });
@@ -173,10 +178,12 @@ test.describe('ship designer', () => {
     await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveCount(1);
     await expect(cards(page)).toHaveCount(8);
     await page.locator('[data-act="copy"]').click();
-    await expect(cards(page)).toHaveCount(9);
+    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
     await expect(cards(page).filter({ hasText: 'Beacon copy' })).toHaveClass(/on/);
     await page.locator('[data-act="delete"]').click();
+    await expect(page.locator('#galPage')).toHaveCount(0);
     await expect(cards(page)).toHaveCount(8);
+    await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveClass(/on/);
     await cards(page).filter({ hasText: 'Bastion' }).click();
     await expect(page.locator('[data-act="delete"]')).toBeDisabled();
     await expectCleanLayout(page);

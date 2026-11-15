@@ -20,3 +20,10 @@
   <b>{ship.name}</b>
   <small>{ship.role}</small>
 </button>
+
+<style>
+  .card {
+    flex: 1 1 calc(25% - 9px);
+    min-width: 0;
+  }
+</style>

@@ -27,7 +27,7 @@ import {
   weaponSummary,
   type ShipClass
 } from './design.ts';
-import { Designer } from './designer.svelte.ts';
+import { GALLERY_PAGE, Designer } from './designer.svelte.ts';
 
 const blank: Surface = { w: 0, h: 0, px() {}, rect() {} };
 
@@ -322,5 +322,27 @@ describe('the designer store', () => {
     expect(d.selection).toMatchObject({ kind: 'section', index: 1 });
     d.shift(-1);
     expect(d.draft.parts[0]![0]).toBe('reactor');
+  });
+
+  it('pages the gallery so a ninth class opens on the second page and deleting it goes back', () => {
+    const d = new Designer();
+    expect(d.pageCount).toBe(1);
+    expect(d.visible).toHaveLength(GALLERY_PAGE);
+    d.start('frame');
+    d.save();
+    expect(d.pageCount).toBe(2);
+    expect(d.page).toBe(1);
+    expect(d.visible.map((c) => c.id)).toEqual([d.baseId]);
+    d.setPage(5);
+    expect(d.page).toBe(1);
+    d.setPage(-3);
+    expect(d.page).toBe(0);
+    d.pick('pike');
+    expect(d.page).toBe(0);
+    d.setPage(1);
+    d.pick(d.saved[GALLERY_PAGE]!.id);
+    d.remove();
+    expect(d.pageCount).toBe(1);
+    expect(d.page).toBe(0);
   });
 });

@@ -40,6 +40,23 @@
       {/snippet}
       {#snippet tools()}
         <span class="spacer"></span>
+        {#if designer.pageCount > 1}
+          <span id="galPage"
+            >{designer.saved.length} classes, page {designer.page + 1} of {designer.pageCount}</span
+          >
+          <button
+            data-page="prev"
+            aria-label="Earlier classes"
+            disabled={designer.page === 0}
+            onclick={act(() => designer.setPage(designer.page - 1))}>&lt;</button
+          >
+          <button
+            data-page="next"
+            aria-label="Later classes"
+            disabled={designer.page >= designer.pageCount - 1}
+            onclick={act(() => designer.setPage(designer.page + 1))}>&gt;</button
+          >
+        {/if}
         <button data-act="save" disabled={!designer.dirty} onclick={act(() => designer.save())}>Save</button>
         <button data-act="copy" onclick={act(() => designer.copy())}>Copy</button>
         <button
