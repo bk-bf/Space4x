@@ -18,7 +18,8 @@ export class FB implements Surface {
   readonly ctx: CanvasRenderingContext2D;
   readonly d: Uint8ClampedArray;
   private readonly img: ImageData;
-  private readonly vig: Uint8Array;
+  private readonly vigAt: Uint32Array;
+  private readonly vigLut: Uint16Array;
   private bg: Uint8ClampedArray;
 
   constructor(
@@ -36,9 +37,15 @@ export class FB implements Surface {
     if (!ctx) throw new Error('canvas 2d context unavailable');
     this.ctx = ctx;
     this.img = ctx.createImageData(w, h);
-    this.d = new Uint8ClampedArray(w * h * 4);
+    this.d = new Uint8ClampedArray(w * h * 4).fill(255);
     this.bg = this.d;
-    this.vig = vignetteMask(w, h, vignetteStart);
+    const mask = vignetteMask(w, h, vignetteStart),
+      shaded: number[] = [];
+    mask.forEach((v, i) => {
+      if (v) shaded.push(i);
+    });
+    this.vigAt = Uint32Array.from(shaded, (i) => i * 4);
+    this.vigLut = Uint16Array.from(shaded, (i) => (mask[i]! - 1) * 768);
   }
 
   px(x: number, y: number, c: RGB): void {
@@ -97,22 +104,15 @@ export class FB implements Surface {
   present(): void {
     const o = this.img.data,
       d = this.d,
-      v = this.vig,
-      vc = PAL.vig;
-    for (let i = 0, j = 0; i < v.length; i++, j += 4) {
-      let r = d[j]!,
-        g = d[j + 1]!,
-        b = d[j + 2]!;
-      const f = v[i]! * 0.21;
-      if (f) {
-        r += (vc[0] - r) * f;
-        g += (vc[1] - g) * f;
-        b += (vc[2] - b) * f;
-      }
-      o[j] = r;
-      o[j + 1] = g;
-      o[j + 2] = b;
-      o[j + 3] = 255;
+      at = this.vigAt,
+      lut = this.vigLut;
+    o.set(d);
+    for (let k = 0; k < at.length; k++) {
+      const j = at[k]!,
+        b = lut[k]!;
+      o[j] = VIG_LUT[b + d[j]!]!;
+      o[j + 1] = VIG_LUT[b + 256 + d[j + 1]!]!;
+      o[j + 2] = VIG_LUT[b + 512 + d[j + 2]!]!;
     }
     this.ctx.putImageData(this.img, 0, 0);
   }
@@ -147,6 +147,16 @@ export class FB implements Surface {
     this.d.set(this.bg);
   }
 }
+
+const VIG_LUT = (() => {
+  const lut = new Uint8ClampedArray(4 * 768),
+    vc = PAL.vig;
+  for (let level = 1; level <= 4; level++)
+    for (let ch = 0; ch < 3; ch++)
+      for (let v = 0; v < 256; v++)
+        lut[(level - 1) * 768 + ch * 256 + v] = v + (vc[ch]! - v) * (level * 0.21);
+  return lut;
+})();
 
 function vignetteMask(w: number, h: number, start: number): Uint8Array {
   const mask = new Uint8Array(w * h);
