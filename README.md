@@ -27,11 +27,14 @@ The URL query selects a state, the same as in the mockup: `?screen=economy`, `?s
 
 | Command               | What it runs                                                                        |
 | --------------------- | ----------------------------------------------------------------------------------- |
-| `pnpm check`          | `check:types`, `lint`, `knip` and `format:check`                                    |
+| `pnpm check`          | the legs the change needs (see below), in the order `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout` |
+| `pnpm check:all`      | every one of those six legs                                                         |
 | `pnpm test`           | the vitest unit tests                                                               |
 | `pnpm test:layout`    | the Playwright layout test over every query state, plus the interaction tests       |
 
-`pnpm check`, `pnpm test` and `pnpm test:layout` run on the test server through `tools/remote/run.mjs`: on that server, or with `CI=true`, they run in place; anywhere else they send the committed `HEAD` to the server over ssh and run it there, so commit first.
+`pnpm check` reads the same change scope as CI (`tools/ci/scope.json`): it diffs `HEAD` against the merge-base with `origin/main` (`node tools/ci/gate.mjs --base <ref>` diffs against another ref), counts uncommitted and untracked files too, and runs only the legs whose paths changed. It prints which legs run and which are skipped, and stops at the first failure with its exit code. A docs-only change runs none of them. `node --test 'tools/ci/*.test.mjs'` tests the leg selection.
+
+`pnpm check`, `pnpm check:all`, `pnpm test` and `pnpm test:layout` run on the test server through `tools/remote/run.mjs`: on that server, or with `CI=true`, they run in place; anywhere else they send the committed `HEAD` to the server over ssh and run it there, so commit first.
 
 The layout test loads each state at 1440x900. `SIZE=1100,700 pnpm test:layout` uses another window size.
 
