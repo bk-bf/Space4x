@@ -51,29 +51,6 @@
             disabled={design.locked}
             oninput={(e) => designer.rename(e.currentTarget.value)}
           />
-          <select
-            id="clsRole"
-            style="flex: none"
-            aria-label="Role"
-            value={design.role}
-            disabled={design.locked}
-            onchange={(e) => designer.role(e.currentTarget.value as (typeof ROLES)[number])}
-          >
-            {#each ROLES as r (r)}<option value={r}>{ROLE_NAMES[r]}</option>{/each}
-          </select>
-          <select
-            id="clsYard"
-            style="flex: none"
-            aria-label="Built at"
-            value={design.yard}
-            disabled={design.locked}
-            onchange={(e) => designer.yard(e.currentTarget.value as (typeof YARDS)[number])}
-          >
-            {#each yards as y (y)}
-              <option value={y}>{yardName(y)}{yardMilestone(y) > designer.unlocked ? ' (locked)' : ''}</option
-              >
-            {/each}
-          </select>
           {#if design.locked}<small id="clsLocked">locked</small>{/if}
         {:else}
           Class
@@ -96,6 +73,34 @@
         >
       {/snippet}
       {#if design}
+        <div class="meta">
+          <label
+            >Role
+            <select
+              id="clsRole"
+              value={design.role}
+              disabled={design.locked}
+              onchange={(e) => designer.role(e.currentTarget.value as (typeof ROLES)[number])}
+            >
+              {#each ROLES as r (r)}<option value={r}>{ROLE_NAMES[r]}</option>{/each}
+            </select>
+          </label>
+          <label
+            >Built at
+            <select
+              id="clsYard"
+              value={design.yard}
+              disabled={design.locked}
+              onchange={(e) => designer.yard(e.currentTarget.value as (typeof YARDS)[number])}
+            >
+              {#each yards as y (y)}
+                <option value={y}
+                  >{yardName(y)}{yardMilestone(y) > designer.unlocked ? ' (locked)' : ''}</option
+                >
+              {/each}
+            </select>
+          </label>
+        </div>
         <Parts />
       {:else}
         <p class="none" id="noClass">No class yet. Press New to start one.</p>
@@ -142,8 +147,15 @@
     display: flex;
     flex-wrap: wrap;
   }
-  select {
-    flex: none;
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-bottom: 6px;
+    color: var(--dim);
+  }
+  .meta select {
+    background: var(--panel2);
   }
   #clsName {
     flex: none;
