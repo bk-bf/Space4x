@@ -69,7 +69,7 @@ test('picking a step while paused advances by exactly that step once', async ({ 
 test('running the clock moves the survey group to Mars and logs its arrival', async ({ page }) => {
   await open(page);
   await page.locator('#steps button', { hasText: '30d' }).click();
-  await expect(page.locator('#events .ev').first()).toContainText('Survey group 1 arrived at Mars.');
+  await expect(page.locator('#events .ev', { hasText: 'Survey group 1 arrived at Mars.' })).toHaveCount(1);
   await expect(page.locator('#tree summary[data-sel="fleet:survey"] small')).toHaveText('Mars');
 });
 

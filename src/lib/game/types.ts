@@ -103,3 +103,131 @@ export interface World {
   fleets: Fleet[];
   contacts: Contact[];
 }
+
+export type MineralId = 'iron' | 'titanium' | 'copper' | 'uranium' | 'ice';
+
+export type InstallationId = 'mine' | 'factory' | 'refinery' | 'lab' | 'dome' | 'spaceport' | 'exchange';
+
+export type ComponentId = 'cargo-container' | 'sensor-array' | 'hull-plating' | 'drive-coil' | 'fuel-tank';
+
+export type ItemId = InstallationId | ComponentId;
+
+export type GoodId = 'food' | 'consumer' | 'parts' | 'medical' | 'luxury';
+
+export interface Deposit {
+  amount: number;
+  initial: number;
+  accessibility: number;
+}
+
+export interface BuildOrder {
+  id: number;
+  item: ItemId;
+  ordered: number;
+  quantity: number;
+  share: number;
+  done: number;
+  paused: boolean;
+  waiting: MineralId | null;
+}
+
+export interface ShipBuild {
+  classId: string;
+  done: number;
+  total: number;
+}
+
+export interface Slipway {
+  id: number;
+  build: ShipBuild | null;
+}
+
+export type YardTaskKind = 'slipway' | 'capacity' | 'retool';
+
+export interface YardTask {
+  id: number;
+  kind: YardTaskKind;
+  total: number;
+  done: number;
+  classId?: string;
+  amount?: number;
+}
+
+export type YardKind = 'commercial' | 'naval';
+
+export interface Yard {
+  id: number;
+  name: string;
+  kind: YardKind;
+  capacity: number;
+  tooled: string;
+  slipways: Slipway[];
+  tasks: YardTask[];
+}
+
+export interface Governor {
+  name: string;
+  bonus: number;
+}
+
+export interface ColonyEnvironment {
+  air: string;
+  gravity: string;
+  surface: string;
+  note: string;
+}
+
+export interface TradeBalance {
+  supply: number;
+  demand: number;
+}
+
+export interface Colony {
+  id: string;
+  name: string;
+  system: string;
+  planet: PlanetType;
+  moon: boolean;
+  population: number;
+  birthRate: number;
+  capacityBase: number;
+  workforceShare: number;
+  governor: Governor;
+  garrison: number;
+  environment: ColonyEnvironment;
+  installations: Record<InstallationId, number>;
+  components: Record<ComponentId, number>;
+  stock: Record<MineralId, number>;
+  fuel: number;
+  target: number;
+  draw: Record<MineralId | 'fuel', number>;
+  deposits: Record<MineralId, Deposit>;
+  queue: BuildOrder[];
+  yards: Yard[];
+  trade: Record<GoodId, TradeBalance>;
+  built: Record<string, number>;
+  lowStock: Partial<Record<MineralId | 'fuel', boolean>>;
+}
+
+export interface ShippingLine {
+  id: number;
+  name: string;
+  ships: number;
+  subsidy: boolean;
+  growth: number;
+}
+
+export interface MonthFlow {
+  income: number;
+  spending: number;
+}
+
+export interface Economy {
+  colonies: Colony[];
+  lines: ShippingLine[];
+  wealth: number;
+  history: MonthFlow[];
+  month: MonthFlow;
+  monthIndex: number;
+  nextId: number;
+}
