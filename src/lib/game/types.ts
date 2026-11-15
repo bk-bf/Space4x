@@ -72,7 +72,7 @@ export interface Fleet {
   at?: string;
   x: number;
   y: number;
-  heading: 1 | -1;
+  heading: number;
 }
 
 export interface TrackFix {
@@ -118,6 +118,7 @@ export interface StatusValue {
 }
 
 export interface Star {
+  name: string;
   x: number;
   y: number;
   radius: number;

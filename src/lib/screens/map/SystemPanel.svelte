@@ -1,8 +1,8 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { className, game, type Selection } from '#lib/game/index.ts';
-  import { select, Table, Tabs, Window } from '#lib/ui/index.ts';
-  import { camera, layers, resetCamera, toggleLayer, zoomBy, type Layer } from './camera.svelte';
+  import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
+  import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { focus, showSystem } from './focus';
 
@@ -25,6 +25,12 @@
   const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
   const contactRows = $derived(contacts.map((c) => [{ text: c.id, warn: !!c.hostile }, c.kind, c.range]));
   const pickedRow = (kind: string, ids: string[]) => (sel.kind === kind ? ids.indexOf(sel.id) : -1);
+  const TIERS = [
+    { id: 'far', label: 'Far' },
+    { id: 'mid', label: 'Mid' },
+    { id: 'near', label: 'Near' }
+  ] as const;
+  const flights = $derived(tab === 'display' && world.system ? mapPresets() : []);
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
   const fleetSel = (id: string): Selection => ({ kind: 'fleet', id });
 
@@ -106,17 +112,80 @@
           onclick={() => toggleLayer(k)}>{k}</button
         >{/each}
     </div>
-    <h3>Zoom</h3>
+    <h3>Scale</h3>
+    <div id="mapScale">
+      <span class="barbox"><i id="scaleBar" style:width="{readout.bar}px"></i></span><span id="scaleDist"
+        >{readout.dist}</span
+      >
+    </div>
+    <div id="mapZoom">
+      <span id="zoomNow" data-mpp={readout.mpp}>{readout.px}</span>
+      <span id="tiers"
+        >{#each TIERS as t (t.id)}<i data-tier={t.id} class:on={readout.tier === t.id}>{t.label}</i
+          >{/each}</span
+      >
+    </div>
     <div>
       <button data-zoom="-1" onclick={() => zoomBy(-1)}>-</button><button
         data-zoom="1"
         onclick={() => zoomBy(1)}>+</button
-      ><button data-zoom="0" onclick={resetCamera}>Reset</button> <span id="zoomNow">{camera.z}x</span>
+      ><button data-zoom="0" onclick={() => flyTo('system')}>Reset</button>
+    </div>
+    <h3>Camera</h3>
+    <div id="mapCam">
+      <DefList
+        rows={[
+          ['Focus', readout.focus],
+          ['x', readout.x + ' m'],
+          ['y', readout.y + ' m']
+        ]}
+      />
+    </div>
+    <h3>Fly to</h3>
+    <div id="presets">
+      {#each flights as p (p.id)}<button data-preset={p.id} onclick={() => flyTo(p.id)}>{p.label}</button
+        >{/each}
     </div>
   {/if}
 </Window>
 
 <style>
+  #mapScale,
+  #mapZoom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .barbox {
+    flex: none;
+    width: 104px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  #scaleBar {
+    height: 7px;
+    border: 2px solid var(--text);
+    border-top: 0;
+  }
+  #zoomNow {
+    flex: none;
+    width: 150px;
+  }
+  #tiers {
+    display: flex;
+    gap: 4px;
+  }
+  #tiers i {
+    font-style: normal;
+    padding: 0 5px;
+    color: var(--dim);
+    box-shadow: var(--edge);
+  }
+  #tiers i.on {
+    background: var(--accent);
+    color: var(--bg);
+  }
   #sysSel {
     flex: none;
     field-sizing: content;

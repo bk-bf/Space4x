@@ -60,10 +60,10 @@ describe('colonies', () => {
     const [lx, ly] = bodyPosition(luna, game.world.bodies);
     const [ex, ey] = bodyPosition(earth, game.world.bodies);
     expect(luna.parent).toBe('earth');
-    expect(Math.hypot(lx - ex, ly - ey)).toBeCloseTo(luna.orbit, 6);
+    expect(Math.hypot(lx - ex, ly - ey) / luna.orbit).toBeCloseTo(1, 9);
     const europa = game.body('europa')!;
     const [jx, jy] = bodyPosition(game.body('jupiter')!, game.world.bodies);
     const [px, py] = bodyPosition(europa, game.world.bodies);
-    expect(Math.hypot(px - jx, py - jy)).toBeCloseTo(europa.orbit, 6);
+    expect(Math.hypot(px - jx, py - jy) / europa.orbit).toBeCloseTo(1, 9);
   });
 });

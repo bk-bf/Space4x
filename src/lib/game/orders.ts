@@ -1,8 +1,9 @@
 import { fleetSpeed } from './classes.svelte';
 import { DAY } from './clock';
-import { KM_PER_UNIT, parkingSpot, type Point } from './orbits';
+import { parkingSpot, type Point } from './orbits';
 import type { Game } from './state.svelte';
 import type { Body, Fleet, JumpPoint, Order, OrderType } from './types';
+import { AU, KM } from './units';
 
 export const ORDER_TYPES: readonly { type: OrderType; label: string }[] = [
   { type: 'move', label: 'Move to' },
@@ -14,10 +15,10 @@ export const ORDER_TYPES: readonly { type: OrderType; label: string }[] = [
   { type: 'refuel', label: 'Refuel at colony' }
 ];
 
-export const SURVEY_DAYS_PER_RADIUS = 6;
+export const SURVEY_DAYS_PER_ROOT_KM = 0.52;
 export const CARGO_SECONDS = 2 * DAY;
 export const REFUEL_PER_DAY = 20;
-export const FUEL_PER_UNIT = 0.02;
+export const FUEL_PER_METRE = 1.48 / AU;
 
 let lastOrderId = 0;
 
@@ -106,14 +107,17 @@ export function orderLabel(game: Game, o: Order): string {
   }
 }
 
+export const surveySeconds = (b: Body | undefined): number =>
+  b ? Math.sqrt(b.radius / KM) * SURVEY_DAYS_PER_ROOT_KM * DAY : 0;
+
 export function workSeconds(game: Game, f: Fleet, o: Order, fuel = f.meters.fuel): number {
-  if (o.type === 'survey') return (game.body(o.target)?.radius ?? 0) * SURVEY_DAYS_PER_RADIUS * DAY;
+  if (o.type === 'survey') return surveySeconds(game.body(o.target));
   if (o.type === 'load' || o.type === 'unload') return CARGO_SECONDS;
   if (o.type === 'refuel') return (Math.max(0, 100 - fuel) / REFUEL_PER_DAY) * DAY + o.done;
   return 0;
 }
 
-export const travelSeconds = (f: Fleet, units: number): number => (units * KM_PER_UNIT) / fleetSpeed(f);
+export const travelSeconds = (f: Fleet, metres: number): number => metres / (fleetSpeed(f) * KM);
 
 function formatEta(seconds: number): string {
   if (!Number.isFinite(seconds)) return 'never';
@@ -133,9 +137,9 @@ export function orderEtas(game: Game, f: Fleet): string[] {
     const goal = resolveGoal(game, f, o);
     if (!goal) return 'lost';
     if (!(goal.body && at === goal.body.id)) {
-      const units = Math.hypot(goal.x - pos[0], goal.y - pos[1]);
-      t += travelSeconds(f, units);
-      fuel -= units * FUEL_PER_UNIT;
+      const metres = Math.hypot(goal.x - pos[0], goal.y - pos[1]);
+      t += travelSeconds(f, metres);
+      fuel -= metres * FUEL_PER_METRE;
       pos = [goal.x, goal.y];
       at = goal.body?.id;
     }

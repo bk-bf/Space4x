@@ -33,7 +33,7 @@ describe('fleet orders', () => {
     expect(texts(g)).toContain('Survey group 1 arrived at Mars.');
   });
 
-  it('surveys for six days per unit of radius and then starts the next order', () => {
+  it('surveys for a time that grows with the root of the radius and then starts the next order', () => {
     const g = new Game();
     const survey = g.fleet('survey')!;
     g.advance(2 * DAY);

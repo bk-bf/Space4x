@@ -20,7 +20,8 @@ describe('parseQuery', () => {
     expect(q('check&arr=float').arrangement).toBe('float');
     expect(q('sel=body:mars').selection).toEqual({ kind: 'body', id: 'mars' });
     expect(q('sel=contact:C-014').selection).toEqual({ kind: 'contact', id: 'C-014' });
-    expect(q('zoom=3').zoom).toBe(3);
+    expect(q('zoom=inner').zoom).toBe('inner');
+    expect(q('zoom=5e4').zoom).toBe('5e4');
     expect(q('sys=acen').system).toBe('acen');
     expect(q('dock=events:left').dock).toEqual({ id: 'events', slot: 'left' });
     expect(q('screen=classes&cls=lighthouse').screen).toBe('classes');
@@ -29,7 +30,7 @@ describe('parseQuery', () => {
 
   it('ignores malformed values', () => {
     expect(q('sel=planet:mars').selection).toEqual({ kind: 'fleet', id: 'survey' });
-    expect(q('zoom=abc').zoom).toBeNull();
+    expect(q('zoom=').zoom).toBeNull();
     expect(q('dock=events:top').dock).toBeNull();
   });
 });

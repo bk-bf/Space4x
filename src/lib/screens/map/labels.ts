@@ -1,3 +1,12 @@
+export interface LabelLine {
+  id: string;
+  text: string;
+  cls?: string;
+  target?: string;
+  pick?: () => void;
+  centre?: () => void;
+}
+
 export interface Anchor {
   id: string;
   text?: string;
@@ -7,6 +16,11 @@ export interface Anchor {
   rx: number;
   ry: number;
   sel?: boolean;
+  pri?: number;
+  lines?: readonly LabelLine[];
+  fixed?: boolean;
+  solid?: boolean;
+  target?: string;
   pick?: () => void;
   centre?: () => void;
 }
@@ -45,37 +59,40 @@ export function layoutLabels(
     (a.x + a.rx) * scale,
     (a.y + a.ry) * scale
   ];
-  const solid = [
-    ...inputs.map((i) => ({ id: i.anchor.id, box: boxOf(i.anchor) })),
-    ...obstacles.map((a) => ({ id: a.id, box: boxOf(a) }))
-  ];
-  const order = [...inputs].sort((p, q) => (q.anchor.sel ? 1 : 0) - (p.anchor.sel ? 1 : 0));
+  const solid = [...inputs.map((i) => i.anchor), ...obstacles]
+    .filter((a) => a.solid !== false)
+    .map((a) => ({ id: a.id, box: boxOf(a) }));
+  const rank = (a: Anchor) => (a.sel ? 1e6 : 0) + (a.pri ?? 0);
+  const order = [...inputs].sort((p, q) => rank(q.anchor) - rank(p.anchor));
   for (const { anchor: a, w, slot } of order) {
     const cx = a.x * scale,
       cy = a.y * scale,
       rx = a.rx * scale,
       ry = a.ry * scale,
-      h = LABEL_H;
-    const slots: readonly (readonly [number, number])[] = [
-      [cx + rx + 6, cy - h / 2],
-      [cx - w / 2, cy + ry + 4],
-      [cx - rx - 6 - w, cy - h / 2],
-      [cx - w / 2, cy - ry - 4 - h],
-      [cx + rx + 6, cy + ry],
-      [cx + rx + 6, cy - ry - h],
-      [cx - rx - 6 - w, cy + ry],
-      [cx - rx - 6 - w, cy - ry - h],
-      [cx - w / 2, cy + ry + 6 + h],
-      [cx - w / 2, cy - ry - 6 - 2 * h]
-    ];
+      h = LABEL_H * (1 + (a.lines?.length ?? 0));
+    const slots: readonly (readonly [number, number])[] = a.fixed
+      ? [[cx, cy]]
+      : [
+          [cx + rx + 6, cy - h / 2],
+          [cx - w / 2, cy + ry + 4],
+          [cx - rx - 6 - w, cy - h / 2],
+          [cx - w / 2, cy - ry - 4 - h],
+          [cx + rx + 6, cy + ry],
+          [cx + rx + 6, cy - ry - h],
+          [cx - rx - 6 - w, cy + ry],
+          [cx - rx - 6 - w, cy - ry - h],
+          [cx - w / 2, cy + ry + 6 + h],
+          [cx - w / 2, cy - ry - 6 - 2 * h]
+        ];
     const visible =
       names &&
-      cx > 0 &&
-      cx < deskW &&
-      cy > 0 &&
-      cy < deskH &&
-      !blocks.some((q) => cx > q[0] && cx < q[2] && cy > q[1] && cy < q[3]);
-    const tries = slot == null ? [...slots.keys()] : [slot, ...slots.keys()];
+      (a.fixed ||
+        (cx > 0 &&
+          cx < deskW &&
+          cy > 0 &&
+          cy < deskH &&
+          !blocks.some((q) => cx > q[0] && cx < q[2] && cy > q[1] && cy < q[3])));
+    const tries = slot == null || slot >= slots.length ? [...slots.keys()] : [slot, ...slots.keys()];
     let spot: Spot | null = null;
     if (visible)
       for (const i of tries) {
@@ -95,8 +112,19 @@ export function layoutLabels(
 
 interface Label {
   el: HTMLSpanElement;
+  text: string;
   w: number;
   slot: number | null;
+}
+
+interface Labelled {
+  id: string;
+  text: string;
+  target?: string;
+  cls?: string;
+  sel?: boolean;
+  pick?: () => void;
+  centre?: () => void;
 }
 
 export class LabelLayer {
@@ -104,17 +132,24 @@ export class LabelLayer {
 
   constructor(private readonly host: HTMLElement) {}
 
-  private label(a: Anchor & { text: string }): Label {
-    const known = this.labels.get(a.id);
-    if (known) return known;
-    const el = document.createElement('span');
-    el.textContent = a.text;
-    if (a.pick) el.onclick = a.pick;
-    if (a.centre) el.ondblclick = a.centre;
-    this.host.append(el);
-    const made = { el, w: el.offsetWidth, slot: null };
-    this.labels.set(a.id, made);
-    return made;
+  private label(a: Labelled): Label {
+    let lab = this.labels.get(a.id);
+    if (!lab) {
+      const el = document.createElement('span');
+      this.host.append(el);
+      lab = { el, text: '', w: 0, slot: null };
+      this.labels.set(a.id, lab);
+    }
+    if (lab.text !== a.text) {
+      lab.el.textContent = lab.text = a.text;
+      lab.w = lab.el.offsetWidth;
+    }
+    lab.el.onclick = a.pick ?? null;
+    lab.el.ondblclick = a.centre ?? null;
+    lab.el.className = (a.cls ?? '') + (a.sel ? ' sel' : '');
+    if (a.target) lab.el.dataset.target = a.target;
+    else delete lab.el.dataset.target;
+    return lab;
   }
 
   place(
@@ -126,28 +161,35 @@ export class LabelLayer {
     names: boolean
   ) {
     const named = anchors.filter((a): a is Anchor & { text: string } => !!a.text);
-    const present = new Set(named.map((a) => a.id));
+    const lineId = (a: Anchor, l: LabelLine) => `${a.id}/${l.id}`;
+    const present = new Set(named.flatMap((a) => [a.id, ...(a.lines ?? []).map((l) => lineId(a, l))]));
     for (const [id, l] of this.labels)
       if (!present.has(id)) {
         l.el.remove();
         this.labels.delete(id);
       }
     const inputs = named.map((anchor) => {
-      const lab = this.label(anchor);
-      lab.el.className = (anchor.cls ?? '') + (anchor.sel ? ' sel' : '');
-      return { anchor, w: lab.w, slot: lab.slot };
+      const lab = this.label(anchor),
+        w = Math.max(
+          lab.w,
+          ...(anchor.lines ?? []).map((l) => this.label({ ...l, id: lineId(anchor, l) }).w)
+        );
+      return { anchor, w, slot: lab.slot };
     });
     const obstacles = anchors.filter((a) => !a.text);
     const spots = layoutLabels(inputs, obstacles, scale, deskW, deskH, blocks, names);
     for (const { anchor } of inputs) {
       const lab = this.labels.get(anchor.id)!,
-        spot = spots.get(anchor.id) ?? null;
-      if (spot) {
-        lab.slot = spot.slot;
-        lab.el.style.left = Math.round(spot.x) + 'px';
-        lab.el.style.top = Math.round(spot.y) + 'px';
-      }
-      lab.el.hidden = !spot;
+        spot = spots.get(anchor.id) ?? null,
+        rows = [lab, ...(anchor.lines ?? []).map((l) => this.labels.get(lineId(anchor, l))!)];
+      if (spot) lab.slot = spot.slot;
+      rows.forEach((row, k) => {
+        if (spot) {
+          row.el.style.left = Math.round(spot.x) + 'px';
+          row.el.style.top = Math.round(spot.y + k * LABEL_H) + 'px';
+        }
+        row.el.hidden = !spot;
+      });
     }
   }
 
