@@ -13,6 +13,34 @@ export const RIGHT_W = 310;
 export const BOTTOM_H = 238;
 export const SNAP_EDGE = 40;
 export const SETTINGS_ID = 'settings';
+export const LAYOUT_KEY = 'space4x.windows';
+
+const DOCKS: readonly Dock[] = ['', 'left', 'right', 'bottom'];
+
+interface SavedWin {
+  dock: Dock;
+  min: boolean;
+  hidden: boolean;
+  x: number | null;
+  y: number | null;
+}
+
+interface SavedLayout {
+  arrangement: Arrangement;
+  wins: Record<string, SavedWin>;
+}
+
+const coordinate = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+function readLayout(): SavedLayout | null {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    const saved = raw ? (JSON.parse(raw) as Partial<SavedLayout>) : null;
+    return saved && typeof saved.wins === 'object' && saved.wins ? (saved as SavedLayout) : null;
+  } catch {
+    return null;
+  }
+}
 
 export interface WindowSpec {
   id: string;
@@ -89,6 +117,36 @@ class WindowManager {
   private drag: Drag | null = null;
   private resetHooks = new Set<() => void>();
   private tileQueued = false;
+  private remembering = false;
+
+  remember(restore: boolean): void {
+    const saved = restore ? readLayout() : null;
+    if (saved) {
+      this.arrangement = saved.arrangement === 'float' ? 'float' : 'dock';
+      for (const w of this.wins) {
+        const s = saved.wins[w.id];
+        if (!s) continue;
+        w.dock = DOCKS.includes(s.dock) && (s.dock === '' || w.home) ? s.dock : w.dock;
+        w.min = !!s.min;
+        w.hidden = !!s.hidden;
+        w.x = coordinate(s.x);
+        w.y = coordinate(s.y);
+      }
+    }
+    this.remembering = true;
+    this.relayout();
+  }
+
+  private save(): void {
+    if (!this.remembering) return;
+    const wins: Record<string, SavedWin> = {};
+    for (const w of this.wins) wins[w.id] = { dock: w.dock, min: w.min, hidden: w.hidden, x: w.x, y: w.y };
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify({ arrangement: this.arrangement, wins }));
+    } catch {
+      this.remembering = false;
+    }
+  }
 
   register(spec: WindowSpec): Win {
     const known = this.get(spec.id);
@@ -246,6 +304,7 @@ class WindowManager {
   relayout(): void {
     flushSync();
     this.tile();
+    this.save();
     requestRender();
   }
 

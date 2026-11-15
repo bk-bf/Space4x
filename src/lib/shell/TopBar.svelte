@@ -16,7 +16,7 @@
 </script>
 
 <header id="top">
-  {#if game.mock}<span class="tag">mock data</span>{/if}
+  <span class="brand"><Icon name="logo" /><b>Space4x</b></span>
   <nav id="nav">
     {#each SCREENS as s (s.id)}<button
         data-nav={s.id}

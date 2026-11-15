@@ -29,6 +29,8 @@ body {
   overflow: hidden;
 }
 body {
+  user-select: none;
+  -webkit-user-select: none;
   background: var(--bg);
   color: var(--text);
   font:
@@ -88,7 +90,7 @@ summary:focus-visible {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
+  gap: 4px 8px;
   background: var(--panel);
   box-shadow: var(--edge);
   margin: 2px;
@@ -116,6 +118,23 @@ summary:focus-visible {
   margin-right: 6px;
   min-width: 15ch;
 }
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+}
+.brand b {
+  font:
+    600 16px 'Pixelify',
+    sans-serif;
+  color: var(--text);
+}
 .tag {
   font-size: 16px;
   color: var(--bg);
@@ -123,7 +142,7 @@ summary:focus-visible {
   padding: 0 5px;
 }
 #chips {
-  gap: 10px;
+  gap: 8px;
   margin-left: auto;
 }
 .chip {

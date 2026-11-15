@@ -34,3 +34,26 @@ test('a scrolled docked window keeps its scroll position while the clock runs', 
   await page.waitForTimeout(1200);
   expect(await body.evaluate((el) => el.scrollTop)).toBe(10);
 });
+
+test('a reload keeps the window layout, and Reset brings the default back', async ({ page }) => {
+  await open(page);
+  await page.locator('#w-events [data-wm="min"]').click();
+  await page.locator('#w-side [data-wm="close"]').click();
+  await page.locator('#w-sel [data-wm="dock"]').click();
+  const floated = await page.locator('#w-sel').boundingBox();
+  await page.reload();
+  await expect(page.locator('#check')).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('#w-events')).toHaveClass(/min/);
+  await expect(page.locator('#w-side')).toBeHidden();
+  await expect(page.locator('#w-sel')).toHaveAttribute('data-dock', '');
+  const kept = await page.locator('#w-sel').boundingBox();
+  expect(Math.abs(kept!.x - floated!.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(kept!.y - floated!.y)).toBeLessThanOrEqual(1);
+  await page.locator('#bSet').click();
+  await page.locator('#w-settings [data-set="reset"]').click();
+  await page.reload();
+  await expect(page.locator('#check')).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('#w-side')).toBeVisible();
+  await expect(page.locator('#w-events')).not.toHaveClass(/min/);
+  await expect(page.locator('#w-sel')).toHaveAttribute('data-dock', 'right');
+});

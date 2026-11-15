@@ -271,3 +271,21 @@ test('a site plays its scene close in and is a labelled marker far out', async (
   await expect(heading(page)).toHaveText('Fleet battle');
   await expectCleanLayout(page);
 });
+
+for (const scale of [8000, 3000])
+  test(`a moon stays drawn at ${scale} m a pixel, where its planet would be a backdrop`, async ({ page }) => {
+    await open(page, `zoom=luna:${scale}`);
+    const centre = await freeCentre(page);
+    const lit = await page.evaluate(({ x, y }) => {
+      const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
+      const r = cv.getBoundingClientRect(),
+        k = cv.width / r.width;
+      const d = cv
+        .getContext('2d')!
+        .getImageData(Math.round((x - r.left) * k) - 30, Math.round((y - r.top) * k) - 30, 60, 60).data;
+      let n = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i]! > 60 && Math.abs(d[i]! - d[i + 2]!) < 30) n++;
+      return n / (d.length / 4);
+    }, centre);
+    expect(lit, 'the centre of the view is lunar surface').toBeGreaterThan(0.6);
+  });
