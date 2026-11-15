@@ -9,7 +9,6 @@
         ".github/ISSUE_TEMPLATE/**",
         ".github/issue-schema.json",
         "mockup/**",
-        "data/research/**",
         "deploy/**",
         "install.sh"
       ],
