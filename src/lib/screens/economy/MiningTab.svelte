@@ -18,7 +18,7 @@
       const left = d.initial > 0 ? d.amount / d.initial : 0;
       return [
         m.name,
-        formatTons(d.amount),
+        formatCount(d.amount),
         { pct: Math.round(left * 100) },
         { meter: Math.round(d.accessibility * 100), label: d.accessibility.toFixed(2) },
         accessibility(d).toFixed(2),
