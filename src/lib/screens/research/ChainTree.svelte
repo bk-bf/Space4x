@@ -1,55 +1,49 @@
 <script lang="ts">
+  import { milestone } from '#lib/game/data/index.ts';
+  import { economy, homeSite, programmeStatus, runningProgramme } from '#lib/game/economy/index.ts';
   import type { FB } from '#lib/gfx/framebuffer.ts';
-  import { CanvasView, Panel, Tabs } from '#lib/ui/index.ts';
+  import { CanvasView, Panel } from '#lib/ui/index.ts';
+  import { CHAIN } from './chain.ts';
   import { drawTree, nodeBox } from './drawTree.ts';
-  import { percent } from './format.ts';
   import { research } from './research.svelte.ts';
-  import { FIELDS, techsOf } from './tech.ts';
 
-  const TABS = FIELDS.map((f) => ({ id: f.id, label: f.label }));
-  const techs = $derived(techsOf(research.field));
-  const view = $derived({
-    techs,
-    stateOf: (id: string) => research.stateOf(id),
-    fraction: (id: string) => research.fraction(id),
-    selected: research.selected
-  });
+  const stateOf = (n: number) => programmeStatus(economy, homeSite(), milestone(n));
+  const fraction = (n: number) =>
+    runningProgramme(economy, n)?.progress ?? (economy.done.includes(n) ? 1 : 0);
+  const view = $derived({ ...CHAIN, stateOf, fraction, selected: research.selected });
 
-  function press(e: KeyboardEvent, id: string) {
+  function press(e: KeyboardEvent, n: number) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
-    research.select(id);
+    research.selected = n;
   }
 </script>
 
-<Panel title="Technology" body="col">
-  <Tabs tabs={TABS} bind:active={research.field} />
+<Panel title="Milestone chain" body="col">
   <CanvasView
     scale={2}
-    height={260}
+    height={130}
     labelsId="techLabels"
     pickableLabels
     draw={(fb, t) => drawTree(fb, view, t)}
   >
     {#snippet labels(fb: FB)}
-      {#each techs as tech (tech.id)}
-        {@const box = nodeBox(fb, tech)}
-        {@const status = research.stateOf(tech.id)}
+      {#each CHAIN.nodes as node (node.number)}
+        {@const box = nodeBox(fb, CHAIN, node)}
+        {@const status = stateOf(node.number)}
         <span
           class="node {status}"
-          class:sel={tech.id === research.selected}
+          class:sel={node.number === research.selected}
           role="button"
           tabindex="0"
-          data-tech={tech.id}
-          title={status === 'running' || status === 'open'
-            ? `${tech.name}, ${percent(research.fraction(tech.id))}%`
-            : tech.name}
+          data-milestone={node.number}
+          title={milestone(node.number).name}
           style:left="{box.x * fb.scale}px"
           style:top="{box.y * fb.scale}px"
           style:width="{box.w * fb.scale}px"
           style:height="{box.h * fb.scale}px"
-          onclick={() => research.select(tech.id)}
-          onkeydown={(e) => press(e, tech.id)}>{tech.name}</span
+          onclick={() => (research.selected = node.number)}
+          onkeydown={(e) => press(e, node.number)}>{node.number}</span
         >
       {/each}
     {/snippet}
@@ -67,9 +61,10 @@
     overflow: hidden;
     color: var(--text);
     text-shadow: none;
-    font-size: 17px;
+    font-size: 20px;
   }
-  .node.locked {
+  .node.locked,
+  .node.waiting {
     color: var(--dim);
   }
   .node.sel {

@@ -1,131 +1,141 @@
 <script lang="ts">
-  import { game } from '#lib/game/index.ts';
-  import type { Colony } from '#lib/game/types.ts';
-  import { DefList, Table, type Cell } from '#lib/ui/index.ts';
-  import { INSTALLATIONS, MINERALS, SECTORS, item } from './catalog.ts';
-  import Cols from './Cols.svelte';
-  import { colonyEnvironment } from './lookup.ts';
-  import { formatCount, formatDate, formatPeople, formatPercent, formatRate, formatTons } from './format.ts';
+  import { building, milestone } from '#lib/game/data/index.ts';
+  import type { BuildingKind } from '#lib/game/data/index.ts';
   import {
-    allocate,
-    fuelOutput,
-    growthRate,
-    industrialCapacity,
-    mineOutput,
-    orderFinish,
-    populationCapacity,
-    productionModifier,
-    staffing,
-    trade,
-    wealthIncome,
-    wealthLines,
-    workersBySector,
-    workersEmployed,
-    workersFree,
-    workersRequired,
-    workforce
-  } from './sim.ts';
-  import { economy } from './state.svelte.ts';
+    activeOrders,
+    economy,
+    flowsOf,
+    isFood,
+    programmeDays,
+    type Site
+  } from '#lib/game/economy/index.ts';
+  import { DefList, Table, type Cell } from '#lib/ui/index.ts';
+  import Cols from './Cols.svelte';
+  import {
+    formatCount,
+    formatDays,
+    formatMass,
+    formatPeople,
+    formatPercent,
+    formatPower,
+    formatRate
+  } from './format.ts';
+  import { buildingName, kindName, limitText } from './view.ts';
 
-  let { colony }: { colony: Colony } = $props();
+  let { site }: { site: Site } = $props();
 
-  const bySector = $derived(workersBySector(colony));
-  const required = $derived(workersRequired(colony));
-  const mined = $derived(MINERALS.reduce((a, m) => a + mineOutput(colony, m.id, economy), 0));
-  const wealth = $derived(wealthIncome(wealthLines(colony, economy, trade(economy))));
-  const plan = $derived(allocate(colony, economy));
-  const environment = $derived(colonyEnvironment(colony));
-
-  const output = (id: string): string => {
-    if (id === 'mine') return `${formatTons(mined)} t a year, all minerals`;
-    if (id === 'factory') return `${formatCount(industrialCapacity(colony, economy))} BP a year`;
-    if (id === 'refinery') return `${formatCount(fuelOutput(colony, economy))} t fuel a year`;
-    if (id === 'dome') return `${formatPeople(populationCapacity(colony))} people housed`;
-    if (id === 'exchange') return 'Wealth for the empire';
-    if (id === 'lab') return 'Research';
-    return 'Orbital access';
-  };
-
-  const installationRows = $derived<Cell[][]>(
-    INSTALLATIONS.map((def) => [
-      def.name,
-      colony.installations[def.id],
-      formatCount(def.workers),
-      formatCount(def.workers * colony.installations[def.id]),
-      output(def.id)
-    ])
+  const flows = $derived(flowsOf(site));
+  const food = $derived(flows.food);
+  const foodStock = $derived(
+    Object.entries(site.stock)
+      .filter(([m]) => isFood(m))
+      .reduce((a, [, v]) => a + v, 0)
   );
-  const sectorRows = $derived<Cell[][]>(
-    SECTORS.map((s) => [
-      s.name,
-      formatCount(bySector[s.id]),
-      {
-        meter: required > 0 ? Math.round((bySector[s.id] / required) * 100) : 0,
-        label: formatPercent(required > 0 ? bySector[s.id] / required : 0)
-      }
-    ])
+  const foodDays = $derived(
+    food.made >= food.demand ? Infinity : foodStock / Math.max(1e-9, food.demand - food.made) / 24
   );
-  const queueRows = $derived<Cell[][]>(
-    plan
-      .slice(0, 4)
-      .map((a) => [
-        item(a.order.item).name,
-        `${a.order.quantity} of ${a.order.ordered}`,
-        a.order.paused ? 'Paused' : formatDate(orderFinish(a, game.time))
-      ])
+
+  const kinds = $derived.by(() => {
+    const by: Partial<Record<BuildingKind, { count: number; workers: number; power: number }>> = {};
+    for (const a of flows.actors) {
+      if (a.kind !== 'group') continue;
+      const b = building(a.group.building);
+      const row = (by[b.kind] ??= { count: 0, workers: 0, power: 0 });
+      row.count += a.group.count;
+      row.workers += a.group.on ? a.group.count * b.workers : 0;
+      row.power += (a.inputs['@power'] ?? 0) * a.share;
+    }
+    return Object.entries(by) as [BuildingKind, { count: number; workers: number; power: number }][];
+  });
+  const kindRows = $derived<Cell[][]>(
+    kinds.map(([k, r]) => [kindName(k), formatCount(r.count), formatCount(r.workers), formatPower(r.power)])
+  );
+
+  const programmeRows = $derived<Cell[][]>(
+    economy.running
+      .filter((p) => p.site === site.id)
+      .map((p) => {
+        const m = milestone(p.number);
+        return [
+          p.number,
+          m.name,
+          { pct: Math.floor(p.progress * 100) },
+          formatDays((1 - p.progress) * programmeDays(m))
+        ];
+      })
+  );
+
+  const buildRows = $derived<Cell[][]>(
+    activeOrders(site).map((o) => {
+      const a = flows.actors.find((x) => x.kind === 'build' && x.order.id === o.id);
+      const share = a?.share ?? 0;
+      return [
+        buildingName(o.building),
+        { pct: Math.floor(o.done * 100) },
+        share > 1e-9 && a?.kind === 'build' ? formatDays(((1 - o.done) * a.hours) / share / 24) : 'never',
+        a && a.share < 1 - 1e-9 ? { text: limitText(a.limit), warn: true } : 'Building'
+      ];
+    })
   );
 </script>
 
 <Cols columns="minmax(0,5fr) minmax(0,6fr)">
   <div>
-    <h3>Population</h3>
+    <h3>Population and food</h3>
     <DefList
       rows={[
-        ['People', formatPeople(colony.population)],
-        ['Growth', `${formatRate(growthRate(colony))} a year`],
-        ['Housing', formatPeople(populationCapacity(colony))],
-        ['Workforce', formatCount(workforce(colony))],
-        ['Workers needed', formatCount(required)],
-        ['Workers employed', formatCount(workersEmployed(colony))],
-        ['Workers free', formatCount(workersFree(colony))],
-        ['Staffing', formatPercent(staffing(colony))],
-        ['Governor', `${colony.governor.name}, +${formatPercent(colony.governor.bonus)}`],
-        ['Garrison', `${colony.garrison} units`]
+        ['People', formatPeople(site.population)],
+        ['Growth', `${formatRate(flows.growthPerHour * 8766)} a year`],
+        ['Food needed', `${formatMass(food.demand * 24)} a day`],
+        ['Food grown', `${formatMass(food.made * 24)} a day`],
+        [
+          'Food balance',
+          `${food.made >= food.demand ? '+' : ''}${formatPercent(food.made / food.demand - 1)}`
+        ],
+        ['People fed', formatPercent(food.cover)],
+        [
+          'Food in store',
+          `${formatMass(foodStock)}, ${Number.isFinite(foodDays) ? formatDays(foodDays) : 'growing'}`
+        ]
       ]}
     />
-    <h3>Workers by sector</h3>
-    <Table head={['Sector', '>Workers', 'Share']} rows={sectorRows} />
-    <h3>Environment</h3>
+    <h3>Workers</h3>
     <DefList
       rows={[
-        ['Air', environment.air],
-        ['Gravity', environment.gravity],
-        ['Surface', environment.surface],
-        ['Setting', environment.note]
+        ['Workforce', formatPeople(flows.workers.available)],
+        ['Workers needed', formatPeople(flows.workers.needed)],
+        ['Staffing', formatPercent(flows.workers.share)]
+      ]}
+    />
+    <h3>Power and compute</h3>
+    <DefList
+      rows={[
+        ['Grid', formatPower(site.gridKw)],
+        ['Generated', formatPower(flows.power.supply - site.gridKw)],
+        ['Demand', formatPower(flows.power.demand)],
+        [
+          'Balance',
+          `${flows.power.supply >= flows.power.demand ? '+' : '-'}${formatPower(Math.abs(flows.power.supply - flows.power.demand))}`
+        ],
+        ['Compute made', `${formatCount(flows.compute.supply)} cu an hour`],
+        ['Compute wanted', `${formatCount(flows.compute.demand)} cu an hour`]
       ]}
     />
   </div>
   <div>
-    <h3>Installations</h3>
-    <Table
-      head={['Installation', '>Number', '>Workers each', '>Workers', 'Output']}
-      rows={installationRows}
-    />
-    <h3>Production</h3>
-    <DefList
-      rows={[
-        ['Industrial capacity', `${formatCount(industrialCapacity(colony, economy))} BP a year`],
-        ['Mining', `${formatTons(mined)} t a year`],
-        ['Fuel refining', `${formatCount(fuelOutput(colony, economy))} t a year`],
-        ['Wealth produced', `${formatCount(wealth)} a year`],
-        ['Production modifier', formatPercent(productionModifier(economy))]
-      ]}
-    />
-    <h3>Next to finish</h3>
-    {#if queueRows.length}
-      <Table head={['Item', '>Left', '>Done by']} rows={queueRows} />
+    <h3>Industry by kind</h3>
+    <Table head={['Kind', '>Buildings', '>Workers', '>Power']} rows={kindRows} />
+    <h3>Programmes</h3>
+    {#if programmeRows.length}
+      <Table head={['>#', 'Milestone', 'Done', '>Left']} rows={programmeRows} />
     {:else}
-      <p class="none">The construction queue is empty.</p>
+      <p class="none">No programme is running. Start one from the Milestones tab.</p>
+    {/if}
+    <h3>Building now</h3>
+    {#if buildRows.length}
+      <Table head={['Building', 'Done', '>Left', 'Status']} rows={buildRows} />
+    {:else}
+      <p class="none">Nothing is being built.</p>
     {/if}
   </div>
 </Cols>

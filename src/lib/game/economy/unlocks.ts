@@ -35,3 +35,6 @@ export const requiresMet = (eco: Economy, m: Milestone): boolean =>
   m.requires.every((r) => eco.done.includes(r));
 
 export const milestoneName = (number: number): string => milestone(number).name;
+
+export const unlockedAfter = (tag: number): number =>
+  milestones.filter((m) => !m.optional && m.number < tag).at(-1)?.number ?? 0;

@@ -1,26 +1,81 @@
-import { registerClassUse, registerStatus, registerSystem } from '#lib/game/index.ts';
-import { colonyName } from './lookup.ts';
-import { economy } from './state.svelte.ts';
-import { stepEconomy } from './sim.ts';
-import { fuelChip, peopleChip, shortageChip, wealthChip, yardsChip } from './status.ts';
+import { advanceEconomy, economy, flowsOf, homeSite, siteById, touch } from '#lib/game/economy/index.ts';
+import { registerStatus, registerSystem, START_TIME } from '#lib/game/index.ts';
+import { milestones } from '#lib/game/data/index.ts';
+import { formatDays, formatPeople, formatPercent, formatPower, formatCount, shortName } from './format.ts';
+import { scarcest } from './view.ts';
 
 registerSystem('economy', (game, dt) => {
-  stepEconomy(economy, dt, game.time, (category, text, warn) => game.log(category, text, warn), colonyName);
+  advanceEconomy(economy, dt, (text, warn, at, siteId) => {
+    const body = siteId ? siteById(siteId)?.worldBody : undefined;
+    game.log(text.startsWith('Milestone') ? 'flask' : 'factory', text, warn, {
+      at: START_TIME + at * 1000,
+      ...(body ? { subject: { kind: 'body' as const, id: body } } : {})
+    });
+  });
+  touch();
 });
 
-registerStatus('wealth', () => ({ icon: 'coin', value: wealthChip(economy), title: 'Wealth' }));
-registerStatus('people', () => ({ icon: 'people', value: peopleChip(economy), title: 'People' }));
-registerStatus('fuel', () => ({ icon: 'drop', value: fuelChip(economy), title: 'Fuel stock' }));
-registerStatus('shortage', () => ({ icon: 'warn', title: 'Running low', ...shortageChip(economy) }));
-registerStatus('yards', () => ({ icon: 'yard', value: yardsChip(economy), title: 'Shipyards busy' }));
+const flows = () => flowsOf(homeSite());
 
-registerClassUse((id) =>
-  economy.colonies.some((c) =>
-    c.yards.some(
-      (y) =>
-        y.tooled === id ||
-        y.slipways.some((s) => s.build?.classId === id) ||
-        y.tasks.some((t) => t.classId === id)
-    )
-  )
-);
+registerStatus('people', () => ({
+  icon: 'people',
+  value: formatPeople(homeSite().population),
+  title: 'People'
+}));
+
+registerStatus('food', () => {
+  const f = flows().food;
+  const spare = f.demand > 0 ? f.made / f.demand - 1 : 0;
+  return f.cover < 1
+    ? {
+        icon: 'grain',
+        value: `${formatPercent(f.cover)} fed`,
+        title: 'Food: share of people fed',
+        warn: true
+      }
+    : {
+        icon: 'grain',
+        value: `${spare >= 0 ? '+' : ''}${formatPercent(spare)}`,
+        title: 'Food: production against need',
+        warn: spare < 0
+      };
+});
+
+registerStatus('power', () => {
+  const p = flows().power;
+  const spare = p.supply - p.demand;
+  return {
+    icon: 'bolt',
+    value: `${spare >= 0 ? '+' : '-'}${formatPower(Math.abs(spare))}`,
+    title: 'Power: generation less demand',
+    warn: spare < 0
+  };
+});
+
+registerStatus('compute', () => {
+  const c = flows().compute;
+  return {
+    icon: 'chip',
+    value: c.supply > 0 || c.demand > 0 ? `${formatCount(c.supply)} cu/h` : 'None',
+    title: 'Compute produced an hour',
+    warn: c.demand > c.supply
+  };
+});
+
+registerStatus('scarce', () => {
+  const s = scarcest(homeSite(), flows());
+  return s
+    ? {
+        icon: 'warn',
+        value: shortName(s.id),
+        title: s.days === 0 ? 'Scarcest material: run out' : `Scarcest material: ${formatDays(s.days)} left`,
+        warn: true
+      }
+    : { icon: 'warn', value: 'None', title: 'Scarcest material', warn: false };
+});
+
+registerStatus('milestones', () => ({
+  icon: 'flask',
+  value: `${economy.done.length}/${milestones.length}`,
+  title: 'Milestones reached'
+}));

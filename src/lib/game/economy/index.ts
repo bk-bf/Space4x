@@ -7,3 +7,4 @@ export * from './programmes.ts';
 export * from './start.ts';
 export * from './step.ts';
 export * from './unlocks.ts';
+export * from './state.svelte.ts';
