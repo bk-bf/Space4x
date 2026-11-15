@@ -1,6 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const FIELDS = ['propulsion', 'power', 'sensors', 'weapons', 'defence', 'industry', 'biology', 'logistics'];
 const DAY = 86400;
 
 async function open(page: Page, query: string) {
@@ -26,9 +25,7 @@ const postRow = (page: Page, label: string): Locator =>
 
 const row = (page: Page, title: string, text: string): Locator => rows(page, title).filter({ hasText: text });
 
-const tech = (page: Page, id: string): Locator => page.locator(`#techLabels [data-tech="${id}"]`);
-
-const labsChip = (page: Page): Locator => page.locator('#chips .chip[title="Labs busy"]');
+const node = (page: Page, n: number): Locator => page.locator(`#techLabels [data-milestone="${n}"]`);
 
 async function advance(page: Page, seconds: number, times = 1) {
   for (let i = 0; i < times; i++) await page.locator(`#steps [data-step="${seconds}"]`).click();
@@ -41,155 +38,45 @@ async function eventTexts(page: Page): Promise<string[]> {
 }
 
 test.describe('research', () => {
-  test('each of the eight field tabs shows its own tree of eight technologies', async ({ page }) => {
+  test('shows the 29 milestones as a chain, and a node click selects one', async ({ page }) => {
     await open(page, 'screen=research');
-    const seen = new Set<string>();
-    for (const field of FIELDS) {
-      await page.locator(`.tabs2 [data-tab="${field}"]`).click();
-      await expect(page.locator(`.tabs2 [data-tab="${field}"]`)).toHaveClass(/on/);
-      await expect(page.locator('#techLabels span')).toHaveCount(8);
-      for (const name of await page.locator('#techLabels span').allTextContents()) seen.add(name);
-    }
-    expect(seen.size).toBe(64);
+    await expect(page.locator('#techLabels span')).toHaveCount(29);
+    await expect(node(page, 1)).toHaveClass(/waiting/);
+    await expect(node(page, 2)).toHaveClass(/locked/);
+    await node(page, 29).click();
+    await expect(page.locator('#techLabels .sel')).toHaveText('29');
+    await expect(page.locator('#milestoneDetail h3').first()).toHaveText('29. Jump point stabilisation');
+    await expect(row(page, 'Milestones', 'Jump point stabilisation')).toHaveClass(/on/);
     await expectCleanLayout(page);
   });
 
-  test('the tree marks nodes done, running, open and locked, and a node click selects it', async ({
+  test('the query selects a milestone', async ({ page }) => {
+    await open(page, 'screen=research&milestone=12');
+    await expect(page.locator('#milestoneDetail h3').first()).toHaveText('12. Cislunar propellant economy');
+  });
+
+  test('a programme started here runs with the clock, survives a screen switch and writes an event', async ({
     page
   }) => {
-    await open(page, 'screen=research');
-    await expect(tech(page, 'nuclear-thermal')).toHaveClass(/done/);
-    await expect(tech(page, 'ion-drive')).toHaveClass(/running/);
-    await expect(tech(page, 'fusion-torch')).toHaveClass(/open/);
-    await expect(tech(page, 'plasma-drive')).toHaveClass(/locked/);
-    await tech(page, 'plasma-drive').click();
-    await expect(panel(page, 'Plasma drive')).toContainText('Locked, missing Ion drive, Fusion torch');
-    await expect(page.locator('#techLabels .sel')).toHaveText('Plasma drive');
-  });
-
-  test('the query selects a field and a project in it', async ({ page }) => {
-    await open(page, 'screen=research&field=sensors');
-    await expect(page.locator('.tabs2 [data-tab="sensors"]')).toHaveClass(/on/);
-    await expect(tech(page, 'phased-radar')).toBeVisible();
-    await expect(panel(page, 'Deep-space sensors')).toBeVisible();
-  });
-
-  test('starting an open project takes labs, shows as running and moves the labs chip', async ({ page }) => {
-    await open(page, 'screen=research');
-    await expect(labsChip(page)).toHaveText('4/5');
-    await tech(page, 'fusion-torch').click();
-    await expect(panel(page, 'Fusion torch').locator('#projectStart')).toBeVisible();
-    await panel(page, 'Fusion torch').locator('#projectStart').click();
-    await expect(tech(page, 'fusion-torch')).toHaveClass(/running/);
-    await expect(row(page, 'Running', 'Fusion torch')).toContainText('Okafor');
-    await expect(labsChip(page)).toHaveText('5/5');
-    await expect(page.locator('#labsLine')).toHaveText('5 of 5 labs busy');
-    await expect(row(page, 'Scientists', 'Okafor')).toContainText('3 of 3');
-    await tech(page, 'laser-sail').click();
-    await expect(page.locator('#projectBlocked')).toHaveText('No free labs');
-    await expectCleanLayout(page);
-  });
-
-  test('the lead and the number of labs for a new project come from the lists', async ({ page }) => {
-    await open(page, 'screen=research');
-    await row(page, 'Open projects', 'Cold sleep').click();
-    await expect(page.locator('.tabs2 [data-tab="biology"]')).toHaveClass(/on/);
-    await expect(panel(page, 'Cold sleep')).toBeVisible();
-    await row(page, 'Scientists', 'Rahman').click();
-    await expect(page.locator('#projectLead')).toHaveValue('rahman');
-    await expect(page.locator('#projectLabs option')).toHaveCount(1);
-    await page.locator('#projectLead').selectOption('tanaka');
-    await expect(row(page, 'Scientists', 'Tanaka')).toHaveClass(/on/);
-    await expect(page.locator('#projectLabs option')).toHaveCount(1);
-    await page.locator('#projectStart').click();
-    await expect(row(page, 'Running', 'Cold sleep')).toContainText('Tanaka');
-    await expect(labsChip(page)).toHaveText('5/5');
-    await expectCleanLayout(page);
-  });
-
-  test('labs move between projects within what is free and what the lead can run', async ({ page }) => {
-    await open(page, 'screen=research');
-    await row(page, 'Running', 'Ion drive').click();
-    await expect(panel(page, 'Ion drive').locator('#labsUp')).toBeEnabled();
-    await panel(page, 'Ion drive').locator('#labsUp').click();
-    await expect(labsChip(page)).toHaveText('5/5');
-    await expect(panel(page, 'Ion drive').locator('#labsUp')).toBeDisabled();
-    await panel(page, 'Ion drive').locator('#labsDown').click();
-    await panel(page, 'Ion drive').locator('#labsDown').click();
-    await expect(labsChip(page)).toHaveText('3/5');
-    await expect(row(page, 'Scientists', 'Okafor')).toContainText('1 of 3');
-    await expectCleanLayout(page);
-  });
-
-  test('a cancelled project frees its labs and keeps its progress for later', async ({ page }) => {
-    await open(page, 'screen=research');
-    await row(page, 'Running', 'Ion drive').click();
-    await panel(page, 'Ion drive').locator('#projectCancel').click();
-    await expect(tech(page, 'ion-drive')).toHaveClass(/open/);
-    await expect(rows(page, 'Running')).toHaveCount(3);
-    await expect(labsChip(page)).toHaveText('2/5');
-    await expect(tech(page, 'ion-drive')).toHaveAttribute('title', 'Ion drive, 64%');
-    await panel(page, 'Ion drive').locator('#projectStart').click();
-    await expect(tech(page, 'ion-drive')).toHaveClass(/running/);
-    await expect(tech(page, 'ion-drive')).toHaveAttribute('title', 'Ion drive, 64%');
-  });
-
-  test('running projects finish with the clock, open dependants, free labs and write an event', async ({
-    page
-  }) => {
-    await open(page, 'screen=research');
-    await advance(page, 30 * DAY, 6);
-    await expect(tech(page, 'ion-drive')).toHaveClass(/done/);
-    await expect(tech(page, 'plasma-drive')).toHaveClass(/locked/);
-    await expect(rows(page, 'Running')).toHaveCount(2);
-    await expect(labsChip(page)).toHaveText('1/5');
-    await page.locator('.tabs2 [data-tab="sensors"]').click();
-    await expect(tech(page, 'deep-space-sensors')).toHaveClass(/done/);
-    await expect(tech(page, 'wide-array')).toHaveClass(/locked/);
-    const events = await eventTexts(page);
-    expect(events.some((e) => e.includes('Ion drive finished under Okafor.'))).toBe(true);
-    expect(events.some((e) => e.includes('Deep-space sensors finished under Tanaka.'))).toBe(true);
-  });
-
-  test('finishing the last missing prerequisite opens a locked project', async ({ page }) => {
-    await open(page, 'screen=research');
-    for (const name of ['Ion drive', 'Composite armour']) {
-      await row(page, 'Running', name).click();
-      await panel(page, name).locator('#projectCancel').click();
-    }
-    await expect(labsChip(page)).toHaveText('1/5');
-    await page.locator('.tabs2 [data-tab="sensors"]').click();
-    await expect(tech(page, 'wide-array')).toHaveClass(/locked/);
-    await tech(page, 'phased-radar').click();
-    await page.locator('#projectLead').selectOption('tanaka');
-    await page.locator('#projectLabs').selectOption('3');
-    await page.locator('#projectStart').click();
-    await expect(labsChip(page)).toHaveText('4/5');
-    await advance(page, 30 * DAY, 3);
-    await expect(tech(page, 'deep-space-sensors')).toHaveClass(/done/);
-    await expect(tech(page, 'phased-radar')).toHaveClass(/running/);
-    await expect(tech(page, 'wide-array')).toHaveClass(/locked/);
-    await advance(page, 30 * DAY, 3);
-    await expect(tech(page, 'phased-radar')).toHaveClass(/done/);
-    await expect(tech(page, 'wide-array')).toHaveClass(/open/);
-    await expect(labsChip(page)).toHaveText('0/5');
-    const events = await eventTexts(page);
-    expect(events.some((e) => e.includes('Phased radar finished under Tanaka. Now open: Wide array.'))).toBe(
-      true
-    );
-  });
-
-  test('research state survives switching screens', async ({ page }) => {
-    await open(page, 'screen=research');
-    await tech(page, 'fusion-torch').click();
-    await panel(page, 'Fusion torch').locator('#projectStart').click();
-    await page.locator('.tabs2 [data-tab="power"]').click();
-    await page.locator('[data-nav="economy"]').click();
-    await expect(page.locator('#stage > [data-screen="research"]')).toHaveCount(0);
+    await open(page, 'screen=economy&tab=production');
+    await page.locator('#groups tr.pick', { hasText: 'Stainless steel' }).first().click();
+    await page.locator('#recipePick').selectOption({ label: 'GRCop copper-chromium-niobium alloy' });
+    await page.locator('input[name="switchCount"]').fill('1');
+    await page.locator('#recipeSwitch').click();
+    await advance(page, DAY);
     await page.locator('[data-nav="research"]').click();
-    await expect(page.locator('.tabs2 [data-tab="power"]')).toHaveClass(/on/);
-    await expect(row(page, 'Running', 'Fusion torch')).toBeVisible();
-    await expect(labsChip(page)).toHaveText('5/5');
+    await expect(node(page, 1)).toHaveClass(/ready/);
+    await page.locator('#programmeStart').click();
+    await expect(node(page, 1)).toHaveClass(/running/);
+    await expect(panel(page, 'Running').locator('tr', { hasText: 'Reusable orbital launch' })).toBeVisible();
+    await page.locator('[data-nav="economy"]').click();
+    await page.locator('[data-nav="research"]').click();
+    await expect(node(page, 1)).toHaveClass(/running/);
+    await advance(page, 30 * DAY, 3);
+    await expect(node(page, 1)).toHaveClass(/done/);
+    await expect(page.locator('#chips .chip[title="Milestones reached"]')).toHaveText('1/29');
+    const events = await eventTexts(page);
+    expect(events.some((e) => e.includes('Milestone 1 reached: Reusable orbital launch.'))).toBe(true);
   });
 });
 

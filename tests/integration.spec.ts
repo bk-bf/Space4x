@@ -17,54 +17,34 @@ const term = (page: Page, text: RegExp): Locator =>
 const heading = (page: Page, screen: string) => page.locator(`[data-screen="${screen}"] .pan > h2`).first();
 
 test.describe('classes', () => {
-  test('a class designed and saved is retooled for and built at a shipyard', async ({ page }) => {
+  test('a class designed and saved can be deleted while nothing builds it', async ({ page }) => {
     await open(page, 'screen=classes');
     await page.locator('main.screen [data-act="new"]').click();
     await page.locator('#clsName').fill('Dray');
     await page.locator('main.screen [data-act="save"]').click();
     await expect(page.locator('#clsDirty')).toHaveCount(0);
-
-    await goTo(page, 'economy');
-    await page.locator('#colonyTree [data-colony="earth"]').click();
-    await page.locator('[data-tab="shipyards"]').click();
-    await expect(page.locator('#shipClass option', { hasText: 'Dray' })).toHaveCount(1);
-    await page.locator('#shipClass').selectOption({ label: 'Dray, Unassigned' });
-    await expect(page.locator('#yardBuild')).toBeDisabled();
-    await page.locator('#yardRetool').click();
-    await expect(page.locator('#yards tr.pick').first()).toContainText('Retool to Dray');
-    for (let i = 0; i < 6; i++) await page.locator(MONTH).click();
-    await expect(page.locator('#yards tr.pick').first()).toContainText('Dray');
-    await expect(page.locator('#yardBuild')).toBeEnabled();
-    await page.locator('#yardBuild').click();
-    await expect(page.locator('#slipways tr.pick').first()).toContainText('Dray');
-
-    await goTo(page, 'classes');
-    await expect(page.locator('main.screen [data-act="delete"]')).toBeDisabled();
+    await expect(page.locator('main.screen [data-act="delete"]')).toBeEnabled();
   });
 });
 
 test.describe('cross-screen buttons', () => {
-  test('a body on the map opens that colony in Economy and in Colony, whatever the URL said', async ({
-    page
-  }) => {
-    await open(page, 'screen=economy&colony=luna');
-    await expect(page.locator('#colonyTree [data-colony="luna"]')).toHaveClass(/on/);
+  test('Earth on the map opens its site in Economy and in Colony', async ({ page }) => {
+    await open(page, 'screen=economy&tab=stockpiles');
     await goTo(page, 'map');
-    await mapLabel(page, 'Ceres').click();
+    await mapLabel(page, 'Earth').click();
     await page.locator('#w-sel [data-go="economy"]').click();
     await expect(page.locator('[data-screen="economy"]')).toBeVisible();
-    await expect(page.locator('#colonyTree [data-colony="ceres"]')).toHaveClass(/on/);
-    await expect(page.locator('#colonyTree [data-colony="luna"]')).not.toHaveClass(/on/);
+    await expect(page.locator('#colonyTree [data-colony="earth"]')).toHaveClass(/on/);
 
     await goTo(page, 'map');
-    await mapLabel(page, 'Mars').click();
+    await mapLabel(page, 'Earth').click();
     await page.locator('#w-sel [data-go="colony"]').click();
-    await expect(heading(page, 'colony')).toContainText('Mars');
-    await expect(page.locator('#colonyPick')).toHaveValue('mars');
+    await expect(heading(page, 'colony')).toContainText('Earth');
+    await expect(page.locator('#colonyPick')).toHaveValue('earth');
     await page.locator('#openEconomy').click();
-    await expect(page.locator('#colonyTree [data-colony="mars"]')).toHaveClass(/on/);
+    await expect(page.locator('#colonyTree [data-colony="earth"]')).toHaveClass(/on/);
     await page.locator('#openColony').click();
-    await expect(heading(page, 'colony')).toContainText('Mars');
+    await expect(heading(page, 'colony')).toContainText('Earth');
   });
 
   test('Galaxy opens Sol, the one mapped system, and counts what the world holds', async ({ page }) => {
@@ -81,31 +61,42 @@ test.describe('cross-screen buttons', () => {
 });
 
 test.describe('the top bar', () => {
-  test('wealth, people and shipyards agree with the Economy screen and follow it', async ({ page }) => {
-    await open(page, 'screen=economy&tab=wealth');
-    const wealth = term(page, /^Wealth$/);
-    await expect(wealth).toHaveText('18,400');
-    await expect(chip(page, 'Wealth')).toHaveText('18,400');
-    await expect(chip(page, 'People')).toHaveText('1.2 bn');
-    await expect(page.locator('#colonyTree [data-colony="earth"]')).toContainText('1.2 bn');
+  test('people, power and milestones agree with the Economy screen and follow the clock', async ({
+    page
+  }) => {
+    await open(page, 'screen=economy');
+    const people = term(page, /^People$/).first();
+    await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
+    await expect(page.locator('#colonyTree [data-colony="earth"]')).toContainText(
+      (await chip(page, 'People').textContent())!
+    );
+    await expect(chip(page, 'Power: generation less demand')).toHaveText(
+      (await term(page, /^Balance$/).textContent())!
+    );
+    await expect(chip(page, 'Food: production against need')).toHaveText(
+      (await term(page, /^Food balance$/).textContent())!
+    );
 
-    await page.locator(MONTH).click();
-    const moved = (await wealth.textContent())!;
-    expect(moved).not.toBe('18,400');
-    await expect(chip(page, 'Wealth')).toHaveText(moved);
-
-    const before = (await chip(page, 'Shipyards busy').textContent())!;
-    const [busy, total] = before.split('/').map(Number);
-    await page.locator('#colonyTree [data-colony="earth"]').click();
-    await page.locator('[data-tab="shipyards"]').click();
-    await page.locator('#yardBuild').click();
-    await expect(chip(page, 'Shipyards busy')).toHaveText(`${busy! + 1}/${total}`);
+    const before = (await people.textContent())!;
+    for (let i = 0; i < 3; i++) await page.locator(MONTH).click();
+    await expect(people).not.toHaveText(before);
+    await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
+    await expect(chip(page, 'Milestones reached')).toHaveText('0/29');
+    await goTo(page, 'research');
+    await expect(page.locator('[data-screen="research"]')).toContainText('0 of 29 reached');
   });
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
     await expect(page.locator('#chips .chip')).toHaveCount(6);
-    for (const title of ['Wealth', 'People', 'Fuel stock', 'Running low', 'Labs busy', 'Shipyards busy']) {
+    for (const title of [
+      'People',
+      'Food: production against need',
+      'Power: generation less demand',
+      'Compute produced an hour',
+      'Scarcest material',
+      'Milestones reached'
+    ]) {
       await expect(chip(page, title).locator('svg, canvas, .ic').first()).toBeVisible();
       await expect(chip(page, title)).toHaveText(/\S/);
     }

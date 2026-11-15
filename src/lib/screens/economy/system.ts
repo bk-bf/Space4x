@@ -26,7 +26,7 @@ registerStatus('people', () => ({
 registerStatus('food', () => {
   const f = flows().food;
   const spare = f.demand > 0 ? f.made / f.demand - 1 : 0;
-  return f.cover < 1
+  return f.cover < 1 - 1e-9
     ? {
         icon: 'grain',
         value: `${formatPercent(f.cover)} fed`,
