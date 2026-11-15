@@ -116,6 +116,18 @@ summary:focus-visible {
   margin-right: 6px;
   min-width: 15ch;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+}
+.brand b {
+  font:
+    600 16px 'Pixelify',
+    sans-serif;
+  color: var(--text);
+}
 .tag {
   font-size: 16px;
   color: var(--bg);

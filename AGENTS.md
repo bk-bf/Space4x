@@ -204,7 +204,7 @@ For a change to layout or behaviour, also look at the result: `SHOTS=<dir> pnpm 
 
 - No comments anywhere: not in code, config or tests. Use clearer names, smaller functions, or a test.
 - Never render an internal identifier to the player; show a human label.
-- Mock data stays visibly mock: the red "mock data" tag in the top bar stays while any is shown.
+- Mock content stays visibly mock: a mock scene or screen carries a "mock scene" tag (`.tag`) on itself. The top bar starts with the game's icon and name, and has no room for a tag beside them at 1440 px.
 - Follow the mockup: Aurora 4X's screen organisation and density; icons, not text, for screen buttons and status values; compact tables; no gaps; nothing laid over the map except the windows; one Selection window for whatever is selected; screen buttons switch whole screens, never popups.
 - Commit messages say why and how the change was verified.
 
