@@ -11,7 +11,13 @@ const globToRegExp = (glob) =>
       glob
         .split(/(\*\*\/|\*\*|\*)/)
         .map((part) =>
-          part === '**/' ? '(?:.*/)?' : part === '**' ? '.*' : part === '*' ? '[^/]*' : part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          part === '**/'
+            ? '(?:.*/)?'
+            : part === '**'
+              ? '.*'
+              : part === '*'
+                ? '[^/]*'
+                : part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
         )
         .join('') +
       '$'
@@ -28,7 +34,9 @@ const base = i >= 0 ? process.argv[i + 1] : 'HEAD^1';
 const tracked = git('ls-files');
 const unused = rules.flatMap((r) => r.paths.filter((p, n) => !tracked.some((f) => r.res[n].test(f))));
 if (unused.length) {
-  process.stderr.write(`${unused.length} pattern(s) in ${MANIFEST} match no tracked file:\n${unused.map((p) => `  ${p}`).join('\n')}\n`);
+  process.stderr.write(
+    `${unused.length} pattern(s) in ${MANIFEST} match no tracked file:\n${unused.map((p) => `  ${p}`).join('\n')}\n`
+  );
   process.exit(1);
 }
 
@@ -39,7 +47,9 @@ if (!base || /^0+$/.test(base) || !git('rev-parse', '--verify', '--quiet', `${ba
   const files = git('diff', '--name-only', base, 'HEAD');
   const missing = files.filter((f) => tracked.includes(f) && !ruleFor(f));
   if (missing.length) {
-    process.stderr.write(`${missing.length} file(s) match no rule in ${MANIFEST}:\n${missing.map((f) => `  ${f}`).join('\n')}\nGive each a rule: the legs it needs, or [].\n`);
+    process.stderr.write(
+      `${missing.length} file(s) match no rule in ${MANIFEST}:\n${missing.map((f) => `  ${f}`).join('\n')}\nGive each a rule: the legs it needs, or [].\n`
+    );
     process.exit(1);
   }
   scope = all(false);

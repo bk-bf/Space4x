@@ -1,8 +1,32 @@
 {
   "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"],
   "rules": [
-    { "paths": ["**/*.md", ".gitignore", ".github/ISSUE_TEMPLATE/**", ".github/issue-schema.json", "mockup/**", "deploy/**"], "legs": [] },
-    { "paths": [".github/workflows/**", ".github/actions/**", "tools/ci/**", "tools/remote/**", "package.json", "pnpm-lock.yaml", "tsconfig.json", "svelte.config.js", "vite.config.ts", "src/**", "tests/**"], "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"] },
+    {
+      "paths": [
+        "**/*.md",
+        ".gitignore",
+        ".github/ISSUE_TEMPLATE/**",
+        ".github/issue-schema.json",
+        "mockup/**",
+        "deploy/**"
+      ],
+      "legs": []
+    },
+    {
+      "paths": [
+        ".github/workflows/**",
+        ".github/actions/**",
+        "tools/ci/**",
+        "tools/remote/**",
+        "package.json",
+        "pnpm-lock.yaml",
+        "tsconfig.json",
+        "vite.config.ts",
+        "src/**",
+        "tests/**"
+      ],
+      "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"]
+    },
     { "paths": ["eslint.config.js"], "legs": ["lint"] },
     { "paths": ["knip.json"], "legs": ["knip"] },
     { "paths": [".prettierrc", ".prettierignore"], "legs": ["format"] },
