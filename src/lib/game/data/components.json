@@ -7,7 +7,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "stainless_steel": 800, "titanium": 100, "cfrp": 100 }
+    "cost": {
+      "stainless_steel": 800,
+      "titanium": 100,
+      "cfrp": 100
+    },
+    "design": {
+      "mass": 700,
+      "basis": "A 5 m carbon and steel spine segment; about two thirds of its material bill, the rest being machining waste.",
+      "estimated": true
+    }
   },
   {
     "id": "propellant_tank",
@@ -17,7 +26,18 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "al_li_alloy": 600, "cfrp": 150 }
+    "cost": {
+      "al_li_alloy": 600,
+      "cfrp": 150
+    },
+    "design": {
+      "mass": 500,
+      "volume": 20,
+      "propellants": ["kerolox", "methalox", "hydrolox", "hypergolic", "hydrogen", "deuterium"],
+      "basis": "Tank structure of about 25 kg per cubic metre; four of them with an engine and an avionics set come out near the Delta IV 5 m second stage (3,490 kg empty, 30,710 kg at lift-off).",
+      "source": "https://en.wikipedia.org/wiki/Delta_Cryogenic_Second_Stage",
+      "estimated": true
+    }
   },
   {
     "id": "copv",
@@ -26,7 +46,19 @@
     "milestone": 1,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "ti_6al_4v": 100, "cfrp": 150, "aramid": 30, "helium4": 5 }
+    "cost": {
+      "ti_6al_4v": 100,
+      "cfrp": 150,
+      "aramid": 30,
+      "helium4": 5
+    },
+    "design": {
+      "mass": 190,
+      "volume": 2,
+      "propellants": ["xenon"],
+      "basis": "Two cubic metres of supercritical xenon at about 1,500 kg per cubic metre.",
+      "estimated": true
+    }
   },
   {
     "id": "kerolox_engine",
@@ -35,7 +67,11 @@
     "milestone": 1,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 400, "grcop": 200, "copper": 100 },
+    "cost": {
+      "nickel_superalloy": 400,
+      "grcop": 200,
+      "copper": 100
+    },
     "performance": {
       "engine": "Merlin 1D vacuum",
       "isp": 311,
@@ -44,6 +80,12 @@
       "mass": 470,
       "basis": "flown",
       "source": "https://en.wikipedia.org/wiki/SpaceX_Merlin"
+    },
+    "design": {
+      "propellants": ["kerolox"],
+      "basis": "Mass, thrust and Isp from the engine record.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Merlin",
+      "estimated": false
     }
   },
   {
@@ -54,7 +96,11 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 400, "grcop": 200, "stainless_steel": 300 },
+    "cost": {
+      "nickel_superalloy": 400,
+      "grcop": 200,
+      "stainless_steel": 300
+    },
     "performance": {
       "engine": "Raptor 2",
       "isp": 363,
@@ -63,6 +109,12 @@
       "mass": 1600,
       "basis": "flown",
       "source": "https://en.wikipedia.org/wiki/SpaceX_Raptor"
+    },
+    "design": {
+      "propellants": ["methalox"],
+      "basis": "Mass, thrust and Isp from the engine record.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Raptor",
+      "estimated": false
     }
   },
   {
@@ -73,7 +125,11 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 350, "grcop": 200, "copper": 50 },
+    "cost": {
+      "nickel_superalloy": 350,
+      "grcop": 200,
+      "copper": 50
+    },
     "performance": {
       "engine": "RL10B-2",
       "isp": 465.5,
@@ -81,6 +137,12 @@
       "mass": 301,
       "basis": "flown",
       "source": "https://en.wikipedia.org/wiki/RL10"
+    },
+    "design": {
+      "propellants": ["hydrolox"],
+      "basis": "Mass, thrust and Isp from the engine record.",
+      "source": "https://en.wikipedia.org/wiki/RL10",
+      "estimated": false
     }
   },
   {
@@ -90,7 +152,11 @@
     "milestone": 3,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "rhenium": 5, "iridium": 1, "c103": 20 },
+    "cost": {
+      "rhenium": 5,
+      "iridium": 1,
+      "c103": 20
+    },
     "performance": {
       "engine": "Aerojet R-4D-11 490 N, 164:1 nozzle",
       "isp": 311,
@@ -98,6 +164,12 @@
       "mass": 3.76,
       "basis": "flown",
       "source": "https://l3harris.com/sites/default/files/2024-10/l3harris-ar-bipropellant-rocket-engines-2.pdf"
+    },
+    "design": {
+      "propellants": ["hypergolic"],
+      "basis": "Monomethylhydrazine and nitrogen tetroxide, from the engine record.",
+      "source": "https://l3harris.com/sites/default/files/2024-10/l3harris-ar-bipropellant-rocket-engines-2.pdf",
+      "estimated": false
     }
   },
   {
@@ -108,7 +180,12 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "smco_magnet": 20, "boron": 5, "copper": 30, "stainless_steel": 50 },
+    "cost": {
+      "smco_magnet": 20,
+      "boron": 5,
+      "copper": 30,
+      "stainless_steel": 50
+    },
     "performance": {
       "engine": "SPT-100",
       "isp": 1600,
@@ -117,6 +194,13 @@
       "power": 1.35,
       "basis": "flown",
       "source": "https://en.wikipedia.org/wiki/SPT-100"
+    },
+    "design": {
+      "propellants": ["xenon"],
+      "heat": 0.7,
+      "basis": "Waste heat is the input power less the jet power (F times exhaust speed over two): 1.35 kW in, 0.63 kW out.",
+      "source": "https://en.wikipedia.org/wiki/SPT-100",
+      "estimated": false
     }
   },
   {
@@ -126,7 +210,11 @@
     "milestone": 13,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "ndfeb_magnet": 15, "molybdenum": 20, "stainless_steel": 30 },
+    "cost": {
+      "ndfeb_magnet": 15,
+      "molybdenum": 20,
+      "stainless_steel": 30
+    },
     "performance": {
       "engine": "NASA NEXT, full power",
       "isp": 4190,
@@ -135,6 +223,13 @@
       "power": 6.9,
       "basis": "flown",
       "source": "https://ntrs.nasa.gov/citations/20080012739"
+    },
+    "design": {
+      "propellants": ["xenon"],
+      "heat": 2,
+      "basis": "Waste heat is the input power less the jet power: 6.9 kW in, 4.9 kW out.",
+      "source": "https://ntrs.nasa.gov/citations/20080012739",
+      "estimated": false
     }
   },
   {
@@ -145,7 +240,13 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "triso": 500, "zirconium": 100, "hafnium": 20, "beryllium": 200, "tungsten": 300 },
+    "cost": {
+      "triso": 500,
+      "zirconium": 100,
+      "hafnium": 20,
+      "beryllium": 200,
+      "tungsten": 300
+    },
     "performance": {
       "engine": "NERVA XE Prime",
       "isp": 841,
@@ -153,6 +254,12 @@
       "mass": 18144,
       "basis": "ground-tested",
       "source": "https://en.wikipedia.org/wiki/NERVA"
+    },
+    "design": {
+      "propellants": ["hydrogen"],
+      "basis": "Reactor heat leaves with the propellant; nothing is left to radiate.",
+      "source": "https://en.wikipedia.org/wiki/NERVA",
+      "estimated": false
     }
   },
   {
@@ -170,6 +277,14 @@
       "boron_carbide": 100,
       "tungsten": 500,
       "haleu": 50
+    },
+    "design": {
+      "mass": 1500,
+      "generates": 10,
+      "heat": 30,
+      "basis": "The 10 kW electric Kilopower design for Mars, 1,500 kg; a Stirling converter at about 25 percent efficiency sends the other 30 kW of its 40 kW to the radiators.",
+      "source": "https://en.wikipedia.org/wiki/Kilopower",
+      "estimated": false
     }
   },
   {
@@ -180,7 +295,12 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["orbital_shipyard"],
-    "cost": { "rebco": 100, "uhtc": 400, "stainless_steel": 2000, "aluminium": 500 },
+    "cost": {
+      "rebco": 100,
+      "uhtc": 400,
+      "stainless_steel": 2000,
+      "aluminium": 500
+    },
     "performance": {
       "engine": "Princeton Direct Fusion Drive, 11.5 MW fusion, upper thrust estimate",
       "isp": 10000,
@@ -189,6 +309,14 @@
       "basis": "design-study",
       "source": "https://ntrs.nasa.gov/api/citations/20170003126/downloads/20170003126.pdf",
       "massSource": "https://www.osti.gov/servlets/purl/1182281"
+    },
+    "design": {
+      "propellants": ["deuterium"],
+      "generates": 1000,
+      "heat": 2000,
+      "basis": "Electric output and waste heat are placeholders; the drive figures are the cited study.",
+      "source": "https://ntrs.nasa.gov/api/citations/20170003126/downloads/20170003126.pdf",
+      "estimated": true
     }
   },
   {
@@ -199,7 +327,17 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "aluminium": 400, "ammonia": 50, "copper": 50 }
+    "cost": {
+      "aluminium": 400,
+      "ammonia": 50,
+      "copper": 50
+    },
+    "design": {
+      "mass": 330,
+      "radiates": 50,
+      "basis": "Forty square metres, both faces at 340 K with emissivity 0.85: 2 x 0.85 x 5.67e-8 x 340^4 = 1.29 kW per square metre, 51 kW.",
+      "estimated": true
+    }
   },
   {
     "id": "solar_array",
@@ -209,7 +347,18 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "mj_solar_cell": 100, "polyimide": 20, "fused_silica": 40, "cfrp": 200 }
+    "cost": {
+      "mj_solar_cell": 100,
+      "polyimide": 20,
+      "fused_silica": 40,
+      "cfrp": 200
+    },
+    "design": {
+      "mass": 240,
+      "generates": 20,
+      "basis": "A roll-out array of about 80 W per kg, rated at 1 AU.",
+      "estimated": true
+    }
   },
   {
     "id": "battery_pack",
@@ -219,7 +368,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "li_ion_cell": 500, "aluminium": 50 }
+    "cost": {
+      "li_ion_cell": 500,
+      "aluminium": 50
+    },
+    "design": {
+      "mass": 340,
+      "storage": 50,
+      "basis": "About 150 Wh per kg at pack level.",
+      "estimated": true
+    }
   },
   {
     "id": "habitat_module",
@@ -229,7 +387,20 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "al_li_alloy": 5000, "fused_silica": 300, "polyimide": 100, "copper": 50 }
+    "cost": {
+      "al_li_alloy": 5000,
+      "fused_silica": 300,
+      "polyimide": 100,
+      "copper": 50
+    },
+    "design": {
+      "mass": 3600,
+      "housing": 6,
+      "stores": 600,
+      "power": 2,
+      "basis": "A rigid module for six, with 90 days of regenerated-loop consumables at about 1 kg a person a day.",
+      "estimated": true
+    }
   },
   {
     "id": "inflatable_habitat",
@@ -238,7 +409,20 @@
     "milestone": 11,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "vectran": 500, "aramid": 200, "polyimide": 100 }
+    "cost": {
+      "vectran": 500,
+      "aramid": 200,
+      "polyimide": 100
+    },
+    "design": {
+      "mass": 1413,
+      "housing": 2,
+      "stores": 200,
+      "power": 1,
+      "basis": "BEAM weighs 1,413 kg and gives 16 cubic metres; room for two on a trip of months.",
+      "source": "https://en.wikipedia.org/wiki/Bigelow_Expandable_Activity_Module",
+      "estimated": true
+    }
   },
   {
     "id": "life_support_unit",
@@ -248,7 +432,20 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "stainless_steel": 500, "amine_sorbent": 100, "platinum": 1, "copper": 50 }
+    "cost": {
+      "stainless_steel": 500,
+      "amine_sorbent": 100,
+      "platinum": 1,
+      "copper": 50
+    },
+    "design": {
+      "mass": 900,
+      "supports": 6,
+      "power": 3,
+      "basis": "Regenerative water and air racks sized for six, as the ISS urine processor is; it cuts consumables to about 1 kg a person a day.",
+      "source": "https://en.wikipedia.org/wiki/ISS_ECLSS",
+      "estimated": true
+    }
   },
   {
     "id": "radiation_shield",
@@ -258,7 +455,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "uhmwpe": 2000, "water": 1000, "stainless_steel": 200 }
+    "cost": {
+      "uhmwpe": 2000,
+      "water": 1000,
+      "stainless_steel": 200
+    },
+    "design": {
+      "mass": 2100,
+      "basis": "Polyethylene and water in a storm shelter around the crew.",
+      "estimated": true
+    }
   },
   {
     "id": "whipple_shield",
@@ -268,7 +474,15 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "aluminium": 300, "aramid": 100 }
+    "cost": {
+      "aluminium": 300,
+      "aramid": 100
+    },
+    "design": {
+      "mass": 200,
+      "basis": "Spaced aluminium and aramid bumper.",
+      "estimated": true
+    }
   },
   {
     "id": "heat_shield",
@@ -278,7 +492,17 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "pica": 800, "cfrp": 100 }
+    "cost": {
+      "pica": 800,
+      "cfrp": 100
+    },
+    "design": {
+      "mass": 600,
+      "reentry": 12000,
+      "basis": "An ablative shield that brings home up to 12 t of vehicle, the size of a crewed capsule.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Dragon_2",
+      "estimated": true
+    }
   },
   {
     "id": "mli_blanket",
@@ -288,7 +512,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "polyimide": 30, "aluminium": 10 }
+    "cost": {
+      "polyimide": 30,
+      "aluminium": 10
+    },
+    "design": {
+      "mass": 30,
+      "insulates": true,
+      "basis": "Multi-layer insulation for cryogenic tanks.",
+      "estimated": true
+    }
   },
   {
     "id": "avionics",
@@ -298,7 +531,17 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "rad_hard_ic": 20, "copper": 20, "aluminium": 30 }
+    "cost": {
+      "rad_hard_ic": 20,
+      "copper": 20,
+      "aluminium": 30
+    },
+    "design": {
+      "mass": 60,
+      "power": 0.5,
+      "basis": "Flight computer, radios and sensors.",
+      "estimated": true
+    }
   },
   {
     "id": "docking_adapter",
@@ -308,7 +551,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "stainless_steel": 300, "titanium": 50, "copper": 30 }
+    "cost": {
+      "stainless_steel": 300,
+      "titanium": 50,
+      "copper": 30
+    },
+    "design": {
+      "mass": 250,
+      "basis": "An IDSS-class docking port.",
+      "estimated": true
+    }
   },
   {
     "id": "sampling_arm",
@@ -318,6 +570,80 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "stainless_steel": 150, "titanium": 50, "ndfeb_magnet": 10, "rad_hard_ic": 5 }
+    "cost": {
+      "stainless_steel": 150,
+      "titanium": 50,
+      "ndfeb_magnet": 10,
+      "rad_hard_ic": 5
+    },
+    "design": {
+      "mass": 100,
+      "power": 1.5,
+      "basis": "A robotic arm and its end tools.",
+      "estimated": true
+    }
+  },
+  {
+    "id": "cargo_bay",
+    "name": "Cargo bay",
+    "kind": "structure",
+    "milestone": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "al_li_alloy": 800,
+      "cfrp": 250
+    },
+    "design": {
+      "mass": 700,
+      "cargo": 4000,
+      "basis": "An unpressurised bay carrying about 5.7 times its own mass.",
+      "estimated": true
+    }
+  },
+  {
+    "id": "landing_legs",
+    "name": "Landing legs",
+    "kind": "structure",
+    "milestone": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "stainless_steel": 600,
+      "cfrp": 600,
+      "titanium": 300
+    },
+    "design": {
+      "mass": 1000,
+      "landing": 20000,
+      "basis": "A set of four deployable legs, as the Falcon 9 first stage carries, rated for 20 t landed.",
+      "source": "https://en.wikipedia.org/wiki/Falcon_9_Full_Thrust",
+      "estimated": true
+    }
+  },
+  {
+    "id": "crew_capsule",
+    "name": "Crew capsule",
+    "kind": "habitat",
+    "milestone": 3,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "al_li_alloy": 6000,
+      "cfrp": 1500,
+      "fused_silica": 300,
+      "polyimide": 150,
+      "copper": 100
+    },
+    "design": {
+      "mass": 6400,
+      "crew": 2,
+      "housing": 4,
+      "stores": 200,
+      "power": 3,
+      "basis": "Crew Dragon: four seats on station flights, ten days of free flight; the stores are four people for ten days at 5 kg a day without a regenerative loop.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Dragon_2",
+      "estimated": true
+    }
   }
 ]
