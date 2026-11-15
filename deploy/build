@@ -2,11 +2,30 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+gallery_dir=${GALLERY_DIR:-$HOME/mockups/space4x-gallery}
 head=$(git rev-parse HEAD)
+
+has_gallery() { [[ -d $(dirname "$gallery_dir") ]]; }
+
 if [[ ${1:-} == --if-stale ]] && [[ $(cat build/.built-head 2>/dev/null || true) == "$head" ]]; then
-  exit 0
+  if ! has_gallery || [[ $(cat "$gallery_dir/.built-head" 2>/dev/null || true) == "$head" ]]; then
+    exit 0
+  fi
 fi
 
 pnpm install --frozen-lockfile
 pnpm build
 echo "$head" > build/.built-head
+
+if has_gallery; then
+  out=$(mktemp -d)
+  trap 'rm -rf "$out"' EXIT
+  if VITE_SPACE4X_GALLERY=1 SPACE4X_BASE="/$(basename "$gallery_dir")" SPACE4X_OUT="$out" pnpm build; then
+    echo "$head" > "$out/.built-head"
+    rm -rf "$gallery_dir"
+    cp -r "$out" "$gallery_dir"
+    chmod 755 "$gallery_dir"
+  else
+    echo "gallery build failed; the game build is unaffected" >&2
+  fi
+fi

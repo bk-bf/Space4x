@@ -96,6 +96,11 @@ summary:focus-visible {
   margin: 2px;
   padding: 3px 8px;
 }
+#top.gallery {
+  box-shadow:
+    var(--edge),
+    inset 0 -3px 0 var(--hot);
+}
 #nav,
 #time,
 #chips,

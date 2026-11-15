@@ -14,6 +14,14 @@ Imports inside `src/` go through the `#lib/*` subpath import in `package.json` a
 
 Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` syntax or stores.
 
+## Game and gallery
+
+Nothing mock is shown in the game build. `VITE_SPACE4X_GALLERY=1` selects the gallery build, which shows everything; `gallery` from `#lib/shell/mode.ts` is the only reader of it. In the game, `mockWorld()` has no sites (so no site scene, marker or fly-to button), `SCREENS` lists only screens with `mock: false` (so the top bar, F keys, `?screen=` and `isScreenId` ignore the rest), and the colony screen leaves out its surface scene.
+
+Every entry in `screens/list.ts` carries `mock: boolean`. To make a screen real, change its `mock` to `false`; nothing else. New mock content (a scene, a list, a button) is wrapped in `gallery` so the game build never renders it. The gallery is built by `deploy/build` into `~/mockups/space4x-gallery/` (served by the mockups server at `/space4x-gallery/`), not by a separate script.
+
+Tests: Playwright has two projects, each with its own dev server. `gallery` runs everything but `tests/game.spec.ts`; `game` runs `tests/layout.spec.ts` (states marked `mock` in `tests/states.ts` are skipped) and `tests/game.spec.ts`. A layout state that needs a mock screen or site goes in `tests/states.ts` as before; a site-only query also goes in `SITE_QUERIES`. Vitest runs with the gallery on (`vitest.config.ts`); `src/lib/shell/mode.test.ts` covers the game mode.
+
 ## Layout of `src/lib/`
 
 | Path                    | What it holds                                                                                  |
@@ -204,7 +212,7 @@ For a change to layout or behaviour, also look at the result: `SHOTS=<dir> pnpm 
 
 - No comments anywhere: not in code, config or tests. Use clearer names, smaller functions, or a test.
 - Never render an internal identifier to the player; show a human label.
-- Mock content stays visibly mock: a mock scene or screen carries a "mock scene" tag (`.tag`) on itself. The top bar starts with the game's icon and name, and has no room for a tag beside them at 1440 px.
+- Mock content stays visibly mock and in the gallery only: a mock scene or screen carries a "mock scene" tag (`.tag`) on itself. The top bar starts with the game's icon and name, and has no room for a tag beside them at 1440 px.
 - Follow the mockup: Aurora 4X's screen organisation and density; icons, not text, for screen buttons and status values; compact tables; no gaps; nothing laid over the map except the windows; one Selection window for whatever is selected; screen buttons switch whole screens, never popups.
 - Commit messages say why and how the change was verified.
 
