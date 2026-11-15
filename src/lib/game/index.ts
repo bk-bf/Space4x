@@ -4,6 +4,7 @@ import './systems/contacts';
 
 export { Game, game, advance } from './state.svelte';
 export { registerSystem, systemNames, type System } from './systems';
+export { registerStatus, STATUS_IDS, type StatusId, type StatusSource } from './status';
 export { startLoop, TICK_MS } from './loop';
 export {
   START_TIME,

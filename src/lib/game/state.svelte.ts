@@ -1,7 +1,7 @@
 import { DAY, START_TIME } from './clock';
 import { mockEvents } from './mock/events';
-import { mockStatus } from './mock/status';
 import { mockWorld } from './mock/world';
+import { statusValues } from './status';
 import { runSystems } from './systems';
 import type {
   Body,
@@ -30,8 +30,11 @@ export class Game {
   selection = $state<Selection>({ kind: 'fleet', id: 'survey' });
   world = $state<World>(mockWorld());
   events = $state<GameEvent[]>(mockEvents());
-  status = $state<StatusValue[]>(mockStatus());
   readonly mock = true;
+
+  get status(): StatusValue[] {
+    return statusValues();
+  }
 
   get elapsed(): number {
     return (this.time - START_TIME) / 1000;
