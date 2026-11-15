@@ -3,7 +3,23 @@ import { mockEvents } from './mock/events';
 import { mockStatus } from './mock/status';
 import { mockWorld } from './mock/world';
 import { runSystems } from './systems';
-import type { Body, Contact, EventCategory, Fleet, GameEvent, Selection, StatusValue, World } from './types';
+import type {
+  Body,
+  Contact,
+  EventCategory,
+  Fleet,
+  GameEvent,
+  JumpPoint,
+  Selection,
+  StarSystem,
+  StatusValue,
+  World
+} from './types';
+
+export interface EventDetails {
+  at?: number;
+  subject?: Selection;
+}
 
 export class Game {
   time = $state(START_TIME);
@@ -46,8 +62,12 @@ export class Game {
     this.selection = selection;
   }
 
-  log(category: EventCategory, text: string, warn = false): void {
-    this.events.unshift(warn ? { at: this.time, category, text, warn } : { at: this.time, category, text });
+  log(category: EventCategory, text: string, warn = false, details: EventDetails = {}): void {
+    const at = details.at ?? this.time;
+    const e: GameEvent = { at, category, text, ...(warn ? { warn } : {}) };
+    if (details.subject) e.subject = details.subject;
+    const i = this.events.findIndex((x) => x.at <= at);
+    this.events.splice(i < 0 ? this.events.length : i, 0, e);
   }
 
   body(id: string): Body | undefined {
@@ -60,6 +80,24 @@ export class Game {
 
   contact(id: string): Contact | undefined {
     return this.world.contacts.find((c) => c.id === id);
+  }
+
+  starSystem(id: string): StarSystem | undefined {
+    return this.world.systems.find((s) => s.id === id);
+  }
+
+  jump(id: string): { system: StarSystem; point: JumpPoint } | undefined {
+    for (const system of this.world.systems) {
+      const point = system.jumps.find((j) => j.id === id);
+      if (point) return { system, point };
+    }
+    return undefined;
+  }
+
+  systemOf(sel: Selection): string | undefined {
+    if (sel.kind === 'fleet') return this.fleet(sel.id)?.system;
+    if (sel.kind === 'body') return this.body(sel.id)?.system;
+    return this.contact(sel.id)?.system;
   }
 }
 

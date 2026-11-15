@@ -8,6 +8,7 @@ export interface Anchor {
   ry: number;
   sel?: boolean;
   pick?: () => void;
+  centre?: () => void;
 }
 
 type Box = readonly [number, number, number, number];
@@ -32,6 +33,7 @@ export class LabelLayer {
     const el = document.createElement('span');
     el.textContent = a.text;
     if (a.pick) el.onclick = a.pick;
+    if (a.centre) el.ondblclick = a.centre;
     this.host.append(el);
     const made = { el, w: el.offsetWidth, slot: null };
     this.labels.set(a.id, made);
@@ -47,6 +49,8 @@ export class LabelLayer {
     names: boolean
   ) {
     const placed: Box[] = [];
+    const present = new Set(anchors.map((a) => a.id));
+    for (const [id, l] of this.labels) if (!present.has(id)) l.el.hidden = true;
     const boxes: Box[] = anchors.map((a) => [
       (a.x - a.rx) * scale,
       (a.y - a.ry) * scale,

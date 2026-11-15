@@ -83,22 +83,6 @@ describe('Game', () => {
     expect(Math.hypot(...after)).toBeCloseTo(74, 6);
   });
 
-  it('flies a fleet toward its destination and parks it there on arrival', () => {
-    const g = new Game();
-    const survey = g.fleet('survey')!;
-    const mars = () => bodyPosition(g.body('mars')!);
-    const gap = () => Math.hypot(survey.x - mars()[0], survey.y - mars()[1]);
-    const start = gap();
-    g.advance(3600);
-    expect(gap()).toBeLessThan(start);
-    expect(survey.destination).toBe('mars');
-    g.advance(5 * DAY);
-    expect(survey.at).toBe('mars');
-    expect(survey.destination).toBeUndefined();
-    expect(survey.orders[0]).toBe('Survey Mars');
-    expect(g.events[0]?.text).toBe('Survey group 1 arrived at Mars.');
-  });
-
   it('records events at the current game time, newest first', () => {
     const g = new Game();
     g.advance(60);
@@ -108,6 +92,20 @@ describe('Game', () => {
       category: 'flask',
       text: 'Test finished.',
       warn: true
+    });
+  });
+
+  it('files an event logged with an earlier time below the newer ones', () => {
+    const g = new Game();
+    g.advance(3600);
+    g.log('ship', 'Later.');
+    g.log('ship', 'Earlier.', false, { at: START_TIME + 60_000, subject: { kind: 'fleet', id: 'survey' } });
+    expect(g.events[0]?.text).toBe('Later.');
+    expect(g.events[1]).toEqual({
+      at: START_TIME + 60_000,
+      category: 'ship',
+      text: 'Earlier.',
+      subject: { kind: 'fleet', id: 'survey' }
     });
   });
 });

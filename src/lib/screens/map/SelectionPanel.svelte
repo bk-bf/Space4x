@@ -1,35 +1,138 @@
 <script lang="ts">
-  import { game } from '#lib/game/index.ts';
+  import {
+    addOrder,
+    bearing,
+    clearOrders,
+    formatAu,
+    formatEventTime,
+    game,
+    isColony,
+    moveOrder,
+    nearest,
+    observers,
+    ORDER_TYPES,
+    orderEtas,
+    orderLabel,
+    orderTargets,
+    orderTypesFor,
+    removeOrder,
+    type Body,
+    type Contact,
+    type Fleet,
+    type OrderType
+  } from '#lib/game/index.ts';
   import { hash } from '#lib/gfx/math.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
-  const ACTIONS = ['Move to', 'Survey', 'Load cargo at', 'Unload at', 'Refuel at', 'Orbit'];
   const MINERALS = ['Iron', 'Titanium', 'Copper', 'Uranium'];
+  const TRACK_ROWS = 4;
 
   const sel = $derived(game.selection);
   const fleet = $derived(sel.kind === 'fleet' ? game.fleet(sel.id) : undefined);
   const body = $derived(sel.kind === 'body' ? game.body(sel.id) : undefined);
   const contact = $derived(sel.kind === 'contact' ? game.contact(sel.id) : undefined);
   const heading = $derived(fleet?.name ?? body?.name ?? (contact ? 'Contact ' + contact.id : 'Selection'));
-  const destinations = $derived([...game.world.bodies.map((b) => b.name), 'Jump point A']);
 
-  let action = $state(ACTIONS[0]!);
-  let destination = $state('Mercury');
+  let chosenType = $state<OrderType>('move');
+  let chosenTarget = $state('');
+  let picked = $state({ fleet: '', index: 0 });
 
-  function addOrder() {
-    fleet?.orders.push(`${action} ${destination}`);
+  const types = $derived(fleet ? orderTypesFor(fleet) : []);
+  const type = $derived(types.includes(chosenType) ? chosenType : 'move');
+  const targets = $derived(fleet ? orderTargets(game, fleet, type) : []);
+  const target = $derived(targets.some((t) => t.id === chosenTarget) ? chosenTarget : (targets[0]?.id ?? ''));
+  const count = $derived(fleet?.orders.length ?? 0);
+  const row = $derived(
+    fleet && picked.fleet === fleet.id ? Math.max(0, Math.min(picked.index, count - 1)) : 0
+  );
+
+  const pick = (f: Fleet, index: number) => (picked = { fleet: f.id, index });
+  const km = (n: number) => `${n.toLocaleString('en')} km/s`;
+  const systemName = (id: string) => game.starSystem(id)?.name ?? '';
+
+  function add(f: Fleet) {
+    if (!target) return;
+    addOrder(f, type, target);
+    pick(f, f.orders.length - 1);
+  }
+
+  function fleetFacts(f: Fleet): [string, string][] {
+    const rows: [string, string][] = [
+      ['Doing', f.activity],
+      ['Speed', km(f.speedKmS)]
+    ];
+    if (f.kind === 'civ')
+      rows.push(
+        ['Cargo', f.cargo ? 'From ' + (game.body(f.cargo)?.name ?? '?') : 'Empty'],
+        ['System', systemName(f.system)]
+      );
+    return rows;
+  }
+
+  function bodyFacts(b: Body): [string, string][] {
+    const surveying = game.world.fleets.find(
+      (f) => f.orders[0]?.type === 'survey' && f.orders[0].target === b.id
+    );
+    return [
+      ['Kind', b.facts.kind],
+      ['Gravity', b.facts.gravity],
+      ['Surface', b.facts.surface],
+      ['Air', b.facts.air],
+      ['Size', b.facts.size],
+      ['People', b.facts.people],
+      ['Survey', b.surveyed ? 'Done' : surveying ? 'Under way' : 'None'],
+      ['System', systemName(b.system)]
+    ];
+  }
+
+  function contactHeading(c: Contact): string {
+    if (!c.route.length || c.speedKmS <= 0) return '-';
+    const [tx, ty] = c.route[c.leg % c.route.length]!;
+    return bearing(c, tx, ty) + '°';
+  }
+
+  function contactFacts(c: Contact): [string, string][] {
+    return [
+      ['Kind', c.kind],
+      ['Signal', c.signal],
+      ['Range', c.range],
+      ['Last seen', c.fixes.length ? formatEventTime(c.fixes.at(-1)!.at, game.time) : c.seen],
+      ['Speed', c.speedKmS > 0 ? km(c.speedKmS) : 'At rest'],
+      ['Heading', contactHeading(c)],
+      ['Size', c.hostile ? '9,000 t est.' : 'Small'],
+      ['Tracked', c.held ? 'Yes' : 'Lost']
+    ];
+  }
+
+  function trackRows(c: Contact): Cell[][] {
+    const eyes = observers(game, c.system);
+    return c.fixes
+      .slice(-TRACK_ROWS)
+      .reverse()
+      .map((fix) => {
+        const near = nearest(eyes, fix.x, fix.y);
+        return [
+          formatEventTime(fix.at, game.time),
+          near ? bearing(near.o, fix.x, fix.y) + '°' : '-',
+          near ? formatAu(near.d) : '-'
+        ];
+      });
   }
 
   const shipRows = $derived(
     (fleet?.ships ?? []).map((s): Cell[] => [
       s.name,
       s.className,
-      { meter: s.fuel },
-      { text: s.status, warn: s.status === 'Low fuel' }
+      { meter: Math.round(s.fuel) },
+      { text: s.status, warn: s.status === 'Low fuel' || s.status === 'Out of fuel' }
     ])
   );
-  const orderRows = $derived((fleet?.orders ?? []).map((o, i): Cell[] => [i + 1, o, `+${(i + 1) * 3} d`]));
+  const orderRows = $derived.by(() => {
+    if (!fleet) return [];
+    const etas = orderEtas(game, fleet);
+    return fleet.orders.map((o, i): Cell[] => [i + 1, orderLabel(game, o), etas[i]!]);
+  });
   const depositRows = $derived(
     body
       ? MINERALS.map((n, i): Cell[] => {
@@ -67,35 +170,48 @@
     {#if fleet}
       <div class="row3">
         {#each [['Fuel', fleet.meters.fuel], ['Supplies', fleet.meters.supplies], ['Crew', fleet.meters.crew]] as const as [name, v] (name)}
-          <div><small>{name} {v}%</small><Meter value={v} wide /></div>
+          <div><small>{name} {Math.round(v)}%</small><Meter value={Math.round(v)} wide /></div>
         {/each}
       </div>
+      <DefList two rows={fleetFacts(fleet)} />
       <h3>Ships</h3>
       <Table head={['Ship', 'Class', 'Fuel', '>Status']} rows={shipRows} />
       <h3>Orders</h3>
-      <Table rows={orderRows} selected={0} numeric={[false, false, true]} />
+      {#if count}
+        <Table
+          rows={orderRows}
+          keys={fleet.orders.map((o) => 'order:' + o.id)}
+          selected={row}
+          onpick={(i) => pick(fleet, i)}
+          numeric={[false, false, true]}
+        />
+      {:else}
+        <Table rows={[['-', 'No orders', '']]} numeric={[false, false, true]} />
+      {/if}
+      <div class="add" id="queue">
+        <button data-act="up" disabled={row <= 0} onclick={() => pick(fleet, moveOrder(fleet, row, -1))}
+          >Up</button
+        ><button
+          data-act="down"
+          disabled={row >= count - 1}
+          onclick={() => pick(fleet, moveOrder(fleet, row, 1))}>Down</button
+        ><button data-act="remove" disabled={!count} onclick={() => removeOrder(fleet, row)}>Remove</button
+        ><button data-act="clear" disabled={!count} onclick={() => clearOrders(fleet)}>Clear</button>
+      </div>
       <div class="add">
-        <select id="oAct" bind:value={action}>
-          {#each ACTIONS as a (a)}<option>{a}</option>{/each}
-        </select><select id="oDst" bind:value={destination}>
-          {#each destinations as d (d)}<option>{d}</option>{/each}
-        </select><button data-act="order" onclick={addOrder}>Add</button>
+        <select id="oAct" value={type} onchange={(e) => (chosenType = e.currentTarget.value as OrderType)}>
+          {#each ORDER_TYPES.filter((o) => types.includes(o.type)) as o (o.type)}<option value={o.type}
+              >{o.label}</option
+            >{/each}
+        </select><select id="oDst" value={target} onchange={(e) => (chosenTarget = e.currentTarget.value)}>
+          {#each targets as t (t.id)}<option value={t.id}>{t.name}</option>{/each}
+        </select><button data-act="order" disabled={!target} onclick={() => add(fleet)}>Add</button>
       </div>
     {:else if body}
-      <DefList
-        two
-        rows={[
-          ['Kind', body.facts.kind],
-          ['Gravity', body.facts.gravity],
-          ['Surface', body.facts.surface],
-          ['Air', body.facts.air],
-          ['Size', body.facts.size],
-          ['People', body.facts.people]
-        ]}
-      />
+      <DefList two rows={bodyFacts(body)} />
       <h3>Deposits</h3>
       <Table head={['Mineral', '>Tons', 'Access']} rows={depositRows} />
-      {#if body.facts.people !== 'None'}
+      {#if isColony(body)}
         <div class="add">
           <button data-go="colony" onclick={() => shell.setScreen('colony')}>Colony</button><button
             data-go="economy"
@@ -104,31 +220,23 @@
         </div>
       {/if}
     {:else if contact}
-      <DefList
-        two
-        rows={[
-          ['Kind', contact.kind],
-          ['Signal', contact.signal],
-          ['Range', contact.range],
-          ['Last seen', contact.seen],
-          ['Speed', contact.hostile ? '1,900 km/s' : 'At rest'],
-          ['Size', contact.hostile ? '9,000 t est.' : 'Small']
-        ]}
-      />
+      <DefList rows={contactFacts(contact)} />
       <h3>Track</h3>
-      <Table
-        head={['Time', 'Bearing', '>Range']}
-        rows={[
-          ['04:12', '211°', contact.range],
-          ['01:30', '214°', '3.4 AU'],
-          ['Yesterday', '220°', '4.0 AU']
-        ]}
-      />
-      {#if contact.hostile}
-        <div class="add">
-          <button data-go="intel" onclick={() => shell.setScreen('intel')}>Intelligence</button>
-        </div>
-      {/if}
+      <Table head={['Time', 'Bearing', '>Range']} rows={trackRows(contact)} />
+      <div class="add">
+        <button data-go="intel" onclick={() => shell.setScreen('intel')}>Intelligence</button>
+      </div>
     {/if}
   </div>
 </Window>
+
+<style>
+  #queue button {
+    flex: 1;
+  }
+  button:disabled {
+    color: var(--dim);
+    cursor: default;
+    background: var(--panel);
+  }
+</style>

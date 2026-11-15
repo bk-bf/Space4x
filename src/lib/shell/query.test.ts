@@ -8,6 +8,7 @@ describe('parseQuery', () => {
     expect(q('')).toEqual({
       screen: null,
       selection: { kind: 'fleet', id: 'survey' },
+      system: null,
       zoom: null,
       arrangement: 'dock',
       dock: null,
@@ -20,6 +21,7 @@ describe('parseQuery', () => {
     expect(q('sel=body:mars').selection).toEqual({ kind: 'body', id: 'mars' });
     expect(q('sel=contact:C-014').selection).toEqual({ kind: 'contact', id: 'C-014' });
     expect(q('zoom=3').zoom).toBe(3);
+    expect(q('sys=acen').system).toBe('acen');
     expect(q('dock=events:left').dock).toEqual({ id: 'events', slot: 'left' });
     expect(q('screen=classes&cls=lighthouse').screen).toBe('classes');
     expect(q('check').check).toBe(true);
