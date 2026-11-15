@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { DAY, Game } from '#lib/game/index.ts';
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { ageOf, allPosts, postLabel, postOptions, Roster, serviceOf } from './roster.svelte.ts';
 
 const names = (r: Roster, g: Game) => r.visible(g).map((o) => o.name);
 
 describe('Roster', () => {
-  it('lists posts from the fleets, ships and colonies of the game state', () => {
+  it('offers only the governor of Earth and the staff posts at the start', () => {
     const g = new Game();
+    expect(postOptions('fleet', g)).toEqual([]);
+    expect(postOptions('ship', g)).toEqual([]);
+    expect(postOptions('governor', g).map((p) => p.label)).toEqual(['Governor, Earth']);
+  });
+
+  it('lists posts from the fleets, ships and colonies of the game state', () => {
+    const g = withFixture(new Game());
     const fleets = g.world.fleets.map((f) => f.name);
     const ships = g.world.fleets.reduce((n, f) => n + f.ships.length, 0);
     expect(fleets).toEqual(expect.arrayContaining(['Survey group 1', 'Freight convoy', 'Jupiter picket']));
@@ -47,7 +55,7 @@ describe('Roster', () => {
     r.descending = false;
     expect(names(r, g)[0]).toBe('C. Brandt');
     r.sort = 'post';
-    expect(postLabel(r.visible(g)[0]!.post, g)).toBe('Freight convoy');
+    expect(postLabel(r.visible(g)[0]!.post, g)).toBe('Governor, Earth');
   });
 
   it('filters by rank and by assigned or unassigned', () => {
@@ -56,29 +64,38 @@ describe('Roster', () => {
     r.rank = 'captain';
     expect(names(r, g)).toEqual(['M. Chen', 'S. Novak', 'I. Petrov']);
     r.assignment = 'unassigned';
-    expect(names(r, g)).toEqual(['I. Petrov']);
+    expect(names(r, g)).toEqual(['M. Chen', 'I. Petrov']);
     r.rank = 'all';
-    expect(names(r, g)).toEqual(['I. Petrov', 'D. Kaur', 'C. Brandt']);
+    expect(names(r, g)).toEqual([
+      'M. Chen',
+      'I. Petrov',
+      'L. Haddad',
+      'P. Silva',
+      'D. Kaur',
+      'E. Larsen',
+      'C. Brandt',
+      'H. Yilmaz'
+    ]);
     r.assignment = 'assigned';
-    expect(r.visible(g)).toHaveLength(11);
+    expect(r.visible(g)).toHaveLength(6);
   });
 
   it('assigns an officer to a post, relieves the previous holder and writes an event', () => {
     const r = new Roster();
     const g = new Game();
-    expect(r.assign('o4', 'fleet', 'picket', g)).toBe(true);
-    expect(postLabel(r.officer('o4')!.post, g)).toBe('Jupiter picket');
-    expect(r.officer('o2')!.post.kind).toBe('none');
-    expect(g.events[0]!.text).toContain('I. Petrov was posted to Jupiter picket. M. Chen was relieved.');
+    expect(r.assign('o4', 'staff', 'survey-office', g)).toBe(true);
+    expect(postLabel(r.officer('o4')!.post, g)).toBe('Survey office');
+    expect(r.officer('o3')!.post.kind).toBe('none');
+    expect(g.events[0]!.text).toContain('I. Petrov was posted to Survey office. S. Novak was relieved.');
   });
 
   it('refuses a post that is not in the game state and releases an officer on none', () => {
     const r = new Roster();
     const g = new Game();
     expect(r.assign('o4', 'fleet', 'missing', g)).toBe(false);
-    expect(r.assign('o9', 'none', '', g)).toBe(true);
-    expect(r.officer('o9')!.post.kind).toBe('none');
-    expect(g.events[0]!.text).toContain('released from Watchful');
+    expect(r.assign('o7', 'none', '', g)).toBe(true);
+    expect(r.officer('o7')!.post.kind).toBe('none');
+    expect(g.events[0]!.text).toContain('released from Launch office');
   });
 
   it('promotes one rank at a time and stops at the top', () => {

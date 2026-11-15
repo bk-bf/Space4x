@@ -23,15 +23,14 @@
     type Fleet,
     type OrderType
   } from '#lib/game/index.ts';
-  import { hash } from '#lib/gfx/math.ts';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { showColony } from '#lib/screens/economy/state.svelte.ts';
   import { intel } from '#lib/screens/intel/intel.svelte.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
   import { flyTo } from './camera.svelte';
+  import { resourcesOf } from './resources';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
-  const MINERALS = ['Iron', 'Titanium', 'Copper', 'Uranium'];
   const TRACK_ROWS = 4;
 
   const sel = $derived(game.selection);
@@ -152,18 +151,7 @@
     const etas = orderEtas(game, fleet);
     return fleet.orders.map((o, i): Cell[] => [i + 1, orderLabel(game, o), etas[i]!]);
   });
-  const depositRows = $derived(
-    body
-      ? MINERALS.map((n, i): Cell[] => {
-          const access = Math.round(hash(body.orbit, i, 3) * 90 + 5);
-          return [
-            n,
-            `${Math.round(hash(body.orbit, i, 7) * 900 + 20)}k`,
-            { meter: access, label: (access / 100).toFixed(1) }
-          ];
-        })
-      : []
-  );
+  const resources = $derived(body ? resourcesOf(body.id) : '');
 </script>
 
 <Window
@@ -228,8 +216,8 @@
       </div>
     {:else if body}
       <DefList two rows={bodyFacts(body)} />
-      <h3>Deposits</h3>
-      <Table head={['Mineral', '>Tons', 'Access']} rows={depositRows} />
+      <h3>Resources</h3>
+      <p class="res" id="resources">{resources}</p>
       {#if isColony(body)}
         <div class="add">
           <button data-go="colony" onclick={() => openColony(body, 'colony')}>Colony</button><button
@@ -257,6 +245,9 @@
 
 <style>
   .mock {
+    margin: 0;
+  }
+  .res {
     margin: 0;
   }
   #queue button {

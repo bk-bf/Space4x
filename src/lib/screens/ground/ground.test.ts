@@ -161,8 +161,8 @@ describe('the registered ground system', () => {
       (u, i) => u.supply !== before[i]!.supply || u.morale !== before[i]!.morale
     );
     expect(changed.length).toBeGreaterThan(ground.units.length / 2);
-    const armour = ground.units.find((u) => u.kind === 'tank' && u.formation === 'mars-garrison')!;
-    expect(armour.supply).toBeLessThan(before.find((b) => b.id === armour.id)!.supply);
+    const armour = ground.units.find((u) => u.kind === 'tank' && u.formation === 'home-guard')!;
+    expect(armour.supply).toBeGreaterThan(before.find((b) => b.id === armour.id)!.supply);
   });
 
   it('logs nothing about the units, so the map event order is untouched', () => {
@@ -174,14 +174,13 @@ describe('the registered ground system', () => {
 });
 
 describe('the mock forces', () => {
-  it('lists the Mars garrison as the mockup does and every unit in a formation', () => {
+  it('keeps every formation on Earth, the home guard as the mockup lists it, and every unit in a formation', () => {
     const units = mockUnits(),
       formations = mockFormations();
-    const garrison = units.filter((u) => u.formation === 'mars-garrison');
-    expect(garrison).toHaveLength(13);
-    expect(garrison.filter((u) => u.kind === 'inf')).toHaveLength(6);
-    expect(formations.filter((f) => f.place === 'Earth')).toHaveLength(3);
-    expect(formations.filter((f) => f.place === 'Luna')).toHaveLength(1);
+    const guard = units.filter((u) => u.formation === 'home-guard');
+    expect(guard).toHaveLength(13);
+    expect(guard.filter((u) => u.kind === 'inf')).toHaveLength(6);
+    expect(formations.filter((f) => f.place === 'Earth')).toHaveLength(formations.length);
     for (const u of units) expect(formations.some((f) => f.id === u.formation)).toBe(true);
     expect(new Set(units.map((u) => u.id)).size).toBe(units.length);
   });
@@ -196,13 +195,13 @@ describe('the mock forces', () => {
 
 describe('the ground store', () => {
   afterEach(() => {
-    ground.selectFormation('mars-garrison');
+    ground.selectFormation('home-guard');
   });
 
   it('selects a formation and the first of its units', () => {
-    ground.selectFormation('home-guard');
-    expect(ground.formation?.name).toBe('Home guard');
-    expect(ground.unit?.formation).toBe('home-guard');
+    ground.selectFormation('capital-guard');
+    expect(ground.formation?.name).toBe('Capital guard');
+    expect(ground.unit?.formation).toBe('capital-guard');
   });
 
   it('changes a unit stance', () => {
@@ -213,38 +212,43 @@ describe('the ground store', () => {
   });
 
   it('moves a unit between formations and counts follow', () => {
-    const from = ground.unitsOf('mars-garrison').length,
-      to = ground.unitsOf('luna-guard').length;
-    ground.selectFormation('mars-garrison');
-    const u = ground.unitsOf('mars-garrison').find((x) => x.kind === 'art')!;
+    const from = ground.unitsOf('home-guard').length,
+      to = ground.unitsOf('coastal-guard').length;
+    ground.selectFormation('home-guard');
+    const u = ground.unitsOf('home-guard').find((x) => x.kind === 'art')!;
     ground.selectUnit(u.id);
-    ground.moveUnit(u.id, 'luna-guard');
-    expect(ground.unitsOf('mars-garrison')).toHaveLength(from - 1);
-    expect(ground.unitsOf('luna-guard')).toHaveLength(to + 1);
-    expect(ground.unit?.formation).toBe('mars-garrison');
-    ground.moveUnit(u.id, 'mars-garrison');
-    expect(ground.unitsOf('mars-garrison')).toHaveLength(from);
+    ground.moveUnit(u.id, 'coastal-guard');
+    expect(ground.unitsOf('home-guard')).toHaveLength(from - 1);
+    expect(ground.unitsOf('coastal-guard')).toHaveLength(to + 1);
+    expect(ground.unit?.formation).toBe('home-guard');
+    ground.moveUnit(u.id, 'home-guard');
+    expect(ground.unitsOf('home-guard')).toHaveLength(from);
   });
 
   it('creates a formation, moves a unit into it and disbands it into a sibling', () => {
-    const before = ground.formationsAt('Mars').length;
-    const id = ground.create('Mars');
-    expect(ground.formationsAt('Mars')).toHaveLength(before + 1);
+    const before = ground.formationsAt('Earth').length;
+    const id = ground.create('Earth');
+    expect(ground.formationsAt('Earth')).toHaveLength(before + 1);
     expect(ground.formationId).toBe(id);
-    const u = ground.unitsOf('mars-garrison')[0]!;
+    const u = ground.unitsOf('home-guard')[0]!;
     ground.moveUnit(u.id, id);
     expect(ground.unitsOf(id)).toHaveLength(1);
     expect(ground.disbandable(id)).toBe(true);
     ground.disband(id);
-    expect(ground.formationsAt('Mars')).toHaveLength(before);
-    expect(ground.units.find((x) => x.id === u.id)!.formation).toBe('mars-garrison');
-    expect(ground.formationId).toBe('mars-garrison');
+    expect(ground.formationsAt('Earth')).toHaveLength(before);
+    expect(ground.units.find((x) => x.id === u.id)!.formation).toBe('home-guard');
+    expect(ground.formationId).toBe('home-guard');
   });
 
   it('refuses to disband the only formation of a place while it has units', () => {
-    expect(ground.formationsAt('Luna')).toHaveLength(1);
-    expect(ground.disbandable('luna-guard')).toBe(false);
-    ground.disband('luna-guard');
-    expect(ground.formations.some((f) => f.id === 'luna-guard')).toBe(true);
+    const id = ground.create('Orbit');
+    const u = ground.unitsOf('home-guard')[0]!;
+    ground.moveUnit(u.id, id);
+    expect(ground.disbandable(id)).toBe(false);
+    ground.disband(id);
+    expect(ground.formations.some((f) => f.id === id)).toBe(true);
+    ground.moveUnit(u.id, 'home-guard');
+    ground.disband(id);
+    expect(ground.formations.some((f) => f.id === id)).toBe(false);
   });
 });

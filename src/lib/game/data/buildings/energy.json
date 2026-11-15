@@ -1,0 +1,94 @@
+[
+  {
+    "id": "enrichment_plant",
+    "name": "Enrichment plant",
+    "kind": "nuclear",
+    "where": ["earth"],
+    "milestone": 7,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 4000, "nickel_superalloy": 500, "copper": 300 },
+    "workers": 30
+  },
+  {
+    "id": "fuel_fabrication_plant",
+    "name": "Fuel fabrication plant",
+    "kind": "nuclear",
+    "where": ["earth", "orbit"],
+    "milestone": 7,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2500, "nickel_superalloy": 300 },
+    "workers": 20
+  },
+  {
+    "id": "fission_reactor",
+    "name": "Fission reactor",
+    "kind": "power",
+    "where": ["earth", "moon", "mars", "orbit"],
+    "milestone": 7,
+    "thin": true,
+    "estimated": true,
+    "cost": {
+      "haynes_230": 800,
+      "sodium": 150,
+      "beryllium": 400,
+      "boron_carbide": 150,
+      "stainless_steel": 1500
+    },
+    "workers": 4
+  },
+  {
+    "id": "reprocessing_plant",
+    "name": "Reprocessing plant",
+    "kind": "nuclear",
+    "where": ["earth"],
+    "milestone": 7,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "nickel_superalloy": 400 },
+    "workers": 20
+  },
+  {
+    "id": "rtg_factory",
+    "name": "RTG factory",
+    "kind": "nuclear",
+    "where": ["earth"],
+    "milestone": 7,
+    "estimated": true,
+    "cost": { "stainless_steel": 800, "nickel_superalloy": 100 },
+    "workers": 8
+  },
+  {
+    "id": "isotope_separator",
+    "name": "Isotope separator",
+    "kind": "nuclear",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 22,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "copper": 500, "nickel_superalloy": 200 },
+    "workers": 10
+  },
+  {
+    "id": "fusion_plant",
+    "name": "Fusion plant",
+    "kind": "power",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 22,
+    "thin": true,
+    "estimated": true,
+    "cost": { "rebco": 300, "lead": 2000, "stainless_steel": 8000, "nickel_superalloy": 1000 },
+    "workers": 20
+  },
+  {
+    "id": "solar_power_station",
+    "name": "Solar power station",
+    "kind": "power",
+    "where": ["orbit"],
+    "milestone": 20,
+    "thin": true,
+    "estimated": true,
+    "cost": { "mj_solar_cell": 5000, "cfrp": 5000, "polyimide": 1000, "asteroidal_steel": 20000 },
+    "workers": 0
+  }
+]

@@ -28,7 +28,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [255, 216, 112],
     radius: 4,
     star: 'G2 yellow',
-    jumps: '3 of 3'
+    jumps: '1, unsurveyed'
   },
   {
     id: 'acen',
@@ -38,7 +38,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [255, 236, 170],
     radius: 4,
     star: 'G2 and K1 pair',
-    jumps: '2 of 4'
+    jumps: 'Unknown'
   },
   {
     id: 'barn',
@@ -48,7 +48,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [230, 110, 70],
     radius: 2,
     star: 'M4 red dwarf',
-    jumps: '2 of 2'
+    jumps: 'Unknown'
   },
   {
     id: 'wolf',
@@ -59,7 +59,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 2,
     star: 'M6 red dwarf',
     counts: { bodies: 1, colonies: 0, fleets: 0 },
-    jumps: '1 of 1'
+    jumps: 'Unknown'
   },
   {
     id: 'lal',
@@ -70,7 +70,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 3,
     star: 'M2 red dwarf',
     counts: { bodies: 3, colonies: 0, fleets: 0 },
-    jumps: '1 of 3'
+    jumps: 'Unknown'
   },
   {
     id: 'sir',
@@ -81,13 +81,13 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 5,
     star: 'A1 white pair',
     counts: { bodies: 0, colonies: 0, fleets: 0 },
-    jumps: '1 of 2'
+    jumps: 'Unknown'
   },
   {
     id: 'luy',
-    name: 'Unsurveyed',
-    x: 150,
-    y: -72,
+    name: 'Beyond jump point A',
+    x: 40,
+    y: 26,
     color: [120, 116, 160],
     radius: 2,
     star: 'Unknown',
@@ -103,7 +103,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 3,
     star: 'G8 yellow dwarf',
     counts: { bodies: 6, colonies: 0, fleets: 0 },
-    jumps: '1 of 3'
+    jumps: 'Unknown'
   },
   {
     id: 'eri',
@@ -114,7 +114,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 3,
     star: 'K2 orange dwarf',
     counts: { bodies: 4, colonies: 0, fleets: 0 },
-    jumps: '1 of 2'
+    jumps: 'Unknown'
   },
   {
     id: 'proc',
@@ -125,20 +125,10 @@ export const SYSTEMS: readonly StarSystem[] = [
     radius: 4,
     star: 'F5 pair',
     counts: { bodies: 2, colonies: 0, fleets: 0 },
-    jumps: '1 of 3'
+    jumps: 'Unknown'
   }
 ];
 
-export const LINKS: readonly (readonly [string, string])[] = [
-  ['sol', 'acen'],
-  ['sol', 'barn'],
-  ['sol', 'lal'],
-  ['barn', 'wolf'],
-  ['acen', 'sir'],
-  ['acen', 'luy'],
-  ['lal', 'tauc'],
-  ['acen', 'eri'],
-  ['barn', 'proc']
-];
+export const LINKS: readonly (readonly [string, string])[] = [['sol', 'luy']];
 
 export const systemById = (id: string): StarSystem | undefined => SYSTEMS.find((s) => s.id === id);

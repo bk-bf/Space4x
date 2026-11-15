@@ -1,0 +1,87 @@
+[
+  {
+    "id": "exotic_matter_facility",
+    "name": "Exotic matter facility",
+    "kind": "special",
+    "where": ["orbit"],
+    "milestone": 28,
+    "thin": true,
+    "estimated": true,
+    "cost": { "rt_superconductor": 50, "asteroidal_steel": 20000, "compute": 1000000 },
+    "workers": 0
+  },
+  {
+    "id": "antimatter_facility",
+    "name": "Antimatter facility",
+    "kind": "special",
+    "where": ["earth", "orbit"],
+    "milestone": 28,
+    "estimated": true,
+    "cost": { "stainless_steel": 20000, "copper": 5000, "nbti": 500 },
+    "workers": 50
+  },
+  {
+    "id": "rocket_factory",
+    "name": "Rocket factory",
+    "kind": "infrastructure",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 10000, "al_li_alloy": 2000, "nickel_superalloy": 500, "cfrp": 500 },
+    "workers": 300
+  },
+  {
+    "id": "launch_site",
+    "name": "Launch site",
+    "kind": "infrastructure",
+    "where": ["earth", "moon", "mars"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 5000, "copper": 500 },
+    "workers": 100
+  },
+  {
+    "id": "propellant_depot",
+    "name": "Propellant depot",
+    "kind": "infrastructure",
+    "where": ["orbit"],
+    "milestone": 2,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "polyimide": 200, "aluminium": 300 },
+    "workers": 0
+  },
+  {
+    "id": "orbital_shipyard",
+    "name": "Orbital shipyard",
+    "kind": "infrastructure",
+    "where": ["orbit"],
+    "milestone": 18,
+    "thin": true,
+    "estimated": true,
+    "cost": { "asteroidal_steel": 30000, "cfrp": 5000, "ai_models": 5, "compute": 100000 },
+    "workers": 0
+  },
+  {
+    "id": "jump_point_stabiliser",
+    "name": "Jump point stabiliser",
+    "kind": "special",
+    "where": ["jump-point"],
+    "milestone": 29,
+    "thin": true,
+    "estimated": true,
+    "cost": {
+      "exotic_matter": 0.01,
+      "rt_superconductor": 500,
+      "asteroidal_steel": 200000,
+      "cnt_fibre": 5000,
+      "compute": 10000000,
+      "ai_models": 20
+    },
+    "workers": 0
+  }
+]

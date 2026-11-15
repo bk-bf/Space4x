@@ -1,35 +1,34 @@
 <script lang="ts">
   import { Panel, ScreenGrid, Stack, Tabs } from '#lib/ui/index.ts';
-  import ColonyTree from './ColonyTree.svelte';
-  import IndustryTab from './IndustryTab.svelte';
-  import MiningTab from './MiningTab.svelte';
+  import ConstructionTab from './ConstructionTab.svelte';
+  import MilestonesTab from './MilestonesTab.svelte';
   import PlanetPanel from './PlanetPanel.svelte';
-  import ShipyardsTab from './ShipyardsTab.svelte';
+  import ProductionTab from './ProductionTab.svelte';
+  import SiteTree from './SiteTree.svelte';
   import StockpilesTab from './StockpilesTab.svelte';
   import SummaryTab from './SummaryTab.svelte';
-  import WealthTab from './WealthTab.svelte';
-  import { colonyName, colonySystem, systemName } from './lookup.ts';
-  import { TABS, selectedColony, ui } from './state.svelte.ts';
+  import { siteBody, systemName } from './lookup.ts';
+  import { TABS, selectedSite, ui } from './state.svelte.ts';
 
-  const colony = $derived(selectedColony());
+  const site = $derived(selectedSite());
 </script>
 
 <ScreenGrid id="economy" columns="300px minmax(0,1fr)">
   <Stack>
-    <ColonyTree />
-    <PlanetPanel {colony} />
+    <SiteTree />
+    <PlanetPanel {site} />
   </Stack>
   <Stack>
     <Panel grow>
-      {#snippet head()}{colonyName(colony)} <small>{systemName(colonySystem(colony))}</small>{/snippet}
+      {#snippet head()}{site.name}
+        <small>{systemName(siteBody(site.worldBody)?.system ?? '')}</small>{/snippet}
       <Tabs tabs={TABS} bind:active={ui.tab} />
-      {#key colony.id}
-        {#if ui.tab === 'summary'}<SummaryTab {colony} />
-        {:else if ui.tab === 'industry'}<IndustryTab {colony} />
-        {:else if ui.tab === 'mining'}<MiningTab {colony} />
-        {:else if ui.tab === 'shipyards'}<ShipyardsTab {colony} />
-        {:else if ui.tab === 'stockpiles'}<StockpilesTab {colony} />
-        {:else}<WealthTab {colony} />
+      {#key site.id}
+        {#if ui.tab === 'summary'}<SummaryTab {site} />
+        {:else if ui.tab === 'production'}<ProductionTab {site} />
+        {:else if ui.tab === 'construction'}<ConstructionTab {site} />
+        {:else if ui.tab === 'stockpiles'}<StockpilesTab {site} />
+        {:else}<MilestonesTab {site} />
         {/if}
       {/key}
     </Panel>

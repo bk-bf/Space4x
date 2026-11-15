@@ -1,3 +1,4 @@
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { describe, expect, it } from 'vitest';
 import { Game } from '#lib/game/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
@@ -39,7 +40,7 @@ function viewAt(centre: Point, metresPerPx: number, w = 400, h = 300): ShipView 
 const tally = (): ShipTally => ({ marker: 0, icon: 0, true: 0 });
 
 describe('ship layer', () => {
-  const g = new Game(),
+  const g = withFixture(new Game()),
     convoy = g.fleet('convoy')!,
     group = fleetGroup(convoy, false),
     atlas = spec('atlas');

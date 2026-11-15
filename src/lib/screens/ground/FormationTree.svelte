@@ -35,7 +35,7 @@
   {/each}
 </div>
 <div class="add">
-  <button data-act="create" onclick={act(() => ground.create(place ?? 'Mars'))}>New formation</button>
+  <button data-act="create" onclick={act(() => ground.create(place ?? 'Earth'))}>New formation</button>
   <button
     data-act="disband"
     disabled={!ground.formation || !ground.disbandable(ground.formationId)}

@@ -25,7 +25,6 @@ async function settled(page: Page): Promise<number> {
     .toBe(true);
   return mpp(page);
 }
-const orderRows = (page: Page) => win(page, 'sel').locator('table').nth(1).locator('tr');
 const step = (page: Page, text: string) =>
   page.locator('#steps button', { hasText: new RegExp(`^${text}$`) });
 
@@ -70,45 +69,24 @@ async function freeCentre(page: Page) {
   return { x: (side.x + side.width + sel.x) / 2, y: (desk.y + ev.y) / 2 };
 }
 
-test('the system picker switches the shown system and the tree selects across systems', async ({ page }) => {
+test('the system panel lists the bodies of Sol and shows no fleets or contacts', async ({ page }) => {
   await open(page);
-  await page.locator('#sysSel').selectOption('Alpha Centauri');
-  await expect(label(page, 'Alpha Centauri B')).toBeVisible();
-  await expect(label(page, 'Centauri II')).toBeVisible();
-  await expect(label(page, 'Mars')).toBeHidden();
+  await expect(page.locator('#sysSel option')).toHaveText(['Sol']);
+  await expect(page.locator('#noFleets')).toBeVisible();
+  await expect(label(page, 'Jump point A, unsurveyed')).toBeVisible();
   await win(page, 'side').locator('[data-tab="bodies"]').click();
-  await expect(win(page, 'side').locator('table')).toContainText('Centauri III');
-  await expect(win(page, 'side').locator('table')).not.toContainText('Jupiter');
+  await expect(win(page, 'side').locator('table')).toContainText('Jupiter');
+  await expect(win(page, 'side').locator('table')).toContainText('Earth');
   await win(page, 'side').locator('[data-tab="contacts"]').click();
-  await expect(win(page, 'side').locator('table')).toContainText('C-017');
-  await expectCleanLayout(page);
-
-  await page.locator('#sysSel').selectOption("Barnard's Star");
-  await expect(label(page, 'Barnard e')).toBeVisible();
-  await expect(label(page, 'Barnard watch')).toBeVisible();
-  await expectCleanLayout(page);
-
-  await win(page, 'side').locator('[data-tab="fleets"]').click();
-  await page.locator('#tree [data-system="acen"] > summary').click();
-  await page.locator('#tree summary[data-sel="fleet:probe"]').click();
-  await expect(heading(page)).toHaveText('Probe group');
-  await expect(page.locator('#sysSel')).toHaveValue('acen');
-  await page.locator('#tree summary[data-sel="fleet:convoy"]').click();
-  await page.locator('#tree [data-ship="Juno Star"]').click();
-  await expect(heading(page)).toHaveText('Freight convoy');
-  await expect(page.locator('#sysSel')).toHaveValue('sol');
-  await expect(win(page, 'sel').locator('table').first()).toContainText('Juno Star');
+  await expect(page.locator('#noContacts')).toBeVisible();
   await expectCleanLayout(page);
 });
-
 test('the display toggles change what the map draws and the zoom buttons zoom', async ({ page }) => {
-  await open(page, 'sel=fleet:convoy&zoom=2e9');
+  await open(page, 'sel=body:earth&zoom=2e9');
   await win(page, 'side').locator('[data-tab="display"]').click();
   const layers: [string, [number, number, number]][] = [
     ['Orbits', [58, 54, 104]],
-    ['Sensors', [52, 128, 128]],
-    ['Asteroids', [96, 90, 120]],
-    ['Course', [190, 138, 72]]
+    ['Asteroids', [96, 90, 120]]
   ];
   for (const [name, rgb] of layers) {
     const before = await countColour(page, rgb);
@@ -139,126 +117,24 @@ test('the display toggles change what the map draws and the zoom buttons zoom', 
   await expectCleanLayout(page);
 });
 
-test('the order composer adds, reorders, removes and clears a fleet’s orders', async ({ page }) => {
-  await open(page);
-  await expect(orderRows(page)).toHaveText([/Move to Mars/, /Survey Mars/, /Refuel at Mars/]);
-  await page.locator('#oAct').selectOption('Hold orbit at');
-  await page.locator('#oDst').selectOption('Venus');
-  await page.locator('[data-act="order"]').click();
-  await expect(orderRows(page)).toHaveText([
-    /Move to Mars/,
-    /Survey Mars/,
-    /Refuel at Mars/,
-    /Hold orbit at Venus/
-  ]);
-  await expect(orderRows(page).nth(3)).toHaveClass(/on/);
-  await expect(orderRows(page).nth(3)).toContainText('hold');
-
-  await page.locator('[data-act="up"]').click();
-  await page.locator('[data-act="up"]').click();
-  await expect(orderRows(page)).toHaveText([
-    /Move to Mars/,
-    /Hold orbit at Venus/,
-    /Survey Mars/,
-    /Refuel at Mars/
-  ]);
-  await expect(orderRows(page).nth(1)).toHaveClass(/on/);
-  await expect(orderRows(page).nth(2)).toContainText('-');
-  await page.locator('[data-act="down"]').click();
-  await expect(orderRows(page)).toHaveText([
-    /Move to Mars/,
-    /Survey Mars/,
-    /Hold orbit at Venus/,
-    /Refuel at Mars/
-  ]);
-
-  await orderRows(page).nth(0).click();
-  await expect(page.locator('[data-act="up"]')).toBeDisabled();
-  await page.locator('[data-act="remove"]').click();
-  await expect(orderRows(page)).toHaveText([/Survey Mars/, /Hold orbit at Venus/, /Refuel at Mars/]);
-
-  await page.locator('#oAct').selectOption('Join fleet');
-  await expect(page.locator('#oDst option')).toHaveText(['Freight convoy', 'Jupiter picket']);
-  await expect(page.locator('#oAct option', { hasText: 'Load cargo at' })).toHaveCount(0);
-
-  await page.locator('[data-act="clear"]').click();
-  await expect(orderRows(page)).toHaveText([/No orders/]);
-  await expect(page.locator('[data-act="remove"]')).toBeDisabled();
-  await expectCleanLayout(page);
-});
-
-test('an order executes as the clock runs and writes its events', async ({ page }) => {
-  await open(page, 'zoom=4e9');
-  await page.locator('#tree summary[data-sel="fleet:picket"]').click();
-  await expect(heading(page)).toHaveText('Jupiter picket');
-  await page.locator('[data-act="clear"]').click();
-  await page.locator('#oAct').selectOption('Move to');
-  await page.locator('#oDst').selectOption('Mars');
-  await page.locator('[data-act="order"]').click();
-  await page.locator('#oAct').selectOption('Refuel at colony');
-  await page.locator('#oDst').selectOption('Mars');
-  await page.locator('[data-act="order"]').click();
-  const fuel = win(page, 'sel').locator('.row3 small').first();
-  await expect(fuel).toHaveText('Fuel 56%');
-
-  const before = await centreOf(page, 'Jupiter picket');
-  await step(page, '1d').click();
-  await expect(page.locator('#tree summary[data-sel="fleet:picket"] small')).toHaveText('To Mars');
-  await expect(win(page, 'sel').locator('table').first()).toContainText('Under way');
-  const during = await centreOf(page, 'Jupiter picket');
-  expect(Math.hypot(during.x - before.x, during.y - before.y)).toBeGreaterThan(20);
-  await shoot(page, 'orders-running');
-
-  const whereabouts = page.locator('#tree summary[data-sel="fleet:picket"] small');
-  for (let day = 2; day <= 12 && (await whereabouts.textContent()) !== 'Mars'; day++) {
-    await step(page, '1d').click();
-    await expect(page.locator('#clock')).toContainText(`${12 + day} Mar`);
-  }
-  await expect(page.locator('#tree summary[data-sel="fleet:picket"] small')).toHaveText('Mars');
-  await expect(page.locator('#events .ev', { hasText: 'Jupiter picket arrived at Mars.' })).toHaveCount(1);
-  await expect(orderRows(page)).toHaveText([/Refuel at Mars/]);
-  await expect(win(page, 'sel').locator('table').first()).toContainText('Refuelling');
-
-  await step(page, '5d').click();
-  await expect(page.locator('#events .ev', { hasText: 'Jupiter picket refuelled at Mars.' })).toHaveCount(1);
-  await expect(fuel).toHaveText('Fuel 100%');
-  await expect(orderRows(page)).toHaveText([/No orders/]);
-  await shoot(page, 'orders-done');
-  await expectCleanLayout(page);
-});
-
 test('the event filter shows one category and clicking an event selects what it names', async ({ page }) => {
-  await open(page);
+  await open(page, 'sel=body:mars');
   const visible = page.locator('#events .ev:not([hidden])');
+  const all = await page.locator('#events .ev').count();
+  expect(all).toBeGreaterThan(0);
   await page.locator('#evFilter').selectOption('Contacts');
-  const eyes = await page.locator('#events .ev[data-cat="eye"]').count();
-  expect(eyes).toBeGreaterThan(0);
-  await expect(visible).toHaveCount(eyes);
-  await page.locator('#evFilter').selectOption('Economy');
-  await expect(visible).toHaveCount(await page.locator('#events .ev[data-cat="factory"]').count());
+  await expect(visible).toHaveCount(await page.locator('#events .ev[data-cat="eye"]').count());
   await page.locator('#evFilter').selectOption('All');
-  await expect(visible).toHaveCount(await page.locator('#events .ev').count());
+  await expect(visible).toHaveCount(all);
 
-  await page.locator('#events .ev', { hasText: 'Freight convoy began loading' }).click();
-  await expect(heading(page)).toHaveText('Freight convoy');
-  await page.locator('#events .ev', { hasText: 'Mars finished 2 mines' }).click();
-  await expect(heading(page)).toHaveText('Mars');
-  await page.locator('#events .ev', { hasText: 'lost its track on C-014' }).click();
-  await expect(heading(page)).toHaveText('Contact C-014');
-  await page.locator('#events .ev', { hasText: 'Probe group entered' }).click();
-  await expect(heading(page)).toHaveText('Probe group');
-  await expect(page.locator('#sysSel')).toHaveValue('acen');
-  await expect(label(page, 'Probe group')).toBeVisible();
-
+  await page.locator('#events .ev', { hasText: 'Jump point A' }).click();
+  await expect(heading(page)).toHaveText('Earth');
+  await expect(page.locator('#events .ev', { hasText: 'Jump point A' })).toContainText('06:00');
   await step(page, '1d').click();
-  await expect(page.locator('#events .ev').first()).toContainText('12 Mar');
-  await expect(page.locator('#events .ev').first()).not.toContainText('06:40 Survey group 1 passed');
+  await expect(page.locator('#events .ev', { hasText: 'Jump point A' })).toContainText('15 Nov');
   await expectCleanLayout(page);
 });
-
-test('the map pans by drag, flies to a double-clicked label and moves contacts along their tracks', async ({
-  page
-}) => {
+test('the map pans by drag and flies to a double-clicked label', async ({ page }) => {
   await open(page);
   const saturn = await centreOf(page, 'Saturn');
   const centre = await freeCentre(page);
@@ -277,13 +153,6 @@ test('the map pans by drag, flies to a double-clicked label and moves contacts a
   expect(await settled(page)).toBeLessThan(2e6);
   const jupiter = (await label(page, 'Jupiter').boundingBox())!;
   expect(Math.abs(jupiter.y + jupiter.height / 2 - centre.y)).toBeLessThan(40);
-
-  await open(page, 'zoom=4e9');
-  const contact = await centreOf(page, 'C-014 unknown');
-  await step(page, '8h').click();
-  await page.waitForTimeout(150);
-  const moved = await centreOf(page, 'C-014 unknown');
-  expect(Math.hypot(moved.x - contact.x, moved.y - contact.y)).toBeGreaterThan(20);
   await expectCleanLayout(page);
 });
 
@@ -322,12 +191,7 @@ test('a preset flies the camera to its target and the scale box keeps its width'
   const earthMpp = await settled(page);
   expect(earthMpp).toBeLessThan(2e5);
   expect((await page.locator('#mapScale').boundingBox())!.width).toBe(width);
-  await page.locator('#presets [data-preset="convoy"]').click();
-  await expect(camFocus(page)).toHaveText('Freight convoy');
-  expect(await settled(page)).toBeGreaterThan(earthMpp * 1.2);
-  await expect(label(page, 'Freight convoy')).toBeVisible();
   await expect(label(page, 'Earth')).toBeVisible();
-  await shoot(page, 'map-fleet-in-earth-orbit');
   await expectCleanLayout(page);
 });
 
@@ -353,42 +217,6 @@ test('zooming into the Sun stops at its surface and fills the view with it', asy
   await expectCleanLayout(page);
 });
 
-test('a fleet over a planet is listed under the planet’s name instead of drawn on it', async ({ page }) => {
-  await open(page);
-  const earth = (await label(page, 'Earth').boundingBox())!;
-  const convoy = (await label(page, 'Freight convoy').boundingBox())!;
-  expect(convoy.x).toBeCloseTo(earth.x, 0);
-  expect(convoy.y).toBeGreaterThan(earth.y);
-  expect(convoy.y - earth.y).toBeLessThan(70);
-  await label(page, 'Freight convoy').click();
-  await expect(heading(page)).toHaveText('Freight convoy');
-  await expectCleanLayout(page);
-});
-
-const shipLooks = async (page: Page) => {
-  const [marker, icon, scale] = ((await page.locator('#mapCv').getAttribute('data-ships')) ?? '0 0 0')
-    .split(' ')
-    .map(Number);
-  return { marker, icon, true: scale };
-};
-
-test('ships are markers far out, sprites in between and true scale close in', async ({ page }) => {
-  test.setTimeout(90_000);
-  await open(page, 'zoom=convoy:2e5');
-  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 0 });
-  await open(page, 'zoom=convoy:2000');
-  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 1, true: 0 });
-  await expect(label(page, 'Freight convoy')).toBeVisible();
-  await open(page, 'zoom=convoy:25');
-  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 4, true: 0 });
-  await expect(label(page, 'Juno Star')).toBeVisible();
-  await shoot(page, 'map-fleet-mid');
-  await open(page, 'zoom=convoy:4');
-  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 4 });
-  await shoot(page, 'map-fleet-near');
-  await expectCleanLayout(page);
-});
-
 test('every site has a jump button that flies to its live scene and selects it', async ({ page }) => {
   test.setTimeout(90_000);
   await open(page);
@@ -396,8 +224,8 @@ test('every site has a jump button that flies to its live scene and selects it',
   const sites: [string, string][] = [
     ['sol-station', 'Sol Station'],
     ['deep-well', 'Deep Well 2'],
-    ['battle', 'Battle · C-014'],
-    ['boarding', 'Boarding · C-022'],
+    ['battle', 'Fleet battle'],
+    ['boarding', 'Boarding action'],
     ['salvage', 'Salvage · wreck'],
     ['gate', 'Gate transit']
   ];
@@ -437,9 +265,9 @@ test('a site plays its scene close in and is a labelled marker far out', async (
   await expect(camFocus(page)).toHaveText('Salvage · wreck');
   await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'salvage', { timeout: 6000 });
 
-  await open(page, 'zoom=inner');
-  await expect(label(page, 'Battle · C-014')).toBeVisible();
-  await label(page, 'Battle · C-014').click();
-  await expect(heading(page)).toHaveText('Battle · C-014');
+  await open(page, 'zoom=battle:1e7');
+  await expect(label(page, 'Fleet battle')).toBeVisible();
+  await label(page, 'Fleet battle').click();
+  await expect(heading(page)).toHaveText('Fleet battle');
   await expectCleanLayout(page);
 });

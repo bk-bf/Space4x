@@ -1,31 +1,37 @@
-import { mockEconomy } from '#lib/game/mock/economy.ts';
-import type { Colony, Economy, ItemId } from '#lib/game/types.ts';
+import {
+  applyScenario,
+  economy,
+  homeSite,
+  resetEconomy,
+  siteById,
+  type Site
+} from '#lib/game/economy/index.ts';
+import { milestones } from '#lib/game/data/index.ts';
 
-export type TabId = 'summary' | 'industry' | 'mining' | 'shipyards' | 'stockpiles' | 'wealth';
+export type TabId = 'summary' | 'production' | 'construction' | 'stockpiles' | 'milestones';
 
 export const TABS: readonly { id: TabId; label: string }[] = [
   { id: 'summary', label: 'Summary' },
-  { id: 'industry', label: 'Industry' },
-  { id: 'mining', label: 'Mining' },
-  { id: 'shipyards', label: 'Shipyards' },
+  { id: 'production', label: 'Production' },
+  { id: 'construction', label: 'Construction' },
   { id: 'stockpiles', label: 'Stockpiles' },
-  { id: 'wealth', label: 'Wealth and trade' }
+  { id: 'milestones', label: 'Milestones' }
 ];
 
 export const isTabId = (id: string | null | undefined): id is TabId => TABS.some((t) => t.id === id);
 
-export const DEFAULT_COLONY = 'mars';
-
-export const economy: Economy = $state(mockEconomy());
-
-export const ui: { colony: string; tab: TabId; pick: ItemId } = $state({
-  colony: DEFAULT_COLONY,
-  tab: 'summary',
-  pick: 'mine'
-});
+export const ui: {
+  site: string;
+  tab: TabId;
+  group: number | null;
+  order: number | null;
+  pick: string;
+  milestone: number;
+} = $state({ site: 'earth', tab: 'summary', group: null, order: null, pick: 'farmland', milestone: 1 });
 
 export function showColony(id: string): void {
-  if (economy.colonies.some((c) => c.id === id)) ui.colony = id;
+  const site = siteById(id);
+  if (site) ui.site = site.id;
 }
 
 export function applyEconomyParams(params: URLSearchParams): void {
@@ -33,19 +39,24 @@ export function applyEconomyParams(params: URLSearchParams): void {
   const colony = params.get('colony');
   if (isTabId(tab)) ui.tab = tab;
   if (colony) showColony(colony);
+  const milestone = Number(params.get('milestone'));
+  if (Number.isInteger(milestone) && milestone >= 1 && milestone <= milestones.length)
+    ui.milestone = milestone;
+  applyScenario(params.get('scenario'));
 }
 
-export function selectedColony(): Colony {
-  const found = economy.colonies.find((c) => c.id === ui.colony);
-  const first = economy.colonies[0];
-  if (found) return found;
-  if (!first) throw new Error('the economy has no colonies');
-  return first;
+export function selectedSite(): Site {
+  return economy.sites.find((s) => s.id === ui.site) ?? homeSite();
 }
 
-export function resetEconomy(): void {
-  Object.assign(economy, mockEconomy());
-  ui.colony = DEFAULT_COLONY;
-  ui.tab = 'summary';
-  ui.pick = 'mine';
+export function resetEconomyScreen(): void {
+  resetEconomy();
+  Object.assign(ui, {
+    site: 'earth',
+    tab: 'summary',
+    group: null,
+    order: null,
+    pick: 'farmland',
+    milestone: 1
+  });
 }

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "wheat",
+    "name": "Wheat",
+    "category": "food",
+    "tier": "P",
+    "why": "Staple cereal; dwarf wheat completed seed-to-seed life cycles on the Mir space station greenhouse",
+    "source": "https://ntrs.nasa.gov/citations/20020044749"
+  },
+  {
+    "id": "potato",
+    "name": "Potato",
+    "category": "food",
+    "tier": "P",
+    "why": "High-yield tuber staple; grown in a Mars-conditions simulator by the International Potato Center",
+    "source": "https://www.foxnews.com/world/in-lab-simulating-harsh-mars-climate-a-nascent-potato-grows"
+  },
+  {
+    "id": "soybean",
+    "name": "Soybean",
+    "category": "food",
+    "tier": "P",
+    "why": "Plant protein and oil crop: the main staple source of protein where no livestock is kept",
+    "source": "https://en.wikipedia.org/wiki/Soybean"
+  },
+  {
+    "id": "leafy_greens",
+    "name": "Leafy greens (lettuce)",
+    "category": "food",
+    "tier": "P",
+    "why": "Fresh vegetables grown on the ISS in the Veggie growth system",
+    "source": "https://en.wikipedia.org/wiki/Vegetable_Production_System"
+  },
+  {
+    "id": "single_cell_protein",
+    "name": "Single-cell protein (methanotroph biomass)",
+    "category": "food",
+    "tier": "E",
+    "why": "Protein-rich bacterial biomass grown on methane and ammonia in a fermenter, so Sabatier methane can feed a crew with no farmland",
+    "source": "https://en.wikipedia.org/wiki/Single-cell_protein"
+  },
+  {
+    "id": "food_ration",
+    "name": "Food ration (dry, packaged)",
+    "category": "food",
+    "tier": "P",
+    "thin": true,
+    "why": "What a crew actually eats: dried, packaged food, about 1 kg dry mass per person per day on beyond-LEO missions",
+    "source": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf"
+  }
+]

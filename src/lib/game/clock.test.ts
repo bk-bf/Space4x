@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { DAY, STEPS, START_TIME, formatClock, formatEventTime } from './clock';
 
 describe('clock', () => {
-  it('starts at 12 Mar 2087 06:40 UTC', () => {
-    expect(formatClock(START_TIME)).toBe('12 Mar 2087 06:40');
+  it('starts at 15 Nov 2026 06:00 UTC', () => {
+    expect(formatClock(START_TIME)).toBe('15 Nov 2026 06:00');
   });
 
   it('offers the eleven steps from 5 seconds to 30 days in order', () => {
@@ -30,12 +30,12 @@ describe('clock', () => {
   });
 
   it('rolls the date over months and years', () => {
-    expect(formatClock(START_TIME + 20 * 86400_000)).toBe('1 Apr 2087 06:40');
-    expect(formatClock(Date.UTC(2087, 11, 31, 23, 59) + 60_000)).toBe('1 Jan 2088 00:00');
+    expect(formatClock(START_TIME + 16 * 86400_000)).toBe('1 Dec 2026 06:00');
+    expect(formatClock(Date.UTC(2026, 11, 31, 23, 59) + 60_000)).toBe('1 Jan 2027 00:00');
   });
 
   it('shows the time of day for events from today and the date for older ones', () => {
-    expect(formatEventTime(Date.UTC(2087, 2, 12, 4, 12), START_TIME)).toBe('04:12');
-    expect(formatEventTime(Date.UTC(2087, 2, 11, 23, 0), START_TIME)).toBe('11 Mar');
+    expect(formatEventTime(Date.UTC(2026, 10, 15, 4, 12), START_TIME)).toBe('04:12');
+    expect(formatEventTime(Date.UTC(2026, 10, 14, 23, 0), START_TIME)).toBe('14 Nov');
   });
 });

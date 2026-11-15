@@ -1,0 +1,78 @@
+[
+  {
+    "id": "graphite",
+    "name": "Graphite",
+    "category": "carbon_materials",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Battery anodes, nuclear fuel matrix and neutron moderator",
+    "source": "https://en.wikipedia.org/wiki/Graphite"
+  },
+  {
+    "id": "rcc",
+    "name": "Reinforced carbon-carbon",
+    "category": "carbon_materials",
+    "tier": "P",
+    "why": "Survives re-entry heating on leading edges and nose caps",
+    "source": "https://en.wikipedia.org/wiki/Reinforced_carbon%E2%80%93carbon"
+  },
+  {
+    "id": "pica",
+    "name": "Phenolic-impregnated carbon ablator (PICA)",
+    "category": "carbon_materials",
+    "tier": "P",
+    "thin": true,
+    "why": "Lightweight ablative heat shield for high-speed re-entry (Stardust, Dragon)",
+    "source": "https://en.wikipedia.org/wiki/Phenolic-impregnated_carbon_ablator"
+  },
+  {
+    "id": "cvd_diamond",
+    "name": "CVD diamond",
+    "category": "carbon_materials",
+    "tier": "P",
+    "why": "Highest thermal conductivity material for heat spreaders and windows",
+    "source": "https://en.wikipedia.org/wiki/Chemical_vapor_deposition_of_diamond"
+  },
+  {
+    "id": "carbon",
+    "name": "Carbon (elemental feedstock)",
+    "category": "carbon_materials",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "asteroid-c", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Carbon for steelmaking, carbides and carbon fibre in space",
+    "source": "https://en.wikipedia.org/wiki/Carbonaceous_chondrite"
+  },
+  {
+    "id": "carbon_fibre",
+    "name": "Carbon fibre",
+    "category": "carbon_materials",
+    "tier": "P",
+    "thin": true,
+    "why": "Highest stiffness-to-mass fibre for structures and pressure vessels",
+    "source": "https://en.wikipedia.org/wiki/Carbon_fibers"
+  },
+  {
+    "id": "cfrp",
+    "name": "Carbon-fibre reinforced polymer",
+    "category": "carbon_materials",
+    "tier": "P",
+    "thin": true,
+    "why": "Light structures, COPV overwraps and composite tanks",
+    "source": "https://en.wikipedia.org/wiki/Carbon-fiber_reinforced_polymer"
+  },
+  {
+    "id": "cnt_fibre",
+    "name": "Carbon nanotube fibre",
+    "category": "carbon_materials",
+    "tier": "E",
+    "thin": true,
+    "why": "Candidate tether and structural fibre; bulk strength far below single-tube values",
+    "source": "https://en.wikipedia.org/wiki/Carbon_nanotube"
+  }
+]

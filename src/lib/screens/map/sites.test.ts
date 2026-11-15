@@ -18,11 +18,12 @@ describe('sites', () => {
     expect(deep).toBeLessThan(jupiter.radius * 1.4);
   });
 
-  it('keeps the battle on contact C-014 as it moves', () => {
-    const c = g.contact('C-014')!;
-    expect(at('battle')).toEqual([c.x, c.y]);
-    g.advance(86_400);
-    expect(at('battle')).toEqual([c.x, c.y]);
+  it('keeps the battle near Jupiter as Jupiter moves', () => {
+    const jupiter = g.body('jupiter')!;
+    const near = () => dist(at('battle'), bodyPosition(jupiter, g.world.bodies));
+    expect(near()).toBeLessThan(jupiter.radius * 50);
+    g.advance(30 * 86_400);
+    expect(near()).toBeLessThan(jupiter.radius * 50);
   });
 
   it('puts the boarding action near Mars, the salvage in the belt and the gate on Jump point A', () => {

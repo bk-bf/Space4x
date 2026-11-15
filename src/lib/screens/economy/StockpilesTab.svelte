@@ -1,73 +1,50 @@
 <script lang="ts">
-  import type { Colony } from '#lib/game/types.ts';
+  import { materials } from '#lib/game/data/index.ts';
+  import { flowsOf, isStockless, type Site } from '#lib/game/economy/index.ts';
   import { Table, type Cell } from '#lib/ui/index.ts';
-  import { buildClasses, COMPONENTS, INSTALLATIONS, MINERALS } from './catalog.ts';
-  import Cols from './Cols.svelte';
-  import { formatCount, formatSigned, formatTons, formatYears } from './format.ts';
-  import { annualUse, fuelOutput, mineOutput } from './sim.ts';
-  import { economy } from './state.svelte.ts';
+  import { categoryName, formatAmount, formatDays, formatSignedAmount } from './format.ts';
+  import { coverDays } from './view.ts';
 
-  let { colony }: { colony: Colony } = $props();
+  let { site }: { site: Site } = $props();
 
-  const fill = (stock: number) => Math.min(100, Math.round((stock / colony.target) * 100));
-  const cover = (stock: number, use: number, made: number) =>
-    use > made ? formatYears(stock / (use - made)) : 'growing';
+  const flows = $derived(flowsOf(site));
 
-  const mineralRows = $derived<Cell[][]>([
-    ...MINERALS.map((m) => {
-      const made = mineOutput(colony, m.id, economy);
-      const use = annualUse(colony, m.id, economy);
-      return [
+  const used = (id: string) => (flows.consumed[id] ?? 0) + (flows.eaten[id] ?? 0);
+
+  const sections = $derived.by(() => {
+    const by: Record<string, Cell[][]> = {};
+    for (const m of materials) {
+      const stock = site.stock[m.id] ?? 0;
+      const made = flows.produced[m.id] ?? 0;
+      const use = used(m.id);
+      if (stock <= 0 && made <= 0 && use <= 0) continue;
+      const net = made - use;
+      const days = coverDays(site, flows, m.id);
+      const rows = (by[m.category] ??= []);
+      rows.push([
         m.name,
-        formatTons(colony.stock[m.id]),
-        { pct: fill(colony.stock[m.id]) },
-        formatCount(made),
-        formatCount(use),
-        { text: formatSigned(made - use), warn: made < use },
-        cover(colony.stock[m.id], use, made)
-      ];
-    }),
-    (() => {
-      const made = fuelOutput(colony, economy);
-      const use = colony.draw.fuel;
-      return [
-        'Fuel',
-        formatTons(colony.fuel),
-        { pct: fill(colony.fuel) },
-        formatCount(made),
-        formatCount(use),
-        { text: formatSigned(made - use), warn: made < use },
-        cover(colony.fuel, use, made)
-      ];
-    })()
-  ]);
-
-  const queued = (id: string) =>
-    colony.queue.filter((o) => o.item === id).reduce((a, o) => a + o.quantity, 0);
-
-  const componentRows = $derived<Cell[][]>(
-    COMPONENTS.map((c) => [c.name, colony.components[c.id], queued(c.id)])
-  );
-  const installationRows = $derived<Cell[][]>(
-    INSTALLATIONS.map((i) => [i.name, colony.installations[i.id], queued(i.id)])
-  );
-  const shipRows = $derived<Cell[][]>(buildClasses().map((c) => [c.name, c.role, colony.built[c.id] ?? 0]));
+        isStockless(m.id) ? '-' : formatAmount(m.id, stock),
+        formatAmount(m.id, made * 24),
+        formatAmount(m.id, use * 24),
+        { text: formatSignedAmount(m.id, net * 24), warn: net < -1e-9 },
+        isStockless(m.id)
+          ? made + 1e-9 >= use
+            ? 'enough'
+            : { text: 'short', warn: true }
+          : Number.isFinite(days)
+            ? { text: formatDays(days), warn: days < 365 }
+            : stock <= 0 && use > made - 1e-9 && use > 0
+              ? { text: 'none', warn: true }
+              : 'growing'
+      ]);
+    }
+    return Object.entries(by).sort(([a], [b]) => categoryName(a).localeCompare(categoryName(b)));
+  });
 </script>
 
-<h3>Minerals and fuel</h3>
-<Table
-  head={['Mineral', '>Stock, t', 'Against target', '>Mined a year', '>Used a year', '>Balance', '>Cover']}
-  rows={mineralRows}
-/>
-<Cols columns="1fr 1fr">
-  <div>
-    <h3>Components</h3>
-    <Table head={['Component', '>Held', '>Queued']} rows={componentRows} />
-    <h3>Ships delivered</h3>
-    <Table head={['Class', 'Role', '>Delivered']} rows={shipRows} />
-  </div>
-  <div>
-    <h3>Installations</h3>
-    <Table head={['Installation', '>Held', '>Queued']} rows={installationRows} />
-  </div>
-</Cols>
+<div id="stockpiles">
+  {#each sections as [category, rows] (category)}
+    <h3>{categoryName(category)}</h3>
+    <Table head={['Material', '>Stock', '>Made a day', '>Used a day', '>Balance a day', '>Cover']} {rows} />
+  {/each}
+</div>
