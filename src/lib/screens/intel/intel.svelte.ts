@@ -1,5 +1,6 @@
-import { classStats, game, registerClassUse, type Game } from '#lib/game/index.ts';
-import { weaponSummary } from '#lib/game/design.ts';
+import { game, registerClassUse, type Game } from '#lib/game/index.ts';
+import { lengthOf } from '#lib/game/design.ts';
+import { ALIEN_SPECS, SPECS } from '#lib/gfx/ships/specs.ts';
 
 export const STANCES = ['Unknown', 'Hostile', 'Wary', 'Neutral', 'Friendly', 'Allied'] as const;
 
@@ -139,13 +140,9 @@ export class Intel {
 }
 
 export function factsOf(c: ContactClass): readonly (readonly [string, string])[] {
-  const stats = classStats(c.look);
-  if (!stats) return c.facts ?? [];
-  return [
-    ['Length', `about ${stats.length} m`],
-    ['Top speed seen', `${stats.speed.toLocaleString('en-US')} km/s`],
-    ['Weapons seen', weaponSummary(stats.weapons)]
-  ];
+  if (c.facts) return c.facts;
+  const spec = ALIEN_SPECS[c.look] ?? SPECS.find((s) => s.id === c.look);
+  return spec ? [['Length', `about ${Math.round(lengthOf(spec))} m`]] : [];
 }
 
 registerClassUse((id) => CLASSES.some((c) => c.look === id));

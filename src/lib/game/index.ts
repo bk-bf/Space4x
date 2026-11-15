@@ -4,9 +4,7 @@ import './systems/contacts';
 
 export { Game, game, advance } from './state.svelte';
 export {
-  buildOf,
   className,
-  classBuild,
   classes,
   ClassRegistry,
   classInUse,
@@ -16,8 +14,8 @@ export {
   registerClassUse,
   shipClass,
   shipClasses,
-  statsFor,
-  type ClassBuild
+  specFor,
+  statsFor
 } from './classes.svelte';
 export { registerSystem, systemNames, type System } from './systems';
 export { registerStatus, STATUS_IDS, type StatusId, type StatusSource } from './status';
