@@ -19,11 +19,14 @@ const QUERIES = [
   'screen=research',
   'screen=classes',
   'screen=classes&cls=lighthouse',
+  'screen=classes&cls=atlas',
+  'screen=classes&new=hauler',
   'screen=colony',
   'screen=ground',
   'screen=commanders',
   'screen=intel',
-  'screen=galaxy'
+  'screen=galaxy',
+  'screen=galaxy&sys=luy'
 ];
 
 const screenOf = (query: string) => new URLSearchParams(query).get('screen') ?? 'map';

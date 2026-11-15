@@ -31,7 +31,7 @@ export type Drag = { kind: 'palette'; item: PaletteItem } | { kind: 'section'; i
 
 const FIRST_CLASS = 'bastion';
 
-class Designer {
+export class Designer {
   saved = $state.raw<readonly ShipClass[]>(SPECS.map((s) => asClass(s)));
   draft = $state.raw<ShipClass>(asClass(SPECS.find((s) => s.id === FIRST_CLASS)!));
   baseId = $state<string | null>(FIRST_CLASS);
