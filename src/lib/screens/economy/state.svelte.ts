@@ -24,15 +24,15 @@ export const ui: { colony: string; tab: TabId; pick: ItemId } = $state({
   pick: 'mine'
 });
 
-let paramsApplied = false;
+export function showColony(id: string): void {
+  if (economy.colonies.some((c) => c.id === id)) ui.colony = id;
+}
 
-export function applyParams(param: (name: string) => string | null): void {
-  if (paramsApplied) return;
-  paramsApplied = true;
-  const tab = param('tab');
-  const colony = param('colony');
+export function applyEconomyParams(params: URLSearchParams): void {
+  const tab = params.get('tab');
+  const colony = params.get('colony');
   if (isTabId(tab)) ui.tab = tab;
-  if (colony && economy.colonies.some((c) => c.id === colony)) ui.colony = colony;
+  if (colony) showColony(colony);
 }
 
 export function selectedColony(): Colony {

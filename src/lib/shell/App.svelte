@@ -34,10 +34,9 @@
     const slow = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let stop = () => {};
     let cancelled = false;
-    shell.params = params;
     document.fonts.ready.then(() => {
       if (cancelled) return;
-      applyQuery(query);
+      applyQuery(query, params);
       startRendering();
       stop = startLoop(game, frameTick, { intervalMs: slow ? 1000 : 100 });
       if (!query.check) return;

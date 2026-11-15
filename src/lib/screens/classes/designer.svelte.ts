@@ -240,11 +240,7 @@ export class Designer {
 
 export const designer = new Designer();
 
-let applied = false;
-
 export function applyClassParams(params: URLSearchParams): void {
-  if (applied) return;
-  applied = true;
   const hull = params.get('new');
   const id = params.get('cls');
   if (hull) designer.start(hull);

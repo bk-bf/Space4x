@@ -5,7 +5,6 @@
   import {
     ageOf,
     allPosts,
-    applyCommandersQuery,
     POST_KINDS,
     postLabel,
     RANKS,
@@ -16,8 +15,6 @@
     type RankId,
     type SortKey
   } from './roster.svelte.ts';
-
-  applyCommandersQuery();
 
   const shown = $derived(roster.visible(game));
   const rows = $derived<Cell[][]>(

@@ -25,6 +25,8 @@
   } from '#lib/game/index.ts';
   import { hash } from '#lib/gfx/math.ts';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
+  import { showColony } from '#lib/screens/economy/state.svelte.ts';
+  import { intel } from '#lib/screens/intel/intel.svelte.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
@@ -53,6 +55,16 @@
   const pick = (f: Fleet, index: number) => (picked = { fleet: f.id, index });
   const km = (n: number) => `${n.toLocaleString('en')} km/s`;
   const systemName = (id: string) => game.starSystem(id)?.name ?? '';
+
+  function openColony(b: Body, screen: 'colony' | 'economy') {
+    showColony(b.id);
+    shell.setScreen(screen);
+  }
+
+  function openIntel(c: Contact) {
+    intel.showContact(c.id);
+    shell.setScreen('intel');
+  }
 
   function add(f: Fleet) {
     if (!target) return;
@@ -216,9 +228,9 @@
       <Table head={['Mineral', '>Tons', 'Access']} rows={depositRows} />
       {#if isColony(body)}
         <div class="add">
-          <button data-go="colony" onclick={() => shell.setScreen('colony')}>Colony</button><button
+          <button data-go="colony" onclick={() => openColony(body, 'colony')}>Colony</button><button
             data-go="economy"
-            onclick={() => shell.setScreen('economy')}>Economy</button
+            onclick={() => openColony(body, 'economy')}>Economy</button
           >
         </div>
       {/if}
@@ -227,7 +239,7 @@
       <h3>Track</h3>
       <Table head={['Time', 'Bearing', '>Range']} rows={trackRows(contact)} />
       <div class="add">
-        <button data-go="intel" onclick={() => shell.setScreen('intel')}>Intelligence</button>
+        <button data-go="intel" onclick={() => openIntel(contact)}>Intelligence</button>
       </div>
     {/if}
   </div>

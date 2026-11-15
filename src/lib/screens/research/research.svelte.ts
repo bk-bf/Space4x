@@ -1,5 +1,4 @@
 import { game, type Game } from '#lib/game/index.ts';
-import { shell } from '#lib/ui/index.ts';
 import { isFieldId, TECHS, techById, techsOf, type FieldId, type Tech } from './tech.ts';
 
 export interface Scientist {
@@ -214,11 +213,7 @@ export class Research {
 
 export const research = new Research();
 
-let queryApplied = false;
-
-export function applyResearchQuery(): void {
-  if (queryApplied) return;
-  queryApplied = true;
-  const field = shell.param('field');
+export function applyResearchParams(params: URLSearchParams): void {
+  const field = params.get('field');
   if (isFieldId(field)) research.showField(field);
 }

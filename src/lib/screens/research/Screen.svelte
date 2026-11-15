@@ -2,11 +2,9 @@
   import { Panel, ScreenGrid, Stack, Table, type Cell } from '#lib/ui/index.ts';
   import { duration, number } from './format.ts';
   import ProjectPanel from './ProjectPanel.svelte';
-  import { applyResearchQuery, POINTS_PER_LAB_YEAR, research, YEAR_SECONDS } from './research.svelte.ts';
+  import { POINTS_PER_LAB_YEAR, research, YEAR_SECONDS } from './research.svelte.ts';
   import { fieldLabel, techById } from './tech.ts';
   import TechTree from './TechTree.svelte';
-
-  applyResearchQuery();
 
   const bonusText = (b: number) => `+${Math.round(b * 100)}%`;
   const open = $derived(research.open());

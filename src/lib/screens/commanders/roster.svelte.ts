@@ -1,6 +1,5 @@
 import { className, DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
 import { hash } from '#lib/gfx/math.ts';
-import { shell } from '#lib/ui/index.ts';
 
 export const RANKS = [
   { id: 'lieutenant', label: 'Lieutenant', pips: 1 },
@@ -216,12 +215,8 @@ export class Roster {
 
 export const roster = new Roster();
 
-let queryApplied = false;
-
-export function applyCommandersQuery(): void {
-  if (queryApplied) return;
-  queryApplied = true;
-  const index = Number(shell.param('cmd'));
-  const found = roster.officers[index];
-  if (shell.param('cmd') !== null && found) roster.select(found.id);
+export function applyCommandersParams(params: URLSearchParams): void {
+  const raw = params.get('cmd');
+  const found = raw === null ? undefined : roster.officers[Number(raw)];
+  if (found) roster.select(found.id);
 }

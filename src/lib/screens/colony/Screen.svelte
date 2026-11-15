@@ -6,9 +6,7 @@
   import { colonyEnvironment, colonyName, colonyPlanet } from '#lib/screens/economy/lookup.ts';
   import { drawColonyPlanet } from '#lib/screens/economy/planetView.ts';
   import { growthRate, workersFree } from '#lib/screens/economy/sim.ts';
-  import { applyParams, economy, selectedColony, ui } from '#lib/screens/economy/state.svelte.ts';
-
-  applyParams((name) => shell.param(name));
+  import { economy, selectedColony, ui } from '#lib/screens/economy/state.svelte.ts';
 
   const colony = $derived(selectedColony());
   const environment = $derived(colonyEnvironment(colony));

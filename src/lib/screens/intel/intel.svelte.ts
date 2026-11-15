@@ -1,6 +1,5 @@
 import { classStats, game, registerClassUse, type Game } from '#lib/game/index.ts';
 import { weaponSummary } from '#lib/game/design.ts';
-import { shell } from '#lib/ui/index.ts';
 
 export const STANCES = ['Unknown', 'Hostile', 'Wary', 'Neutral', 'Friendly', 'Allied'] as const;
 
@@ -225,6 +224,15 @@ export class Intel {
     this.setGroupFilter(id);
   }
 
+  showContact(contactId: string): boolean {
+    const latest = this.sightings.filter((s) => s.contact === contactId).sort((a, b) => b.at - a.at)[0];
+    if (!latest) return false;
+    this.pickGroup(latest.group);
+    this.filterClass = 'all';
+    this.sighting = latest.id;
+    return true;
+  }
+
   setGroupFilter(id: string): void {
     this.filterGroup = id;
     if (!this.classOptions().some((c) => c.id === this.filterClass)) this.filterClass = 'all';
@@ -253,11 +261,7 @@ registerClassUse((id) => CLASSES.some((c) => c.look === id));
 
 export const intel = new Intel();
 
-let queryApplied = false;
-
-export function applyIntelQuery(): void {
-  if (queryApplied) return;
-  queryApplied = true;
-  const id = shell.param('group');
+export function applyIntelParams(params: URLSearchParams): void {
+  const id = params.get('group');
   if (id) intel.pickGroup(id);
 }

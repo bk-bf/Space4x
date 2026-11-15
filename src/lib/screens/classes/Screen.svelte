@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { Panel, ScreenGrid, Stack, requestRender, shell } from '#lib/ui/index.ts';
+  import { Panel, ScreenGrid, Stack, requestRender } from '#lib/ui/index.ts';
   import { HULLS, PALETTE } from '#lib/game/design.ts';
-  import { applyClassParams, designer } from './designer.svelte.ts';
+  import { designer } from './designer.svelte.ts';
   import ClassStats from './ClassStats.svelte';
   import DesignStage from './DesignStage.svelte';
   import Gallery from './Gallery.svelte';
   import Palette from './Palette.svelte';
-
-  applyClassParams(shell.params);
 
   let hull = $state(HULLS[0]!.id);
 

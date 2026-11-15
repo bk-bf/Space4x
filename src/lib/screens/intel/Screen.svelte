@@ -13,9 +13,7 @@
     type Cell
   } from '#lib/ui/index.ts';
   import { drawClass } from './drawClass.ts';
-  import { applyIntelQuery, factsOf, intel, STANCES, type Stance } from './intel.svelte.ts';
-
-  applyIntelQuery();
+  import { factsOf, intel, STANCES, type Stance } from './intel.svelte.ts';
 
   const group = $derived(intel.groupOf(intel.group));
   const classes = $derived((group?.classes ?? []).map((id) => intel.classOf(id)));
