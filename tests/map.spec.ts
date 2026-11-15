@@ -364,3 +364,82 @@ test('a fleet over a planet is listed under the planet’s name instead of drawn
   await expect(heading(page)).toHaveText('Freight convoy');
   await expectCleanLayout(page);
 });
+
+const shipLooks = async (page: Page) => {
+  const [marker, icon, scale] = ((await page.locator('#mapCv').getAttribute('data-ships')) ?? '0 0 0')
+    .split(' ')
+    .map(Number);
+  return { marker, icon, true: scale };
+};
+
+test('ships are markers far out, sprites in between and true scale close in', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page, 'zoom=convoy:2e5');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 0 });
+  await open(page, 'zoom=convoy:2000');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 1, true: 0 });
+  await expect(label(page, 'Freight convoy')).toBeVisible();
+  await open(page, 'zoom=convoy:25');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 4, true: 0 });
+  await expect(label(page, 'Juno Star')).toBeVisible();
+  await shoot(page, 'map-fleet-mid');
+  await open(page, 'zoom=convoy:4');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 4 });
+  await shoot(page, 'map-fleet-near');
+  await expectCleanLayout(page);
+});
+
+test('every site has a jump button that flies to its live scene and selects it', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page);
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  const sites: [string, string][] = [
+    ['sol-station', 'Sol Station'],
+    ['deep-well', 'Deep Well 2'],
+    ['battle', 'Battle · C-014'],
+    ['boarding', 'Boarding · C-022'],
+    ['salvage', 'Salvage · wreck'],
+    ['gate', 'Gate transit']
+  ];
+  for (const [id, name] of sites) {
+    await page.locator(`#presets [data-preset="${id}"]`).click();
+    await expect(camFocus(page)).toHaveText(name);
+    await expect(heading(page)).toHaveText(name);
+    await expect(win(page, 'sel').locator('#siteMock')).toHaveText('mock scene');
+    expect(await settled(page)).toBeLessThan(7);
+    await expect(page.locator('#mapCv')).toHaveAttribute('data-live', new RegExp(`\\b${id}\\b`));
+    await shoot(page, `map-site-${id}`);
+  }
+  await expectCleanLayout(page);
+});
+
+test('a site plays its scene close in and is a labelled marker far out', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page, 'zoom=sol-station');
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'sol-station');
+  await expect(page.locator('#mapLabels span', { hasText: /^Slipway 1 · Pike/ })).toBeAttached();
+  await expect(page.locator('#mapLabels span', { hasText: 'Ceres Star · unloading' })).toBeVisible();
+  const frame = () =>
+    page.evaluate(() => {
+      const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
+      return Array.from(cv.getContext('2d')!.getImageData(0, 0, cv.width, cv.height).data).join();
+    });
+  const a = await frame();
+  await page.waitForTimeout(400);
+  expect(await frame(), 'the scene animates').not.toBe(a);
+
+  await open(page, 'zoom=salvage:300');
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', '');
+  await label(page, 'Salvage · wreck').click();
+  await expect(heading(page)).toHaveText('Salvage · wreck');
+  await page.locator('[data-go="watch"]').click();
+  await expect(camFocus(page)).toHaveText('Salvage · wreck');
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'salvage', { timeout: 6000 });
+
+  await open(page, 'zoom=inner');
+  await expect(label(page, 'Battle · C-014')).toBeVisible();
+  await label(page, 'Battle · C-014').click();
+  await expect(heading(page)).toHaveText('Battle · C-014');
+  await expectCleanLayout(page);
+});

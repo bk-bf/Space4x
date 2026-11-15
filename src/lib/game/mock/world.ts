@@ -5,6 +5,7 @@ import type { Body, Fleet, World } from '../types';
 import { mockBodies } from './bodies';
 import { mockContacts } from './contacts';
 import { mockFleets, type FleetSeed } from './fleets';
+import { mockSites } from './sites';
 import { mockSystems } from './starSystems';
 
 function bodyById(bodies: readonly Body[], id: string): Body {
@@ -40,6 +41,7 @@ export function mockWorld(): World {
     systems: mockSystems(),
     bodies,
     fleets: mockFleets().map((f) => place(f, bodies)),
-    contacts: mockContacts()
+    contacts: mockContacts(),
+    sites: mockSites()
   };
 }

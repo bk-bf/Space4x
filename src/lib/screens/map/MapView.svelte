@@ -23,6 +23,7 @@
   import { locate } from './targets';
 
   const MAX_DT = 0.1;
+  const SCENE_FRAME_MS = 33;
 
   let canvas: HTMLCanvasElement;
   let labelHost: HTMLDivElement;
@@ -30,6 +31,8 @@
   let anchors: Anchor[] = [];
   let last = 0;
   let benched = false;
+  let live = false;
+  let sceneTimer: ReturnType<typeof setTimeout> | null = null;
 
   const desk = () => canvas.parentElement!;
 
@@ -63,10 +66,16 @@
     applyPending(view);
     zoomLimit();
     cam.step(dt, locate, view);
-    const t0 = performance.now();
-    anchors = drawMap(fb, game, t);
+    const t0 = performance.now(),
+      drawn = drawMap(fb, game, t, dt);
+    anchors = drawn.anchors;
+    live = drawn.live.length > 0;
     const painted = performance.now() - t0,
-      d = desk();
+      d = desk(),
+      ships = `${drawn.ships.marker} ${drawn.ships.icon} ${drawn.ships.true}`,
+      sites = drawn.live.join(' ');
+    if (canvas.dataset.ships !== ships) canvas.dataset.ships = ships;
+    if (canvas.dataset.live !== sites) canvas.dataset.live = sites;
     layer.place(anchors, fb.scale, d.clientWidth, d.clientHeight, blocks(), layers.Names);
     return painted;
   }
@@ -84,6 +93,11 @@
     frame(layer, t, dt);
     updateReadout();
     if (cam.moving()) requestRender();
+    else if (live && !sceneTimer)
+      sceneTimer = setTimeout(() => {
+        sceneTimer = null;
+        requestRender();
+      }, SCENE_FRAME_MS);
   }
 
   function at(e: MouseEvent): [number, number] {
@@ -172,6 +186,7 @@
       stopFrames();
       stopReset();
       stopBake();
+      if (sceneTimer) clearTimeout(sceneTimer);
       layer.clear();
       d.removeEventListener('wheel', onWheel);
       d.removeEventListener('pointerdown', onPointerDown);

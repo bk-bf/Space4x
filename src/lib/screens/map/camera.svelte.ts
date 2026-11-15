@@ -89,7 +89,7 @@ const FREE_FLY_L = 8;
 export function presetIdOf(t: Target): string | null {
   const [kind, id] = splitTarget(t);
   if (kind === 'star') return id === '0' ? 'star' : `star${id}`;
-  return kind === 'body' || kind === 'fleet' ? id : null;
+  return kind === 'body' || kind === 'fleet' || kind === 'site' ? id : null;
 }
 
 export function flyToTarget(t: Target): void {

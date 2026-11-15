@@ -2,7 +2,7 @@
   import { CanvasView, DefList, requestRender } from '#lib/ui/index.ts';
   import { ground } from './ground.svelte.ts';
   import { KINDS, STANCES, menOf, supplyUseOf } from './model.ts';
-  import { drawSquad } from './sprites.ts';
+  import { drawUnitPicture } from './invasion.ts';
 
   const unit = $derived(ground.unit);
   const info = $derived(unit ? KINDS[unit.kind] : undefined);
@@ -14,7 +14,7 @@
 </script>
 
 {#if unit && info}
-  <CanvasView scale={4} vignette={0.7} height={160} id="unitCv" draw={(f) => drawSquad(f, unit.kind)} />
+  <CanvasView scale={2} vignette={0.7} height={160} id="unitCv" draw={(f) => drawUnitPicture(f, unit)} />
   <DefList
     rows={[
       ['Men', `${menOf(unit).toLocaleString('en')} of ${info.men.toLocaleString('en')}`],

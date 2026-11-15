@@ -5,6 +5,7 @@ import { planet } from '#lib/gfx/planets.ts';
 import { stars } from '#lib/gfx/scenes.ts';
 import { ALIEN_SPECS } from '#lib/gfx/ships/specs.ts';
 import { drawShip, fitShip, silhouette } from '#lib/gfx/topdown/index.ts';
+import { drawSitePicture } from './sites/index';
 
 export const PICTURE_W = 140;
 export const PICTURE_H = 72;
@@ -36,6 +37,10 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
     const b = game.body(sel.id);
     f.start();
     if (b) planet(f, 70, 36, b.rings ? 19 : 30, b.type, t * 0.02, b);
+  } else if (sel.kind === 'site') {
+    const site = game.site(sel.id);
+    stars(f, t, 26);
+    if (site) drawSitePicture(f, site, t);
   } else {
     const c = game.contact(sel.id),
       alien = c?.alienClass ? ALIEN_SPECS[c.alienClass] : undefined;

@@ -11,6 +11,7 @@ import type {
   GameEvent,
   JumpPoint,
   Selection,
+  Site,
   StarSystem,
   StatusValue,
   World
@@ -88,6 +89,10 @@ export class Game {
     return this.world.contacts.find((c) => c.id === id);
   }
 
+  site(id: string): Site | undefined {
+    return this.world.sites.find((s) => s.id === id);
+  }
+
   starSystem(id: string): StarSystem | undefined {
     return this.world.systems.find((s) => s.id === id);
   }
@@ -103,6 +108,7 @@ export class Game {
   systemOf(sel: Selection): string | undefined {
     if (sel.kind === 'fleet') return this.fleet(sel.id)?.system;
     if (sel.kind === 'body') return this.body(sel.id)?.system;
+    if (sel.kind === 'site') return this.site(sel.id)?.system;
     return this.contact(sel.id)?.system;
   }
 }

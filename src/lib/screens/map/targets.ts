@@ -1,4 +1,5 @@
-import { bodyPosition, game, parkingRadius, type Game } from '#lib/game/index.ts';
+import { bodyPosition, game, parkingRadius, sitePosition, type Game } from '#lib/game/index.ts';
+import type { SiteKind } from '#lib/game/index.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { Located, Point, Target } from './mapCamera';
 
@@ -34,6 +35,11 @@ export function locate(t: Target, g: Game = game): Located | undefined {
     const j = sys?.jumps.find((p) => p.id === id);
     return j ? { x: j.x, y: j.y } : undefined;
   }
+  if (kind === 'site') {
+    const site = g.site(id),
+      p = site && site.system === g.world.system ? sitePosition(g, site) : undefined;
+    return p ? { x: p[0], y: p[1] } : undefined;
+  }
   return undefined;
 }
 
@@ -45,6 +51,7 @@ export function nameOf(t: Target | null, g: Game = game): string {
   if (kind === 'fleet') return g.fleet(id)?.name ?? 'free';
   if (kind === 'contact') return id;
   if (kind === 'jump') return g.starSystem(g.world.system)?.jumps.find((j) => j.id === id)?.name ?? 'free';
+  if (kind === 'site') return g.site(id)?.name ?? 'free';
   return 'free';
 }
 
@@ -62,6 +69,14 @@ const BODY_FILL = 0.25;
 const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
 const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
+export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
+  yard: 0.4,
+  harvester: 0.3,
+  battle: 0.56,
+  boarding: 0.1,
+  salvage: 0.26,
+  gate: 0.34
+};
 
 export function systemExtent(g: Game, system: string): number {
   const sys = g.starSystem(system);
@@ -111,6 +126,14 @@ export function presets(g: Game, fw: number, fh: number): Preset[] {
         aim: target('fleet', f.id)
       });
     }
+  for (const site of g.world.sites)
+    if (site.system === system)
+      list.push({
+        id: site.id,
+        label: site.name,
+        L: SITE_VIEW_L[site.kind],
+        aim: target('site', site.id)
+      });
   return list;
 }
 

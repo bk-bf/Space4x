@@ -48,5 +48,6 @@ export {
   resolveGoal,
   workSeconds
 } from './orders';
+export { sitePosition } from './mock/sites';
 export { FLEET_SENSOR, bearing, nearest, observers } from './systems/contacts';
 export type * from './types';

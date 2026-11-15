@@ -3,9 +3,11 @@ import {
   bodyPosition,
   FLEET_SENSOR,
   resolveGoal,
+  sitePosition,
   type Contact,
   type Fleet,
   type Game,
+  type SelectionKind,
   type StarSystem
 } from '#lib/game/index.ts';
 import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
@@ -15,12 +17,21 @@ import { clamp, hash, mix } from '#lib/gfx/math.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { SunTint } from '#lib/gfx/sun.ts';
+import { METRES_PER_UNIT } from '#lib/gfx/topdown/index.ts';
 import { select } from '#lib/ui/index.ts';
 import { cam, flyToTarget, hopTo, layers, MAP_SCALE } from './camera.svelte';
 import { LABEL_H, type Anchor, type LabelLine } from './labels';
 import { type Point, type Target } from './mapCamera';
-import { bodyMark, BODY_COLOUR, clipLine, jumpMark, MARK_R, orbitArc, starMark } from './markers';
-import { contactGroup, drawShipGroup, fleetGroup, type ShipGroup, type ShipView } from './shipLayer';
+import { bodyMark, BODY_COLOUR, brackets, clipLine, jumpMark, MARK_R, orbitArc, starMark } from './markers';
+import {
+  contactGroup,
+  drawShipGroup,
+  fleetGroup,
+  type ShipGroup,
+  type ShipTally,
+  type ShipView
+} from './shipLayer';
+import { SCENE_REACH, sceneOf, siteIcon, siteMark, type SceneLabel } from './sites/index';
 import { target } from './targets';
 
 const MARKER_BELOW = 2.5;
@@ -35,6 +46,9 @@ const BELT_MAX = 900;
 const BELT_DENSITY = 5;
 const YEAR_S = 365.25 * 86_400;
 const FOCUS_PRI = 100;
+const SITE_PRI = 5;
+const SCENE_LABEL_PRI = 1;
+const NEAR_UNIT_PX = 0.75;
 const DRAWN_PRI = 50;
 const HOSTILE_PRI = 15;
 const PRIORITY: Record<PlanetType | 'star', number> = {
@@ -163,7 +177,13 @@ export function setFrameCache(on: boolean): void {
   cacheKey = lastKey = '';
 }
 
-export function drawMap(f: FB, game: Game, t: number): Anchor[] {
+export interface MapFrame {
+  anchors: Anchor[];
+  ships: ShipTally;
+  live: string[];
+}
+
+export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
   const s = cam.s,
     [ccx, ccy] = cam.centre,
     { ox, oy, w: fw, h: fh } = cam.frame,
@@ -258,7 +278,7 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
     return best;
   };
   const an: Anchor[] = [];
-  const pickOf = (t: Target, selectable: boolean, kind?: 'body' | 'fleet' | 'contact', id?: string) => ({
+  const pickOf = (t: Target, selectable: boolean, kind?: SelectionKind, id?: string) => ({
     pick: () => {
       if (selectable && kind && id) select(kind, id);
       hopTo(t);
@@ -310,8 +330,66 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
     });
   }
 
-  const sun = shown.find((b) => b.star)?.p ?? S(0, 0);
-  const view: ShipView = { project: S, pxPerMetre: 1 / s, tier: cam.tier, sun, t };
+  const star = system?.stars[0] ?? { x: 0, y: 0 },
+    sun = S(star.x, star.y),
+    St = METRES_PER_UNIT / s,
+    tally: ShipTally = { marker: 0, icon: 0, true: 0 },
+    view: ShipView = { project: S, pxPerMetre: 1 / s, tier: cam.tier, sun, t };
+  const sites = game.world.sites
+    .filter((x) => x.system === game.world.system)
+    .flatMap((site) => {
+      const w = sitePosition(game, site);
+      return w ? [{ site, w, P: S(w[0], w[1]), key: target('site', site.id) }] : [];
+    });
+  const live = St >= NEAR_UNIT_PX ? sites.filter((x) => vis(x.P, SCENE_REACH * St + 40)) : [];
+  const hidden = new Set(
+    live.flatMap((x) => ('contact' in x.site.place ? [target('contact', x.site.place.contact)] : []))
+  );
+  const sitePicks = (key: Target, id: string) => pickOf(key, true, 'site', id);
+  for (const { site, w, P, key } of live) {
+    const labels: SceneLabel[] = [],
+      picks = sitePicks(key, site.id),
+      chosen = sel.kind === 'site' && sel.id === site.id;
+    sceneOf(site).draw(
+      {
+        f,
+        W: (x, y) => [P[0] + x * St, P[1] + y * St],
+        S: St,
+        dt,
+        frame: t * 3,
+        sun: Math.atan2(star.y - w[1], star.x - w[0])
+      },
+      labels
+    );
+    an.push({
+      id: key,
+      text: site.name,
+      cls: site.hostile ? 'hot' : 'fl',
+      x: P[0],
+      y: P[1],
+      rx: 6,
+      ry: 6,
+      sel: chosen,
+      pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      target: key,
+      ...picks
+    });
+    for (const l of labels)
+      an.push({
+        id: `${key}/${l.key}`,
+        text: l.text,
+        cls: l.cls,
+        x: l.x,
+        y: l.y,
+        rx: l.r,
+        ry: l.r,
+        pri: SCENE_LABEL_PRI,
+        solid: false,
+        target: key,
+        ...picks
+      });
+  }
+
   const groups: ShipGroup[] = [
     ...game.world.fleets
       .filter((x) => x.system === game.world.system)
@@ -319,6 +397,7 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
     ...contacts.map((c) => contactGroup(c, sel.kind === 'contact' && sel.id === c.id))
   ];
   for (const g of groups) {
+    if (hidden.has(g.key)) continue;
     const P = S(g.x, g.y),
       [kind, id] = g.contact ? (['contact', g.name] as const) : (['fleet', g.key.slice(6)] as const),
       picks = pickOf(g.key, true, kind, id),
@@ -334,7 +413,7 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
       continue;
     }
     if (!vis(P, 200)) continue;
-    for (const m of drawShipGroup(f, g, view))
+    for (const m of drawShipGroup(f, g, view, tally))
       an.push({
         id: m.key,
         text: m.text,
@@ -348,6 +427,50 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
         target: g.key,
         ...picks
       });
+  }
+
+  for (const { site, P, key } of sites) {
+    if (live.some((x) => x.key === key)) continue;
+    const picks = sitePicks(key, site.id),
+      chosen = sel.kind === 'site' && sel.id === site.id,
+      line: LabelLine = { id: key, text: site.name, cls: site.hostile ? 'hot' : 'fl', target: key, ...picks },
+      host =
+        'contact' in site.place
+          ? target('contact', site.place.contact)
+          : 'jump' in site.place
+            ? target('jump', site.place.jump)
+            : null,
+      at = host ? an.findIndex((a) => a.id === host) : -1;
+    if (at >= 0) {
+      const a = an[at]!;
+      an[at] = { ...a, lines: [...(a.lines ?? []), line] };
+      continue;
+    }
+    const b = under(P);
+    if (b) {
+      if (cam.tier !== 'far') b.list.push(line);
+      continue;
+    }
+    if (host || !vis(P, 20)) continue;
+    const half =
+      cam.tier === 'far'
+        ? (siteMark(f, site, P[0], P[1], t), 4)
+        : siteIcon(f, site, P[0], P[1], Math.atan2(sun[1] - P[1], sun[0] - P[0]), t);
+    an.push({
+      id: key,
+      text: site.name,
+      cls: site.hostile ? 'hot' : 'fl',
+      x: P[0],
+      y: P[1],
+      rx: half,
+      ry: half,
+      sel: chosen,
+      pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      solid: cam.tier !== 'far',
+      target: key,
+      ...picks
+    });
+    if (chosen) brackets(f, P[0], P[1], half + 3, half + 1);
   }
 
   for (const b of shown) {
@@ -385,7 +508,7 @@ export function drawMap(f: FB, game: Game, t: number): Anchor[] {
     }
   }
   f.present();
-  return an;
+  return { anchors: an, ships: tally, live: live.map((x) => x.site.id) };
 }
 
 function drawBelt(
