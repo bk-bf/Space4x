@@ -1,30 +1,56 @@
 <script lang="ts">
   import type { FB } from '#lib/gfx/framebuffer.ts';
-  import { CanvasView, requestRender } from '#lib/ui/index.ts';
-  import { insertIndex, targetLabel, type LaidPart } from '#lib/game/design.ts';
+  import { CanvasView, animTime, requestRender } from '#lib/ui/index.ts';
+  import { insertIndex, targetLabel, type LaidPart, type Selection } from '#lib/game/design.ts';
   import { designer } from './designer.svelte.ts';
   import { drawDesign } from './drawDesign.ts';
-  import { frameOf, pickScale } from './geometry.ts';
+  import { DESIGN_SCALE, colX, frameOf, partAt, type Frame } from './geometry.ts';
+  import { inspector } from './inspector.svelte.ts';
   import PartControls from './PartControls.svelte';
 
   let box = $state({ w: 0, h: 0 });
   let fit = $state.raw<FB>();
   let dropX = $state<number | null>(null);
 
-  const scale = $derived(pickScale(designer.draft, box));
   const label = $derived(targetLabel(designer.draft, designer.selection));
 
-  function local(e: DragEvent) {
-    const stage = e.currentTarget as HTMLElement;
-    const r = stage.getBoundingClientRect();
+  function local(e: MouseEvent): { frame: Frame; x: number; y: number } | undefined {
     const f = fit;
     if (!f) return undefined;
-    const frame = frameOf(designer.draft, f.w, f.h, f.scale);
+    const r = f.cv.getBoundingClientRect();
     return {
-      frame,
-      x: (e.clientX - r.left) / f.scale - frame.originX,
+      frame: frameOf(designer.draft, f.w, f.h, f.scale),
+      x: (e.clientX - r.left) / f.scale,
       y: (e.clientY - r.top) / f.scale
     };
+  }
+
+  const units = (frame: Frame, x: number) => (x - frame.originX) / frame.S;
+
+  function hitAt(e: MouseEvent) {
+    const at = local(e);
+    return at ? partAt(designer.draft, at.frame, inspector.angleAt(animTime()), at.x, at.y) : null;
+  }
+
+  function hover(e: PointerEvent) {
+    const hit = hitAt(e);
+    if (hit?.comp !== inspector.hover?.comp) {
+      inspector.hover = hit;
+      requestRender();
+    }
+  }
+
+  function leaveStage() {
+    if (!inspector.hover) return;
+    inspector.hover = null;
+    requestRender();
+  }
+
+  function choose(e: MouseEvent, fallback: Selection | null) {
+    const picked = hitAt(e)?.selection ?? fallback;
+    if (!picked) return;
+    designer.select(picked);
+    requestRender();
   }
 
   function boundary(parts: readonly LaidPart[], x: number): number {
@@ -43,7 +69,7 @@
     if (e.dataTransfer) e.dataTransfer.dropEffect = drag.kind === 'palette' ? 'copy' : 'move';
     const inserts = drag.kind === 'section' || drag.item.kind === 'core';
     const at = inserts ? local(e) : undefined;
-    dropX = at ? boundary(at.frame.parts, at.x) : null;
+    dropX = at ? boundary(at.frame.parts, units(at.frame, at.x)) : null;
   }
 
   function leave(e: DragEvent) {
@@ -57,12 +83,13 @@
     const at = local(e);
     if (!drag || !at) return;
     e.preventDefault();
-    const under = at.frame.parts.find((p) => at.x >= p.x && at.x < p.x + p.w);
+    const x = units(at.frame, at.x);
+    const under = at.frame.parts.find((p) => x >= p.x && x < p.x + p.w);
     if (drag.kind === 'section') {
-      const to = insertIndex(at.frame.parts, at.x);
+      const to = insertIndex(at.frame.parts, x);
       designer.moveTo(drag.index, to > drag.index ? to - 1 : to);
     } else if (drag.item.kind === 'core')
-      designer.addCore(drag.item.key as never, insertIndex(at.frame.parts, at.x));
+      designer.addCore(drag.item.key as never, insertIndex(at.frame.parts, x));
     else if (drag.item.kind === 'att') {
       if (under?.target.kind === 'section')
         designer.attach(drag.item.key, {
@@ -90,35 +117,40 @@
     aria-label={label}
     bind:clientWidth={box.w}
     bind:clientHeight={box.h}
+    onpointermove={hover}
+    onpointerleave={leaveStage}
     ondragover={over}
     ondragleave={leave}
     ondrop={drop}
   >
     {#if box.w > 0}
-      {#key scale}
-        <CanvasView
-          {scale}
-          bg="grid"
-          id="designCv"
-          pickableLabels
-          draw={(f, t) => drawDesign(f, designer.draft, t, designer.selection)}
-          onfit={(f) => (fit = f)}
-        >
-          {#snippet labels(f)}
-            {@const frame = frameOf(designer.draft, f.w, f.h, f.scale)}
-            {@const sel = designer.selection}
-            {#each frame.parts as p, i (i)}
-              {@const isSection = p.target.kind === 'section'}
-              {@const on =
-                sel.kind === p.target.kind &&
-                (sel.kind !== 'section' || (p.target.kind === 'section' && p.target.index === sel.index))}
-              <div
-                class="col"
-                data-part={p.target.kind === 'section' ? `section:${p.target.index}` : p.target.kind}
-                class:on
-                style:left="{(frame.originX + p.x) * f.scale}px"
-                style:width="{p.w * f.scale}px"
-              >
+      <CanvasView
+        scale={DESIGN_SCALE}
+        bg="grid"
+        id="designCv"
+        pickableLabels
+        draw={(f, t) => drawDesign(f, designer.draft, t, designer.selection, inspector)}
+        onfit={(f) => (fit = f)}
+      >
+        {#snippet labels(f)}
+          {@const frame = frameOf(designer.draft, f.w, f.h, f.scale)}
+          {@const sel = designer.selection}
+          {#if inspector.turning}
+            <button class="spin" aria-label="Pick a part" onclick={(e) => choose(e, null)}></button>
+          {/if}
+          {#each frame.parts as p, i (i)}
+            {@const isSection = p.target.kind === 'section'}
+            {@const on =
+              sel.kind === p.target.kind &&
+              (sel.kind !== 'section' || (p.target.kind === 'section' && p.target.index === sel.index))}
+            <div
+              class="col"
+              data-part={p.target.kind === 'section' ? `section:${p.target.index}` : p.target.kind}
+              class:on
+              style:left="{colX(frame, p.x) * f.scale}px"
+              style:width="{p.w * frame.S * f.scale}px"
+            >
+              {#if !inspector.turning}
                 {#if p.target.kind === 'section'}
                   {@const index = p.target.index}
                   <button
@@ -127,7 +159,7 @@
                     aria-label="{p.name} top slot"
                     style:top="0"
                     style:height="{frame.cy * f.scale}px"
-                    onclick={() => designer.select({ kind: 'section', index, slot: 'top' })}
+                    onclick={(e) => choose(e, { kind: 'section', index, slot: 'top' })}
                   ></button>
                   <button
                     class="zone"
@@ -135,7 +167,7 @@
                     aria-label="{p.name} bottom slot"
                     style:top="{frame.cy * f.scale}px"
                     style:height="{(frame.lineY - frame.cy) * f.scale}px"
-                    onclick={() => designer.select({ kind: 'section', index, slot: 'bottom' })}
+                    onclick={(e) => choose(e, { kind: 'section', index, slot: 'bottom' })}
                   ></button>
                 {:else}
                   {@const kind = p.target.kind}
@@ -145,38 +177,38 @@
                     aria-label={p.name}
                     style:top="0"
                     style:height="{frame.lineY * f.scale}px"
-                    onclick={() => designer.select({ kind })}
+                    onclick={(e) => choose(e, { kind })}
                   ></button>
                 {/if}
-                <button
-                  class="tag"
-                  data-label={p.name}
-                  draggable={isSection}
-                  style:top="{(frame.lineY + 3) * f.scale}px"
-                  onclick={() =>
-                    designer.select(
-                      p.target.kind === 'section'
-                        ? {
-                            kind: 'section',
-                            index: p.target.index,
-                            slot: sel.kind === 'section' ? sel.slot : 'top'
-                          }
-                        : { kind: p.target.kind }
-                    )}
-                  ondragstart={(e) => p.target.kind === 'section' && sectionDrag(e, p.target.index)}
-                  ondragend={() => {
-                    designer.drag = null;
-                    dropX = null;
-                  }}><span>{p.name}</span></button
-                >
-              </div>
-            {/each}
-            {#if dropX !== null}
-              <div class="ins" style:left="{(frame.originX + dropX) * f.scale - 1}px"></div>
-            {/if}
-          {/snippet}
-        </CanvasView>
-      {/key}
+              {/if}
+              <button
+                class="tag"
+                data-label={p.name}
+                draggable={isSection}
+                style:top="{(frame.lineY + 3) * f.scale}px"
+                onclick={() =>
+                  designer.select(
+                    p.target.kind === 'section'
+                      ? {
+                          kind: 'section',
+                          index: p.target.index,
+                          slot: sel.kind === 'section' ? sel.slot : 'top'
+                        }
+                      : { kind: p.target.kind }
+                  )}
+                ondragstart={(e) => p.target.kind === 'section' && sectionDrag(e, p.target.index)}
+                ondragend={() => {
+                  designer.drag = null;
+                  dropX = null;
+                }}><span>{p.name}</span></button
+              >
+            </div>
+          {/each}
+          {#if dropX !== null}
+            <div class="ins" style:left="{colX(frame, dropX) * f.scale - 1}px"></div>
+          {/if}
+        {/snippet}
+      </CanvasView>
     {/if}
   </div>
   <PartControls />
@@ -211,6 +243,15 @@
     position: absolute;
     top: 0;
     bottom: 0;
+  }
+  .spin {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    pointer-events: auto;
   }
   .zone,
   .tag {

@@ -21,7 +21,8 @@ Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` synta
 | `game/`                   | game state, clock, systems and the tick loop; `game/index.ts` is its public face                    |
 | `game/mock/<domain>.ts`   | mock world data, one file per domain                                                                |
 | `game/systems/`           | simulation systems every screen relies on (orbits, fleet movement)                                  |
-| `gfx/`                    | pixel framebuffer, noise and dither, planets, sun, ship parts and classes, scenes, icons            |
+| `gfx/`                    | pixel framebuffer, noise and dither, planets, sun, ship class specs, scenes, icons                  |
+| `gfx/topdown/`            | top-down ships, turrets, craft, stations and props generated from a design, and their renderer      |
 | `ui/`                     | shared primitives, the window manager, the frame bus, the shell state, the layout check             |
 | `shell/`                  | the app shell: top bar, screen stage, keyboard, URL query states                                    |
 | `screens/list.ts`         | the nine screens, their icons and F keys                                                            |
@@ -46,6 +47,24 @@ While running, the loop advances `game.step` of game time per real second, ten t
 ### Ship classes
 
 `game/classes.svelte.ts` holds the one registry of ship classes (`shipClasses()`, `shipClass(id)`, `classStats(id)`, `classBuild(id)`). The designer edits it; shipyards, fleets, the map and Intelligence read it. `game/design.ts` holds the per-part stat tables that every class stat comes from: tons, build points and yard kind (`buildOf`) and speed (`designStats`). A ship keeps only its `classId`, `className(id)` gives the name, and `fleetSpeed(fleet)` is the speed of its slowest class. A screen that keeps a class in use (a yard tooled for it) registers `registerClassUse` so the designer will not delete it.
+
+### Drawing ships
+
+Every ship outside the System map is drawn top-down from its class design by `gfx/topdown/`, the port of `mockup/scenes/ships.js`. `gfx/ships/specs.ts` holds the shared vocabulary: the part keys (`CORE_KEYS`, `STERN_KEYS`, `BOW_KEYS`, `ATTACHMENT_KEYS`), their names (`PNAME`) and the shipped `SPECS`. A design is laid stern to bow in units of `METRES_PER_UNIT` (5 m); `design.ts` `layout()` and `lengthOf()` read the same geometry, so a stat length is the drawn length.
+
+Each part is built into a heightmap, material, component and emissive map once per class object and detail level (`LODS`, 0.375 to 12 px per 5 m) and cached on the class object, so an edited class (a new object) gets new sprites and an unchanged one is never rebuilt. A scale between two levels draws the next level up, scaled down. Each part and each hardpoint is its own component with a `kind` (system), a `name`, its `part` index in `layout()` order and its `slot`.
+
+The API, from `#lib/gfx/index.ts` or `#lib/gfx/topdown/index.ts`, takes any `Pixels` (`w`, `h`, `d`, `px`; an `FB` is one) and screen positions, so a caller draws many ships from its own list of positions:
+
+- `drawShip(fb, cls, { x, y, angle, pxPerMetre, sun?, frame?, livery?, thrust?, damage?, aim?, swap?, systems?, highlight?, dead?, cut?, build?, ghost?, clipX?, charging? })` draws true scale at the detail level for `pxPerMetre`, with drive plumes, turrets turned by `aim` (radians relative to the hull, one per `shipMounts` entry) and lighting from `sun` (screen angle towards the light; the mockup's default when left out). Returns `{ lod, scale, culled }`.
+- `drawShipIcon(fb, cls, x, y, angle, sizePx, view?)` draws a fixed-size sprite, whatever the class length.
+- `fitShip(cls, w, h, pad?, plumeRoom?)` gives the centre and `pxPerMetre` that fit a class into a box.
+- `shipLengthMetres(cls)`, `shipBeamMetres(cls)`, `shipMounts(cls)` (metres from the ship centre, x towards the bow), `shipComponents(cls)`, `pickShip(cls, view, sx, sy)`, `nearestHull(cls, x, y)`, `detailLevel(pxPerMetre)`, `liveryOf(cls)`.
+- `new ShipDamage()` holds hits in metres from the centre (`hit(x, y, radius, severity)`); pass it as `damage` and it is mapped onto each detail level once.
+- `silhouette(fb, cls, view)` is the red treatment for an unidentified class.
+- `drawStation(fb, 'core' | 'ring', view)`, `drawProp(fb, kind, view)` and `drawCraft(fb, 'fighter' | 'shuttle', view)` draw the mockup's stations, props and small craft.
+
+`frame` is the animation counter for blinking lights, plumes and charging guns; screens pass three per frame-bus tick, as the mockup ran at 30 frames a second. Drawing cost grows with the pixels a ship covers, about 90 ns each: draw small ships with `drawShipIcon` rather than at a true scale that covers the screen many times over.
 
 ### Top bar chips
 

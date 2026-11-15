@@ -4,9 +4,9 @@ A space 4X game with Aurora-style depth: detailed colonies, industry, research, 
 
 ## Status
 
-The interface is being built as a SvelteKit app from the approved mockup. The system map, its window manager, the top bar and the game clock work; the other eight screens are placeholders. Everything shown runs on mock data, and the top bar says so.
+The interface is a SvelteKit app built from the approved mockup. All nine screens work against a running game clock on mock data, and the top bar says so.
 
-`mockup/` is the approved interface as a static page with no build step. It stays as the reference the app is checked against.
+`mockup/` is the approved interface as a static page with no build step. It stays as the reference the app is checked against. `mockup/scenes/` is the approved map scale and ship art reference: real distances, smooth zoom, top-down generated ships and the site scenes; serve `mockup/` and open `scenes/`.
 
 ## Running
 

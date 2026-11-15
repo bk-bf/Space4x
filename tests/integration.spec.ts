@@ -12,7 +12,7 @@ async function open(page: Page, query = '') {
 const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
 const chip = (page: Page, title: string) => page.locator(`#chips .chip[title="${title}"]`);
 const mapLabel = (page: Page, text: string) =>
-  page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}$`) });
+  page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}( ×\\d+)?$`) });
 const term = (page: Page, text: RegExp): Locator =>
   page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
 const heading = (page: Page, screen: string) => page.locator(`[data-screen="${screen}"] .pan > h2`).first();

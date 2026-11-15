@@ -1,6 +1,5 @@
-import { SPECS } from '#lib/gfx/ships/specs.ts';
+import { SPECS, type BowKey, type CoreKey } from '#lib/gfx/ships/specs.ts';
 import { classInUse, classes, ClassRegistry, game } from '#lib/game/index.ts';
-import type { BowKey, CoreKey } from '#lib/gfx/ships/parts.ts';
 import {
   HULLS,
   MAX_SECTIONS,
@@ -26,6 +25,7 @@ import {
   type ShipClass,
   type Slot
 } from '#lib/game/design.ts';
+import { inspector } from './inspector.svelte.ts';
 
 export type Drag = { kind: 'palette'; item: PaletteItem } | { kind: 'section'; index: number };
 
@@ -81,6 +81,7 @@ export class Designer {
   }
 
   private open(c: ShipClass, baseId: string | null): void {
+    inspector.repair();
     this.draft = c;
     this.baseId = baseId;
     this.showBase();

@@ -1,22 +1,25 @@
 import type { StarSystem } from '../types';
+import { AU, au } from '../units';
+
+const polar = (r: number, a: number) => ({ x: Math.cos(a) * r * AU, y: Math.sin(a) * r * AU });
 
 export const mockSystems = (): StarSystem[] => [
   {
     id: 'sol',
     name: 'Sol',
-    stars: [{ x: 0, y: 0, radius: 14 }],
-    belt: { inner: 124, width: 13 },
-    jumps: [{ id: 'sol-a', name: 'Jump point A', x: -150, y: -84, to: 'acen-a' }]
+    stars: [{ name: 'Sun', x: 0, y: 0, radius: 6.957e8 }],
+    belt: { inner: au(2.15), width: au(1.15) },
+    jumps: [{ id: 'sol-a', name: 'Jump point A', ...polar(6.2, 4), to: 'acen-a' }]
   },
   {
     id: 'acen',
     name: 'Alpha Centauri',
     stars: [
-      { x: 0, y: 0, radius: 14 },
+      { name: 'Alpha Centauri A', x: 0, y: 0, radius: 8.51e8 },
       {
-        x: 176,
-        y: -96,
-        radius: 9,
+        name: 'Alpha Centauri B',
+        ...polar(23.4, -0.5),
+        radius: 6.02e8,
         tint: {
           core: [
             [255, 236, 200],
@@ -30,10 +33,10 @@ export const mockSystems = (): StarSystem[] => [
         }
       }
     ],
-    belt: { inner: 80, width: 9 },
+    belt: { inner: au(1.08), width: au(0.12) },
     jumps: [
-      { id: 'acen-a', name: 'Jump point A', x: -160, y: 70, to: 'sol-a' },
-      { id: 'acen-b', name: 'Jump point B', x: 120, y: 118, to: 'barn-a' }
+      { id: 'acen-a', name: 'Jump point A', ...polar(2.36, 2.73), to: 'sol-a' },
+      { id: 'acen-b', name: 'Jump point B', ...polar(2.28, 0.78), to: 'barn-a' }
     ]
   },
   {
@@ -41,9 +44,10 @@ export const mockSystems = (): StarSystem[] => [
     name: "Barnard's Star",
     stars: [
       {
+        name: "Barnard's Star",
         x: 0,
         y: 0,
-        radius: 9,
+        radius: 1.36e8,
         tint: {
           core: [
             [255, 214, 186],
@@ -57,6 +61,6 @@ export const mockSystems = (): StarSystem[] => [
         }
       }
     ],
-    jumps: [{ id: 'barn-a', name: 'Jump point A', x: -150, y: -70, to: 'acen-b' }]
+    jumps: [{ id: 'barn-a', name: 'Jump point A', ...polar(2.24, -2.7), to: 'acen-b' }]
   }
 ];

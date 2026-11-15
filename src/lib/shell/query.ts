@@ -5,13 +5,13 @@ export interface QueryState {
   screen: string | null;
   selection: Selection;
   system: string | null;
-  zoom: number | null;
+  zoom: string | null;
   arrangement: 'dock' | 'float';
   dock: { id: string; slot: Dock } | null;
   check: boolean;
 }
 
-const KINDS: readonly SelectionKind[] = ['fleet', 'body', 'contact'];
+const KINDS: readonly SelectionKind[] = ['fleet', 'body', 'contact', 'site'];
 const SLOTS: readonly Dock[] = ['', 'left', 'right', 'bottom'];
 const DEFAULT_SELECTION: Selection = { kind: 'fleet', id: 'survey' };
 
@@ -28,12 +28,11 @@ function parseDock(raw: string | null): QueryState['dock'] {
 }
 
 export function parseQuery(params: URLSearchParams): QueryState {
-  const zoom = Number(params.get('zoom'));
   return {
     screen: params.get('screen'),
     selection: parseSelection(params.get('sel')),
     system: params.get('sys'),
-    zoom: params.has('zoom') && zoom > 0 ? zoom : null,
+    zoom: params.get('zoom') || null,
     arrangement: params.get('arr') === 'float' ? 'float' : 'dock',
     dock: parseDock(params.get('dock')),
     check: params.has('check')

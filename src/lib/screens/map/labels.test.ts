@@ -66,6 +66,7 @@ interface FakeEl {
   className: string;
   hidden: boolean;
   style: Record<string, string>;
+  dataset: Record<string, string>;
   onclick: (() => void) | null;
   ondblclick: (() => void) | null;
   remove(): void;
@@ -81,6 +82,7 @@ function fakeDom() {
         className: '',
         hidden: false,
         style: {},
+        dataset: {},
         onclick: null,
         ondblclick: null,
         remove: () => attached.delete(el)
@@ -91,6 +93,50 @@ function fakeDom() {
   const host = { append: (el: FakeEl) => attached.add(el) } as unknown as HTMLElement;
   return { host, attached };
 }
+
+describe('label decluttering', () => {
+  it('gives a crowded spot to the label of higher priority', () => {
+    const low = { ...anchor('low', 100, 100), pri: 3 },
+      high = { ...anchor('high', 101, 100), pri: 20 };
+    const spots = layoutLabels([input(low), input(high)], [], 1, 600, 400, [], true);
+    expect(spots.get('high')).not.toBeNull();
+    expect(spots.get('high')!.slot).toBe(0);
+    const lowSpot = spots.get('low');
+    if (lowSpot) expect(hit(boxOf(lowSpot), boxOf(spots.get('high')!))).toBe(false);
+  });
+
+  it('puts the selected label first whatever its priority', () => {
+    const chosen = { ...anchor('chosen', 100, 100), sel: true, pri: 0 },
+      planet = { ...anchor('planet', 100, 100), pri: 50 };
+    expect(layoutLabels([input(planet), input(chosen)], [], 1, 600, 400, [], true).get('chosen')!.slot).toBe(
+      0
+    );
+  });
+
+  it('reserves room for the lines listed under a label', () => {
+    const earth = {
+      ...anchor('earth', 100, 100),
+      pri: 9,
+      lines: [
+        { id: 'convoy', text: 'Freight convoy' },
+        { id: 'survey', text: 'Survey group' }
+      ]
+    };
+    const below = { ...anchor('below', 100 + 4 + 6 + 10, 100 + 40), pri: 1 };
+    const spots = layoutLabels([input(earth), input(below)], [], 1, 600, 400, [], true);
+    const e = spots.get('earth')!,
+      list: Box = [e.x, e.y, e.x + W, e.y + LABEL_H * 3];
+    const b = spots.get('below');
+    if (b) expect(hit(boxOf(b), list)).toBe(false);
+  });
+
+  it('pins a fixed label where it is told and lets solid=false anchors be covered', () => {
+    const pinned = { ...anchor('pinned', 10, 300, 0, 0), fixed: true, solid: false },
+      disc = { ...anchor('disc', 40, 300, 200, 200), solid: false };
+    const spots = layoutLabels([input(pinned), input(disc)], [], 1, 600, 400, [], true);
+    expect(spots.get('pinned')).toEqual({ slot: 0, x: 10, y: 300 });
+  });
+});
 
 describe('the label layer', () => {
   afterEach(() => vi.unstubAllGlobals());

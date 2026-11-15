@@ -3,7 +3,7 @@ import { clamp, hash } from './math';
 import { dith, fbm, noise3 } from './noise';
 import type { RGB } from './palette';
 
-export type PlanetType = 'terran' | 'mars' | 'venus' | 'gas' | 'saturn' | 'rock';
+export type PlanetType = 'terran' | 'mars' | 'venus' | 'gas' | 'saturn' | 'ice' | 'ice2' | 'rock';
 
 export interface PlanetLook {
   tilt?: number;
@@ -88,6 +88,24 @@ function saturn(x: number, y: number, z: number, o: number): Sample {
   return sea(SAT[Math.floor(y * 4.4 + (w - 0.5) * 1.1 + 20) % 3]!);
 }
 
+const ICE: readonly RGB[] = [
+  [150, 210, 220],
+  [176, 226, 232],
+  [126, 190, 204]
+];
+const ICE2: readonly RGB[] = [
+  [64, 100, 210],
+  [90, 130, 230],
+  [48, 76, 170]
+];
+
+const iceGiant =
+  (bands: readonly RGB[]) =>
+  (x: number, y: number, z: number, o: number): Sample => {
+    const w = fbm(x * 1.6 + 9, y * 3 + 2, z * 1.6, o);
+    return sea(bands[Math.floor(y * 3 + (w - 0.5) * 1.2 + 20) % 3]!);
+  };
+
 function rock(x: number, y: number, z: number, o: number): Sample {
   const h = fbm(x * 2.6 + 17, y * 2.6, z * 2.6, o);
   if (noise3(x * 6 + 3, y * 6, z * 6) > 0.72) return sea([70, 68, 76]);
@@ -100,6 +118,8 @@ const SURFACES: Record<PlanetType, (x: number, y: number, z: number, o: number) 
   venus,
   gas,
   saturn,
+  ice: iceGiant(ICE),
+  ice2: iceGiant(ICE2),
   rock
 };
 

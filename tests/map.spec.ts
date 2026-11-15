@@ -5,7 +5,26 @@ import { join } from 'node:path';
 const SHOTS = process.env.SHOTS;
 const win = (page: Page, id: string) => page.locator(`#w-${id}`);
 const heading = (page: Page) => win(page, 'sel').locator('.tb span').first();
-const label = (page: Page, text: string) => page.locator('#mapLabels').getByText(text, { exact: true });
+const label = (page: Page, text: string) =>
+  page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}( ×\\d+)?$`) });
+const zoomNow = (page: Page) => page.locator('#zoomNow');
+const mpp = async (page: Page) => Number(await zoomNow(page).getAttribute('data-mpp'));
+const camFocus = (page: Page) => page.locator('#mapCam dd').first();
+
+async function settled(page: Page): Promise<number> {
+  await expect
+    .poll(
+      async () => {
+        const at = async () => `${await mpp(page)} ${await page.locator('#mapCam').textContent()}`;
+        const a = await at();
+        await page.waitForTimeout(250);
+        return a === (await at());
+      },
+      { timeout: 10_000 }
+    )
+    .toBe(true);
+  return mpp(page);
+}
 const orderRows = (page: Page) => win(page, 'sel').locator('table').nth(1).locator('tr');
 const step = (page: Page, text: string) =>
   page.locator('#steps button', { hasText: new RegExp(`^${text}$`) });
@@ -54,6 +73,7 @@ async function freeCentre(page: Page) {
 test('the system picker switches the shown system and the tree selects across systems', async ({ page }) => {
   await open(page);
   await page.locator('#sysSel').selectOption('Alpha Centauri');
+  await expect(label(page, 'Alpha Centauri B')).toBeVisible();
   await expect(label(page, 'Centauri II')).toBeVisible();
   await expect(label(page, 'Mars')).toBeHidden();
   await win(page, 'side').locator('[data-tab="bodies"]').click();
@@ -82,7 +102,7 @@ test('the system picker switches the shown system and the tree selects across sy
 });
 
 test('the display toggles change what the map draws and the zoom buttons zoom', async ({ page }) => {
-  await open(page);
+  await open(page, 'sel=fleet:convoy&zoom=2e9');
   await win(page, 'side').locator('[data-tab="display"]').click();
   const layers: [string, [number, number, number]][] = [
     ['Orbits', [58, 54, 104]],
@@ -100,19 +120,22 @@ test('the display toggles change what the map draws and the zoom buttons zoom', 
     await page.locator(`[data-show="${name}"]`).click();
     await expect(page.locator(`[data-show="${name}"]`)).toHaveClass(/on/);
   }
-  await expect(label(page, 'Saturn')).toBeVisible();
+  await expect(label(page, 'Mars')).toBeVisible();
   await page.locator('[data-show="Names"]').click();
   await expect(page.locator('#mapLabels span:not([hidden])')).toHaveCount(0);
   await page.locator('[data-show="Names"]').click();
-  await expect(label(page, 'Saturn')).toBeVisible();
+  await expect(label(page, 'Mars')).toBeVisible();
 
+  expect(await mpp(page)).toBeCloseTo(2e9, -3);
+  await expect(zoomNow(page)).toHaveText('1 px = 2,000,000 km');
   await page.locator('[data-zoom="1"]').click();
-  await expect(page.locator('#zoomNow')).toHaveText('1.5x');
+  await expect.poll(() => mpp(page)).toBeLessThan(1.6e9);
   await page.locator('[data-zoom="-1"]').click();
   await page.locator('[data-zoom="-1"]').click();
-  await expect(page.locator('#zoomNow')).toHaveText('0.75x');
+  await expect.poll(() => mpp(page)).toBeGreaterThan(2.4e9);
   await page.locator('[data-zoom="0"]').click();
-  await expect(page.locator('#zoomNow')).toHaveText('1x');
+  await expect.poll(() => mpp(page), { timeout: 6000 }).toBeGreaterThan(1e10);
+  await expect(page.locator('#tiers .on')).toHaveText('Far');
   await expectCleanLayout(page);
 });
 
@@ -165,7 +188,7 @@ test('the order composer adds, reorders, removes and clears a fleet’s orders',
 });
 
 test('an order executes as the clock runs and writes its events', async ({ page }) => {
-  await open(page);
+  await open(page, 'zoom=4e9');
   await page.locator('#tree summary[data-sel="fleet:picket"]').click();
   await expect(heading(page)).toHaveText('Jupiter picket');
   await page.locator('[data-act="clear"]').click();
@@ -183,7 +206,7 @@ test('an order executes as the clock runs and writes its events', async ({ page 
   await expect(page.locator('#tree summary[data-sel="fleet:picket"] small')).toHaveText('To Mars');
   await expect(win(page, 'sel').locator('table').first()).toContainText('Under way');
   const during = await centreOf(page, 'Jupiter picket');
-  expect(Math.hypot(during.x - before.x, during.y - before.y)).toBeGreaterThan(30);
+  expect(Math.hypot(during.x - before.x, during.y - before.y)).toBeGreaterThan(20);
   await shoot(page, 'orders-running');
 
   const whereabouts = page.locator('#tree summary[data-sel="fleet:picket"] small');
@@ -233,7 +256,7 @@ test('the event filter shows one category and clicking an event selects what it 
   await expectCleanLayout(page);
 });
 
-test('the map pans by drag, centres on a double-click and moves contacts along their tracks', async ({
+test('the map pans by drag, flies to a double-clicked label and moves contacts along their tracks', async ({
   page
 }) => {
   await open(page);
@@ -247,19 +270,176 @@ test('the map pans by drag, centres on a double-click and moves contacts along t
   expect(panned.x - saturn.x).toBeCloseTo(-60, -1);
   expect(panned.y - saturn.y).toBeCloseTo(40, -1);
 
+  await win(page, 'side').locator('[data-tab="display"]').click();
   await label(page, 'Jupiter').dblclick();
   await expect(heading(page)).toHaveText('Jupiter');
-  await page.waitForTimeout(150);
+  await expect(camFocus(page)).toHaveText('Jupiter');
+  expect(await settled(page)).toBeLessThan(2e6);
   const jupiter = (await label(page, 'Jupiter').boundingBox())!;
-  expect(Math.abs(jupiter.x - centre.x)).toBeLessThan(120);
-  expect(Math.abs(jupiter.y - centre.y)).toBeLessThan(120);
+  expect(Math.abs(jupiter.y + jupiter.height / 2 - centre.y)).toBeLessThan(40);
 
-  await win(page, 'side').locator('[data-tab="display"]').click();
-  await page.locator('[data-zoom="0"]').click();
+  await open(page, 'zoom=4e9');
   const contact = await centreOf(page, 'C-014 unknown');
   await step(page, '8h').click();
   await page.waitForTimeout(150);
   const moved = await centreOf(page, 'C-014 unknown');
   expect(Math.hypot(moved.x - contact.x, moved.y - contact.y)).toBeGreaterThan(20);
+  await expectCleanLayout(page);
+});
+
+test('the wheel eases the zoom about the cursor and snaps to the body under it', async ({ page }) => {
+  await open(page, 'zoom=1e9');
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  const centre = await freeCentre(page);
+  const start = await mpp(page);
+  await page.mouse.move(centre.x + 150, centre.y - 60);
+  const seen = new Set<number>();
+  for (let i = 0; i < 4; i++) {
+    await page.mouse.wheel(0, -100);
+    seen.add(await mpp(page));
+  }
+  await expect.poll(() => mpp(page)).toBeCloseTo(start / 10 ** 0.4, -5);
+  for (let i = 0; i < 8; i++) seen.add(await mpp(page));
+  expect(seen.size, 'the zoom eases through steps between notches').toBeGreaterThan(2);
+  await expect(camFocus(page)).toHaveText('free');
+
+  await page.locator('[data-zoom="0"]').click();
+  expect(await settled(page)).toBeGreaterThan(1e10);
+  const saturn = await centreOf(page, 'Saturn');
+  await page.mouse.move(saturn.x, saturn.y);
+  await page.mouse.wheel(0, -100);
+  await expect(camFocus(page)).toHaveText('Saturn');
+  await expectCleanLayout(page);
+});
+
+test('a preset flies the camera to its target and the scale box keeps its width', async ({ page }) => {
+  await open(page);
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  const width = (await page.locator('#mapScale').boundingBox())!.width;
+  await expect(page.locator('#presets button')).toContainText(['System', 'Inner system', 'Sun', 'Earth']);
+  await page.locator('#presets [data-preset="earth"]').click();
+  await expect(camFocus(page)).toHaveText('Earth');
+  const earthMpp = await settled(page);
+  expect(earthMpp).toBeLessThan(2e5);
+  expect((await page.locator('#mapScale').boundingBox())!.width).toBe(width);
+  await page.locator('#presets [data-preset="convoy"]').click();
+  await expect(camFocus(page)).toHaveText('Freight convoy');
+  expect(await settled(page)).toBeGreaterThan(earthMpp * 1.2);
+  await expect(label(page, 'Freight convoy')).toBeVisible();
+  await expect(label(page, 'Earth')).toBeVisible();
+  await shoot(page, 'map-fleet-in-earth-orbit');
+  await expectCleanLayout(page);
+});
+
+test('zooming into the Sun stops at its surface and fills the view with it', async ({ page }) => {
+  await open(page, 'zoom=star');
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  await expect(camFocus(page)).toHaveText('Sun');
+  const centre = await freeCentre(page);
+  await page.mouse.move(centre.x, centre.y);
+  for (let i = 0; i < 30; i++) await page.mouse.wheel(0, -150);
+  const floor = await settled(page);
+  for (let i = 0; i < 10; i++) await page.mouse.wheel(0, -150);
+  expect(await settled(page)).toBeCloseTo(floor, -2);
+  const hot = await page.evaluate(() => {
+    const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
+    const d = cv.getContext('2d')!.getImageData(cv.width / 2 - 40, cv.height / 2 - 40, 80, 80).data;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i]! > 200 && d[i + 1]! > 100) n++;
+    return n / (d.length / 4);
+  });
+  expect(hot, 'the centre of the view is solar surface').toBeGreaterThan(0.9);
+  await shoot(page, 'map-sun-cap');
+  await expectCleanLayout(page);
+});
+
+test('a fleet over a planet is listed under the planet’s name instead of drawn on it', async ({ page }) => {
+  await open(page);
+  const earth = (await label(page, 'Earth').boundingBox())!;
+  const convoy = (await label(page, 'Freight convoy').boundingBox())!;
+  expect(convoy.x).toBeCloseTo(earth.x, 0);
+  expect(convoy.y).toBeGreaterThan(earth.y);
+  expect(convoy.y - earth.y).toBeLessThan(70);
+  await label(page, 'Freight convoy').click();
+  await expect(heading(page)).toHaveText('Freight convoy');
+  await expectCleanLayout(page);
+});
+
+const shipLooks = async (page: Page) => {
+  const [marker, icon, scale] = ((await page.locator('#mapCv').getAttribute('data-ships')) ?? '0 0 0')
+    .split(' ')
+    .map(Number);
+  return { marker, icon, true: scale };
+};
+
+test('ships are markers far out, sprites in between and true scale close in', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page, 'zoom=convoy:2e5');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 0 });
+  await open(page, 'zoom=convoy:2000');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 1, true: 0 });
+  await expect(label(page, 'Freight convoy')).toBeVisible();
+  await open(page, 'zoom=convoy:25');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 4, true: 0 });
+  await expect(label(page, 'Juno Star')).toBeVisible();
+  await shoot(page, 'map-fleet-mid');
+  await open(page, 'zoom=convoy:4');
+  await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 4 });
+  await shoot(page, 'map-fleet-near');
+  await expectCleanLayout(page);
+});
+
+test('every site has a jump button that flies to its live scene and selects it', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page);
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  const sites: [string, string][] = [
+    ['sol-station', 'Sol Station'],
+    ['deep-well', 'Deep Well 2'],
+    ['battle', 'Battle · C-014'],
+    ['boarding', 'Boarding · C-022'],
+    ['salvage', 'Salvage · wreck'],
+    ['gate', 'Gate transit']
+  ];
+  for (const [id, name] of sites) {
+    await page.locator(`#presets [data-preset="${id}"]`).click();
+    await expect(camFocus(page)).toHaveText(name);
+    await expect(heading(page)).toHaveText(name);
+    await expect(win(page, 'sel').locator('#siteMock')).toHaveText('mock scene');
+    expect(await settled(page)).toBeLessThan(7);
+    await expect(page.locator('#mapCv')).toHaveAttribute('data-live', new RegExp(`\\b${id}\\b`));
+    await shoot(page, `map-site-${id}`);
+  }
+  await expectCleanLayout(page);
+});
+
+test('a site plays its scene close in and is a labelled marker far out', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page, 'zoom=sol-station');
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'sol-station');
+  await expect(page.locator('#mapLabels span', { hasText: /^Slipway 1 · Pike/ })).toBeAttached();
+  await expect(page.locator('#mapLabels span', { hasText: 'Ceres Star · unloading' })).toBeVisible();
+  const frame = () =>
+    page.evaluate(() => {
+      const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
+      return Array.from(cv.getContext('2d')!.getImageData(0, 0, cv.width, cv.height).data).join();
+    });
+  const a = await frame();
+  await page.waitForTimeout(400);
+  expect(await frame(), 'the scene animates').not.toBe(a);
+
+  await open(page, 'zoom=salvage:300');
+  await win(page, 'side').locator('[data-tab="display"]').click();
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', '');
+  await label(page, 'Salvage · wreck').click();
+  await expect(heading(page)).toHaveText('Salvage · wreck');
+  await page.locator('[data-go="watch"]').click();
+  await expect(camFocus(page)).toHaveText('Salvage · wreck');
+  await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'salvage', { timeout: 6000 });
+
+  await open(page, 'zoom=inner');
+  await expect(label(page, 'Battle · C-014')).toBeVisible();
+  await label(page, 'Battle · C-014').click();
+  await expect(heading(page)).toHaveText('Battle · C-014');
   await expectCleanLayout(page);
 });
