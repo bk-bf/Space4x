@@ -73,12 +73,13 @@
         <select id="postRef" value={target} onchange={(e) => (roster.targetRef = e.currentTarget.value)}>
           {#each options as p (p.ref)}<option value={p.ref}
               >{p.label}{p.where ? `, ${p.where}` : ''} ({holderNote(p.ref)})</option
-            >{/each}
+            >{:else}<option value="">None exist yet</option>{/each}
         </select></label
       >
     {/if}
     <div class="buttons">
-      <button id="assign" onclick={assign}>{roster.targetKind === 'none' ? 'Release' : 'Assign'}</button
+      <button id="assign" disabled={roster.targetKind !== 'none' && !options.length} onclick={assign}
+        >{roster.targetKind === 'none' ? 'Release' : 'Assign'}</button
       ><button id="promote" disabled={!next} onclick={() => roster.promote(officer.id, game)}
         >{next ? `Promote to ${next.label}` : 'Highest rank'}</button
       >

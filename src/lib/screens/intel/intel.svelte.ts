@@ -37,9 +37,6 @@ export interface Sighting {
   contact?: string;
 }
 
-const at = (month: number, day: number, hour: number, minute: number) =>
-  Date.UTC(2087, month, day, hour, minute);
-
 export const CLASSES: readonly ContactClass[] = [
   {
     id: 'x1',
@@ -77,118 +74,12 @@ export const CLASSES: readonly ContactClass[] = [
   }
 ];
 
-const mockGroups = (): Group[] => [
-  {
-    id: 'unidentified-1',
-    name: 'Unidentified 1',
-    stance: 'Unknown',
-    firstSeen: at(2, 2, 13, 5),
-    home: 'Unknown',
-    largest: 'about 9,000 t',
-    classes: ['x1', 'x2'],
-    seenEarlier: 0
-  },
-  {
-    id: 'civilian',
-    name: 'Civilian operators',
-    stance: 'Neutral',
-    firstSeen: at(0, 14, 9, 30),
-    home: 'Earth, Sol',
-    largest: 'about 60,000 t',
-    classes: ['hauler', 'tanker'],
-    seenEarlier: 38
-  }
-];
-
-const mockSightings = (): Sighting[] => [
-  {
-    id: 's1',
-    at: at(2, 12, 4, 12),
-    system: 'sol',
-    place: 'beyond Venus',
-    group: 'unidentified-1',
-    cls: 'x1',
-    what: 'One Type A, thermal 240',
-    range: '3.1 AU',
-    encounter: 'e3',
-    contact: 'C-014'
-  },
-  {
-    id: 's2',
-    at: at(2, 12, 1, 30),
-    system: 'sol',
-    place: 'beyond Venus',
-    group: 'unidentified-1',
-    cls: 'x1',
-    what: 'One Type A, first detection',
-    range: '3.4 AU',
-    encounter: 'e3',
-    contact: 'C-014'
-  },
-  {
-    id: 's3',
-    at: at(2, 9, 22, 40),
-    system: 'sol',
-    place: 'near Jupiter',
-    group: 'unidentified-1',
-    cls: 'x2',
-    what: 'One Type B, lost after 2 hours',
-    range: '0.9 AU',
-    encounter: 'e2'
-  },
-  {
-    id: 's4',
-    at: at(2, 2, 13, 5),
-    system: 'acen',
-    place: '',
-    group: 'unidentified-1',
-    cls: 'x2',
-    what: 'Two Type B at the inner jump point',
-    range: '6.4 AU',
-    encounter: 'e1'
-  },
-  {
-    id: 's5',
-    at: at(2, 12, 6, 38),
-    system: 'sol',
-    place: 'near Earth',
-    group: 'civilian',
-    cls: 'hauler',
-    what: 'One Hauler, transponder',
-    range: '0.4 AU',
-    encounter: 'c3',
-    contact: 'C-011'
-  },
-  {
-    id: 's6',
-    at: at(2, 11, 3, 10),
-    system: 'sol',
-    place: 'inner belt',
-    group: 'civilian',
-    cls: 'tanker',
-    what: 'One Tanker, transponder',
-    range: '1.8 AU',
-    encounter: 'c2'
-  },
-  {
-    id: 's7',
-    at: at(2, 10, 14, 50),
-    system: 'sol',
-    place: 'near Mars',
-    group: 'civilian',
-    cls: 'hauler',
-    what: 'Two Haulers, transponders',
-    range: '1.2 AU',
-    encounter: 'c1'
-  }
-];
-
 export class Intel {
-  groups = $state<Group[]>(mockGroups());
-  sightings = $state<Sighting[]>(mockSightings());
-  group = $state('unidentified-1');
-  sighting = $state('s1');
-  filterGroup = $state('unidentified-1');
+  groups = $state<Group[]>([]);
+  sightings = $state<Sighting[]>([]);
+  group = $state('');
+  sighting = $state('');
+  filterGroup = $state('all');
   filterClass = $state('all');
 
   groupOf(id: string): Group | undefined {

@@ -1,27 +1,24 @@
 <script lang="ts">
-  import type { Colony } from '#lib/game/types.ts';
+  import { flowsOf, type Site } from '#lib/game/economy/index.ts';
   import { CanvasView, DefList, Panel, shell } from '#lib/ui/index.ts';
-  import { formatPeople, formatRate } from './format.ts';
-  import { colonyName, colonyPlanet } from './lookup.ts';
+  import { formatPeople, formatPercent, formatRate } from './format.ts';
+  import { siteBody } from './lookup.ts';
   import { drawColonyPlanet } from './planetView.ts';
-  import { growthRate, workersFree } from './sim.ts';
 
-  let { colony }: { colony: Colony } = $props();
+  let { site }: { site: Site } = $props();
+  const flows = $derived(flowsOf(site));
+  const planet = $derived(siteBody(site.worldBody)?.type ?? 'terran');
 </script>
 
-<Panel title={colonyName(colony)} grow body="col">
-  <CanvasView
-    scale={2}
-    bg="stars"
-    draw={(fb, t) => drawColonyPlanet(fb, t, colonyPlanet(colony), colony.moon)}
-  />
+<Panel title={site.name} grow body="col">
+  <CanvasView scale={2} bg="stars" draw={(fb, t) => drawColonyPlanet(fb, t, planet, site.body === 'earth')} />
   <DefList
     rows={[
-      ['People', formatPeople(colony.population)],
-      ['Growth', `${formatRate(growthRate(colony))} a year`],
-      ['Workers free', Math.round(workersFree(colony)).toLocaleString('en-US')],
-      ['Mines', colony.installations.mine],
-      ['Factories', colony.installations.factory]
+      ['People', formatPeople(site.population)],
+      ['Growth', `${formatRate(flows.growthPerHour * 8766)} a year`],
+      ['Fed', formatPercent(flows.food.cover)],
+      ['Buildings', site.groups.reduce((a, g) => a + g.count, 0).toLocaleString('en-US')],
+      ['Building now', site.queue.length]
     ]}
   />
   <div class="add">

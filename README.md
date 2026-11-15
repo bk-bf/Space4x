@@ -4,7 +4,7 @@ A space 4X game with Aurora-style depth: detailed colonies, industry, research, 
 
 ## Status
 
-The interface is a SvelteKit app built from the approved mockup. All nine screens work against a running game clock on mock data, and the top bar says so.
+The interface is a SvelteKit app built from the approved mockup. The game starts on present-day Earth, the only site, and its economy runs real materials, recipes and buildings from `src/lib/game/data/` on the game clock towards the first milestone. The map's site scenes, ground forces, commanders and ship designs are still mock, and the top bar says so.
 
 `mockup/` is the approved interface as a static page with no build step. It stays as the reference the app is checked against. `mockup/scenes/` is the approved map scale and ship art reference: real distances, smooth zoom, top-down generated ships and the site scenes; serve `mockup/` and open `scenes/`.
 
@@ -19,7 +19,7 @@ pnpm dev
 
 `pnpm build` writes a single-page static site to `build/`; `pnpm preview` serves it.
 
-The URL query selects a state, the same as in the mockup: `?screen=economy`, `?sel=body:mars`, `?sel=contact:C-014`, `?sys=acen` (the system the map shows), `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&cls=lighthouse`. Adding `check` runs the layout check and prints its result in the bottom left corner.
+The URL query selects a state, the same as in the mockup: `?screen=economy`, `?screen=economy&tab=milestones&milestone=5`, `?screen=research&milestone=12`, `?sel=body:mars`, `?scenario=famine` (Earth short of food), `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&cls=lighthouse`. Adding `check` runs the layout check and prints its result in the bottom left corner.
 
 `/dev/primitives` shows the shared panel, table, meter, tab and canvas primitives on one page.
 

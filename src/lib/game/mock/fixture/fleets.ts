@@ -1,4 +1,4 @@
-import type { Fleet, Order } from '../types';
+import type { Fleet, Order } from '../../types';
 
 export type FleetSeed = Omit<Fleet, 'x' | 'y' | 'heading' | 'orders'> & {
   orders: Omit<Order, 'id' | 'done'>[];
@@ -8,7 +8,7 @@ export type FleetSeed = Omit<Fleet, 'x' | 'y' | 'heading' | 'orders'> & {
 
 const DAY = 86_400;
 
-export const mockFleets = (): FleetSeed[] => [
+export const fixtureFleets = (): FleetSeed[] => [
   {
     id: 'survey',
     system: 'sol',

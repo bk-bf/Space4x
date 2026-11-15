@@ -28,7 +28,7 @@ export class Game {
   time = $state(START_TIME);
   running = $state(false);
   step = $state(DAY);
-  selection = $state<Selection>({ kind: 'fleet', id: 'survey' });
+  selection = $state<Selection>({ kind: 'body', id: 'earth' });
   world = $state<World>(mockWorld());
   events = $state<GameEvent[]>(mockEvents());
   readonly mock = true;

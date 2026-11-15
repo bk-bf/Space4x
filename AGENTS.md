@@ -36,7 +36,7 @@ Use runes (`$state`, `$derived`, `$effect`, `$props`); not the legacy `$:` synta
 
 - `game.time` (ms, UTC), `game.elapsed` (game seconds since the start), `game.running`, `game.step` (seconds)
 - `game.world`: `bodies`, `fleets`, `contacts` (each names its `system`), `systems` (stars, belt, jump points), `system` (the one the map shows); `game.events`; `game.status` (the top bar chips, read-only: see below)
-- a body with `colony: true` is a colony, and the Economy holds one `Colony` with the same id for it: name, system and picture come from the body (`colonyName`, `colonySystem`, `colonyPlanet`, `colonyEnvironment` in `screens/economy/lookup.ts`), so add a colony as a colonised body and an Economy colony together. A body with `parent` is a moon and `bodyPosition(body, bodies)` places it around that body
+- a body with `colony: true` is a colony, and the economy holds one site for it whose `worldBody` is that body's id (`siteById(bodyId)` finds it), so add a colony as a colonised body and an economy site together. A body with `parent` is a moon and `bodyPosition(body, bodies)` places it around that body
 - `game.body(id)`, `game.fleet(id)`, `game.contact(id)`, `game.starSystem(id)`, `game.jump(id)`, `game.systemOf(selection)`
 - a fleet's `orders` are `{ id, type, target, done }`; `addOrder`, `moveOrder`, `removeOrder`, `clearOrders`, `orderLabel`, `orderTargets` and `orderEtas` from `#lib/game/index.ts` edit and describe them, and the `fleets` system carries them out
 - `game.selection`: `{ kind: 'fleet' | 'body' | 'contact', id }`; set it with `select(kind, id)` from `#lib/ui/index.ts`, which also shows the Selection window
@@ -68,7 +68,7 @@ The API, from `#lib/gfx/index.ts` or `#lib/gfx/topdown/index.ts`, takes any `Pix
 
 ### Top bar chips
 
-`game.status` is evaluated from sources a screen registers with `registerStatus(id, () => ({ icon, value, title, warn? }))` from its `system.ts`; the ids and their order are `STATUS_IDS`. Economy owns wealth, people, fuel, the warning and shipyards, research owns labs. Read the state the chip describes; never store a chip's value.
+`game.status` is evaluated from sources a screen registers with `registerStatus(id, () => ({ icon, value, title, warn? }))` from its `system.ts`; the ids and their order are `STATUS_IDS`. Economy owns all six: people, food against need, power balance, compute, the scarcest material and milestones reached. Read the state the chip describes; never store a chip's value.
 
 ### Game data
 
@@ -114,6 +114,19 @@ Approximations, all deliberate:
 - **Why the models are not compared at a boundary.** Hohmann minimises delta-v and the straight line minimises time, so for one ship they differ by orders of magnitude in both (259 days at 5.6 km/s against days at hundreds of km/s). What the tests check is each model against numerical integration of its own physics, and that a very fast crossing orbit reduces to a straight coast.
 - **Profiles.** `cheapest` is Hohmann (or the spiral); `fastest` spends the ship's whole delta-v on whichever of the crossing family and the straight line arrives first; `balanced` is the same at the geometric mean of the two delta-v. `canReturn` plans the return from the arrival time with the propellant left and without aerobraking.
 - **Positions.** The ship follows the primary-centred path from the origin level's centre to the target level's centre; during local burns it is on the place's own parking ring. Jumps between the two are at most a parking radius.
+
+### The economy
+
+`src/lib/game/economy/` simulates the data above. It is pure TypeScript plus one `.svelte.ts` for the live state, and it imports no screen; `screens/economy/system.ts` registers it as the `economy` system and owns the chips. `economy` (from `#lib/game/economy/index.ts`) is the one `Economy`: `sites`, `done` (milestone numbers reached), `running` programmes, `elapsed` and a mass `ledger`. Change it only through the actions in `actions.ts` and `programmes.ts`, then call `touch()`, which drops the cached `flowsOf(site)` that every screen reads.
+
+- **A site** is a place with a stockpile (`stock`, kg or the material's unit), building `groups`, a construction `queue`, `population`, a workforce share and a `gridKw`. Its `body` is a data `Body`, which decides what can stand and be extracted there, and `worldBody` is the map body. Earth is the only site; a station, the Moon or an asteroid is another `Site` in `economy.sites`, and nothing else changes.
+- **A group** is `count` buildings of one type running one `process`: a recipe, or `extract:<material>` for a material whose `sources` name that building on that body (`EXTRACT_KG_PER_HOUR` each, a placeholder). A recipe input its own building extracts where it stands (air at an air separation plant) is drawn from the environment. A group with no process is idle; one switched off runs at nothing. `assign(eco, site, group, process, count)` moves some or all of a group to another unlocked process.
+- **Rates.** `siteFlows(eco, site)` gives every group a share of full rate: capped by workers (population times workforce share, shared out in proportion), then scaled down in proportion wherever an input has no stock and its consumers want more than its producers make. Power (`POWER`) and compute are never stockpiled, so they always balance this way: the grid plus generators against demand, data centres against recipes, builds and programmes. People eat about 1 kg of food a person a day (any food material, from surplus first and stores second); population grows `growthPerYear` while everyone is fed and shrinks while anyone is not.
+- **Time.** `advanceEconomy(eco, seconds, log)` integrates in segments that end at each game day, when a stock runs out, when a build finishes and when a programme finishes, so a 30-day step gives the same totals as thirty one-day steps. The ledger counts kilograms extracted, eaten, built, spent on programmes and lost in recipes; the stock change always equals extracted less the rest.
+- **Construction** builds the first `BUILD_SLOTS` unpaused orders in queue order, spending each building's cost evenly over `buildHours` (placeholder: ten days plus two days a tonne); a short material slows it and is named on the order. A finished building joins the group with the same building and recipe.
+- **Programmes.** Records tagged with milestone `m` unlock once every non-optional milestone below `m` is done (`unlockedUpTo`), which is the order `reach({ upTo })` checks. A milestone can start when its `requires` are done, its buildings stand, a builder for its parts stands and its bill is in stock; starting spends the bill. The bill (50 t times the milestone number of each needed material, plus one of each needed part), the length (60 days plus 30 a step, longer for engineering and speculative tiers) and the compute (from milestone 6) are placeholders in `programmes.ts`.
+- **Earth at the start** is `src/lib/game/data/earth.json`: population, workforce share, food a person, growth, grid, stock days and the groups. Its `sizing` block states the rule the counts follow: farmland feeds the population with a 5% surplus, end products run at present-day world output, every other group feeds its consumers plus 10%, the grid covers start demand with about 15% to spare, and stocks start at 90 days of production. Change a count and keep that rule, or change the rule there.
+- `?scenario=famine` halves Earth's farmland and empties its food stores at load, for tests.
 
 ## Adding a system
 

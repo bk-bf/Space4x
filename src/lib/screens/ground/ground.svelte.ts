@@ -3,9 +3,9 @@ import { KIND_ORDER, mockFormations, mockUnits, type Formation, type Stance, typ
 class Ground {
   formations = $state<Formation[]>(mockFormations());
   units = $state<Unit[]>(mockUnits());
-  formationId = $state('mars-garrison');
+  formationId = $state('home-guard');
   unitId = $state<string | null>(null);
-  open = $state<Record<string, boolean>>({ Mars: true, 'mars-garrison': true });
+  open = $state<Record<string, boolean>>({ Earth: true, 'home-guard': true });
   private counter = 0;
 
   constructor() {

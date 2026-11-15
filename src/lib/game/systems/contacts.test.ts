@@ -1,3 +1,4 @@
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { describe, expect, it } from 'vitest';
 import { DAY } from '../clock';
 import { Game } from '../state.svelte';
@@ -7,7 +8,7 @@ import './contacts';
 
 describe('contacts', () => {
   it('moves contacts along their routes and leaves wrecks at rest', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const hostile = g.contact('C-014')!,
       wreck = g.contact('C-009')!;
     const from = [hostile.x, hostile.y],
@@ -21,7 +22,7 @@ describe('contacts', () => {
   });
 
   it('keeps every contact on its route over a long step', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const reach = new Map(
       g.world.contacts.map((c) => [
         c.id,
@@ -36,7 +37,7 @@ describe('contacts', () => {
   });
 
   it('logs when a hostile contact is picked up by a fleet', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const hostile = g.contact('C-014')!,
       survey = g.fleet('survey')!;
     const [tx, ty] = hostile.route[hostile.leg]!,

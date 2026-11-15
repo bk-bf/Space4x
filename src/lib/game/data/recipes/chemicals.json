@@ -111,7 +111,7 @@
   {
     "id": "sulfuric_acid_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "milestone": 1,
     "thin": true,
     "estimated": false,
     "inputs": { "sulfur": 641.2, "oxygen": 959.9, "water": 360.3 },
@@ -124,7 +124,7 @@
   {
     "id": "phosphoric_acid_thermal",
     "building": "chemical_plant",
-    "milestone": 3,
+    "milestone": 1,
     "thin": true,
     "estimated": false,
     "inputs": { "phosphorus": 1239.0, "oxygen": 1600.0, "water": 1081.0 },
@@ -137,7 +137,7 @@
   {
     "id": "map_neutralisation",
     "building": "chemical_plant",
-    "milestone": 3,
+    "milestone": 1,
     "thin": true,
     "estimated": false,
     "inputs": { "ammonia": 510.9, "phosphoric_acid": 2940.0 },
@@ -150,7 +150,7 @@
   {
     "id": "urea_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "milestone": 1,
     "thin": true,
     "estimated": false,
     "inputs": { "ammonia": 1022.0, "carbon_dioxide": 1320.0 },
@@ -163,7 +163,7 @@
   {
     "id": "potassium_sulfate_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "milestone": 1,
     "thin": true,
     "estimated": false,
     "inputs": { "potassium": 782.0, "sulfuric_acid": 980.8 },

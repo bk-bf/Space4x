@@ -57,15 +57,20 @@
 <ScreenGrid id="intel" columns="300px minmax(0,1fr)">
   <Stack>
     <Panel title="Groups">
-      <Table
-        head={['Group', '>Seen']}
-        rows={groupRows}
-        keys={intel.groups.map((g) => g.id)}
-        selected={intel.groups.findIndex((g) => g.id === intel.group)}
-        onpick={(row) => intel.pickGroup(intel.groups[row]!.id)}
-      />
+      {#if intel.groups.length}
+        <Table
+          head={['Group', '>Seen']}
+          rows={groupRows}
+          keys={intel.groups.map((g) => g.id)}
+          selected={intel.groups.findIndex((g) => g.id === intel.group)}
+          onpick={(row) => intel.pickGroup(intel.groups[row]!.id)}
+        />
+      {:else}
+        <p class="none" id="noGroups">No contacts. Nothing has been seen but our own craft.</p>
+      {/if}
     </Panel>
     <Panel title={group?.name ?? 'No group'} grow body="col">
+      {#if !group}<p class="none">Pick a group to see what is known about it.</p>{/if}
       {#if group}
         <label class="field"
           >Stance
@@ -83,6 +88,9 @@
   </Stack>
   <Stack>
     <Split>
+      {#if !classes.length}
+        <Panel title="Classes"><p class="none" id="noClasses">No foreign classes recorded.</p></Panel>
+      {/if}
       {#each classes as c, i (c?.id ?? i)}
         <Panel title={c ? `${c.name}, ${c.likely}` : ''} body="col">
           {#if c}
@@ -110,18 +118,26 @@
         </select>
         <button id="showOnMap" disabled={!contact} onclick={showOnMap}>Show on map</button>
       {/snippet}
-      <Table
-        head={['When', 'Where', 'What', '>Range']}
-        rows={sightingRows}
-        keys={sightings.map((s) => s.id)}
-        selected={sightings.findIndex((s) => s.id === intel.sighting)}
-        onpick={(row) => (intel.sighting = sightings[row]!.id)}
-      />
+      {#if sightings.length}
+        <Table
+          head={['When', 'Where', 'What', '>Range']}
+          rows={sightingRows}
+          keys={sightings.map((s) => s.id)}
+          selected={sightings.findIndex((s) => s.id === intel.sighting)}
+          onpick={(row) => (intel.sighting = sightings[row]!.id)}
+        />
+      {:else}
+        <p class="none" id="noSightings">No sightings.</p>
+      {/if}
     </Panel>
   </Stack>
 </ScreenGrid>
 
 <style>
+  .none {
+    margin: 0;
+    color: var(--dim);
+  }
   .field {
     display: grid;
     grid-template-columns: 7ch minmax(0, 1fr);

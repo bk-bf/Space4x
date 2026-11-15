@@ -51,7 +51,7 @@ const STAFF_POSTS: readonly { id: string; label: string }[] = [
   { id: 'home-fleet', label: 'Home fleet command' },
   { id: 'naval-staff', label: 'Naval staff' },
   { id: 'academy', label: 'Naval academy' },
-  { id: 'luna-yards', label: 'Luna yards' },
+  { id: 'launch-office', label: 'Launch office' },
   { id: 'survey-office', label: 'Survey office' }
 ];
 
@@ -106,17 +106,17 @@ const mockOfficers = (): Officer[] =>
     [
       ['R. Vasquez', 'admiral', 63, 'staff', 'home-fleet'],
       ['A. Mwangi', 'vice-admiral', 61, 'staff', 'naval-staff'],
-      ['M. Chen', 'captain', 57, 'fleet', 'picket'],
-      ['S. Novak', 'captain', 55, 'fleet', 'survey'],
+      ['M. Chen', 'captain', 57, 'none', ''],
+      ['S. Novak', 'captain', 55, 'staff', 'survey-office'],
       ['I. Petrov', 'captain', 53, 'none', ''],
-      ['L. Haddad', 'commander', 49, 'fleet', 'convoy'],
-      ['T. Nakamura', 'commander', 47, 'governor', 'mars'],
-      ['J. Okonkwo', 'commander', 45, 'staff', 'luna-yards'],
-      ['P. Silva', 'commander', 43, 'staff', 'survey-office'],
-      ['E. Larsen', 'lt-commander', 41, 'ship', 'Watchful'],
+      ['L. Haddad', 'commander', 49, 'none', ''],
+      ['T. Nakamura', 'commander', 47, 'governor', 'earth'],
+      ['J. Okonkwo', 'commander', 45, 'staff', 'launch-office'],
+      ['P. Silva', 'commander', 43, 'none', ''],
+      ['E. Larsen', 'lt-commander', 41, 'none', ''],
       ['D. Kaur', 'lt-commander', 39, 'none', ''],
       ['F. Moreau', 'lt-commander', 37, 'staff', 'academy'],
-      ['H. Yilmaz', 'lieutenant', 35, 'ship', 'Vigilant'],
+      ['H. Yilmaz', 'lieutenant', 35, 'none', ''],
       ['C. Brandt', 'lieutenant', 33, 'none', '']
     ] as const
   ).map(([name, rank, age, kind, ref], i) => seeded(i, name, rank, age, { kind, ref }));
@@ -139,7 +139,7 @@ export class Roster {
   descending = $state(true);
   rank = $state<'all' | RankId>('all');
   assignment = $state<AssignmentFilter>('all');
-  targetKind = $state<PostKind>('fleet');
+  targetKind = $state<PostKind>('staff');
   targetRef = $state('');
 
   officer(id: string): Officer | undefined {

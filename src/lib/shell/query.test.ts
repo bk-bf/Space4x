@@ -4,10 +4,10 @@ import { parseQuery } from './query';
 const q = (s: string) => parseQuery(new URLSearchParams(s));
 
 describe('parseQuery', () => {
-  it('defaults to the docked map with the survey group selected', () => {
+  it('defaults to the docked map with Earth selected', () => {
     expect(q('')).toEqual({
       screen: null,
-      selection: { kind: 'fleet', id: 'survey' },
+      selection: { kind: 'body', id: 'earth' },
       system: null,
       zoom: null,
       arrangement: 'dock',
@@ -29,7 +29,7 @@ describe('parseQuery', () => {
   });
 
   it('ignores malformed values', () => {
-    expect(q('sel=planet:mars').selection).toEqual({ kind: 'fleet', id: 'survey' });
+    expect(q('sel=planet:mars').selection).toEqual({ kind: 'body', id: 'earth' });
     expect(q('zoom=').zoom).toBeNull();
     expect(q('dock=events:top').dock).toBeNull();
   });

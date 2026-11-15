@@ -13,8 +13,7 @@ export const mockSites = (): Site[] => [
     place: { body: 'earth', angle: -2.2, altitude: 0.3 },
     facts: [
       ['Kind', 'Station and shipyard'],
-      ['Doing', 'Building a Pike hull'],
-      ['Docked', 'Ceres Star'],
+      ['Doing', 'Building a hull'],
       ['Orbit', 'Low Earth']
     ]
   },
@@ -28,28 +27,27 @@ export const mockSites = (): Site[] => [
     facts: [
       ['Kind', 'Gas harvester'],
       ['Doing', 'Refuelling a tanker'],
-      ['Docking', 'Juno Star'],
       ['Orbit', 'Low Jupiter']
     ]
   },
   {
     id: 'battle',
     system: 'sol',
-    name: 'Battle · C-014',
+    name: 'Fleet battle',
     kind: 'battle',
     hostile: true,
-    place: { contact: 'C-014' },
+    place: { body: 'jupiter', angle: 2.4, altitude: 12 },
     facts: [
       ['Kind', 'Fleet battle'],
       ['Sides', '5 against 5'],
       ['Foe', 'Unknown cruisers'],
-      ['Where', 'With C-014']
+      ['Where', 'Near Jupiter']
     ]
   },
   {
     id: 'boarding',
     system: 'sol',
-    name: 'Boarding · C-022',
+    name: 'Boarding action',
     kind: 'boarding',
     hostile: true,
     place: { body: 'mars', angle: 2, altitude: 6 },
@@ -69,7 +67,6 @@ export const mockSites = (): Site[] => [
     facts: [
       ['Kind', 'Salvage'],
       ['Wreck', 'Unknown cruiser'],
-      ['Tender', 'Ceres Star'],
       ['Where', 'Main belt']
     ]
   },
@@ -81,8 +78,7 @@ export const mockSites = (): Site[] => [
     place: { jump: 'sol-a' },
     facts: [
       ['Kind', 'Gate transit'],
-      ['Through', 'Task force 2'],
-      ['Inbound', 'Vesta Star'],
+      ['Through', 'A task force'],
       ['Where', 'Jump point A']
     ]
   }

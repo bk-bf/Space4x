@@ -182,7 +182,7 @@ test.describe('ship designer', () => {
     await expectCleanLayout(page);
   });
 
-  test('a class is renamed, copied and deleted, and one a fleet uses cannot be deleted', async ({ page }) => {
+  test('a class is renamed, copied and deleted, and one in use cannot be deleted', async ({ page }) => {
     await open(page, 'screen=classes&cls=lighthouse');
     await page.locator('#clsName').fill('Beacon');
     await expect(page.locator('#clsDirty')).toHaveText('changed');
@@ -196,7 +196,7 @@ test.describe('ship designer', () => {
     await expect(page.locator('#galPage')).toHaveCount(0);
     await expect(cards(page)).toHaveCount(8);
     await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveClass(/on/);
-    await cards(page).filter({ hasText: 'Bastion' }).click();
+    await cards(page).filter({ hasText: 'Atlas' }).click();
     await expect(page.locator('main.screen [data-act="delete"]')).toBeDisabled();
     await expectCleanLayout(page);
   });
@@ -330,14 +330,13 @@ test.describe('ground forces', () => {
 
   test('a unit moves to another formation and both counts change', async ({ page }) => {
     await open(page, 'screen=ground');
-    await expect(treeCount(page, 'Mars garrison')).toHaveText('13 units');
+    await expect(treeCount(page, 'Home guard')).toHaveText('13 units');
     await row(page, '1st artillery').click();
-    await page.locator('#unitFormation').selectOption({ label: 'Luna guard, Luna' });
-    await expect(treeCount(page, 'Mars garrison')).toHaveText('12 units');
+    await page.locator('#unitFormation').selectOption({ label: 'Coastal guard, Earth' });
+    await expect(treeCount(page, 'Home guard')).toHaveText('12 units');
     await expect(row(page, '1st artillery')).toHaveCount(0);
-    await page.locator('details summary[data-place="Luna"]').click();
-    await expect(treeCount(page, 'Luna guard')).toHaveText('5 units');
-    await page.locator('summary[data-formation="Luna guard"]').click();
+    await expect(treeCount(page, 'Coastal guard')).toHaveText('5 units');
+    await page.locator('summary[data-formation="Coastal guard"]').click();
     await expect(row(page, '1st artillery')).toHaveCount(1);
     await expectCleanLayout(page);
   });
@@ -347,12 +346,13 @@ test.describe('ground forces', () => {
   }) => {
     await open(page, 'screen=ground');
     const earth = page.locator('summary[data-place="Earth"]');
-    await expect(page.locator('summary[data-formation="Home guard"]')).toBeHidden();
+    await expect(page.locator('summary[data-formation="Capital guard"]')).toBeVisible();
     await earth.click();
-    await expect(page.locator('summary[data-formation="Home guard"]')).toBeVisible();
-    await page.locator('summary[data-formation="Home guard"]').click();
-    await expect(page.locator('[data-screen="ground"] .pan > h2').nth(1)).toHaveText('Home guard');
-    await expect(page.locator('summary[data-formation="Home guard"]')).toHaveClass(/on/);
+    await expect(page.locator('summary[data-formation="Capital guard"]')).toBeHidden();
+    await earth.click();
+    await page.locator('summary[data-formation="Capital guard"]').click();
+    await expect(page.locator('[data-screen="ground"] .pan > h2').nth(1)).toHaveText('Capital guard');
+    await expect(page.locator('summary[data-formation="Capital guard"]')).toHaveClass(/on/);
     await expect(page.locator('#groundCv ~ .labels .hit')).toHaveCount(5);
     await earth.click();
     await expect(page.locator('summary[data-formation="Spaceport guard"]')).toBeHidden();
@@ -367,14 +367,14 @@ test.describe('ground forces', () => {
 
   test('a formation is created and disbanded', async ({ page }) => {
     await open(page, 'screen=ground');
-    await expect(page.locator('main.screen [data-act="disband"]')).toBeDisabled();
+    await expect(page.locator('summary[data-place="Earth"] small')).toHaveText('5 formations');
     await page.locator('main.screen [data-act="create"]').click();
-    await expect(page.locator('summary[data-formation="Mars formation 2"]')).toHaveClass(/on/);
-    await expect(treeCount(page, 'Mars formation 2')).toHaveText('0 units');
-    await expect(page.locator('summary[data-place="Mars"] small')).toHaveText('2 formations');
+    await expect(page.locator('summary[data-formation="Earth formation 6"]')).toHaveClass(/on/);
+    await expect(treeCount(page, 'Earth formation 6')).toHaveText('0 units');
+    await expect(page.locator('summary[data-place="Earth"] small')).toHaveText('6 formations');
     await page.locator('main.screen [data-act="disband"]').click();
-    await expect(page.locator('summary[data-formation="Mars formation 2"]')).toHaveCount(0);
-    await expect(page.locator('summary[data-place="Mars"] small')).toHaveText('1 formation');
+    await expect(page.locator('summary[data-formation="Earth formation 6"]')).toHaveCount(0);
+    await expect(page.locator('summary[data-place="Earth"] small')).toHaveText('5 formations');
     await expectCleanLayout(page);
   });
 });
@@ -438,20 +438,23 @@ test.describe('galaxy', () => {
 
   test('an unsurveyed system shows unknown facts and cannot be opened on the map', async ({ page }) => {
     await open(page, 'screen=galaxy');
-    await page.locator('tr.pick', { hasText: 'Unsurveyed' }).click();
+    await page.locator('tr.pick', { hasText: 'Beyond jump point A' }).click();
     await expect(page.locator('dl dt', { hasText: 'Star' }).locator('+ dd')).toHaveText('Unknown');
     await expect(page.locator('dl dt', { hasText: 'Bodies' }).locator('+ dd')).toHaveText('?');
     await expect(page.locator('main.screen [data-act="open-map"]')).toBeDisabled();
-    await page.locator('tr.pick', { hasText: 'Wolf 359' }).click();
+    await page.locator('tr.pick', { hasText: 'Alpha Centauri' }).click();
     await expect(page.locator('main.screen [data-act="open-map"]')).toBeDisabled();
   });
 
-  test('a system the map knows opens on the system map', async ({ page }) => {
+  test('Sol, the one system the map knows, opens on the system map', async ({ page }) => {
     await open(page, 'screen=galaxy');
-    await page.locator('tr.pick', { hasText: 'Alpha Centauri' }).click();
+    await page.locator('tr.pick', { hasText: 'Sol' }).click();
+    await expect(page.locator('dl dt', { hasText: 'Jump points' }).locator('+ dd')).toHaveText(
+      '1, unsurveyed'
+    );
     await page.locator('main.screen [data-act="open-map"]').click();
     await expect(page.locator('#desk')).toBeVisible();
-    await expect(page.locator('#sysSel')).toHaveValue('acen');
+    await expect(page.locator('#sysSel')).toHaveValue('sol');
   });
 
   test('show all fits every system and centre moves the selection to the middle', async ({ page }) => {

@@ -27,7 +27,8 @@ import {
   weaponSummary,
   type ShipClass
 } from '#lib/game/design.ts';
-import { ClassRegistry } from '#lib/game/index.ts';
+import { ClassRegistry, game } from '#lib/game/index.ts';
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { GALLERY_PAGE, Designer } from './designer.svelte.ts';
 
 const probe = (parts: ShipSpec['parts'], extra: Partial<ShipSpec> = {}): ShipClass =>
@@ -308,15 +309,21 @@ describe('the designer store', () => {
   });
 
   it('deletes a class nothing uses and keeps one a fleet is using', () => {
-    const d = new Designer(new ClassRegistry());
-    d.pick('bastion');
-    expect(d.inService).toBe(true);
-    d.remove();
-    expect(d.saved.some((c) => c.id === 'bastion')).toBe(true);
-    d.pick('lighthouse');
-    expect(d.canDelete).toBe(true);
-    d.remove();
-    expect(d.saved.some((c) => c.id === 'lighthouse')).toBe(false);
+    const world = game.world;
+    withFixture(game);
+    try {
+      const d = new Designer(new ClassRegistry());
+      d.pick('bastion');
+      expect(d.inService).toBe(true);
+      d.remove();
+      expect(d.saved.some((c) => c.id === 'bastion')).toBe(true);
+      d.pick('lighthouse');
+      expect(d.canDelete).toBe(true);
+      d.remove();
+      expect(d.saved.some((c) => c.id === 'lighthouse')).toBe(false);
+    } finally {
+      game.world = world;
+    }
   });
 
   it('adds a section after the selected one and selects it', () => {

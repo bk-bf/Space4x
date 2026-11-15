@@ -1,4 +1,4 @@
-export const START_TIME = Date.UTC(2087, 2, 12, 6, 40);
+export const START_TIME = Date.UTC(2026, 10, 15, 6, 0);
 
 export const DAY = 86400;
 
