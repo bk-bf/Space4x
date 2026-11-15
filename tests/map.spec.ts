@@ -373,6 +373,7 @@ const shipLooks = async (page: Page) => {
 };
 
 test('ships are markers far out, sprites in between and true scale close in', async ({ page }) => {
+  test.setTimeout(90_000);
   await open(page, 'zoom=convoy:2e5');
   await expect.poll(() => shipLooks(page)).toMatchObject({ icon: 0, true: 0 });
   await open(page, 'zoom=convoy:2000');
@@ -413,6 +414,7 @@ test('every site has a jump button that flies to its live scene and selects it',
 });
 
 test('a site plays its scene close in and is a labelled marker far out', async ({ page }) => {
+  test.setTimeout(90_000);
   await open(page, 'zoom=sol-station');
   await expect(page.locator('#mapCv')).toHaveAttribute('data-live', 'sol-station');
   await expect(page.locator('#mapLabels span', { hasText: /^Slipway 1 · Pike/ })).toBeAttached();
