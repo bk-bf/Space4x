@@ -2,6 +2,7 @@ import type { Surface } from '../framebuffer';
 import { hash } from '../math';
 import type { RGB } from '../palette';
 import { ARM, C, F1, F2, F3, type HullColors } from './colors';
+import type { AttachmentKey, BowKey, CoreKey, SternKey } from './specs';
 
 export type PartSize = readonly [width: number, halfHeight: number, round?: boolean];
 export type PartDraw = (fb: Surface, x: number, cy: number, t: number, n?: number) => PartSize;
@@ -119,7 +120,7 @@ export const CORE = {
     fb.px(x + 4, cy + 1, (t >> 2) & 1 ? F2 : F3);
     return [14, 5];
   }
-} satisfies Record<string, PartDraw>;
+} satisfies Record<CoreKey, PartDraw>;
 
 export const STERN = {
   engines(fb, x, cy, t, n = 2) {
@@ -155,7 +156,7 @@ export const STERN = {
     }
     return [12, 4];
   }
-} satisfies Record<string, PartDraw>;
+} satisfies Record<SternKey, PartDraw>;
 
 export const BOW = {
   bridge(fb, x, cy) {
@@ -211,7 +212,7 @@ export const BOW = {
     }
     return [4, 3, true];
   }
-} satisfies Record<string, PartDraw>;
+} satisfies Record<BowKey, PartDraw>;
 
 export const ATT = {
   turret(P) {
@@ -310,56 +311,4 @@ export const ATT = {
   fin(P) {
     for (let k = 1; k < 6; k++) for (let i = k; i < 6; i++) P(i, k, i === k || i === 5 ? C.o : C.d);
   }
-} satisfies Record<string, AttachmentDraw>;
-
-export type CoreKey = keyof typeof CORE;
-export type SternKey = keyof typeof STERN;
-export type BowKey = keyof typeof BOW;
-export type AttachmentKey = keyof typeof ATT;
-export type PartKey = CoreKey | SternKey | BowKey | AttachmentKey;
-
-export const PNAME: Record<PartKey, string> = {
-  hull: 'Hull',
-  crew: 'Crew',
-  reactor: 'Reactor',
-  fuel: 'Fuel',
-  armor: 'Armour',
-  truss: 'Truss',
-  tank: 'Tank',
-  ring: 'Ring',
-  hangar: 'Hangar',
-  engines: 'Engines',
-  big: 'Main eng.',
-  bridge: 'Bridge',
-  blunt: 'Cab',
-  gun: 'Spinal gun',
-  prow: 'Prow',
-  dock: 'Dock',
-  turret: 'Turret',
-  launcher: 'Launcher',
-  dish: 'Dish',
-  antenna: 'Antenna',
-  tower: 'Tower',
-  cargo: 'Cargo',
-  radiator: 'Radiator',
-  solar: 'Solar',
-  pod: 'Pod',
-  fin: 'Fin'
-};
-
-export const PW: Record<CoreKey | BowKey, number> = {
-  hull: 8,
-  crew: 8,
-  reactor: 6,
-  fuel: 8,
-  armor: 8,
-  truss: 8,
-  tank: 13,
-  ring: 6,
-  hangar: 14,
-  bridge: 12,
-  blunt: 5,
-  gun: 17,
-  prow: 11,
-  dock: 4
-};
+} satisfies Record<AttachmentKey, AttachmentDraw>;

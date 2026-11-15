@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Surface } from '#lib/gfx/framebuffer.ts';
-import { drawShip } from '#lib/gfx/ships/draw.ts';
 import { SPECS, type ShipSpec } from '#lib/gfx/ships/specs.ts';
+import { METRES_PER_UNIT, shipComponents, shipLengthMetres } from '#lib/gfx/topdown/index.ts';
 import {
   HULLS,
   MAX_CARGO_LAYERS,
@@ -17,6 +16,7 @@ import {
   insertIndex,
   layout,
   moveSection,
+  partFigures,
   removeSection,
   setAft,
   setAttachment,
@@ -30,37 +30,41 @@ import {
 import { ClassRegistry } from '#lib/game/index.ts';
 import { GALLERY_PAGE, Designer } from './designer.svelte.ts';
 
-const blank: Surface = { w: 0, h: 0, px() {}, rect() {} };
-
 const probe = (parts: ShipSpec['parts'], extra: Partial<ShipSpec> = {}): ShipClass =>
   asClass({ id: 'probe', name: 'Probe', role: 'Test', parts, ...extra });
 
 describe('layout', () => {
-  it('matches the widths, offsets and half heights the drawing code places', () => {
+  it('lays the parts end to end in the order the top-down ship is built', () => {
     for (const sp of SPECS) {
-      const drawn = drawShip(blank, 0, 0, sp, 0);
       const laid = layout(sp);
+      laid.forEach((p, i) => expect(p.x, sp.id).toBe(i ? laid[i - 1]!.x + laid[i - 1]!.w : 0));
+      const last = laid[laid.length - 1]!;
+      expect((last.x + last.w) * METRES_PER_UNIT, sp.id).toBe(shipLengthMetres(sp));
+      const cores = shipComponents(sp).filter((c) => c && !c.slot);
       expect(
-        laid.map((p) => [p.x, p.w, p.hh]),
+        cores.map((c) => c!.part),
         sp.id
-      ).toEqual(drawn.map((p) => [p.x, p.w, p.hh]));
-      expect(
-        laid.map((p) => p.name),
-        sp.id
-      ).toEqual(drawn.map((p) => p.name));
+      ).toEqual(laid.map((_, i) => i));
     }
   });
 
-  it('matches the drawing for every engine count and every section kind', () => {
-    for (let n = 1; n <= MAX_ENGINES; n++) {
-      const sp = probe([['hull'], ['ring'], ['tank'], ['hangar'], ['truss']], {
-        stern: ['engines', n],
-        bow: 'gun'
-      });
-      expect(layout(sp).map((p) => [p.x, p.w, p.hh])).toEqual(
-        drawShip(blank, 0, 0, sp, 0).map((p) => [p.x, p.w, p.hh])
-      );
-    }
+  it('gives every hardpoint its own component on the slot it was put in', () => {
+    const sp = probe(
+      [
+        ['hull', 'turret', 'radiator'],
+        ['truss', 'cargo2']
+      ],
+      { stern: ['engines', 3], bow: 'gun' }
+    );
+    const slots = shipComponents(sp)
+      .filter((c) => c?.slot)
+      .map((c) => [c!.part, c!.slot, c!.name]);
+    expect(slots).toEqual([
+      [1, 'top', 'Twin beam turret'],
+      [1, 'bottom', 'Radiator'],
+      [2, 'top', 'Cargo racks'],
+      [2, 'top', 'Cargo racks']
+    ]);
   });
 
   it('finds the section gap a drop at an x position lands in', () => {
@@ -80,7 +84,7 @@ describe('designStats', () => {
     const s = designStats(sp);
     expect(s.mass).toBe(150 + 40 + 180 + 40 + 150);
     expect(s.crew).toBe(2 + 4 + 10 + 6 + 40);
-    expect(s.length).toBe((8 + 6 + 8 + 5) * 4);
+    expect(s.length).toBe((8 + 6 + 8 + 5) * METRES_PER_UNIT);
     expect(s.sections).toBe(4);
     expect(s.hardpoints).toBe(1);
     expect(s.weapons.turrets).toBe(1);
@@ -97,6 +101,31 @@ describe('designStats', () => {
     expect(big.thrust).toBe(2600);
     expect(big.mass).toBe(420 + 40 + 180);
     expect(big.speed).toBe(Math.round(2600000 / 640));
+  });
+
+  it('gives each part its own figures, which add up to the class', () => {
+    const sp = probe(
+      [
+        ['reactor', 'turret'],
+        ['truss', 'cargo3']
+      ],
+      { stern: ['engines', 2], bow: 'gun' }
+    );
+    const parts = layout(sp);
+    const all = parts.flatMap((p) =>
+      p.target.kind === 'section'
+        ? [partFigures(sp, p.target), partFigures(sp, p.target, 'top'), partFigures(sp, p.target, 'bottom')]
+        : [partFigures(sp, p.target)]
+    );
+    const total = designStats(sp);
+    expect(all.reduce((n, f) => n + (f?.mass ?? 0), 0)).toBe(total.mass);
+    expect(all.reduce((n, f) => n + (f?.crew ?? 0), 0)).toBe(total.crew);
+    expect(all.reduce((n, f) => n + (f?.thrust ?? 0), 0)).toBe(total.thrust);
+    expect(all.reduce((n, f) => n + (f?.cargo ?? 0), 0)).toBe(total.cargo);
+    expect(partFigures(sp, { kind: 'section', index: 0 }, 'top')?.weapons.turrets).toBe(1);
+    expect(partFigures(sp, { kind: 'bow' })?.weapons.spinal).toBe(1);
+    expect(partFigures(sp, { kind: 'section', index: 1 }, 'bottom')).toBeUndefined();
+    expect(partFigures(sp, { kind: 'aft' })).toBeUndefined();
   });
 
   it('has no speed without a drive', () => {
