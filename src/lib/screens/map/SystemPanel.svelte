@@ -3,6 +3,7 @@
   import { className, game, type Selection } from '#lib/game/index.ts';
   import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
   import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
+  import type { Preset } from './targets';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { focus, showSystem } from './focus';
 
@@ -24,6 +25,11 @@
   );
   const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
   const contactRows = $derived(contacts.map((c) => [{ text: c.id, warn: !!c.hostile }, c.kind, c.range]));
+
+  function fly(p: Preset) {
+    if (typeof p.aim === 'string' && p.aim.startsWith('site:')) select('site', p.id);
+    flyTo(p.id);
+  }
   const pickedRow = (kind: string, ids: string[]) => (sel.kind === kind ? ids.indexOf(sel.id) : -1);
   const TIERS = [
     { id: 'far', label: 'Far' },
@@ -143,8 +149,7 @@
     </div>
     <h3>Fly to</h3>
     <div id="presets">
-      {#each flights as p (p.id)}<button data-preset={p.id} onclick={() => flyTo(p.id)}>{p.label}</button
-        >{/each}
+      {#each flights as p (p.id)}<button data-preset={p.id} onclick={() => fly(p)}>{p.label}</button>{/each}
     </div>
   {/if}
 </Window>

@@ -28,6 +28,7 @@
   import { showColony } from '#lib/screens/economy/state.svelte.ts';
   import { intel } from '#lib/screens/intel/intel.svelte.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
+  import { flyTo } from './camera.svelte';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
   const MINERALS = ['Iron', 'Titanium', 'Copper', 'Uranium'];
@@ -37,7 +38,10 @@
   const fleet = $derived(sel.kind === 'fleet' ? game.fleet(sel.id) : undefined);
   const body = $derived(sel.kind === 'body' ? game.body(sel.id) : undefined);
   const contact = $derived(sel.kind === 'contact' ? game.contact(sel.id) : undefined);
-  const heading = $derived(fleet?.name ?? body?.name ?? (contact ? 'Contact ' + contact.id : 'Selection'));
+  const site = $derived(sel.kind === 'site' ? game.site(sel.id) : undefined);
+  const heading = $derived(
+    fleet?.name ?? body?.name ?? site?.name ?? (contact ? 'Contact ' + contact.id : 'Selection')
+  );
 
   let chosenType = $state<OrderType>('move');
   let chosenTarget = $state('');
@@ -234,6 +238,12 @@
           >
         </div>
       {/if}
+    {:else if site}
+      <p class="mock" id="siteMock"><span class="tag">mock scene</span></p>
+      <DefList rows={site.facts} />
+      <div class="add">
+        <button data-go="watch" onclick={() => flyTo(site.id)}>Watch</button>
+      </div>
     {:else if contact}
       <DefList rows={contactFacts(contact)} />
       <h3>Track</h3>
@@ -246,6 +256,9 @@
 </Window>
 
 <style>
+  .mock {
+    margin: 0;
+  }
   #queue button {
     flex: 1;
   }

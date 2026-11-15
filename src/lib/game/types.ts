@@ -2,7 +2,7 @@ import type { IconName } from '#lib/gfx/icons.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { SunTint } from '#lib/gfx/sun.ts';
 
-export type SelectionKind = 'fleet' | 'body' | 'contact';
+export type SelectionKind = 'fleet' | 'body' | 'contact' | 'site';
 
 export interface Selection {
   kind: SelectionKind;
@@ -147,6 +147,26 @@ export interface World {
   bodies: Body[];
   fleets: Fleet[];
   contacts: Contact[];
+  sites: Site[];
+}
+
+export type SiteKind = 'yard' | 'harvester' | 'battle' | 'boarding' | 'salvage' | 'gate';
+
+export type SitePlace =
+  | { body: string; angle: number; altitude: number }
+  | { contact: string }
+  | { jump: string }
+  | { orbit: number; angle: number };
+
+export interface Site {
+  id: string;
+  system: string;
+  name: string;
+  kind: SiteKind;
+  place: SitePlace;
+  hostile?: boolean;
+  station?: boolean;
+  facts: [string, string][];
 }
 
 export type MineralId = 'iron' | 'titanium' | 'copper' | 'uranium' | 'ice';

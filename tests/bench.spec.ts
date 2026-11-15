@@ -13,7 +13,16 @@ const VIEWS: readonly (readonly [string, string])[] = [
   ['earth', 'earth'],
   ['fleet-earth-orbit', 'convoy'],
   ['station-over-earth', 'convoy:3000'],
-  ['jupiter', 'jupiter']
+  ['jupiter', 'jupiter'],
+  ['site-sol-station', 'sol-station'],
+  ['site-deep-well', 'deep-well'],
+  ['site-battle', 'battle'],
+  ['site-boarding', 'boarding'],
+  ['site-salvage', 'salvage'],
+  ['site-gate', 'gate'],
+  ['swarm-400-mid', 'convoy:30&swarm=400'],
+  ['swarm-400-near', 'convoy:8&swarm=400'],
+  ['swarm-400-far', 'convoy:3000&swarm=400']
 ];
 
 test.describe('map bench', () => {
