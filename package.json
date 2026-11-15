@@ -14,7 +14,7 @@
     "check": "node tools/remote/run.mjs sh -c 'pnpm check:types && pnpm lint && pnpm knip && pnpm format:check'",
     "check:types": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "lint": "eslint . --max-warnings 0",
-    "knip": "knip --no-progress",
+    "knip": "svelte-kit sync && knip --no-progress",
     "format": "prettier --write src tests tools *.ts *.js",
     "format:check": "prettier --check src tests tools *.ts *.js",
     "test": "node tools/remote/run.mjs vitest run",
