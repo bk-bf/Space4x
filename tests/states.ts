@@ -25,6 +25,7 @@ const QUERIES = [
   'screen=commanders',
   'screen=commanders&cmd=3',
   'screen=intel',
+  'screen=intel&group=civilian',
   'screen=galaxy'
 ];
 
