@@ -1,0 +1,33 @@
+import { describe, expect, it } from 'vitest';
+import { AU, Game, parkingRadius } from '#lib/game/index.ts';
+import { locate, presetFor, presets, systemExtent } from './targets';
+
+describe('map presets', () => {
+  const g = new Game(),
+    W = 410,
+    H = 280;
+
+  it('fits the whole system, out to Neptune, in the System view', () => {
+    const p = presetFor(g, 'system', W, H)!;
+    const extent = systemExtent(g, 'sol');
+    expect(extent).toBeGreaterThan(30 * AU);
+    expect(extent / 10 ** p.L).toBeLessThan(H / 2);
+    expect(extent / 10 ** p.L).toBeGreaterThan(H / 2 - 20);
+  });
+
+  it('offers the star, every colony and every fleet of the shown system', () => {
+    const ids = presets(g, W, H).map((p) => p.label);
+    expect(ids.slice(0, 3)).toEqual(['System', 'Inner system', 'Sun']);
+    expect(ids).toEqual(
+      expect.arrayContaining(['Earth', 'Mars', 'Luna', 'Freight convoy', 'Jupiter picket'])
+    );
+    expect(ids).not.toContain('Probe group');
+  });
+
+  it('frames a parked fleet with the body it orbits', () => {
+    const p = presetFor(g, 'convoy', W, H)!,
+      earth = g.body('earth')!;
+    expect(parkingRadius(earth) / 10 ** p.L).toBeCloseTo(H * 0.3, 6);
+    expect(locate(p.aim as string, g)).toMatchObject({ x: g.fleet('convoy')!.x });
+  });
+});

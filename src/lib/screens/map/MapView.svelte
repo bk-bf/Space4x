@@ -1,18 +1,35 @@
 <script lang="ts">
   import { game } from '#lib/game/index.ts';
+  import { bakeStep } from '#lib/gfx/bodies/fields.ts';
+  import { prebakeStar } from '#lib/gfx/bodies/star.ts';
   import { FB } from '#lib/gfx/framebuffer.ts';
   import { onFrame, requestRender, shell, wm } from '#lib/ui/index.ts';
-  import { camera, layers, MAP_SCALE, resetCamera, zoomBy } from './camera.svelte';
+  import { runBench } from './bench';
+  import {
+    applyPending,
+    cam,
+    flyTo,
+    layers,
+    MAP_SCALE,
+    mapFrame,
+    resetCamera,
+    updateReadout,
+    zoomBy,
+    zoomLimit
+  } from './camera.svelte';
   import { drawMap } from './drawMap';
   import { LabelLayer, type Anchor } from './labels';
+  import { wheelNotches } from './mapCamera';
+  import { locate } from './targets';
 
-  const PAN_THRESHOLD = 4;
+  const MAX_DT = 0.1;
 
   let canvas: HTMLCanvasElement;
   let labelHost: HTMLDivElement;
   let fb: FB | null = null;
   let anchors: Anchor[] = [];
-  let pan: { x: number; y: number; cx: number; cy: number; moved: boolean } | null = null;
+  let last = 0;
+  let benched = false;
 
   const desk = () => canvas.parentElement!;
 
@@ -40,22 +57,53 @@
       );
   }
 
+  function frame(layer: LabelLayer, t: number, dt: number): number {
+    if (!fb) return 0;
+    const view = mapFrame();
+    applyPending(view);
+    zoomLimit();
+    cam.step(dt, locate, view);
+    const t0 = performance.now();
+    anchors = drawMap(fb, game, t);
+    const painted = performance.now() - t0,
+      d = desk();
+    layer.place(anchors, fb.scale, d.clientWidth, d.clientHeight, blocks(), layers.Names);
+    return painted;
+  }
+
   function render(layer: LabelLayer, t: number) {
     if (!fb || shell.screen !== 'map') return;
-    anchors = drawMap(fb, game, t);
-    const d = desk();
-    layer.place(anchors, fb.scale, d.clientWidth, d.clientHeight, blocks(), layers.Names);
+    const now = performance.now(),
+      dt = last ? Math.min(MAX_DT, (now - last) / 1000) : 0;
+    last = now;
+    if (!benched) {
+      benched = true;
+      const params = new URLSearchParams(location.search);
+      if (params.has('bench')) runBench(params, (step) => frame(layer, t, step));
+    }
+    frame(layer, t, dt);
+    updateReadout();
+    if (cam.moving()) requestRender();
+  }
+
+  function at(e: MouseEvent): [number, number] {
+    const r = desk().getBoundingClientRect();
+    return [(e.clientX - r.left) / MAP_SCALE, (e.clientY - r.top) / MAP_SCALE];
   }
 
   function under(e: MouseEvent): Anchor | undefined {
-    const r = desk().getBoundingClientRect(),
-      x = (e.clientX - r.left) / MAP_SCALE,
-      y = (e.clientY - r.top) / MAP_SCALE;
-    return anchors.find((q) => q.pick && Math.abs(x - q.x) < q.rx + 4 && Math.abs(y - q.y) < q.ry + 4);
-  }
-
-  function pick(e: PointerEvent) {
-    under(e)?.pick?.();
+    const [x, y] = at(e);
+    let best: Anchor | undefined,
+      bd = Infinity;
+    for (const q of anchors) {
+      if (!q.pick || Math.abs(x - q.x) >= q.rx + 4 || Math.abs(y - q.y) >= q.ry + 4) continue;
+      const d = Math.hypot(x - q.x, y - q.y);
+      if (d < bd) {
+        bd = d;
+        best = q;
+      }
+    }
+    return best;
   }
 
   function onDoubleClick(e: MouseEvent) {
@@ -63,35 +111,49 @@
   }
 
   function onPointerDown(e: PointerEvent) {
-    if (e.target === canvas) pan = { x: e.clientX, y: e.clientY, cx: camera.x, cy: camera.y, moved: false };
+    if (e.target !== canvas) return;
+    cam.down(...at(e));
   }
 
   function onPointerMove(e: PointerEvent) {
-    if (!pan) return;
-    if (!pan.moved && Math.hypot(e.clientX - pan.x, e.clientY - pan.y) < PAN_THRESHOLD) return;
-    pan.moved = true;
-    camera.x = pan.cx - (e.clientX - pan.x) / MAP_SCALE / camera.z;
-    camera.y = pan.cy - (e.clientY - pan.y) / MAP_SCALE / camera.z;
-    requestRender();
+    if (cam.move(...at(e))) requestRender();
   }
 
   function onPointerUp(e: PointerEvent) {
-    if (pan && !pan.moved) pick(e);
-    pan = null;
+    if (cam.up()) under(e)?.pick?.();
+    requestRender();
   }
 
   function onWheel(e: WheelEvent) {
     if ((e.target as Element).closest('.win')) return;
     e.preventDefault();
-    const r = desk().getBoundingClientRect();
-    zoomBy(e.deltaY < 0 ? 1 : -1, { x: e.clientX - r.left, y: e.clientY - r.top });
+    const n = wheelNotches(e.deltaY, e.deltaMode),
+      [x, y] = at(e);
+    const named = (e.target as HTMLElement).dataset?.target;
+    cam.zoom(n, x, y, n < 0 ? (named ?? under(e)?.target ?? null) : null);
+    requestRender();
   }
 
   function onKey(e: KeyboardEvent) {
     if (shell.screen !== 'map' || (e.target as Element).closest?.('input,select,textarea')) return;
     if (e.key === '+' || e.key === '=') zoomBy(1);
     else if (e.key === '-') zoomBy(-1);
-    else if (e.key === '0') resetCamera();
+    else if (e.key === '0') flyTo('system');
+  }
+
+  function bakeWhenIdle() {
+    let stopped = false;
+    const idle = (fn: () => void) =>
+      typeof requestIdleCallback === 'function' ? requestIdleCallback(fn) : setTimeout(fn, 50);
+    const next = () => {
+      if (stopped) return;
+      if (bakeStep()) idle(next);
+      else prebakeStar();
+    };
+    idle(next);
+    return () => {
+      stopped = true;
+    };
   }
 
   $effect(() => {
@@ -99,7 +161,8 @@
       layer = new LabelLayer(labelHost),
       resize = new ResizeObserver(fitCanvas),
       stopFrames = onFrame((t) => render(layer, t)),
-      stopReset = wm.onReset(resetCamera);
+      stopReset = wm.onReset(resetCamera),
+      stopBake = bakeWhenIdle();
     resize.observe(d);
     d.addEventListener('wheel', onWheel, { passive: false });
     d.addEventListener('pointerdown', onPointerDown);
@@ -108,6 +171,7 @@
       resize.disconnect();
       stopFrames();
       stopReset();
+      stopBake();
       layer.clear();
       d.removeEventListener('wheel', onWheel);
       d.removeEventListener('pointerdown', onPointerDown);

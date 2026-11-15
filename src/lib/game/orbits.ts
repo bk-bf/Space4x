@@ -11,8 +11,8 @@ export function bodyPosition(b: Body, bodies: readonly Body[]): Point {
 
 const PARKING_RATE = 1e-5;
 const SLOT_ANGLE = 1.1;
-const PARKING_RADII = 3;
-const PARKING_CLEARANCE = 2e7;
+const PARKING_RADII = 1.6;
+const PARKING_CLEARANCE = 1e6;
 
 export const parkingRadius = (body: Body): number => body.radius * PARKING_RADII + PARKING_CLEARANCE;
 
