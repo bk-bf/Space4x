@@ -29,13 +29,13 @@ async function deskBox(page: Page) {
 
 test('the clock starts paused at the start date and runs and pauses on space', async ({ page }) => {
   await open(page);
-  await expect(clock(page)).toHaveText('12 Mar 2087 06:40');
+  await expect(clock(page)).toHaveText('15 Nov 2026 06:00');
   await expect(page.locator('#bPause')).toHaveClass(/on/);
   await page.waitForTimeout(400);
-  await expect(clock(page)).toHaveText('12 Mar 2087 06:40');
+  await expect(clock(page)).toHaveText('15 Nov 2026 06:00');
   await page.keyboard.press('Space');
   await expect(page.locator('#bPlay')).toHaveClass(/on/);
-  await expect(clock(page)).not.toHaveText('12 Mar 2087 06:40', { timeout: 3000 });
+  await expect(clock(page)).not.toHaveText('15 Nov 2026 06:00', { timeout: 3000 });
   await page.keyboard.press('Space');
   await expect(page.locator('#bPause')).toHaveClass(/on/);
   const stopped = await clock(page).textContent();
@@ -46,9 +46,9 @@ test('the clock starts paused at the start date and runs and pauses on space', a
 test('the run and pause buttons start and stop the clock', async ({ page }) => {
   await open(page);
   await page.locator('[data-step="3600"]').click();
-  await expect(clock(page)).toHaveText('12 Mar 2087 07:40');
+  await expect(clock(page)).toHaveText('15 Nov 2026 07:00');
   await page.locator('#bPlay').click();
-  await expect(clock(page)).not.toHaveText('12 Mar 2087 07:40', { timeout: 3000 });
+  await expect(clock(page)).not.toHaveText('15 Nov 2026 07:00', { timeout: 3000 });
   await page.locator('#bPause').click();
   const stopped = await clock(page).textContent();
   await page.waitForTimeout(500);
@@ -58,19 +58,12 @@ test('the run and pause buttons start and stop the clock', async ({ page }) => {
 test('picking a step while paused advances by exactly that step once', async ({ page }) => {
   await open(page);
   await page.locator('#steps button', { hasText: '5d' }).click();
-  await expect(clock(page)).toHaveText('17 Mar 2087 06:40');
+  await expect(clock(page)).toHaveText('20 Nov 2026 06:00');
   await expect(page.locator('#steps button', { hasText: '5d' })).toHaveClass(/on/);
   await page.locator('#steps button', { hasText: '20m' }).click();
-  await expect(clock(page)).toHaveText('17 Mar 2087 07:00');
+  await expect(clock(page)).toHaveText('20 Nov 2026 06:20');
   await expect(page.locator('#steps button.on')).toHaveCount(1);
   await expect(page.locator('#steps button')).toHaveCount(11);
-});
-
-test('running the clock moves the survey group to Mars and logs its arrival', async ({ page }) => {
-  await open(page);
-  await page.locator('#steps button', { hasText: '30d' }).click();
-  await expect(page.locator('#events .ev', { hasText: 'Survey group 1 arrived at Mars.' })).toHaveCount(1);
-  await expect(page.locator('#tree summary[data-sel="fleet:survey"] small')).toHaveText('Mars');
 });
 
 test('screen buttons and F keys switch whole screens', async ({ page }) => {
@@ -188,9 +181,9 @@ test('clicking a map label or a list row selects it into the one Selection panel
   await page.locator('#mapLabels span', { hasText: 'Mars' }).click();
   await expect(titleBar(page, 'sel')).toContainText('Mars');
   await expect(win(page, 'sel').locator('dl')).toContainText('Thin CO2');
-  await win(page, 'side').locator('[data-tab="contacts"]').click();
-  await win(page, 'side').locator('tr', { hasText: 'C-014' }).click();
-  await expect(titleBar(page, 'sel')).toContainText('Contact C-014');
+  await win(page, 'side').locator('[data-tab="bodies"]').click();
+  await win(page, 'side').locator('tr', { hasText: 'Jupiter' }).click();
+  await expect(titleBar(page, 'sel')).toContainText('Jupiter');
   await expectCleanLayout(page);
 });
 
@@ -206,14 +199,5 @@ test('the wheel zooms the map smoothly and Reset flies back to the whole system'
   await expect.poll(mpp).toBeLessThan(start / 1.5);
   await win(page, 'side').locator('[data-zoom="0"]').click();
   await expect.poll(mpp, { timeout: 6000 }).toBeCloseTo(start, -6);
-  await expectCleanLayout(page);
-});
-
-test('adding an order appends it to the selected fleet', async ({ page }) => {
-  await open(page);
-  await page.locator('#oAct').selectOption('Survey');
-  await page.locator('#oDst').selectOption('Saturn');
-  await page.locator('[data-act="order"]').click();
-  await expect(win(page, 'sel').locator('table').nth(1)).toContainText('Survey Saturn');
   await expectCleanLayout(page);
 });

@@ -13,7 +13,7 @@ export interface QueryState {
 
 const KINDS: readonly SelectionKind[] = ['fleet', 'body', 'contact', 'site'];
 const SLOTS: readonly Dock[] = ['', 'left', 'right', 'bottom'];
-const DEFAULT_SELECTION: Selection = { kind: 'fleet', id: 'survey' };
+const DEFAULT_SELECTION: Selection = { kind: 'body', id: 'earth' };
 
 function parseSelection(raw: string | null): Selection {
   const [kind, id] = (raw ?? '').split(':');

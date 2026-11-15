@@ -203,7 +203,7 @@ test.describe('commanders', () => {
     await open(page, 'screen=commanders&cmd=3');
     await expect(panel(page, 'Captain S. Novak')).toBeVisible();
     await expect(page.locator('.portrait canvas')).toHaveAttribute('width', '60');
-    await expect(panel(page, 'Captain S. Novak').locator('dl').first()).toContainText('Survey group 1');
+    await expect(panel(page, 'Captain S. Novak').locator('dl').first()).toContainText('Survey office');
     await expect(panel(page, 'Captain S. Novak').locator('dl').first()).toContainText('Service');
     await expect(panel(page, 'Captain S. Novak').locator('.skill')).toHaveCount(5);
     const lit = await page
@@ -219,7 +219,7 @@ test.describe('commanders', () => {
     await open(page, 'screen=commanders');
     await row(page, 'Officers', 'M. Chen').click();
     await expect(row(page, 'Officers', 'M. Chen')).toHaveClass(/on/);
-    await expect(panel(page, 'Captain M. Chen').locator('dl').first()).toContainText('Jupiter picket');
+    await expect(panel(page, 'Captain M. Chen').locator('dl').first()).toContainText('Unassigned');
     await expect(panel(page, 'Captain M. Chen').locator('dl').first()).toContainText('57');
   });
 
@@ -237,7 +237,7 @@ test.describe('commanders', () => {
     expect((await nameColumn(page))[0]).toBe('C. Brandt');
     await page.locator('#sortBy').selectOption('post');
     await page.locator('#sortDir').selectOption('asc');
-    await expect(rows(page, 'Officers').first()).toContainText('Freight convoy');
+    await expect(rows(page, 'Officers').first()).toContainText('Governor, Earth');
     await expectCleanLayout(page);
   });
 
@@ -247,40 +247,30 @@ test.describe('commanders', () => {
     await expect(rows(page, 'Officers')).toHaveCount(3);
     await expect(page.locator('#officerCount')).toHaveText('3 of 14');
     await page.locator('#assignFilter').selectOption('unassigned');
-    await expect(rows(page, 'Officers')).toHaveCount(1);
-    await expect(rows(page, 'Officers')).toContainText('I. Petrov');
+    await expect(rows(page, 'Officers')).toHaveCount(2);
+    await expect(rows(page, 'Officers').last()).toContainText('I. Petrov');
     await page.locator('#rankFilter').selectOption('all');
-    await expect(rows(page, 'Officers')).toHaveCount(3);
+    await expect(rows(page, 'Officers')).toHaveCount(8);
     await page.locator('#assignFilter').selectOption('assigned');
-    await expect(rows(page, 'Officers')).toHaveCount(11);
+    await expect(rows(page, 'Officers')).toHaveCount(6);
     await expectCleanLayout(page);
   });
 
-  test('an officer is assigned to a ship, a fleet, a colony or staff from the game state lists', async ({
+  test('an officer is assigned to a colony or staff from the game state lists, and no fleet or ship exists', async ({
     page
   }) => {
     await open(page, 'screen=commanders');
     await row(page, 'Officers', 'I. Petrov').click();
-    await page.locator('#postKind').selectOption('ship');
-    await expect(
-      page.locator('#postRef option', { hasText: 'Hubble, Pathfinder, Survey group 1' })
-    ).toHaveCount(1);
-    await page.locator('#postRef').selectOption({ label: 'Hubble, Pathfinder, Survey group 1 (vacant)' });
-    await page.locator('#assign').click();
-    await expect(panel(page, 'Captain I. Petrov').locator('dl').first()).toContainText('Hubble');
-    await expect(postRow(page, 'Hubble, Pathfinder, Survey group 1')).toContainText('I. Petrov');
+    for (const kind of ['fleet', 'ship']) {
+      await page.locator('#postKind').selectOption(kind);
+      await expect(page.locator('#postRef option')).toHaveText(['None exist yet']);
+      await expect(page.locator('#assign')).toBeDisabled();
+    }
     await page.locator('#postKind').selectOption('governor');
-    await expect(page.locator('#postRef option')).toHaveText([
-      'Governor, Earth (vacant)',
-      'Governor, Mars (T. Nakamura)',
-      'Governor, Ceres (vacant)',
-      'Governor, Luna (vacant)',
-      'Governor, Europa (vacant)',
-      'Governor, Centauri II (vacant)'
-    ]);
-    await page.locator('#postRef').selectOption({ label: 'Governor, Earth (vacant)' });
+    await expect(page.locator('#postRef option')).toHaveText(['Governor, Earth (T. Nakamura)']);
     await page.locator('#assign').click();
     await expect(row(page, 'Officers', 'I. Petrov')).toContainText('Governor, Earth');
+    await expect(row(page, 'Officers', 'T. Nakamura')).toContainText('Unassigned');
     await page.locator('#postKind').selectOption('staff');
     await page.locator('#postRef').selectOption({ label: 'Naval academy (F. Moreau)' });
     await page.locator('#assign').click();
@@ -289,36 +279,36 @@ test.describe('commanders', () => {
     await expectCleanLayout(page);
   });
 
-  test('taking a held fleet command relieves its holder, and releasing leaves the officer unassigned', async ({
+  test('taking a held post relieves its holder, and releasing leaves the officer unassigned', async ({
     page
   }) => {
     await open(page, 'screen=commanders');
     await row(page, 'Officers', 'I. Petrov').click();
-    await page.locator('#postKind').selectOption('fleet');
-    await page.locator('#postRef').selectOption({ label: 'Jupiter picket (M. Chen)' });
+    await page.locator('#postKind').selectOption('staff');
+    await page.locator('#postRef').selectOption({ label: 'Launch office (J. Okonkwo)' });
     await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'M. Chen')).toContainText('Unassigned');
-    await expect(postRow(page, 'Jupiter picket')).toContainText('I. Petrov');
+    await expect(row(page, 'Officers', 'J. Okonkwo')).toContainText('Unassigned');
+    await expect(postRow(page, 'Launch office')).toContainText('I. Petrov');
     await page.locator('#postKind').selectOption('none');
     await expect(page.locator('#assign')).toHaveText('Release');
     await page.locator('#assign').click();
     await expect(row(page, 'Officers', 'I. Petrov')).toContainText('Unassigned');
-    await expect(postRow(page, 'Jupiter picket')).toContainText('Vacant');
+    await expect(postRow(page, 'Launch office')).toContainText('Vacant');
     const events = await eventTexts(page);
     expect(
-      events.some((e) => e.includes('I. Petrov was posted to Jupiter picket. M. Chen was relieved.'))
+      events.some((e) => e.includes('I. Petrov was posted to Launch office. J. Okonkwo was relieved.'))
     ).toBe(true);
-    expect(events.some((e) => e.includes('I. Petrov was released from Jupiter picket.'))).toBe(true);
+    expect(events.some((e) => e.includes('I. Petrov was released from Launch office.'))).toBe(true);
   });
 
   test('a row in the posts table picks the post for the assignment form', async ({ page }) => {
     await open(page, 'screen=commanders');
     await row(page, 'Officers', 'D. Kaur').click();
-    await postRow(page, 'Governor, Earth').click();
-    await expect(page.locator('#postKind')).toHaveValue('governor');
-    await expect(page.locator('#postRef')).toHaveValue('earth');
+    await postRow(page, 'Survey office').click();
+    await expect(page.locator('#postKind')).toHaveValue('staff');
+    await expect(page.locator('#postRef')).toHaveValue('survey-office');
     await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'D. Kaur')).toContainText('Governor, Earth');
+    await expect(row(page, 'Officers', 'D. Kaur')).toContainText('Survey office');
   });
 
   test('a promotion moves the officer up one rank until the highest', async ({ page }) => {
@@ -357,89 +347,13 @@ test.describe('commanders', () => {
 });
 
 test.describe('intelligence', () => {
-  test('selecting a group drives its facts, its contact classes and its sightings', async ({ page }) => {
+  test('with nothing seen beyond our own craft the screen says so', async ({ page }) => {
     await open(page, 'screen=intel');
-    await expect(row(page, 'Groups', 'Unidentified 1')).toContainText('3 times');
-    await expect(panel(page, 'Type A, likely a cruiser')).toBeVisible();
-    await expect(panel(page, 'Type B, likely an escort')).toBeVisible();
-    await expect(page.locator('#sightingCount')).toHaveText('4');
-    await row(page, 'Groups', 'Civilian operators').click();
-    await expect(row(page, 'Groups', 'Civilian operators')).toHaveClass(/on/);
-    await expect(panel(page, 'Civilian operators').locator('dl')).toContainText('Earth, Sol');
-    await expect(panel(page, 'Hauler, bulk freight')).toBeVisible();
-    await expect(panel(page, 'Tanker, fuel transport')).toBeVisible();
-    await expect(page.locator('#sightingCount')).toHaveText('3');
-    await expect(page.locator('#stance')).toHaveValue('Neutral');
-    await expectCleanLayout(page);
-  });
-
-  test('the query selects a group', async ({ page }) => {
-    await open(page, 'screen=intel&group=civilian');
-    await expect(row(page, 'Groups', 'Civilian operators')).toHaveClass(/on/);
-    await expect(page.locator('#sightGroup')).toHaveValue('civilian');
-  });
-
-  test('each contact class is drawn as a silhouette with its observed facts', async ({ page }) => {
-    await open(page, 'screen=intel');
-    const canvases = page.locator('.split .view canvas');
-    await expect(canvases).toHaveCount(2);
-    for (const i of [0, 1]) {
-      const red = await canvases.nth(i).evaluate((c: HTMLCanvasElement) => {
-        const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
-        let n = 0;
-        for (let p = 0; p < d.length; p += 4) if (d[p]! > 150 && d[p + 1]! < 130) n++;
-        return n;
-      });
-      expect(red).toBeGreaterThan(50);
-    }
-    await expect(panel(page, 'Type A, likely a cruiser').locator('dl')).toContainText('about 310 m');
-    await expect(panel(page, 'Type B, likely an escort').locator('dl')).toContainText('Missiles');
-  });
-
-  test('sightings list newest first and filter by group and class', async ({ page }) => {
-    await open(page, 'screen=intel');
-    await page.locator('#sightGroup').selectOption('all');
-    const whens = () => rows(page, 'Sightings').locator('td:first-child').allTextContents();
-    expect(await whens()).toEqual([
-      '12 Mar 06:38',
-      '12 Mar 04:12',
-      '12 Mar 01:30',
-      '11 Mar 03:10',
-      '10 Mar 14:50',
-      '9 Mar 22:40',
-      '2 Mar 13:05'
-    ]);
-    await page.locator('#sightClass').selectOption('x2');
-    expect(await whens()).toEqual(['9 Mar 22:40', '2 Mar 13:05']);
-    await page.locator('#sightGroup').selectOption('civilian');
-    await expect(page.locator('#sightClass')).toHaveValue('all');
-    await expect(rows(page, 'Sightings')).toHaveCount(3);
-    await page.locator('#sightClass').selectOption('tanker');
-    await expect(rows(page, 'Sightings')).toHaveCount(1);
-    await expect(rows(page, 'Sightings')).toContainText('inner belt');
-    await expectCleanLayout(page);
-  });
-
-  test('the stance toward a group is editable, writes an event and survives a screen switch', async ({
-    page
-  }) => {
-    await open(page, 'screen=intel');
-    await page.locator('#stance').selectOption('Hostile');
-    await page.locator('[data-nav="economy"]').click();
-    await page.locator('[data-nav="intel"]').click();
-    await expect(page.locator('#stance')).toHaveValue('Hostile');
-    const events = await eventTexts(page);
-    expect(events.some((e) => e.includes('Stance toward Unidentified 1 set to Hostile.'))).toBe(true);
-  });
-
-  test('a sighting with a live contact is selected on the System map', async ({ page }) => {
-    await open(page, 'screen=intel');
-    await expect(page.locator('#showOnMap')).toBeEnabled();
-    await page.locator('#showOnMap').click();
-    await expect(page.locator('#desk')).toBeVisible();
-    await expect(page.locator('#w-sel .tb')).toContainText('Contact C-014');
-    await page.locator('[data-nav="intel"]').click();
-    await row(page, 'Sightings', 'lost after 2 hours').click();
+    await expect(page.locator('#noGroups')).toBeVisible();
+    await expect(page.locator('#noClasses')).toBeVisible();
+    await expect(page.locator('#noSightings')).toBeVisible();
+    await expect(page.locator('#sightingCount')).toHaveText('0');
     await expect(page.locator('#showOnMap')).toBeDisabled();
+    await expectCleanLayout(page);
   });
 });

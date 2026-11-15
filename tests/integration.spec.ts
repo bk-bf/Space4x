@@ -1,7 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const MONTH = '[data-step="2592000"]';
-const FIVE_DAYS = '[data-step="432000"]';
 
 async function open(page: Page, query = '') {
   await page.goto(`/?check&${query}`);
@@ -42,15 +41,6 @@ test.describe('classes', () => {
     await goTo(page, 'classes');
     await expect(page.locator('main.screen [data-act="delete"]')).toBeDisabled();
   });
-
-  test('the speed of a class in the designer is the speed of its fleet on the map', async ({ page }) => {
-    await open(page, 'screen=classes&cls=bastion');
-    const designed = (await page.locator('#dSpeed').textContent())!.trim();
-    expect(designed).toMatch(/^\d[\d,]* km\/s$/);
-    await open(page, 'sel=fleet:picket');
-    await expect(page.locator('#w-sel dl dt', { hasText: /^Speed$/ }).locator('+ dd')).toHaveText(designed);
-    await expect(page.locator('#w-sel')).toContainText('Bastion');
-  });
 });
 
 test.describe('cross-screen buttons', () => {
@@ -77,41 +67,16 @@ test.describe('cross-screen buttons', () => {
     await expect(heading(page, 'colony')).toContainText('Mars');
   });
 
-  test('a colony body outside Sol opens the same colony Economy lists', async ({ page }) => {
-    await open(page, 'sys=acen&sel=body:acen-2');
-    await expect(page.locator('#w-sel')).toContainText('Centauri II');
-    await page.locator('#w-sel [data-go="economy"]').click();
-    await expect(page.locator('#colonyTree [data-colony="acen-2"]')).toHaveClass(/on/);
-    await expect(page.locator('#colonyTree [data-colony="acen-2"] .name')).toHaveText('Centauri II');
-  });
-
-  test('a contact on the map opens the group it belongs to in Intelligence', async ({ page }) => {
-    await open(page, 'sel=contact:C-011');
-    await page.locator('#w-sel [data-go="intel"]').click();
-    await expect(page.getByRole('heading', { name: 'Civilian operators', exact: true })).toBeVisible();
-    await expect(page.locator('#showOnMap')).toBeEnabled();
-
-    await goTo(page, 'map');
-    await open(page, 'sel=contact:C-014');
-    await page.locator('#w-sel [data-go="intel"]').click();
-    await expect(page.getByRole('heading', { name: 'Unidentified 1', exact: true })).toBeVisible();
-  });
-
-  test('Galaxy opens the three mapped systems on the system map and counts what the world holds', async ({
-    page
-  }) => {
+  test('Galaxy opens Sol, the one mapped system, and counts what the world holds', async ({ page }) => {
     await open(page, 'screen=galaxy&sys=sol');
-    await expect(term(page, /^Colonies$/)).toHaveText('5');
-    await goTo(page, 'economy');
-    await expect(page.locator('#colonyTree summary').first()).toContainText('5 colonies');
-    await goTo(page, 'galaxy');
-    await page.locator('#galaxy [data-act="open-map"], [data-act="open-map"]').click();
+    await expect(term(page, /^Colonies$/)).toHaveText('1');
+    await expect(term(page, /^Fleets$/)).toHaveText('0');
+    await page.locator('[data-act="open-map"]').click();
     await expect(page.locator('#sysSel')).toHaveValue('sol');
     await goTo(page, 'galaxy');
     await page.locator('tr.pick', { hasText: 'Alpha Centauri' }).click();
-    await expect(term(page, /^Colonies$/)).toHaveText('1');
-    await page.locator('[data-act="open-map"]').click();
-    await expect(page.locator('#sysSel')).toHaveValue('acen');
+    await expect(term(page, /^Colonies$/)).toHaveText('?');
+    await expect(page.locator('[data-act="open-map"]')).toBeDisabled();
   });
 });
 
@@ -148,28 +113,11 @@ test.describe('the top bar', () => {
 });
 
 test.describe('the map labels', () => {
-  test('a fleet that joined another loses its label and its click target', async ({ page }) => {
-    await open(page);
-    await expect(mapLabel(page, 'Survey group 1')).toHaveCount(1);
-    await page.locator('#w-sel [data-act="clear"]').click();
-    await page.locator('#oAct').selectOption('join');
-    await page.locator('#oDst').selectOption({ label: 'Freight convoy' });
-    await page.locator('#w-sel [data-act="order"]').click();
-    for (let i = 0; i < 4 && (await mapLabel(page, 'Survey group 1').count()); i++)
-      await page.locator(FIVE_DAYS).click();
-    await expect(page.locator('#w-events')).toContainText('Survey group 1 joined Freight convoy');
-    await expect(mapLabel(page, 'Survey group 1')).toHaveCount(0);
-    await expect(mapLabel(page, 'Freight convoy')).toHaveCount(1);
-  });
-
-  test('in Alpha Centauri no label sits on a star', async ({ page }) => {
-    await open(page, 'sys=acen');
-    await expect(mapLabel(page, 'Colony lift')).toHaveCount(1);
+  test('no label sits on the Sun', async ({ page }) => {
+    await open(page, 'zoom=inner');
+    await expect(mapLabel(page, 'Sun')).toHaveCount(1);
     const overlaps = await page.evaluate(() => {
-      const cores = [
-        [255, 250, 224],
-        [255, 236, 200]
-      ];
+      const cores = [[255, 250, 224]];
       const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
       const r = cv.getBoundingClientRect();
       const k = r.width / cv.width;
