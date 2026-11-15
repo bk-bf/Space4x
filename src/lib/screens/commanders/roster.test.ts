@@ -7,16 +7,20 @@ const names = (r: Roster, g: Game) => r.visible(g).map((o) => o.name);
 describe('Roster', () => {
   it('lists posts from the fleets, ships and colonies of the game state', () => {
     const g = new Game();
-    expect(postOptions('fleet', g).map((p) => p.label)).toEqual([
-      'Survey group 1',
-      'Freight convoy',
-      'Jupiter picket'
+    const fleets = g.world.fleets.map((f) => f.name);
+    const ships = g.world.fleets.reduce((n, f) => n + f.ships.length, 0);
+    expect(fleets).toEqual(expect.arrayContaining(['Survey group 1', 'Freight convoy', 'Jupiter picket']));
+    expect(postOptions('fleet', g).map((p) => p.label)).toEqual(fleets);
+    expect(postOptions('ship', g)).toHaveLength(ships);
+    expect(postOptions('governor', g).map((p) => p.label)).toEqual([
+      'Governor, Earth',
+      'Governor, Mars',
+      'Governor, Centauri II'
     ]);
-    expect(postOptions('ship', g)).toHaveLength(9);
-    expect(postOptions('governor', g).map((p) => p.label)).toEqual(['Governor, Earth', 'Governor, Mars']);
-    g.world.fleets.pop();
-    expect(postOptions('fleet', g)).toHaveLength(2);
-    expect(allPosts(g).length).toBe(2 + 6 + 2 + 5);
+    const before = allPosts(g).length;
+    const dropped = g.world.fleets.pop()!;
+    expect(postOptions('fleet', g)).toHaveLength(fleets.length - 1);
+    expect(allPosts(g).length).toBe(before - 1 - dropped.ships.length);
   });
 
   it('ages and counts service with the game clock', () => {

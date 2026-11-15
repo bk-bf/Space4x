@@ -1,5 +1,6 @@
 import './systems/orbits';
 import './systems/fleets';
+import './systems/contacts';
 
 export { Game, game, advance } from './state.svelte';
 export { registerSystem, systemNames, type System } from './systems';
@@ -15,4 +16,19 @@ export {
   type TimeStep
 } from './clock';
 export { bodyPosition, KM_PER_UNIT, type Point } from './orbits';
+export {
+  ORDER_TYPES,
+  addOrder,
+  clearOrders,
+  isColony,
+  moveOrder,
+  orderEtas,
+  orderLabel,
+  orderTargets,
+  orderTypesFor,
+  removeOrder,
+  resolveGoal,
+  workSeconds
+} from './orders';
+export { FLEET_SENSOR, bearing, formatAu, nearest, observers } from './systems/contacts';
 export type * from './types';

@@ -47,11 +47,19 @@
     layer.place(anchors, fb.scale, d.clientWidth, d.clientHeight, blocks(), layers.Names);
   }
 
-  function pick(e: PointerEvent) {
+  function under(e: MouseEvent): Anchor | undefined {
     const r = desk().getBoundingClientRect(),
       x = (e.clientX - r.left) / MAP_SCALE,
       y = (e.clientY - r.top) / MAP_SCALE;
-    anchors.find((q) => q.pick && Math.abs(x - q.x) < q.rx + 4 && Math.abs(y - q.y) < q.ry + 4)?.pick?.();
+    return anchors.find((q) => q.pick && Math.abs(x - q.x) < q.rx + 4 && Math.abs(y - q.y) < q.ry + 4);
+  }
+
+  function pick(e: PointerEvent) {
+    under(e)?.pick?.();
+  }
+
+  function onDoubleClick(e: MouseEvent) {
+    if (e.target === canvas) under(e)?.centre?.();
   }
 
   function onPointerDown(e: PointerEvent) {
@@ -95,6 +103,7 @@
     resize.observe(d);
     d.addEventListener('wheel', onWheel, { passive: false });
     d.addEventListener('pointerdown', onPointerDown);
+    d.addEventListener('dblclick', onDoubleClick);
     return () => {
       resize.disconnect();
       stopFrames();
@@ -102,6 +111,7 @@
       layer.clear();
       d.removeEventListener('wheel', onWheel);
       d.removeEventListener('pointerdown', onPointerDown);
+      d.removeEventListener('dblclick', onDoubleClick);
     };
   });
 </script>

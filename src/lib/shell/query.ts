@@ -4,6 +4,7 @@ import type { Dock } from '#lib/ui/index.ts';
 export interface QueryState {
   screen: string | null;
   selection: Selection;
+  system: string | null;
   zoom: number | null;
   arrangement: 'dock' | 'float';
   dock: { id: string; slot: Dock } | null;
@@ -31,6 +32,7 @@ export function parseQuery(params: URLSearchParams): QueryState {
   return {
     screen: params.get('screen'),
     selection: parseSelection(params.get('sel')),
+    system: params.get('sys'),
     zoom: params.has('zoom') && zoom > 0 ? zoom : null,
     arrangement: params.get('arr') === 'float' ? 'float' : 'dock',
     dock: parseDock(params.get('dock')),

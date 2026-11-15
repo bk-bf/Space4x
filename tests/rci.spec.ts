@@ -262,7 +262,9 @@ test.describe('commanders', () => {
     await open(page, 'screen=commanders');
     await row(page, 'Officers', 'I. Petrov').click();
     await page.locator('#postKind').selectOption('ship');
-    await expect(page.locator('#postRef option')).toHaveCount(9);
+    await expect(
+      page.locator('#postRef option', { hasText: 'Hubble, Pathfinder, Survey group 1' })
+    ).toHaveCount(1);
     await page.locator('#postRef').selectOption({ label: 'Hubble, Pathfinder, Survey group 1 (vacant)' });
     await page.locator('#assign').click();
     await expect(panel(page, 'Captain I. Petrov').locator('dl').first()).toContainText('Hubble');
@@ -270,7 +272,8 @@ test.describe('commanders', () => {
     await page.locator('#postKind').selectOption('governor');
     await expect(page.locator('#postRef option')).toHaveText([
       'Governor, Earth (vacant)',
-      'Governor, Mars (T. Nakamura)'
+      'Governor, Mars (T. Nakamura)',
+      'Governor, Centauri II (vacant)'
     ]);
     await page.locator('#postRef').selectOption({ label: 'Governor, Earth (vacant)' });
     await page.locator('#assign').click();
