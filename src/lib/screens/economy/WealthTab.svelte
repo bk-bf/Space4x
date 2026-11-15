@@ -86,11 +86,13 @@
       two
       rows={[
         ['Wealth', formatMoney(economy.wealth)],
+        ['Wealth cap', formatMoney(flows.cap)],
         ['Production modifier', formatPercent(productionModifier(economy))],
         ['Income a year', formatSigned(flows.income)],
         ['Spending a year', formatSigned(-flows.spending)],
         ['Net a year', formatSigned(flows.income - flows.spending)],
-        ['Subsidies a year', formatSigned(-flows.subsidies)]
+        ['Subsidies a year', formatSigned(-flows.subsidies)],
+        ['Civilian ships', economy.lines.reduce((a, l) => a + l.ships, 0)]
       ]}
     />
     <h3>Civilian shipping lines</h3>

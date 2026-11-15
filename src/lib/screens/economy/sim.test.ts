@@ -10,6 +10,7 @@ import {
   accessibility,
   allocate,
   buildFinish,
+  empireFlows,
   growthRate,
   industrialCapacity,
   mineOutput,
@@ -250,6 +251,14 @@ describe('wealth', () => {
     expect(productionModifier(eco)).toBeCloseTo(0.5, 6);
     eco.wealth = -1e9;
     expect(productionModifier(eco)).toBe(0.3);
+  });
+
+  it('never lets the balance pass twice the yearly income', () => {
+    eco.wealth = 1e7;
+    run(DAY);
+    const income = empireFlows(eco).income;
+    expect(eco.wealth).toBeLessThanOrEqual(2 * income + 1);
+    expect(eco.wealth).toBeGreaterThan(income);
   });
 
   it('adds a year of net income to the balance and the month history', () => {

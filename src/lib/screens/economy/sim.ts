@@ -33,6 +33,7 @@ export const SHIP_TRADE_CAPACITY = 30;
 export const SUBSIDY_PER_SHIP = 150;
 export const SUBSIDY_GROWTH_YEARS = 0.8;
 export const DEFICIT_SCALE = 10_000;
+export const WEALTH_CAP_YEARS = 2;
 export const MIN_ACCESSIBILITY = 0.1;
 export const SUBSTEP = DAY;
 
@@ -294,14 +295,21 @@ export const wealthIncome = (w: WealthLines): number => w.taxes + w.exchange + w
 
 export const wealthSpending = (w: WealthLines): number => w.maintenance + w.research + w.shipbuilding;
 
-export function empireFlows(eco: Economy): { income: number; spending: number; subsidies: number } {
+export function empireFlows(eco: Economy): {
+  income: number;
+  spending: number;
+  subsidies: number;
+  cap: number;
+} {
   const t = trade(eco);
   const lines = eco.colonies.map((c) => wealthLines(c, eco, t));
   const subsidies = sum(eco.lines.map(subsidyCost));
+  const income = sum(lines.map(wealthIncome));
   return {
-    income: sum(lines.map(wealthIncome)),
+    income,
     spending: sum(lines.map(wealthSpending)) + subsidies,
-    subsidies
+    subsidies,
+    cap: income * WEALTH_CAP_YEARS
   };
 }
 
@@ -479,6 +487,7 @@ function stepOnce(eco: Economy, dt: number, now: number, log: Log): void {
   const t = trade(eco);
   let income = 0;
   let spending = 0;
+  let incomeRate = 0;
   const spend = (w: number) => {
     spending += w;
   };
@@ -491,12 +500,13 @@ function stepOnce(eco: Economy, dt: number, now: number, log: Log): void {
     runQueue(c, eco, y, log);
     for (const yard of c.yards) runYard(c, eco, yard, y, log, spend);
     warnLow(c, log);
+    incomeRate += wealthIncome(lines);
     income += wealthIncome(lines) * y;
     spending += (lines.maintenance + lines.research) * y;
   }
   growLines(eco, t, y, log);
   spending += sum(eco.lines.map(subsidyCost)) * y;
-  eco.wealth += income - spending;
+  eco.wealth = Math.min(eco.wealth + income - spending, incomeRate * WEALTH_CAP_YEARS);
   eco.month.income += income;
   eco.month.spending += spending;
   rollMonth(eco, now);
