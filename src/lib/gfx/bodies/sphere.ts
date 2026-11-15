@@ -80,13 +80,17 @@ const set = (c: RGB) => {
   O[2] = c[2];
 };
 
+const CLOUD_THIN = 0.575,
+  CLOUD_DENSE = 0.61;
+
 type Shader = (x: number, y: number, z: number, R: number, dv: number) => void;
 
 const terran: Shader = (_x, y, _z, R, dv) => {
   const dt = R > 80 ? (G[4]! - 0.5) * (R > 350 ? 0.05 : 0.03) : 0,
     h = G[0]! + dt,
     cl = G[1]! + dt * 0.8;
-  if (cl > 0.61 || (cl > 0.575 && dv > 0.45)) return set(cl > 0.61 ? [240, 244, 248] : [206, 216, 230]);
+  if (cl > CLOUD_DENSE || dv < (cl - CLOUD_THIN) / (CLOUD_DENSE - CLOUD_THIN))
+    return set(cl > CLOUD_DENSE ? [240, 244, 248] : [206, 216, 230]);
   if (Math.abs(y) > 0.88 - (h - 0.5) * 0.5) return set(TERR[8]!);
   if (h < 0.53) {
     O[SEA] = 1;
