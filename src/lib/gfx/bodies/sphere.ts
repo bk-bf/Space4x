@@ -80,6 +80,8 @@ const set = (c: RGB) => {
   O[2] = c[2];
 };
 
+const GLINT_FROM = 0.975,
+  GLINT_COVER = 0.7;
 const CLOUD_THIN = 0.575,
   CLOUD_DENSE = 0.61;
 
@@ -368,7 +370,7 @@ export function drawSphere(f: FB, look: SphereLook, cx: number, cy: number, R: n
           g = CITY[1];
           b = CITY[2];
         }
-      } else if (O[SEA] && L > 0.95 && dv > 0.3) {
+      } else if (O[SEA] && dv < ((L - GLINT_FROM) / (1 - GLINT_FROM)) * GLINT_COVER) {
         r = mix(r, 255, 0.5);
         g = mix(g, 255, 0.5);
         b = mix(b, 255, 0.5);
