@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const REAL = ['map', 'economy', 'research', 'colony'];
-const MOCK_SCREENS = ['classes', 'ground', 'commanders', 'intel', 'galaxy'];
+const REAL = ['map', 'economy', 'research', 'classes', 'colony'];
+const MOCK_SCREENS = ['ground', 'commanders', 'intel', 'galaxy'];
 const SITES = ['sol-station', 'deep-well', 'battle', 'boarding', 'salvage', 'gate'];
 
 async function open(page: Page, query = '') {
@@ -31,7 +31,7 @@ for (const id of MOCK_SCREENS) {
 
 test('the F keys of mock screens do nothing', async ({ page }) => {
   await open(page);
-  for (const key of ['F4', 'F6', 'F7', 'F8', 'F9']) {
+  for (const key of ['F6', 'F7', 'F8', 'F9']) {
     await page.keyboard.press(key);
     await expect(page.locator('[data-nav="map"]')).toHaveClass(/on/);
   }

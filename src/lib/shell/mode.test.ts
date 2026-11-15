@@ -13,8 +13,8 @@ afterEach(() => vi.unstubAllEnvs());
 describe('game and gallery modes', () => {
   it('lists only the real screens and shows no mock site in the game', async () => {
     const { list, world } = await load(false);
-    expect(list.SCREENS.map((s) => s.id)).toEqual(['map', 'economy', 'research', 'colony']);
-    for (const mock of ['classes', 'ground', 'commanders', 'intel', 'galaxy']) {
+    expect(list.SCREENS.map((s) => s.id)).toEqual(['map', 'economy', 'research', 'classes', 'colony']);
+    for (const mock of ['ground', 'commanders', 'intel', 'galaxy']) {
       expect(list.isScreenId(mock)).toBe(false);
     }
     expect(world.sites).toEqual([]);
