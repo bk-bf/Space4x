@@ -29,6 +29,7 @@ const SHIP_ICONS = {
 const FLAME_HOT: RGB = [255, 214, 120];
 const FLAME_COOL: RGB = [240, 130, 60];
 const BELT_ROCKS = 230;
+const CORONA = 8;
 const TRAIL_UNITS = 44;
 
 type Project = (wx: number, wy: number) => readonly [number, number];
@@ -136,11 +137,12 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
     if (layers.Course) polyline(f, P, course(game, sf), PAL.course, 3, A >> 1);
     if (layers.Sensors) f.ring(X(sf.x), Y(sf.y), FLEET_SENSOR * z, PAL.sensor, 3, A >> 2);
   }
-  for (const s of system?.stars ?? []) {
+  for (const [i, s] of (system?.stars ?? []).entries()) {
     const sr = Math.round(s.radius * z),
       x = Math.round(X(s.x)),
       y = Math.round(Y(s.y));
-    if (on(x, y, sr + 8)) sun(f, x, y, sr, A, s.tint);
+    if (on(x, y, sr + CORONA)) sun(f, x, y, sr, A, s.tint);
+    an.push({ id: `star-${i}`, x, y, rx: sr + CORONA, ry: sr + CORONA });
   }
   for (const b of bodies) {
     const [wx, wy] = bodyPosition(b, world.bodies);
