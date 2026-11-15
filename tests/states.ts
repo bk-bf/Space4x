@@ -5,6 +5,7 @@ export interface LayoutState {
   screen: string;
   name: string;
   built: boolean;
+  mock: boolean;
 }
 
 const QUERIES = [
@@ -47,6 +48,20 @@ const QUERIES = [
   'screen=galaxy&sys=luy'
 ];
 
+const SITE_QUERIES = new Set([
+  'zoom=sol-station',
+  'zoom=battle',
+  'zoom=gate&sel=site:gate',
+  'sel=site:boarding',
+  'zoom=battle:1e7'
+]);
+
+const MOCK_SCREENS = new Set(
+  [...readFileSync('src/lib/screens/list.ts', 'utf8').matchAll(/id: '(\w+)'[^}]*mock: true/g)].map(
+    (m) => m[1]
+  )
+);
+
 const screenOf = (query: string) => new URLSearchParams(query).get('screen') ?? 'map';
 
 export function isBuilt(screen: string): boolean {
@@ -56,5 +71,11 @@ export function isBuilt(screen: string): boolean {
 
 export const STATES: readonly LayoutState[] = QUERIES.map((query) => {
   const screen = screenOf(query);
-  return { query, screen, name: query.replace(/[=&:,]/g, '-') || 'default', built: isBuilt(screen) };
+  return {
+    query,
+    screen,
+    name: query.replace(/[=&:,]/g, '-') || 'default',
+    built: isBuilt(screen),
+    mock: MOCK_SCREENS.has(screen) || SITE_QUERIES.has(query)
+  };
 });
