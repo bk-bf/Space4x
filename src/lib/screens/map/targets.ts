@@ -70,7 +70,7 @@ const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
 const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
 export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
-  yard: 0.26,
+  yard: 0.4,
   harvester: 0.3,
   battle: 0.56,
   boarding: 0.1,

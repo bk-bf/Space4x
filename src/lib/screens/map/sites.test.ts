@@ -12,10 +12,10 @@ describe('sites', () => {
       jupiter = g.body('jupiter')!;
     const low = dist(at('sol-station'), bodyPosition(earth, g.world.bodies));
     expect(low).toBeGreaterThan(earth.radius);
-    expect(low).toBeLessThan(earth.radius * 1.2);
+    expect(low).toBeLessThan(earth.radius * 1.4);
     const deep = dist(at('deep-well'), bodyPosition(jupiter, g.world.bodies));
     expect(deep).toBeGreaterThan(jupiter.radius);
-    expect(deep).toBeLessThan(jupiter.radius * 1.2);
+    expect(deep).toBeLessThan(jupiter.radius * 1.4);
   });
 
   it('keeps the battle on contact C-014 as it moves', () => {

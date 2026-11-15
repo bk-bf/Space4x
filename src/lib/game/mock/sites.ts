@@ -10,7 +10,7 @@ export const mockSites = (): Site[] => [
     name: 'Sol Station',
     kind: 'yard',
     station: true,
-    place: { body: 'earth', angle: -2.2, altitude: 0.08 },
+    place: { body: 'earth', angle: -2.2, altitude: 0.3 },
     facts: [
       ['Kind', 'Station and shipyard'],
       ['Doing', 'Building a Pike hull'],
@@ -24,7 +24,7 @@ export const mockSites = (): Site[] => [
     name: 'Deep Well 2',
     kind: 'harvester',
     station: true,
-    place: { body: 'jupiter', angle: -1.3, altitude: 0.1 },
+    place: { body: 'jupiter', angle: -1.3, altitude: 0.3 },
     facts: [
       ['Kind', 'Gas harvester'],
       ['Doing', 'Refuelling a tanker'],
