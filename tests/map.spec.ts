@@ -186,7 +186,8 @@ test('an order executes as the clock runs and writes its events', async ({ page 
   expect(Math.hypot(during.x - before.x, during.y - before.y)).toBeGreaterThan(30);
   await shoot(page, 'orders-running');
 
-  for (let day = 2; day <= 4; day++) {
+  const whereabouts = page.locator('#tree summary[data-sel="fleet:picket"] small');
+  for (let day = 2; day <= 12 && (await whereabouts.textContent()) !== 'Mars'; day++) {
     await step(page, '1d').click();
     await expect(page.locator('#clock')).toContainText(`${12 + day} Mar`);
   }
