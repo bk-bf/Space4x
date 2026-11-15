@@ -4,7 +4,7 @@ A space 4X game with Aurora-style depth: detailed colonies, industry, research, 
 
 ## Status
 
-The interface is a SvelteKit app built from the approved mockup. The game starts on present-day Earth, the only site, and its economy runs real materials, recipes and buildings from `src/lib/game/data/` on the game clock towards the first milestone. The map's site scenes, ground forces, commanders and ship designs are still mock, and the top bar says so.
+The interface is a SvelteKit app built from the approved mockup. The game starts on present-day Earth, the only site, and its economy runs real materials, recipes and buildings from `src/lib/game/data/` on the game clock towards the first milestone. What is not built yet is mock, and the game build does not show it: the six map site scenes, the Ground forces, Commanders, Intelligence, Galaxy and Ship classes screens and the colony surface scene live in the gallery build (see *Game and gallery*).
 
 `mockup/` is the approved interface as a static page with no build step. It stays as the reference the app is checked against. `mockup/scenes/` is the approved map scale and ship art reference: real distances, smooth zoom, top-down generated ships and the site scenes; serve `mockup/` and open `scenes/`.
 
@@ -23,6 +23,17 @@ The URL query selects a state, the same as in the mockup: `?screen=economy`, `?s
 
 `/dev/primitives` shows the shared panel, table, meter, tab and canvas primitives on one page.
 
+## Game and gallery
+
+One codebase, two builds, switched by `VITE_SPACE4X_GALLERY` (read only in `src/lib/shell/mode.ts`).
+
+- **game** (the default, https://space4x.callmedaddy.dedyn.io/): the top bar lists only real screens, the map has no sites, the colony screen has no surface scene, and a URL naming a mock screen opens the map.
+- **gallery** (`VITE_SPACE4X_GALLERY=1`): every screen and mock scene, with a hot-coloured underline on the top bar and the page title "Space4x gallery" (a tag beside the name does not fit at 1440 px once the chips grow). Served by the mockups server (see the `mockups` skill) at `/space4x-gallery/`, from `~/mockups/space4x-gallery/`.
+
+`deploy/build` makes both: the game into `build/`, then the gallery with `SPACE4X_BASE=/space4x-gallery` copied to `~/mockups/space4x-gallery/` when `~/mockups` exists (`GALLERY_DIR` overrides the path). `deploy/update` runs it whenever `dev` moves. `SPACE4X_OUT` overrides the output directory of a single `pnpm build`.
+
+`pnpm dev` runs the game; `VITE_SPACE4X_GALLERY=1 pnpm dev` runs the gallery.
+
 ## Checking and testing
 
 | Command               | What it runs                                                                        |
@@ -30,7 +41,7 @@ The URL query selects a state, the same as in the mockup: `?screen=economy`, `?s
 | `pnpm check`          | the legs the change needs (see below), in the order `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout` |
 | `pnpm check:all`      | every one of those six legs                                                         |
 | `pnpm test`           | the vitest unit tests                                                               |
-| `pnpm test:layout`    | the Playwright layout test over every query state, plus the interaction tests       |
+| `pnpm test:layout`    | the Playwright tests in two projects: `gallery` runs every layout state and the interaction tests, `game` runs the layout states of real screens and `tests/game.spec.ts`, which checks that nothing mock is reachable       |
 
 `pnpm check` reads the same change scope as CI (`tools/ci/scope.json`): it diffs `HEAD` against the merge-base with `origin/dev` (`node tools/ci/gate.mjs --base <ref>` diffs against another ref), counts uncommitted and untracked files too, and runs only the legs whose paths changed. It prints which legs run and which are skipped, and stops at the first failure with its exit code. A docs-only change runs none of them. `node --test 'tools/ci/*.test.mjs'` tests the leg selection.
 
