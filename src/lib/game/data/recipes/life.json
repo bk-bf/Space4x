@@ -1,0 +1,191 @@
+[
+  {
+    "id": "water_reclamation",
+    "building": "life_support_plant",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "water": 1000 },
+    "outputs": { "water": 930 },
+    "power": 20,
+    "hours": 1
+  },
+  {
+    "id": "co2_concentration",
+    "building": "life_support_plant",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "carbon_dioxide": 1000, "amine_sorbent": 0.5 },
+    "outputs": { "carbon_dioxide": 1000 },
+    "power": 20,
+    "hours": 1
+  },
+  {
+    "id": "farm_mixed_crops",
+    "building": "farmland",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "water": 1200, "urea": 40, "map_fertiliser": 10, "potassium_sulfate": 8 },
+    "outputs": { "plant_biomass": 1000 },
+    "power": 0,
+    "hours": 1
+  },
+  {
+    "id": "farm_wheat",
+    "building": "farmland",
+    "milestone": 3,
+    "estimated": true,
+    "inputs": { "water": 1800, "urea": 45, "map_fertiliser": 12, "potassium_sulfate": 8 },
+    "outputs": { "wheat": 1000 },
+    "power": 0,
+    "hours": 1
+  },
+  {
+    "id": "farm_potato",
+    "building": "farmland",
+    "milestone": 3,
+    "estimated": true,
+    "inputs": { "water": 290, "urea": 4, "map_fertiliser": 2, "potassium_sulfate": 6 },
+    "outputs": { "potato": 1000 },
+    "power": 0,
+    "hours": 1
+  },
+  {
+    "id": "farm_soybean",
+    "building": "farmland",
+    "milestone": 3,
+    "estimated": true,
+    "inputs": { "water": 2100, "map_fertiliser": 15, "potassium_sulfate": 20 },
+    "outputs": { "soybean": 1000 },
+    "power": 0,
+    "hours": 1
+  },
+  {
+    "id": "farm_leafy_greens",
+    "building": "farmland",
+    "milestone": 3,
+    "estimated": true,
+    "inputs": { "water": 240, "urea": 3, "map_fertiliser": 1, "potassium_sulfate": 3 },
+    "outputs": { "leafy_greens": 1000 },
+    "power": 0,
+    "hours": 1
+  },
+  {
+    "id": "greenhouse_mixed_crops",
+    "building": "greenhouse",
+    "milestone": 11,
+    "thin": true,
+    "estimated": true,
+    "inputs": {
+      "carbon_dioxide": 700,
+      "water": 250,
+      "urea": 30,
+      "map_fertiliser": 8,
+      "potassium_sulfate": 8
+    },
+    "outputs": { "plant_biomass": 400, "oxygen": 500 },
+    "power": 150,
+    "hours": 1
+  },
+  {
+    "id": "greenhouse_wheat",
+    "building": "greenhouse",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": {
+      "carbon_dioxide": 650,
+      "water": 300,
+      "urea": 40,
+      "map_fertiliser": 10,
+      "potassium_sulfate": 8
+    },
+    "outputs": { "wheat": 500, "oxygen": 470 },
+    "power": 150,
+    "hours": 1
+  },
+  {
+    "id": "greenhouse_potato",
+    "building": "greenhouse",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "carbon_dioxide": 125, "water": 360, "urea": 4, "map_fertiliser": 2, "potassium_sulfate": 6 },
+    "outputs": { "potato": 400, "oxygen": 85 },
+    "power": 150,
+    "hours": 1
+  },
+  {
+    "id": "greenhouse_soybean",
+    "building": "greenhouse",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "carbon_dioxide": 650, "water": 300, "map_fertiliser": 15, "potassium_sulfate": 20 },
+    "outputs": { "soybean": 500, "oxygen": 470 },
+    "power": 150,
+    "hours": 1
+  },
+  {
+    "id": "greenhouse_leafy_greens",
+    "building": "greenhouse",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "carbon_dioxide": 22, "water": 290, "urea": 3, "map_fertiliser": 1, "potassium_sulfate": 3 },
+    "outputs": { "leafy_greens": 300, "oxygen": 16 },
+    "power": 150,
+    "hours": 1
+  },
+  {
+    "id": "spirulina_culture",
+    "building": "algae_bioreactor",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "carbon_dioxide": 1830, "water": 500, "ammonia": 120 },
+    "outputs": { "spirulina": 1000, "oxygen": 1330 },
+    "power": 100,
+    "hours": 1
+  },
+  {
+    "id": "methanotroph_fermentation",
+    "building": "protein_fermenter",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "methane": 1540, "ammonia": 120, "oxygen": 1800 },
+    "outputs": { "single_cell_protein": 1000 },
+    "power": 200,
+    "hours": 1,
+    "reaction": "0.65 g dry cells per g methane in a 1977 methane fermenter study; the oxygen demand is assumed",
+    "source": "https://wrap.warwick.ac.uk/140087/1/WRAP_Theses_Stanley_1977.pdf"
+  },
+  {
+    "id": "ration_from_crops",
+    "building": "food_plant",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "plant_biomass": 1200 },
+    "outputs": { "food_ration": 1000 },
+    "power": 80,
+    "hours": 1
+  },
+  {
+    "id": "ration_staples",
+    "building": "food_plant",
+    "milestone": 3,
+    "estimated": true,
+    "inputs": { "wheat": 450, "potato": 250, "soybean": 250, "leafy_greens": 100 },
+    "outputs": { "food_ration": 1000 },
+    "power": 80,
+    "hours": 1
+  },
+  {
+    "id": "ration_closed_loop",
+    "building": "food_plant",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "spirulina": 300, "single_cell_protein": 200, "wheat": 300, "soybean": 200 },
+    "outputs": { "food_ration": 1000 },
+    "power": 80,
+    "hours": 1
+  }
+]

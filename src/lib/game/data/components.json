@@ -1,0 +1,254 @@
+[
+  {
+    "id": "structure_truss",
+    "name": "Structure truss",
+    "kind": "structure",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "stainless_steel": 800, "titanium": 100, "cfrp": 100 }
+  },
+  {
+    "id": "propellant_tank",
+    "name": "Propellant tank",
+    "kind": "structure",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "al_li_alloy": 600, "cfrp": 150 }
+  },
+  {
+    "id": "copv",
+    "name": "Composite overwrapped pressure vessel",
+    "kind": "structure",
+    "milestone": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "ti_6al_4v": 100, "cfrp": 150, "aramid": 30, "helium4": 5 }
+  },
+  {
+    "id": "kerolox_engine",
+    "name": "Kerolox engine",
+    "kind": "propulsion",
+    "milestone": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "nickel_superalloy": 400, "grcop": 200, "copper": 100 }
+  },
+  {
+    "id": "chemical_engine_methalox",
+    "name": "Methalox engine",
+    "kind": "propulsion",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "nickel_superalloy": 400, "grcop": 200, "stainless_steel": 300 }
+  },
+  {
+    "id": "chemical_engine_hydrolox",
+    "name": "Hydrolox engine",
+    "kind": "propulsion",
+    "milestone": 6,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "nickel_superalloy": 350, "grcop": 200, "copper": 50 }
+  },
+  {
+    "id": "rcs_thruster",
+    "name": "RCS thruster",
+    "kind": "propulsion",
+    "milestone": 3,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "rhenium": 5, "iridium": 1, "c103": 20 }
+  },
+  {
+    "id": "hall_thruster",
+    "name": "Hall thruster",
+    "kind": "propulsion",
+    "milestone": 13,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "smco_magnet": 20, "boron": 5, "copper": 30, "stainless_steel": 50 }
+  },
+  {
+    "id": "ion_thruster",
+    "name": "Ion thruster",
+    "kind": "propulsion",
+    "milestone": 13,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "ndfeb_magnet": 15, "molybdenum": 20, "stainless_steel": 30 }
+  },
+  {
+    "id": "ntr_engine",
+    "name": "Nuclear thermal engine",
+    "kind": "propulsion",
+    "milestone": 14,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "triso": 500, "zirconium": 100, "hafnium": 20, "beryllium": 200, "tungsten": 300 }
+  },
+  {
+    "id": "fission_reactor_ship",
+    "name": "Ship fission reactor",
+    "kind": "power",
+    "milestone": 13,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "haynes_230": 600,
+      "sodium": 100,
+      "beryllium": 300,
+      "boron_carbide": 100,
+      "tungsten": 500,
+      "haleu": 50
+    }
+  },
+  {
+    "id": "fusion_drive",
+    "name": "Fusion drive",
+    "kind": "propulsion",
+    "milestone": 24,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["orbital_shipyard"],
+    "cost": { "rebco": 100, "uhtc": 400, "stainless_steel": 2000, "aluminium": 500 }
+  },
+  {
+    "id": "radiator",
+    "name": "Radiator",
+    "kind": "thermal",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "aluminium": 400, "ammonia": 50, "copper": 50 }
+  },
+  {
+    "id": "solar_array",
+    "name": "Solar array",
+    "kind": "power",
+    "milestone": 4,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "mj_solar_cell": 100, "polyimide": 20, "fused_silica": 40, "cfrp": 200 }
+  },
+  {
+    "id": "battery_pack",
+    "name": "Battery pack",
+    "kind": "power",
+    "milestone": 4,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "li_ion_cell": 500, "aluminium": 50 }
+  },
+  {
+    "id": "habitat_module",
+    "name": "Habitat module",
+    "kind": "habitat",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "al_li_alloy": 5000, "fused_silica": 300, "polyimide": 100, "copper": 50 }
+  },
+  {
+    "id": "inflatable_habitat",
+    "name": "Inflatable habitat",
+    "kind": "habitat",
+    "milestone": 11,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "vectran": 500, "aramid": 200, "polyimide": 100 }
+  },
+  {
+    "id": "life_support_unit",
+    "name": "Life support unit",
+    "kind": "habitat",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "stainless_steel": 500, "amine_sorbent": 100, "platinum": 1, "copper": 50 }
+  },
+  {
+    "id": "radiation_shield",
+    "name": "Radiation shield",
+    "kind": "protection",
+    "milestone": 6,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "uhmwpe": 2000, "water": 1000, "stainless_steel": 200 }
+  },
+  {
+    "id": "whipple_shield",
+    "name": "Whipple shield",
+    "kind": "protection",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "aluminium": 300, "aramid": 100 }
+  },
+  {
+    "id": "heat_shield",
+    "name": "Heat shield",
+    "kind": "protection",
+    "milestone": 6,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "pica": 800, "cfrp": 100 }
+  },
+  {
+    "id": "mli_blanket",
+    "name": "Multi-layer insulation blanket",
+    "kind": "thermal",
+    "milestone": 2,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "polyimide": 30, "aluminium": 10 }
+  },
+  {
+    "id": "avionics",
+    "name": "Avionics",
+    "kind": "electronics",
+    "milestone": 5,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "rad_hard_ic": 20, "copper": 20, "aluminium": 30 }
+  },
+  {
+    "id": "docking_adapter",
+    "name": "Docking adapter",
+    "kind": "structure",
+    "milestone": 2,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "stainless_steel": 300, "titanium": 50, "copper": 30 }
+  },
+  {
+    "id": "sampling_arm",
+    "name": "Sampling arm",
+    "kind": "structure",
+    "milestone": 15,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": { "stainless_steel": 150, "titanium": 50, "ndfeb_magnet": 10, "rad_hard_ic": 5 }
+  }
+]

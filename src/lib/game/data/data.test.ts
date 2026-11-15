@@ -1,0 +1,369 @@
+import { describe, expect, it } from 'vitest';
+import {
+  buildings,
+  dataFiles,
+  material,
+  materials,
+  materialSites,
+  milestone,
+  milestones,
+  reach,
+  recipes,
+  recipesProducing,
+  shipComponents,
+  type Amounts,
+  type Body,
+  type Site
+} from './index.ts';
+
+const SNAKE = /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/;
+const TIERS = ['P', 'E', 'S'];
+const BODIES: Body[] = [
+  'earth',
+  'moon',
+  'mars',
+  'venus',
+  'io',
+  'titan',
+  'icy-moon',
+  'comet',
+  'asteroid-c',
+  'asteroid-s',
+  'asteroid-m',
+  'gas-giant',
+  'ice-giant'
+];
+const SITES: Site[] = [...BODIES, 'orbit', 'jump-point'];
+const HOWS = [
+  'mined',
+  'wells',
+  'brine',
+  'byproduct',
+  'atmosphere',
+  'ice',
+  'regolith',
+  'solar-wind',
+  'liquid'
+];
+const LAST = milestones.length;
+
+const materialIds = new Set(materials.map((m) => m.id));
+const buildingIds = new Set(buildings.map((b) => b.id));
+const componentIds = new Set(shipComponents.map((c) => c.id));
+const unitOf = (id: string) => material(id).unit ?? 'kg';
+const mass = (amounts: Amounts) => Object.values(amounts).reduce((a, b) => a + b, 0);
+const massOnly = (r: { inputs: Amounts; outputs: Amounts }) =>
+  [...Object.keys(r.inputs), ...Object.keys(r.outputs)].every((id) => unitOf(id) === 'kg');
+const OPEN_AIR = new Set(['farmland']);
+const unknown = (ids: string[], known: Set<string>) => ids.filter((id) => !known.has(id));
+
+describe('ids', () => {
+  const duplicates = (ids: string[]) => ids.filter((id, i) => ids.indexOf(id) !== i);
+
+  it('are unique within each kind', () => {
+    expect(duplicates(materials.map((m) => m.id))).toEqual([]);
+    expect(duplicates(recipes.map((r) => r.id))).toEqual([]);
+    expect(duplicates(buildings.map((b) => b.id))).toEqual([]);
+    expect(duplicates(shipComponents.map((c) => c.id))).toEqual([]);
+    expect(duplicates(milestones.map((m) => m.id))).toEqual([]);
+  });
+
+  it('never collide between materials, buildings, components and recipes', () => {
+    const all = [...materials, ...buildings, ...shipComponents, ...recipes].map((x) => x.id);
+    expect(duplicates(all)).toEqual([]);
+  });
+
+  it('are snake_case everywhere', () => {
+    const all = [...materials, ...recipes, ...buildings, ...shipComponents, ...milestones].map((x) => x.id);
+    expect(all.filter((id) => !SNAKE.test(id))).toEqual([]);
+  });
+});
+
+describe('files', () => {
+  it('keep every record in the file named for its category', () => {
+    const wrong = dataFiles.materials.flatMap((f) =>
+      f.items.filter((m) => f.name !== m.category && !f.name.startsWith(`${m.category}-`)).map((m) => m.id)
+    );
+    expect(wrong).toEqual([]);
+  });
+
+  it('stay under about 400 lines each', async () => {
+    const { readdirSync, readFileSync } = await import('node:fs');
+    const root = new URL('.', import.meta.url).pathname;
+    const files = ['materials', 'recipes', 'buildings'].flatMap((dir) =>
+      readdirSync(root + dir).map((f) => `${dir}/${f}`)
+    );
+    const long = files.filter((f) => readFileSync(root + f, 'utf8').split('\n').length > 420);
+    expect(long).toEqual([]);
+  });
+});
+
+describe('materials', () => {
+  it('use known tiers and categories with a source url', () => {
+    for (const m of materials) {
+      expect(TIERS, m.id).toContain(m.tier);
+      expect(m.source, m.id).toMatch(/^https?:\/\//);
+      expect(m.why.length, m.id).toBeGreaterThan(10);
+    }
+  });
+
+  it('record sources in known bodies, with an extraction building that works on that body', () => {
+    for (const m of materials) {
+      for (const s of m.sources ?? []) {
+        expect(BODIES, `${m.id} body`).toContain(s.body);
+        expect(HOWS, `${m.id} how`).toContain(s.how);
+        const host = buildings.find((b) => b.id === s.building);
+        expect(host, `${m.id} building ${s.building}`).toBeDefined();
+        expect(host?.kind, `${m.id} building kind`).toBe('extraction');
+        expect(host?.where, `${m.id} on ${s.body}`).toContain(s.body);
+      }
+    }
+  });
+
+  it('are either extractable somewhere or produced by some recipe', () => {
+    const orphans = materials.filter((m) => !m.sources?.length && recipesProducing(m.id).length === 0);
+    expect(orphans.map((m) => m.id)).toEqual([]);
+  });
+
+  it('say where they can be extracted and made, in a form code can query', () => {
+    expect(materialSites('lox').make).toContain('moon');
+    expect(materialSites('water').extract).toEqual(expect.arrayContaining(['earth', 'moon', 'mars']));
+    expect(materialSites('oxygen').extract).toEqual([]);
+    expect(materialSites('oxygen').make).toEqual(expect.arrayContaining(['earth', 'moon', 'mars']));
+  });
+
+  it('carry no restriction other than physics, geology and industry', () => {
+    const politics = /\b(export|ban|banned|sanction|embargo|restrict\w*|controlled|monopoly)\b/i;
+    expect(materials.filter((m) => politics.test(m.why)).map((m) => m.id)).toEqual([]);
+  });
+});
+
+describe('recipes', () => {
+  it('run in a known building, from a known milestone, on known materials', () => {
+    for (const r of recipes) {
+      const host = buildings.find((b) => b.id === r.building);
+      expect(host, `${r.id} building`).toBeDefined();
+      expect(r.milestone, r.id).toBeGreaterThanOrEqual(host?.milestone ?? 0);
+      expect(r.milestone, r.id).toBeLessThanOrEqual(LAST);
+      expect(unknown(Object.keys(r.inputs), materialIds), `${r.id} inputs`).toEqual([]);
+      expect(unknown(Object.keys(r.outputs), materialIds), `${r.id} outputs`).toEqual([]);
+      for (const amount of [...Object.values(r.inputs), ...Object.values(r.outputs)])
+        expect(amount, r.id).toBeGreaterThan(0);
+      expect(r.power, r.id).toBeGreaterThanOrEqual(0);
+      expect(r.hours, r.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('produce something, or generate power', () => {
+    for (const r of recipes)
+      expect(Object.keys(r.outputs).length > 0 || (r.generates ?? 0) > 0, r.id).toBe(true);
+  });
+
+  it('never create mass', () => {
+    for (const r of recipes.filter(massOnly)) {
+      if (mass(r.inputs) === 0 || OPEN_AIR.has(r.building)) continue;
+      expect(mass(r.outputs), r.id).toBeLessThanOrEqual(mass(r.inputs) * 1.01);
+    }
+  });
+
+  it('balance to one percent when the ratio is a real reaction or composition', () => {
+    const real = recipes.filter((r) => !r.estimated);
+    expect(real.length).toBeGreaterThan(20);
+    for (const r of real) {
+      expect(r.reaction, `${r.id} states its basis`).toBeTruthy();
+      expect(r.source, `${r.id} cites a source`).toMatch(/^https?:\/\//);
+      if (!massOnly(r) || Object.keys(r.outputs).length === 0) continue;
+      expect(Math.abs(mass(r.outputs) - mass(r.inputs)) / mass(r.inputs), r.id).toBeLessThan(0.01);
+    }
+  });
+});
+
+describe('buildings and components', () => {
+  it('cost known materials and parts, and unlock at a known milestone', () => {
+    for (const b of buildings) {
+      expect(unknown(Object.keys(b.cost), materialIds), `${b.id} cost`).toEqual([]);
+      expect(unknown(b.parts ?? [], componentIds), `${b.id} parts`).toEqual([]);
+      expect(b.milestone, b.id).toBeGreaterThanOrEqual(1);
+      expect(b.milestone, b.id).toBeLessThanOrEqual(LAST);
+      for (const site of b.where) expect(SITES, `${b.id} where`).toContain(site);
+      expect(b.where.length, b.id).toBeGreaterThan(0);
+      if (b.start) expect(b.milestone, `${b.id} exists at the start`).toBe(1);
+    }
+  });
+
+  it('give every farming building a footprint and every extractor a source to work', () => {
+    const grows = (id: string) =>
+      recipes.some(
+        (r) =>
+          r.building === id &&
+          Object.keys(r.outputs).some(
+            (m) => material(m).category === 'food' || ['plant_biomass', 'spirulina'].includes(m)
+          )
+      );
+    for (const b of buildings.filter((x) => grows(x.id))) expect(b.footprint, b.id).toBeDefined();
+    for (const b of buildings.filter((x) => x.kind === 'extraction')) {
+      const used = materials.some((m) => m.sources?.some((s) => s.building === b.id));
+      expect(used, `${b.id} extracts something`).toBe(true);
+    }
+  });
+
+  it('cost known materials, are assembled in known buildings and unlock at a known milestone', () => {
+    for (const c of shipComponents) {
+      expect(unknown(Object.keys(c.cost), materialIds), `${c.id} cost`).toEqual([]);
+      expect(unknown(c.builtAt, buildingIds), `${c.id} builtAt`).toEqual([]);
+      expect(c.milestone, c.id).toBeGreaterThanOrEqual(1);
+      expect(c.milestone, c.id).toBeLessThanOrEqual(LAST);
+    }
+  });
+});
+
+describe('milestones', () => {
+  it('number 1 to 29 in order', () => {
+    expect(milestones.map((m) => m.number)).toEqual(Array.from({ length: 29 }, (_, i) => i + 1));
+  });
+
+  it('require only earlier milestones and need things that exist', () => {
+    for (const m of milestones) {
+      expect(TIERS, m.id).toContain(m.tier);
+      expect(m.sources.length, m.id).toBeGreaterThan(0);
+      for (const r of m.requires) expect(r, m.id).toBeLessThan(m.number);
+      expect(unknown(m.needs.materials, materialIds), `${m.id} materials`).toEqual([]);
+      expect(unknown(m.needs.buildings, buildingIds), `${m.id} buildings`).toEqual([]);
+      expect(unknown(m.needs.components, componentIds), `${m.id} components`).toEqual([]);
+    }
+    expect(milestone(1).requires).toEqual([]);
+  });
+
+  it('end at jump point stabilisation', () => {
+    expect(milestone(29).needs.buildings).toEqual(['jump_point_stabiliser']);
+  });
+});
+
+describe('the thin path', () => {
+  const thinMaterials = materials.filter((m) => m.thin);
+
+  it('closes on itself: thin recipes, buildings and components use only thin parts', () => {
+    const isThin = (id: string) => material(id).thin === true;
+    for (const r of recipes.filter((x) => x.thin)) {
+      expect(
+        Object.keys(r.inputs).filter((id) => !isThin(id)),
+        `${r.id} inputs`
+      ).toEqual([]);
+      expect(
+        Object.keys(r.outputs).some(isThin) || (r.generates ?? 0) > 0,
+        `${r.id} makes a thin material or power`
+      ).toBe(true);
+      expect(buildings.find((b) => b.id === r.building)?.thin, `${r.id} building`).toBe(true);
+    }
+    for (const b of buildings.filter((x) => x.thin)) {
+      expect(
+        Object.keys(b.cost).filter((id) => !isThin(id)),
+        `${b.id} cost`
+      ).toEqual([]);
+      for (const p of b.parts ?? [])
+        expect(shipComponents.find((c) => c.id === p)?.thin, `${b.id} ${p}`).toBe(true);
+    }
+    for (const c of shipComponents.filter((x) => x.thin)) {
+      expect(
+        Object.keys(c.cost).filter((id) => !isThin(id)),
+        `${c.id} cost`
+      ).toEqual([]);
+      expect(
+        c.builtAt.some((id) => buildings.find((b) => b.id === id)?.thin),
+        `${c.id} builder`
+      ).toBe(true);
+    }
+  });
+
+  it('holds every material the milestones need', () => {
+    for (const m of milestones) {
+      expect(
+        m.needs.materials.filter((id) => !material(id).thin),
+        `${m.id}`
+      ).toEqual([]);
+      expect(
+        m.needs.buildings.filter((id) => !buildings.find((b) => b.id === id)?.thin),
+        `${m.id}`
+      ).toEqual([]);
+      expect(
+        m.needs.components.filter((id) => !shipComponents.find((c) => c.id === id)?.thin),
+        `${m.id}`
+      ).toEqual([]);
+    }
+  });
+
+  it('keeps food on it from the first crew that stays for months', () => {
+    expect(milestone(3).needs.materials).toContain('food_ration');
+    expect(thinMaterials.map((m) => m.id)).toEqual(
+      expect.arrayContaining(['food_ration', 'plant_biomass', 'urea', 'map_fertiliser', 'potassium_sulfate'])
+    );
+  });
+
+  it('reaches every milestone 1 to 29 in order from what present-day Earth can extract', () => {
+    for (const m of milestones) {
+      const got = reach({ upTo: m.number, thinOnly: true });
+      expect(
+        m.needs.materials.filter((id) => !got.materials.has(id)),
+        `${m.id} materials`
+      ).toEqual([]);
+      expect(
+        m.needs.buildings.filter((id) => !got.buildings.has(id)),
+        `${m.id} buildings`
+      ).toEqual([]);
+      expect(
+        m.needs.components.filter((id) => !got.components.has(id)),
+        `${m.id} components`
+      ).toEqual([]);
+    }
+  });
+
+  it('starts from extraction alone: nothing is reachable with no milestone unlocked', () => {
+    const got = reach({ upTo: 0, thinOnly: true });
+    expect(got.materials.size).toBe(0);
+    expect(got.buildings.size).toBe(0);
+  });
+
+  it('runs on only the first milestone unlocks at the start', () => {
+    const first = reach({ upTo: 1, thinOnly: true });
+    expect(first.materials.has('oxygen')).toBe(true);
+    expect(first.materials.has('cfrp')).toBe(true);
+    expect(first.materials.has('haleu')).toBe(false);
+  });
+});
+
+describe('the whole data set', () => {
+  const all = reach();
+
+  it('reaches every material, building, component and recipe: no cycle strands one', () => {
+    expect(materials.filter((m) => !all.materials.has(m.id)).map((m) => m.id)).toEqual([]);
+    expect(buildings.filter((b) => !all.buildings.has(b.id)).map((b) => b.id)).toEqual([]);
+    expect(shipComponents.filter((c) => !all.components.has(c.id)).map((c) => c.id)).toEqual([]);
+    expect(recipes.filter((r) => !all.recipes.has(r.id)).map((r) => r.id)).toEqual([]);
+  });
+
+  it('makes each thin material on the thin path and each other material somewhere', () => {
+    const thin = reach({ thinOnly: true });
+    expect(materials.filter((m) => m.thin && !thin.materials.has(m.id)).map((m) => m.id)).toEqual([]);
+  });
+});
+
+describe('make or import', () => {
+  it('lets the Moon make its own propellant once lunar ice and regolith are worked', () => {
+    const moon = reach({ upTo: 12, thinOnly: true, site: 'moon' });
+    expect(moon.materials.has('lox')).toBe(true);
+    expect(moon.materials.has('lh2')).toBe(true);
+    expect(moon.materials.has('lch4')).toBe(false);
+  });
+
+  it('lets a gas giant supply fusion fuel', () => {
+    const giant = reach({ upTo: 25, thinOnly: true, site: 'gas-giant' });
+    for (const id of ['helium3', 'deuterium', 'hydrogen', 'helium4'])
+      expect(giant.materials.has(id), id).toBe(true);
+  });
+
+  it('keeps nitrogen off the Moon: it must be imported or bred from comets', () => {
+    const moon = reach({ site: 'moon' });
+    expect(moon.materials.has('nitrogen')).toBe(false);
+    expect(materialSites('nitrogen').extract).not.toContain('moon');
+  });
+});

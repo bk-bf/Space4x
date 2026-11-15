@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ethylene",
+    "name": "Ethylene (polymer feedstock)",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "wells", "building": "mine_earth" }],
+    "why": "Base monomer for polyethylene and many polymers",
+    "source": "https://en.wikipedia.org/wiki/Ethylene"
+  },
+  {
+    "id": "polyimide",
+    "name": "Polyimide film (Kapton)",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Radiation and heat resistant film for insulation blankets and flex circuits",
+    "source": "https://en.wikipedia.org/wiki/Kapton"
+  },
+  {
+    "id": "pet_film",
+    "name": "PET film (Mylar)",
+    "category": "polymer",
+    "tier": "P",
+    "why": "Aluminised layers of multi-layer insulation",
+    "source": "https://en.wikipedia.org/wiki/Multi-layer_insulation"
+  },
+  {
+    "id": "aramid",
+    "name": "Aramid fibre (Kevlar)",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Slows debris clouds in Whipple shields; overwrap for pressure vessels",
+    "source": "https://en.wikipedia.org/wiki/Kevlar"
+  },
+  {
+    "id": "vectran",
+    "name": "Vectran liquid-crystal polymer fibre",
+    "category": "polymer",
+    "tier": "P",
+    "why": "Restraint layer of inflatable habitats and Mars landing airbags",
+    "source": "https://en.wikipedia.org/wiki/Vectran"
+  },
+  {
+    "id": "uhmwpe",
+    "name": "Ultra-high-molecular-weight polyethylene",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Hydrogen-rich shielding against galactic cosmic rays; strong fibre",
+    "source": "https://en.wikipedia.org/wiki/Ultra-high-molecular-weight_polyethylene"
+  },
+  {
+    "id": "ptfe",
+    "name": "Polytetrafluoroethylene (PTFE)",
+    "category": "polymer",
+    "tier": "P",
+    "why": "Wire insulation, seals and Beta cloth coating",
+    "source": "https://en.wikipedia.org/wiki/Polytetrafluoroethylene"
+  },
+  {
+    "id": "silicone",
+    "name": "Silicone elastomer",
+    "category": "polymer",
+    "tier": "P",
+    "why": "Seals and gaskets that stay flexible across space temperatures",
+    "source": "https://en.wikipedia.org/wiki/Silicone"
+  },
+  {
+    "id": "epoxy",
+    "name": "Epoxy resin",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Matrix of carbon-fibre composites",
+    "source": "https://en.wikipedia.org/wiki/Epoxy"
+  },
+  {
+    "id": "phenolic_resin",
+    "name": "Phenolic resin",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Matrix of ablative heat shields and carbon-carbon precursors",
+    "source": "https://en.wikipedia.org/wiki/Phenol_formaldehyde_resin"
+  },
+  {
+    "id": "pan",
+    "name": "Polyacrylonitrile",
+    "category": "polymer",
+    "tier": "P",
+    "thin": true,
+    "why": "Precursor fibre for nearly all carbon fibre",
+    "source": "https://en.wikipedia.org/wiki/Polyacrylonitrile"
+  }
+]

@@ -1,0 +1,173 @@
+[
+  {
+    "id": "lunar_regolith",
+    "name": "Lunar regolith",
+    "category": "ceramic",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "moon", "how": "regolith", "building": "regolith_excavator" }],
+    "why": "Feedstock for oxygen, metals, silicon and construction on the Moon",
+    "source": "https://en.wikipedia.org/wiki/Lunar_regolith"
+  },
+  {
+    "id": "ilmenite",
+    "name": "Ilmenite (FeTiO3)",
+    "category": "ceramic",
+    "tier": "P",
+    "sources": [
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "earth", "how": "mined", "building": "mine_earth" }
+    ],
+    "why": "Hydrogen-reducible to oxygen, iron and titanium oxide",
+    "source": "https://en.wikipedia.org/wiki/Ilmenite"
+  },
+  {
+    "id": "anorthite",
+    "name": "Anorthite (lunar highland feldspar)",
+    "category": "ceramic",
+    "tier": "P",
+    "sources": [{ "body": "moon", "how": "regolith", "building": "regolith_excavator" }],
+    "why": "Calcium-aluminium silicate: lunar source of aluminium and oxygen",
+    "source": "https://en.wikipedia.org/wiki/Anorthite"
+  },
+  {
+    "id": "martian_regolith",
+    "name": "Martian regolith",
+    "category": "ceramic",
+    "tier": "E",
+    "sources": [{ "body": "mars", "how": "regolith", "building": "regolith_excavator" }],
+    "why": "Contains water ice and construction feedstock but carries toxic perchlorates",
+    "source": "https://en.wikipedia.org/wiki/Martian_regolith"
+  },
+  {
+    "id": "ordinary_chondrite",
+    "name": "Silicate asteroid material (S-type)",
+    "category": "ceramic",
+    "tier": "E",
+    "sources": [{ "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" }],
+    "why": "Silicates with free iron-nickel metal grains",
+    "source": "https://en.wikipedia.org/wiki/S-type_asteroid"
+  },
+  {
+    "id": "basalt",
+    "name": "Basalt",
+    "category": "ceramic",
+    "tier": "P",
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Melt-spun into basalt fibre for shielding and composites",
+    "source": "https://en.wikipedia.org/wiki/Basalt_fiber"
+  },
+  {
+    "id": "fused_silica",
+    "name": "Fused silica glass",
+    "category": "ceramic",
+    "tier": "P",
+    "thin": true,
+    "why": "Windows, optics, solar-cell cover glass and fibre",
+    "source": "https://en.wikipedia.org/wiki/Fused_quartz"
+  },
+  {
+    "id": "sintered_regolith",
+    "name": "Sintered / 3D-printed regolith",
+    "category": "ceramic",
+    "tier": "E",
+    "thin": true,
+    "why": "Landing pads, berms and habitat shells from local soil",
+    "source": "https://en.wikipedia.org/wiki/Lunar_regolith"
+  },
+  {
+    "id": "sulfur_concrete",
+    "name": "Sulfur concrete",
+    "category": "ceramic",
+    "tier": "E",
+    "why": "Waterless concrete suited to the Moon and Mars",
+    "source": "https://en.wikipedia.org/wiki/Sulfur_concrete"
+  },
+  {
+    "id": "alumina",
+    "name": "Alumina (aluminium oxide)",
+    "category": "ceramic",
+    "tier": "P",
+    "why": "Electrical insulator, ceramic fibre and substrate",
+    "source": "https://en.wikipedia.org/wiki/Aluminium_oxide"
+  },
+  {
+    "id": "nextel",
+    "name": "Nextel alumina-boria-silica ceramic fabric",
+    "category": "ceramic",
+    "tier": "P",
+    "why": "Shatters hypervelocity debris in ISS stuffed Whipple shields",
+    "source": "https://en.wikipedia.org/wiki/Whipple_shield"
+  },
+  {
+    "id": "boron_carbide",
+    "name": "Boron carbide",
+    "category": "ceramic",
+    "tier": "P",
+    "thin": true,
+    "why": "Neutron absorber for control rods and shielding",
+    "source": "https://en.wikipedia.org/wiki/Boron_carbide"
+  },
+  {
+    "id": "silicon_carbide",
+    "name": "Silicon carbide",
+    "category": "ceramic",
+    "tier": "P",
+    "thin": true,
+    "why": "High-voltage power electronics and a pressure-retaining layer of TRISO fuel",
+    "source": "https://en.wikipedia.org/wiki/Silicon_carbide"
+  },
+  {
+    "id": "ysz",
+    "name": "Yttria-stabilised zirconia",
+    "category": "ceramic",
+    "tier": "P",
+    "why": "Oxide-ion electrolyte of solid-oxide electrolysers (MOXIE used scandia-stabilised zirconia)",
+    "source": "https://en.wikipedia.org/wiki/Mars_Oxygen_ISRU_Experiment"
+  },
+  {
+    "id": "uhtc",
+    "name": "Ultra-high-temperature ceramics (HfC, ZrB2, TaC)",
+    "category": "ceramic",
+    "tier": "E",
+    "thin": true,
+    "why": "Highest-melting ceramics for nozzles, leading edges and hot structures",
+    "source": "https://en.wikipedia.org/wiki/Ultra-high-temperature_ceramic"
+  },
+  {
+    "id": "silica_aerogel",
+    "name": "Silica aerogel",
+    "category": "ceramic",
+    "tier": "P",
+    "why": "Ultralight thermal insulation used on Mars rovers",
+    "source": "https://en.wikipedia.org/wiki/Aerogel"
+  },
+  {
+    "id": "basalt_fibre",
+    "name": "Basalt fibre",
+    "category": "ceramic",
+    "tier": "E",
+    "why": "Locally made fabric tested by NASA as a substitute for Nextel in shields",
+    "source": "https://ntrs.nasa.gov/citations/20250001790"
+  },
+  {
+    "id": "glass_fibre",
+    "name": "Glass fibre",
+    "category": "ceramic",
+    "tier": "P",
+    "why": "Cheap composite reinforcement and the base of Beta cloth",
+    "source": "https://en.wikipedia.org/wiki/Glass_fiber"
+  },
+  {
+    "id": "bnnt",
+    "name": "Boron nitride nanotubes",
+    "category": "ceramic",
+    "tier": "E",
+    "why": "Candidate structural radiation shielding; boron absorbs neutrons",
+    "source": "https://en.wikipedia.org/wiki/Boron_nitride_nanotube"
+  }
+]
