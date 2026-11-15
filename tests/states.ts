@@ -17,6 +17,7 @@ const QUERIES = [
   'dock=events:right',
   'screen=economy',
   'screen=research',
+  'screen=research&field=sensors',
   'screen=classes',
   'screen=classes&cls=lighthouse',
   'screen=colony',
