@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/routes/**/+*.{ts,js,svelte}",
+    "src/app.html",
+    "src/lib/*/index.ts",
+    "src/lib/screens/*/Screen.svelte",
+    "src/lib/screens/*/system.ts",
+    "src/**/*.test.ts",
+    "tests/**/*.spec.ts",
+    "tools/**/*.mjs",
+    "*.config.{ts,js}"
+  ],
+  "project": [
+    "src/**/*.{ts,js,svelte}",
+    "tests/**/*.ts",
+    "tools/**/*.mjs"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "typescript": false
+}

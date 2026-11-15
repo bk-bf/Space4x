@@ -4,3 +4,5 @@ node_modules/
 /coverage/
 .env
 .claude/worktrees/
+/test-results/
+/playwright-report/

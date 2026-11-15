@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+count=${1:-1}
+repo=bk-bf/Space4x
+here=$(cd "$(dirname "$0")" && pwd)
+version=$(gh api repos/actions/runner/releases/latest --jq '.tag_name' | sed 's/^v//')
+tarball=$HOME/.cache/actions-runner-$version.tar.gz
+[ -f "$tarball" ] || curl -fsSL -o "$tarball" "https://github.com/actions/runner/releases/download/v$version/actions-runner-linux-x64-$version.tar.gz"
+unit_dir=$HOME/.config/systemd/user
+mkdir -p "$unit_dir"
+cp "$here/gha-space4x@.service" "$unit_dir/"
+systemctl --user daemon-reload
+for i in $(seq 1 "$count"); do
+  dir=$HOME/actions-runner-space4x-$i
+  mkdir -p "$dir/home" "$dir/tmp"
+  install -m 755 "$here/gate.sh" "$dir/gate.sh"
+  if [ ! -f "$dir/.runner" ]; then
+    tar xzf "$tarball" -C "$dir"
+    token=$(gh api -X POST "repos/$repo/actions/runners/registration-token" --jq .token)
+    (cd "$dir" && ./config.sh --unattended --url "https://github.com/$repo" --token "$token" --name "$(hostname)-space4x-$i" --labels space4x --work _work --replace >/dev/null)
+  fi
+  systemctl --user enable --now "gha-space4x@$i.service"
+done
+systemctl --user --no-pager list-units 'gha-space4x@*' | grep -E 'gha-space4x@'
+gh api "repos/$repo/actions/runners" --jq '.runners[] | "\(.name) \(.status) \(.labels | map(.name) | join(","))"'
