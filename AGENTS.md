@@ -51,7 +51,28 @@ While running, the loop advances `game.step` of game time per real second, ten t
 
 `game.status` is evaluated from sources a screen registers with `registerStatus(id, () => ({ icon, value, title, warn? }))` from its `system.ts`; the ids and their order are `STATUS_IDS`. Economy owns wealth, people, fuel, the warning and shipyards, research owns labs. Read the state the chip describes; never store a chip's value.
 
-### Adding a system
+### Game data
+
+The economy runs on JSON in `src/lib/game/data/`, so that a Rust simulation can read the same files later. `#lib/game/data/index.ts` loads them and exports the records (`materials`, `recipes`, `buildings`, `shipComponents`, `milestones`), lookups by id (`material(id)`, `building(id)`, ...), and the derived graphs: `recipesProducing`, `recipesConsuming`, `recipesAt`, `materialSites` (where a material is extracted and where it can be made), `unlockedAt`, and `reach`, which computes what exists from extraction alone up to a milestone, on the thin path or the whole set, or on one site.
+
+| Folder or file      | Holds                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `materials/<category>.json` | one small record per material; a category that outgrows about 400 lines gets `<category>-<part>.json` |
+| `recipes/<group>.json`      | a building turns `inputs` into `outputs`, each a map of material id to amount                   |
+| `buildings/<kind>.json`     | where it stands, what it costs, who works it; extractors name the materials they work through `sources` |
+| `components.json`, `milestones.json` | ship components; the 29 gates from present-day Earth to a stabilised jump point |
+
+Ids are `snake_case` and unique across materials, buildings, components and recipes. Amounts are kg unless the material has a `unit` (`cu` compute, `model` trained model). A recipe's `power` is kW while it runs, `hours` is the batch time, and `generates` is kW produced by a generator.
+
+- **A material** is one record in the file of its category. `sources` lists where it is mined or collected: `{ body, how, building }`, with a `body` from `types.ts`, and a `building` of kind `extraction` that stands on that body. A material with no `sources` must be the output of a recipe. `tier` is `P` proven, `E` engineering-plausible, `S` speculative. `source` is a working URL.
+- **A recipe** is one record in the file for its building. `milestone` is when it unlocks and may not precede its building's. `estimated: false` means the ratio follows a balanced reaction or a standard composition that `reaction` states and `source` cites; the tests then check the mass balance to one percent. Everything else is `estimated: true`, and no recipe may create mass. `power` and `hours` are placeholders everywhere until the economy is tuned.
+- **A milestone** lists in `needs` the materials, buildings and components that must be producible when it is reached, using what milestones up to and including it unlock. `requires` names earlier milestones only.
+- **The thin path** is `thin: true` on a record. Thin recipes, buildings and components may use only thin materials, every milestone's `needs` must be thin, and `reach({ thinOnly: true })` must reach all of them in order. Buildings with `start: true` exist on Earth at the start and are not paid for.
+- Politics never restricts supply; scarcity comes from physics, geology and industry only.
+
+`src/lib/game/data/data.test.ts` is the gate: unique ids, known references, every material extractable or produced, mass balance, the thin path closing on itself, every milestone 1 to 29 reachable in order, and no material, building, component or recipe stranded by a cycle. Add data, then run `pnpm exec vitest run src/lib/game/data` until it is green.
+
+## Adding a system
 
 A system is a function `(game, dtSeconds) => void` that `game.advance` calls on every tick. Put a screen's simulation in `src/lib/screens/<id>/system.ts`:
 
