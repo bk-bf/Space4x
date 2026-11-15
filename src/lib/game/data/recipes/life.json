@@ -30,47 +30,47 @@
     "inputs": { "water": 1200, "urea": 40, "map_fertiliser": 10, "potassium_sulfate": 8 },
     "outputs": { "plant_biomass": 1000 },
     "power": 0,
-    "hours": 1
+    "hours": 10
   },
   {
     "id": "farm_wheat",
     "building": "farmland",
-    "milestone": 3,
+    "milestone": 1,
     "estimated": true,
     "inputs": { "water": 1800, "urea": 45, "map_fertiliser": 12, "potassium_sulfate": 8 },
     "outputs": { "wheat": 1000 },
     "power": 0,
-    "hours": 1
+    "hours": 10
   },
   {
     "id": "farm_potato",
     "building": "farmland",
-    "milestone": 3,
+    "milestone": 1,
     "estimated": true,
     "inputs": { "water": 290, "urea": 4, "map_fertiliser": 2, "potassium_sulfate": 6 },
     "outputs": { "potato": 1000 },
     "power": 0,
-    "hours": 1
+    "hours": 10
   },
   {
     "id": "farm_soybean",
     "building": "farmland",
-    "milestone": 3,
+    "milestone": 1,
     "estimated": true,
     "inputs": { "water": 2100, "map_fertiliser": 15, "potassium_sulfate": 20 },
     "outputs": { "soybean": 1000 },
     "power": 0,
-    "hours": 1
+    "hours": 10
   },
   {
     "id": "farm_leafy_greens",
     "building": "farmland",
-    "milestone": 3,
+    "milestone": 1,
     "estimated": true,
     "inputs": { "water": 240, "urea": 3, "map_fertiliser": 1, "potassium_sulfate": 3 },
     "outputs": { "leafy_greens": 1000 },
     "power": 0,
-    "hours": 1
+    "hours": 10
   },
   {
     "id": "greenhouse_mixed_crops",

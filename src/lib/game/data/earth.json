@@ -1,0 +1,241 @@
+{
+  "name": "Earth",
+  "body": "earth",
+  "population": 8200000000.0,
+  "populationSource": "https://population.un.org/wpp/",
+  "workforceShare": 0.45,
+  "foodPerPersonDay": 1,
+  "foodSource": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf",
+  "growthPerYear": 0.009,
+  "gridKw": 200000000.0,
+  "stockDays": 90,
+  "sizing": {
+    "food": "farmland feeds the population at foodPerPersonDay with a 5% surplus, split 40% wheat, 25% potato, 25% soybean, 10% leafy greens by mass",
+    "endProducts": "each end product is made at its present-day world output, in kg a year",
+    "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
+    "grid": "gridKw covers the start demand with about 15% to spare",
+    "stock": "each material starts with stockDays of its start production"
+  },
+  "endProducts": {
+    "stainless_steel": 58000000000.0,
+    "nickel_superalloy": 300000000.0,
+    "al_li_alloy": 100000000.0,
+    "ti_6al_4v": 100000000.0,
+    "cfrp": 200000000.0,
+    "lox": 20000000000.0,
+    "lch4": 400000000000.0,
+    "helium4": 30000000.0
+  },
+  "groups": [
+    {
+      "building": "farmland",
+      "process": "farm_wheat",
+      "count": 1435001
+    },
+    {
+      "building": "farmland",
+      "process": "farm_potato",
+      "count": 896876
+    },
+    {
+      "building": "farmland",
+      "process": "farm_soybean",
+      "count": 896876
+    },
+    {
+      "building": "farmland",
+      "process": "farm_leafy_greens",
+      "count": 358751
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:water",
+      "count": 536435
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:methane",
+      "count": 52654
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:iron",
+      "count": 5394
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:potassium",
+      "count": 1949
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:chromium",
+      "count": 1318
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:phosphorus",
+      "count": 1178
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:sulfur",
+      "count": 879
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:nickel",
+      "count": 603
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:ethylene",
+      "count": 41
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:aluminium",
+      "count": 14
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:titanium",
+      "count": 12
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:helium4",
+      "count": 4
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:niobium",
+      "count": 3
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:molybdenum",
+      "count": 2
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:copper",
+      "count": 1
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:lithium",
+      "count": 1
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:vanadium",
+      "count": 1
+    },
+    {
+      "building": "air_separation_plant",
+      "process": "air_separation",
+      "count": 2316
+    },
+    {
+      "building": "chemical_plant",
+      "process": "haber_bosch",
+      "count": 5241
+    },
+    {
+      "building": "chemical_plant",
+      "process": "steam_methane_reforming",
+      "count": 4645
+    },
+    {
+      "building": "chemical_plant",
+      "process": "urea_synthesis",
+      "count": 4227
+    },
+    {
+      "building": "chemical_plant",
+      "process": "potassium_sulfate_synthesis",
+      "count": 2265
+    },
+    {
+      "building": "chemical_plant",
+      "process": "sulfuric_acid_synthesis",
+      "count": 1246
+    },
+    {
+      "building": "chemical_plant",
+      "process": "map_neutralisation",
+      "count": 1047
+    },
+    {
+      "building": "chemical_plant",
+      "process": "phosphoric_acid_thermal",
+      "count": 864
+    },
+    {
+      "building": "alloy_works",
+      "process": "stainless_steel_304",
+      "count": 6617
+    },
+    {
+      "building": "alloy_works",
+      "process": "nickel_superalloy_melting",
+      "count": 35
+    },
+    {
+      "building": "alloy_works",
+      "process": "al_li_alloy_blending",
+      "count": 12
+    },
+    {
+      "building": "alloy_works",
+      "process": "ti_6al_4v_melting",
+      "count": 12
+    },
+    {
+      "building": "polymer_plant",
+      "process": "pan_polymerisation",
+      "count": 36
+    },
+    {
+      "building": "polymer_plant",
+      "process": "epoxy_curing_resin",
+      "count": 11
+    },
+    {
+      "building": "fibre_works",
+      "process": "carbon_fibre_carbonisation",
+      "count": 16
+    },
+    {
+      "building": "composite_works",
+      "process": "cfrp_layup",
+      "count": 23
+    },
+    {
+      "building": "cryogenic_liquefaction_plant",
+      "process": "lch4_liquefaction",
+      "count": 45631
+    },
+    {
+      "building": "cryogenic_liquefaction_plant",
+      "process": "lox_liquefaction",
+      "count": 2282
+    },
+    {
+      "building": "rocket_factory",
+      "process": null,
+      "count": 10
+    },
+    {
+      "building": "launch_site",
+      "process": null,
+      "count": 25
+    },
+    {
+      "building": "smelter",
+      "process": null,
+      "count": 100
+    }
+  ]
+}
