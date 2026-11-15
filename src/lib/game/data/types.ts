@@ -96,6 +96,29 @@ export interface Propulsion {
   massSource?: string;
 }
 
+export interface ComponentDesign {
+  mass?: number;
+  crew?: number;
+  housing?: number;
+  stores?: number;
+  supports?: number;
+  power?: number;
+  generates?: number;
+  storage?: number;
+  heat?: number;
+  radiates?: number;
+  volume?: number;
+  propellants?: string[];
+  cargo?: number;
+  landing?: number;
+  reentry?: number;
+  insulates?: boolean;
+  automates?: boolean;
+  basis: string;
+  source?: string;
+  estimated: boolean;
+}
+
 export interface Component {
   id: string;
   name: string;
@@ -106,6 +129,7 @@ export interface Component {
   builtAt: string[];
   cost: Amounts;
   performance?: Propulsion;
+  design: ComponentDesign;
 }
 
 export interface Milestone {

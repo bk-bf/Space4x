@@ -1,6 +1,7 @@
 import { withFixture } from '#lib/game/mock/fixture/index.ts';
-import { describe, expect, it } from 'vitest';
-import { Game } from '#lib/game/index.ts';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { Game, classes } from '#lib/game/index.ts';
+import { newDesign, setCount } from '#lib/game/shipdesign/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { spec } from '#lib/gfx/ships/specs.ts';
 import { shipLengthMetres } from '#lib/gfx/topdown/index.ts';
@@ -40,6 +41,22 @@ function viewAt(centre: Point, metresPerPx: number, w = 400, h = 300): ShipView 
 const tally = (): ShipTally => ({ marker: 0, icon: 0, true: 0 });
 
 describe('ship layer', () => {
+  beforeAll(() => {
+    classes.saved = ['atlas', 'mule'].map((id) => {
+      let design = newDesign(id, 'Freighter');
+      for (const [part, n] of [
+        ['chemical_engine_methalox', 4],
+        ['propellant_tank', 2],
+        ['cargo_bay', 1]
+      ] as const)
+        design = setCount(design, part, n);
+      return design;
+    });
+  });
+  afterAll(() => {
+    classes.saved = [];
+  });
+
   const g = withFixture(new Game()),
     convoy = g.fleet('convoy')!,
     group = fleetGroup(convoy, false),

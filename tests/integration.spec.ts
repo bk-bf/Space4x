@@ -17,12 +17,11 @@ const term = (page: Page, text: RegExp): Locator =>
 const heading = (page: Page, screen: string) => page.locator(`[data-screen="${screen}"] .pan > h2`).first();
 
 test.describe('classes', () => {
-  test('a class designed and saved can be deleted while nothing builds it', async ({ page }) => {
+  test('a class designed from nothing can be named and deleted while nothing builds it', async ({ page }) => {
     await open(page, 'screen=classes');
     await page.locator('main.screen [data-act="new"]').click();
     await page.locator('#clsName').fill('Dray');
-    await page.locator('main.screen [data-act="save"]').click();
-    await expect(page.locator('#clsDirty')).toHaveCount(0);
+    await expect(page.locator('#classList [data-class]')).toHaveText(['Dray']);
     await expect(page.locator('main.screen [data-act="delete"]')).toBeEnabled();
   });
 });

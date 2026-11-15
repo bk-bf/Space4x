@@ -1,62 +1,50 @@
-import { SPECS } from '#lib/gfx/ships/specs.ts';
-import { asClass, designStats, type DesignStats, type ShipClass } from './design';
+import { designSpec, designStats, type DesignStats, type ShipDesign } from './shipdesign/index.ts';
+import type { ShipClass } from './design.ts';
 import type { Game } from './state.svelte';
-import type { Fleet, YardKind } from './types';
+import type { Fleet } from './types';
 
-export interface ClassBuild {
-  tons: number;
-  bp: number;
-  kind: YardKind;
-}
+export const MOCK_FLEET_SPEED = 1000;
 
-export const TONS_PER_MASS = 4;
-export const BP_PER_MASS = 0.5;
-export const BP_PER_WEAPON = 250;
-export const BP_PER_ARMOUR = 2;
-export const WARSHIP_WEAPONS = 2;
+const statsOf = new WeakMap<ShipDesign, DesignStats>();
+const specOf = new WeakMap<ShipDesign, ShipClass>();
 
-export function weaponCount(stats: DesignStats): number {
-  const w = stats.weapons;
-  return w.turrets + w.launchers + w.pods + w.spinal + w.hangars;
-}
-
-export function buildOf(stats: DesignStats): ClassBuild {
-  const bp = stats.mass * BP_PER_MASS + weaponCount(stats) * BP_PER_WEAPON + stats.armour * BP_PER_ARMOUR;
-  return {
-    tons: Math.round(stats.mass * TONS_PER_MASS),
-    bp: Math.max(10, Math.round(bp / 10) * 10),
-    kind: weaponCount(stats) >= WARSHIP_WEAPONS ? 'naval' : 'commercial'
-  };
-}
-
-const statsOf = new WeakMap<ShipClass, DesignStats>();
-
-export function statsFor(cls: ShipClass): DesignStats {
-  let stats = statsOf.get(cls);
+export function statsFor(design: ShipDesign): DesignStats {
+  let stats = statsOf.get(design);
   if (!stats) {
-    stats = designStats(cls);
-    statsOf.set(cls, stats);
+    stats = designStats(design);
+    statsOf.set(design, stats);
   }
   return stats;
 }
 
+export function specFor(design: ShipDesign): ShipClass {
+  let spec = specOf.get(design);
+  if (!spec) {
+    spec = designSpec(design);
+    specOf.set(design, spec);
+  }
+  return spec;
+}
+
 export class ClassRegistry {
-  saved = $state.raw<readonly ShipClass[]>(SPECS.map((s) => asClass(s)));
+  saved = $state.raw<readonly ShipDesign[]>([]);
   private counter = 0;
 
-  find(id: string): ShipClass | undefined {
+  find(id: string): ShipDesign | undefined {
     return this.saved.find((c) => c.id === id);
   }
 
   newId(): string {
-    return `custom-${++this.counter}`;
+    let id = `design-${++this.counter}`;
+    while (this.find(id)) id = `design-${++this.counter}`;
+    return id;
   }
 
-  replace(next: ShipClass): void {
+  replace(next: ShipDesign): void {
     this.saved = this.saved.map((c) => (c.id === next.id ? next : c));
   }
 
-  add(next: ShipClass): void {
+  add(next: ShipDesign): void {
     this.saved = [...this.saved, next];
   }
 
@@ -67,28 +55,23 @@ export class ClassRegistry {
 
 export const classes = new ClassRegistry();
 
-export const shipClasses = (): readonly ShipClass[] => classes.saved;
+export const shipClasses = (): readonly ShipDesign[] => classes.saved;
 
-export const shipClass = (id: string): ShipClass | undefined => classes.find(id);
-
-export const className = (id: string): string => shipClass(id)?.name ?? 'Unknown class';
-
-export const classStats = (id: string): DesignStats | undefined => {
-  const cls = shipClass(id);
-  return cls ? statsFor(cls) : undefined;
+export const shipClass = (id: string): ShipClass | undefined => {
+  const design = classes.find(id);
+  return design ? specFor(design) : undefined;
 };
 
-export const classBuild = (id: string): ClassBuild | undefined => {
-  const stats = classStats(id);
-  return stats ? buildOf(stats) : undefined;
+export const className = (id: string): string => classes.find(id)?.name ?? 'Unknown class';
+
+export const classStats = (id: string): DesignStats | undefined => {
+  const design = classes.find(id);
+  return design ? statsFor(design) : undefined;
 };
 
 export const fleetClassId = (f: Fleet): string | undefined => f.ships[0]?.classId;
 
-export function fleetSpeed(f: Fleet): number {
-  const speeds = f.ships.map((s) => classStats(s.classId)?.speed ?? 0);
-  return speeds.length ? Math.min(...speeds) : 0;
-}
+export const fleetSpeed = (f: Fleet): number => (f.ships.length ? MOCK_FLEET_SPEED : 0);
 
 type Use = (classId: string) => boolean;
 

@@ -1,8 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
-
-const SHOTS = process.env.SHOTS;
+import { expect, test, type Page } from '@playwright/test';
 
 async function open(page: Page, query: string) {
   await page.goto(`/?check&${query}`);
@@ -15,281 +11,145 @@ async function expectCleanLayout(page: Page) {
   expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
 }
 
-const stat = (page: Page, term: string) => page.locator('.pan dl dt', { hasText: term }).locator('+ dd');
-const sections = (page: Page) => page.locator('.col[data-part^="section:"] .tag');
-const label = (page: Page) => page.locator('#partLabel');
-const cards = (page: Page) => page.locator('#gallery .card');
+const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
+const issue = (page: Page, code: string) => page.locator(`[data-issue="${code}"]`);
+const add = (page: Page, id: string) => page.locator(`[data-add="${id}"]`);
+const kind = (page: Page, id: string) => page.locator(`[data-tab="${id}"]`);
+const stat = (page: Page, term: string) =>
+  page.locator('[data-screen="classes"] dl dt', { hasText: new RegExp(`^${term}$`) }).locator('+ dd');
+const count = (page: Page, id: string) => page.locator(`[data-count="${id}"]`);
+const drawing = (page: Page) =>
+  page.locator('[data-screen="classes"] canvas').evaluate((c: HTMLCanvasElement) => c.toDataURL());
 
-async function shipPoint(page: Page, part: number, dy = 0) {
-  const col = (await page.locator('.col').nth(part).boundingBox())!;
-  const top = (await page.locator('.col [data-zone="top"]').first().boundingBox())!;
-  return { x: col.x + col.width / 2, y: top.y + top.height + dy };
-}
-
-async function shot(page: Page, name: string) {
-  if (!SHOTS) return;
-  mkdirSync(SHOTS, { recursive: true });
-  await page.screenshot({ path: join(SHOTS, `${name}.png`) });
-}
-
-async function dragOnto(page: Page, source: Locator, x: number, y: number) {
-  const stage = (await page.locator('.stage').boundingBox())!;
-  await source.dragTo(page.locator('.stage'), { targetPosition: { x: x - stage.x, y: y - stage.y } });
+async function setCount(page: Page, id: string, n: number) {
+  await count(page, id).fill(String(n));
+  await count(page, id).press('Tab');
 }
 
 test.describe('ship designer', () => {
-  test('a part from the palette becomes a section after the selected one and the stats follow', async ({
-    page
-  }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    await expect(sections(page)).toHaveText(['Reactor', 'Fuel', 'Crew', 'Hull', 'Hull']);
-    const mass = Number((await stat(page, 'Mass').textContent())!.replace(/\D/g, ''));
-    await expect(stat(page, 'Sections')).toHaveText('7');
-    await page.locator('[data-part="core:armor"]').click();
-    await expect(sections(page)).toHaveText(['Reactor', 'Armour', 'Fuel', 'Crew', 'Hull', 'Hull']);
-    await expect(stat(page, 'Sections')).toHaveText('8');
-    await expect(stat(page, 'Armour')).toHaveText('40');
-    await expect(label(page)).toHaveText('Section 2 of 6: Armour');
-    expect(Number((await stat(page, 'Mass').textContent())!.replace(/\D/g, ''))).toBe(mass + 380);
-    await expectCleanLayout(page);
-  });
-
-  test('removing the selected section takes it out and the stats follow', async ({ page }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    await page.locator('.col[data-part="section:1"] .tag').click();
-    await expect(label(page)).toHaveText('Section 2 of 5: Fuel');
-    await expect(stat(page, 'Fuel')).toHaveText('600 kL');
-    await page.locator('main.screen [data-act="remove"]').click();
-    await expect(sections(page)).toHaveText(['Reactor', 'Crew', 'Hull', 'Hull']);
-    await expect(stat(page, 'Fuel')).toHaveText('0 kL');
-    await expect(stat(page, 'Sections')).toHaveText('6');
-    await expectCleanLayout(page);
-  });
-
-  test('sections reorder with the move buttons and by dragging their label', async ({ page }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    await page.locator('.col[data-part="section:0"] .tag').click();
-    await expect(page.locator('main.screen [data-act="left"]')).toBeDisabled();
-    await page.locator('main.screen [data-act="right"]').click();
-    await expect(sections(page)).toHaveText(['Fuel', 'Reactor', 'Crew', 'Hull', 'Hull']);
-    await expect(label(page)).toHaveText('Section 2 of 5: Reactor');
-    await page.locator('main.screen [data-act="left"]').click();
-    await expect(sections(page)).toHaveText(['Reactor', 'Fuel', 'Crew', 'Hull', 'Hull']);
-
-    const last = (await page.locator('.col[data-part="section:4"]').boundingBox())!;
-    await dragOnto(
-      page,
-      page.locator('.col[data-part="section:0"] .tag'),
-      last.x + last.width - 1,
-      last.y + 80
-    );
-    await expect(sections(page)).toHaveText(['Fuel', 'Crew', 'Hull', 'Hull', 'Reactor']);
-    await expect(label(page)).toHaveText('Section 5 of 5: Reactor');
-    await expectCleanLayout(page);
-  });
-
-  test('dragging a palette part onto the design drops it where the pointer is', async ({ page }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    const second = (await page.locator('.col[data-part="section:2"]').boundingBox())!;
-    await dragOnto(page, page.locator('[data-part="core:ring"]'), second.x + 1, second.y + 60);
-    await expect(sections(page)).toHaveText(['Reactor', 'Fuel', 'Ring', 'Crew', 'Hull', 'Hull']);
-  });
-
-  test('a hardpoint is added to the selected slot, cleared, and dropped on a slot', async ({ page }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    await expect(stat(page, 'Hardpoints')).toHaveText('4');
-    await page.locator('.col[data-part="section:0"] [data-zone="bottom"]').click();
-    await expect(page.locator('[data-slot="bottom"]')).toHaveClass(/on/);
-    await expect(page.locator('[data-slot="bottom"]')).toContainText('empty');
-    await page.locator('[data-part="att:turret"]').click();
-    await expect(page.locator('[data-slot="bottom"]')).toContainText('Turret');
-    await expect(stat(page, 'Hardpoints')).toHaveText('5');
-    await expect(stat(page, 'Weapons')).toHaveText('1 turret');
-    await page.locator('[data-clear="bottom"]').click();
-    await expect(page.locator('[data-slot="bottom"]')).toContainText('empty');
-    await expect(stat(page, 'Hardpoints')).toHaveText('4');
-
-    const zone = (await page.locator('.col[data-part="section:1"] [data-zone="top"]').boundingBox())!;
-    await dragOnto(
-      page,
-      page.locator('[data-part="att:launcher"]'),
-      zone.x + zone.width / 2,
-      zone.y + zone.height / 2
-    );
-    await page.locator('.col[data-part="section:1"] .tag').click();
-    await expect(page.locator('[data-slot="top"]')).toContainText('Launcher');
-    await expect(stat(page, 'Weapons')).toHaveText('1 launcher');
-    await expectCleanLayout(page);
-  });
-
-  test('the stern and bow are replaced from the palette and the drive sets the speed', async ({ page }) => {
-    await open(page, 'screen=classes&cls=pathfinder');
-    const speed = async () => Number((await page.locator('#dSpeed').textContent())!.replace(/\D/g, ''));
-    const before = await speed();
-    await page.locator('[data-part="stern:big"]').click();
-    await expect(label(page)).toHaveText('Stern: Main eng.');
-    expect(await speed()).toBeGreaterThan(before);
-    await page.locator('[data-part="bow:prow"]').click();
-    await expect(label(page)).toHaveText('Bow: Prow');
-    await expect(stat(page, 'Armour')).toHaveText('20');
-    await page.locator('[data-part="stern:engines"]').click();
-    await page.locator('main.screen [data-act="engines-more"]').click();
-    await page.locator('main.screen [data-act="remove"]').click();
-    await expect(page.locator('#dSpeed')).toHaveText('No drive');
-  });
-
-  test('a new class is named, saved, listed in the gallery and kept when switching screens', async ({
-    page
-  }) => {
+  test('a class is built from nothing, its errors appear and resolve, and it locks', async ({ page }) => {
     await open(page, 'screen=classes');
-    await expect(cards(page)).toHaveCount(8);
-    await page.locator('#hullSel').selectOption({ label: 'Hauler frame' });
-    await page.locator('main.screen [data-act="new"]').click();
-    await expect(page.locator('#clsDirty')).toHaveText('unsaved');
+    await expect(page.locator('#noClass')).toBeVisible();
+    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+
+    await page.locator('[data-act="new"]').click();
+    await expect(issue(page, 'no-parts')).toBeVisible();
     await page.locator('#clsName').fill('Dray');
-    await page.locator('#clsRole').fill('Ore hauler');
-    await page.locator('[data-part="core:tank"]').click();
-    await page.locator('[data-part="core:tank"]').click();
-    await page.locator('.col[data-part="section:1"] .tag').click();
-    await page.locator('[data-slot="top"]').click();
-    await page.locator('[data-part="att:cargo"]').click();
-    await expect(page.locator('[data-slot="top"]')).toContainText('Cargo x2');
-    await page.locator('main.screen [data-act="layers-more"]').click();
-    await expect(page.locator('[data-slot="top"]')).toContainText('Cargo x3');
-    await page.locator('main.screen [data-act="save"]').click();
-    await expect(page.locator('#clsDirty')).toHaveCount(0);
-    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
-    await expect(cards(page)).toHaveCount(1);
-    const card = cards(page).filter({ hasText: 'Dray' });
-    await expect(card).toContainText('Ore hauler');
-    await expect(card).toHaveClass(/on/);
-    await expectCleanLayout(page);
-    if (SHOTS) {
-      mkdirSync(SHOTS, { recursive: true });
-      await page.mouse.move(0, 0);
-      await page.screenshot({ path: join(SHOTS, 'designed-class.png') });
-    }
+    await kind(page, 'structure').click();
+    await add(page, 'propellant_tank').click();
+    await expect(issue(page, 'no-parts')).toHaveCount(0);
+    await expect(issue(page, 'no-engine')).toBeVisible();
+    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
 
-    await page.locator('[data-nav="economy"]').click();
-    await page.locator('[data-nav="classes"]').click();
-    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
-    await expect(cards(page).filter({ hasText: 'Dray' })).toHaveClass(/on/);
-    await expect(page.locator('#clsName')).toHaveValue('Dray');
-    await page.locator('[data-page="prev"]').click();
-    await expect(cards(page)).toHaveCount(8);
-    await expect(cards(page).filter({ hasText: 'Pathfinder' })).toHaveCount(1);
-    await expect(sections(page)).toHaveText(['Reactor', 'Tank', 'Tank', 'Truss', 'Crew']);
-    await expectCleanLayout(page);
-  });
+    await kind(page, 'propulsion').click();
+    await add(page, 'chemical_engine_methalox').click();
+    await expect(issue(page, 'no-engine')).toHaveCount(0);
+    await expect(page.locator('#issues .error')).toHaveCount(0);
+    await expect(stat(page, 'Dry mass')).toHaveText('2.10 t');
+    await expect(stat(page, 'Propellant')).toHaveText('16.3 t methane and oxygen');
 
-  test('a class is renamed, copied and deleted, and one in use cannot be deleted', async ({ page }) => {
-    await open(page, 'screen=classes&cls=lighthouse');
-    await page.locator('#clsName').fill('Beacon');
-    await expect(page.locator('#clsDirty')).toHaveText('changed');
-    await page.locator('#clsName').press('Enter');
-    await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveCount(1);
-    await expect(cards(page)).toHaveCount(8);
-    await page.locator('main.screen [data-act="copy"]').click();
-    await expect(page.locator('#galPage')).toHaveText('9 classes, page 2 of 2');
-    await expect(cards(page).filter({ hasText: 'Beacon copy' })).toHaveClass(/on/);
-    await page.locator('main.screen [data-act="delete"]').click();
-    await expect(page.locator('#galPage')).toHaveCount(0);
-    await expect(cards(page)).toHaveCount(8);
-    await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveClass(/on/);
-    await cards(page).filter({ hasText: 'Atlas' }).click();
-    await expect(page.locator('main.screen [data-act="delete"]')).toBeDisabled();
+    await setCount(page, 'propellant_tank', 40);
+    await expect(issue(page, 'no-liftoff')).toBeVisible();
+    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(stat(page, 'Earth thrust/weight')).toContainText('too low');
+
+    await setCount(page, 'propellant_tank', 3);
+    await expect(issue(page, 'no-liftoff')).toHaveCount(0);
+    await expect(stat(page, 'Earth thrust/weight')).toContainText('lifts off');
+    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
+
+    await page.locator('[data-act="lock"]').click();
+    await expect(page.locator('#clsLocked')).toBeVisible();
+    await expect(page.locator('#clsName')).toBeDisabled();
+    await expect(add(page, 'chemical_engine_methalox')).toBeDisabled();
+    await expect(count(page, 'propellant_tank')).toBeDisabled();
+    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+
+    await page.locator('[data-act="copy"]').click();
+    await expect(page.locator('#clsName')).toHaveValue('Dray copy');
+    await expect(page.locator('#clsName')).toBeEnabled();
+    await expect(add(page, 'chemical_engine_methalox')).toBeEnabled();
+    await expect(page.locator('#classList [data-class]')).toHaveText(['Dray (locked)', 'Dray copy']);
     await expectCleanLayout(page);
   });
 
-  test('a part is picked and inspected on the top-down drawing', async ({ page }) => {
-    await open(page, 'screen=classes&cls=bastion');
-    const hangar = await shipPoint(page, 3);
-    await page.mouse.move(hangar.x, hangar.y);
-    await expect(page.locator('#partName')).toHaveText('Hangar deck');
-    await expect(page.locator('#partFigures')).toHaveText('520 t · crew 60 · 1 hangar');
-    const prow = await shipPoint(page, 6);
-    await page.mouse.move(prow.x, prow.y);
-    await expect(page.locator('#partName')).toHaveText('Armoured prow');
-    await page.mouse.click(prow.x, prow.y);
-    await expect(label(page)).toHaveText('Bow: Prow');
-
-    const zone = (await page.locator('.col[data-part="section:0"] [data-zone="top"]').boundingBox())!;
-    await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height - 4);
-    await expect(page.locator('#partName')).toHaveText('Armour belt');
-    const radiator = await shipPoint(page, 1, -60);
-    await page.mouse.move(radiator.x, radiator.y);
-    await expect(page.locator('#partName')).toHaveText('Radiator');
-    await expect(page.locator('#partFigures')).toHaveText('25 t');
-    await page.mouse.click(radiator.x, radiator.y);
-    await expect(label(page)).toHaveText('Section 1 of 5: Armour');
-    await expect(page.locator('[data-slot="top"]')).toHaveClass(/on/);
-    await page.mouse.move(0, 0);
-    await expect(page.locator('#partName')).toHaveText('Armour belt');
-    await expectCleanLayout(page);
-  });
-
-  test('turn, systems and take hit change the drawing and turning keeps picking on the hull', async ({
+  test('components the milestones have not reached are locked and name what they wait for', async ({
     page
   }) => {
-    await open(page, 'screen=classes&cls=bastion');
-    const centre = await shipPoint(page, 3);
-    const purple = () =>
-      page.locator('#designCv').evaluate((c: HTMLCanvasElement) => {
-        const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
-        let n = 0;
-        for (let p = 0; p < d.length; p += 4) if (d[p + 2]! > 150 && d[p]! > 100 && d[p + 1]! < 140) n++;
-        return n;
-      });
-    const before = await purple();
-    await page.locator('main.screen [data-act="systems"]').click();
-    await expect(page.locator('main.screen [data-act="systems"]')).toHaveClass(/on/);
-    await expect.poll(purple).toBeGreaterThan(before + 200);
-    await shot(page, 'inspector-systems');
-    await page.locator('main.screen [data-act="systems"]').click();
+    await open(page, 'screen=classes');
+    await expect(add(page, 'chemical_engine_methalox')).toBeVisible();
+    await expect(add(page, 'chemical_engine_hydrolox')).toHaveCount(0);
+    await expect(page.locator('[data-locked="chemical_engine_hydrolox"]')).toContainText(
+      'Crewed lunar landing and surface outpost'
+    );
+    await open(page, 'screen=classes&reached=6');
+    await expect(add(page, 'chemical_engine_hydrolox')).toBeVisible();
+    await expect(page.locator('[data-locked="chemical_engine_hydrolox"]')).toHaveCount(0);
+    await expect(page.locator('[data-locked="hall_thruster"]')).toBeVisible();
+  });
 
-    await expect(page.locator('main.screen [data-act="repair"]')).toBeDisabled();
-    const pixels = () =>
-      page
-        .locator('#designCv')
-        .evaluate((c: HTMLCanvasElement) =>
-          Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data).join()
-        );
-    for (let i = 0; i < 6; i++) await page.locator('main.screen [data-act="hit"]').click();
-    await expect(page.locator('main.screen [data-act="repair"]')).toBeEnabled();
-    await page.waitForTimeout(150);
-    const charred = await page.locator('#designCv').evaluate((c: HTMLCanvasElement) => {
-      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
-      let n = 0;
-      for (let p = 0; p < d.length; p += 4)
-        if (Math.abs(d[p]! - 44) < 30 && Math.abs(d[p + 1]! - 34) < 24 && Math.abs(d[p + 2]! - 42) < 24) n++;
-      return n;
-    });
-    expect(charred).toBeGreaterThan(100);
-    await shot(page, 'inspector-hit');
-    await page.locator('main.screen [data-act="repair"]').click();
-    await expect(page.locator('main.screen [data-act="repair"]')).toBeDisabled();
+  test('the numbers follow the design: mass, delta-v and thrust to weight', async ({ page }) => {
+    await open(page, 'screen=classes&new=stage');
+    await expect(stat(page, 'Dry mass')).toHaveText('5.00 t');
+    await expect(stat(page, 'Payload')).toHaveText('4.00 t');
+    await expect(stat(page, 'Propellant')).toHaveText('65.3 t methane and oxygen');
+    await expect(stat(page, 'Total mass')).toHaveText('74.3 t');
+    await expect(stat(page, 'Delta-v full')).toHaveText('7.51 km/s');
+    await expect(stat(page, 'Delta-v empty')).toHaveText('9.41 km/s');
+    await expect(stat(page, 'Earth thrust/weight')).toHaveText('3.15, lifts off');
+    await expect(issue(page, 'short-of-orbit')).toBeVisible();
 
-    await page.locator('main.screen [data-act="turn"]').click();
-    await expect(page.locator('[data-zone]')).toHaveCount(0);
-    const first = await pixels();
-    await expect.poll(pixels, { timeout: 5000 }).not.toBe(first);
-    await page.mouse.click(centre.x, centre.y);
-    await expect(label(page)).toHaveText('Section 3 of 5: Hangar');
-    await page.mouse.move(centre.x, centre.y);
-    await expect(page.locator('#partName')).toHaveText('Hangar deck');
-    await shot(page, 'inspector-turn');
-    await page.locator('main.screen [data-act="turn"]').click();
-    await expect(page.locator('[data-zone="top"]')).toHaveCount(5);
+    await setCount(page, 'propellant_tank', 8);
+    await expect(stat(page, 'Delta-v empty')).toHaveText(/^1[0-9]\.\d\d km\/s$/);
     await expectCleanLayout(page);
   });
 
-  test('picking a class from the gallery shows it with its own stats', async ({ page }) => {
-    await open(page, 'screen=classes');
-    await cards(page).filter({ hasText: 'Ark' }).click();
-    await expect(page.locator('#clsName')).toHaveValue('Ark');
-    await expect(sections(page)).toHaveText(['Reactor', 'Tank', 'Truss', 'Ring', 'Truss', 'Ring', 'Crew']);
-    await cards(page).filter({ hasText: 'Lighthouse' }).click();
-    await expect(page.locator('#dSpeed')).toHaveText('No drive');
+  test('a crewed vehicle reports crew, life support, power and heat, and has no errors', async ({ page }) => {
+    await open(page, 'screen=classes&reached=6&new=crewed');
+    await expect(stat(page, 'Crew')).toHaveText('2 of 4 berths');
+    await expect(stat(page, 'Life support')).toHaveText('100 days');
+    await expect(stat(page, 'Power')).toContainText('20 kW made');
+    await expect(page.locator('#issues .error')).toHaveCount(0);
+    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
+
+    await page.locator('[data-take="heat_shield"]').click();
+    await expect(page.locator('[data-line="heat_shield"]')).toHaveCount(0);
+    await expect(issue(page, 'no-reentry')).toBeVisible();
+    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+  });
+
+  test('the drawing is made from the components and changes with them', async ({ page }) => {
+    await open(page, 'screen=classes&new=stage');
+    await page.waitForTimeout(300);
+    const before = await drawing(page);
+    await setCount(page, 'propellant_tank', 8);
+    await page.waitForTimeout(300);
+    expect(await drawing(page)).not.toBe(before);
+  });
+
+  test('designs stay when another screen is shown and the propellant can be set', async ({ page }) => {
+    await open(page, 'screen=classes&new=stage');
+    await page.locator('[data-load="methalox"]').fill('10000');
+    await page.locator('[data-load="methalox"]').press('Tab');
+    await expect(stat(page, 'Propellant')).toHaveText('10.00 t methane and oxygen');
+    await goTo(page, 'map');
+    await goTo(page, 'classes');
+    await expect(page.locator('#classList [data-class]')).toHaveText(['Small stage']);
+    await expect(stat(page, 'Propellant')).toHaveText('10.00 t methane and oxygen');
+    await page.locator('[data-fill="methalox"]').click();
+    await expect(stat(page, 'Propellant')).toHaveText('65.3 t methane and oxygen');
+  });
+
+  test('the other screens that read classes work with none designed', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await open(page, 'screen=intel');
+    await expect(page.locator('[data-screen="intel"]')).toBeVisible();
+    await goTo(page, 'commanders');
+    await expect(page.locator('[data-screen="commanders"]')).toBeVisible();
+    await goTo(page, 'map');
+    await page.waitForTimeout(300);
+    expect(errors).toEqual([]);
   });
 });
 
