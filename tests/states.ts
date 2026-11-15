@@ -23,6 +23,7 @@ const QUERIES = [
   'screen=colony',
   'screen=ground',
   'screen=commanders',
+  'screen=commanders&cmd=3',
   'screen=intel',
   'screen=galaxy'
 ];
