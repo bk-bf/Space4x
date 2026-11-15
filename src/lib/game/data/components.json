@@ -35,7 +35,16 @@
     "milestone": 1,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 400, "grcop": 200, "copper": 100 }
+    "cost": { "nickel_superalloy": 400, "grcop": 200, "copper": 100 },
+    "performance": {
+      "engine": "Merlin 1D vacuum",
+      "isp": 311,
+      "thrust": 981000,
+      "thrustSeaLevel": 854000,
+      "mass": 470,
+      "basis": "flown",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Merlin"
+    }
   },
   {
     "id": "chemical_engine_methalox",
@@ -45,7 +54,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 400, "grcop": 200, "stainless_steel": 300 }
+    "cost": { "nickel_superalloy": 400, "grcop": 200, "stainless_steel": 300 },
+    "performance": {
+      "engine": "Raptor 2",
+      "isp": 363,
+      "thrust": 2530000,
+      "thrustSeaLevel": 2300000,
+      "mass": 1600,
+      "basis": "flown",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Raptor"
+    }
   },
   {
     "id": "chemical_engine_hydrolox",
@@ -55,7 +73,15 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "nickel_superalloy": 350, "grcop": 200, "copper": 50 }
+    "cost": { "nickel_superalloy": 350, "grcop": 200, "copper": 50 },
+    "performance": {
+      "engine": "RL10B-2",
+      "isp": 465.5,
+      "thrust": 110100,
+      "mass": 301,
+      "basis": "flown",
+      "source": "https://en.wikipedia.org/wiki/RL10"
+    }
   },
   {
     "id": "rcs_thruster",
@@ -64,7 +90,15 @@
     "milestone": 3,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "rhenium": 5, "iridium": 1, "c103": 20 }
+    "cost": { "rhenium": 5, "iridium": 1, "c103": 20 },
+    "performance": {
+      "engine": "Aerojet R-4D-11 490 N, 164:1 nozzle",
+      "isp": 311,
+      "thrust": 490,
+      "mass": 3.76,
+      "basis": "flown",
+      "source": "https://l3harris.com/sites/default/files/2024-10/l3harris-ar-bipropellant-rocket-engines-2.pdf"
+    }
   },
   {
     "id": "hall_thruster",
@@ -74,7 +108,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "smco_magnet": 20, "boron": 5, "copper": 30, "stainless_steel": 50 }
+    "cost": { "smco_magnet": 20, "boron": 5, "copper": 30, "stainless_steel": 50 },
+    "performance": {
+      "engine": "SPT-100",
+      "isp": 1600,
+      "thrust": 0.08,
+      "mass": 4,
+      "power": 1.35,
+      "basis": "flown",
+      "source": "https://en.wikipedia.org/wiki/SPT-100"
+    }
   },
   {
     "id": "ion_thruster",
@@ -83,7 +126,16 @@
     "milestone": 13,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "ndfeb_magnet": 15, "molybdenum": 20, "stainless_steel": 30 }
+    "cost": { "ndfeb_magnet": 15, "molybdenum": 20, "stainless_steel": 30 },
+    "performance": {
+      "engine": "NASA NEXT, full power",
+      "isp": 4190,
+      "thrust": 0.237,
+      "mass": 12.7,
+      "power": 6.9,
+      "basis": "flown",
+      "source": "https://ntrs.nasa.gov/citations/20080012739"
+    }
   },
   {
     "id": "ntr_engine",
@@ -93,7 +145,15 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["rocket_factory", "orbital_shipyard"],
-    "cost": { "triso": 500, "zirconium": 100, "hafnium": 20, "beryllium": 200, "tungsten": 300 }
+    "cost": { "triso": 500, "zirconium": 100, "hafnium": 20, "beryllium": 200, "tungsten": 300 },
+    "performance": {
+      "engine": "NERVA XE Prime",
+      "isp": 841,
+      "thrust": 246663,
+      "mass": 18144,
+      "basis": "ground-tested",
+      "source": "https://en.wikipedia.org/wiki/NERVA"
+    }
   },
   {
     "id": "fission_reactor_ship",
@@ -120,7 +180,16 @@
     "thin": true,
     "estimated": true,
     "builtAt": ["orbital_shipyard"],
-    "cost": { "rebco": 100, "uhtc": 400, "stainless_steel": 2000, "aluminium": 500 }
+    "cost": { "rebco": 100, "uhtc": 400, "stainless_steel": 2000, "aluminium": 500 },
+    "performance": {
+      "engine": "Princeton Direct Fusion Drive, 11.5 MW fusion, upper thrust estimate",
+      "isp": 10000,
+      "thrust": 57,
+      "mass": 3777,
+      "basis": "design-study",
+      "source": "https://ntrs.nasa.gov/api/citations/20170003126/downloads/20170003126.pdf",
+      "massSource": "https://www.osti.gov/servlets/purl/1182281"
+    }
   },
   {
     "id": "radiator",

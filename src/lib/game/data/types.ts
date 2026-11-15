@@ -82,6 +82,20 @@ export interface Building {
   footprint?: { land?: number; habitat?: number };
 }
 
+export type PerformanceBasis = 'flown' | 'ground-tested' | 'design-study';
+
+export interface Propulsion {
+  engine: string;
+  isp: number;
+  thrust: number;
+  thrustSeaLevel?: number;
+  mass: number;
+  power?: number;
+  basis: PerformanceBasis;
+  source: string;
+  massSource?: string;
+}
+
 export interface Component {
   id: string;
   name: string;
@@ -91,6 +105,7 @@ export interface Component {
   estimated: boolean;
   builtAt: string[];
   cost: Amounts;
+  performance?: Propulsion;
 }
 
 export interface Milestone {

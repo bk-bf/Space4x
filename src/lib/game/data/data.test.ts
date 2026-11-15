@@ -367,3 +367,65 @@ describe('make or import', () => {
     expect(materialSites('nitrogen').extract).not.toContain('moon');
   });
 });
+
+describe('propulsion performance', () => {
+  const engines = shipComponents.filter((c) => c.kind === 'propulsion');
+  const URL = /^https:\/\/\S+$/;
+
+  it('gives every propulsion component specific impulse, thrust, mass and a source', () => {
+    for (const c of engines) {
+      const p = c.performance;
+      expect(p, c.id).toBeDefined();
+      if (!p) continue;
+      expect(p.isp, `${c.id} isp`).toBeGreaterThan(0);
+      expect(p.thrust, `${c.id} thrust`).toBeGreaterThan(0);
+      expect(p.mass, `${c.id} mass`).toBeGreaterThan(0);
+      expect(p.source, `${c.id} source`).toMatch(URL);
+      expect(['flown', 'ground-tested', 'design-study'], c.id).toContain(p.basis);
+    }
+  });
+
+  it('keeps every figure in a plausible range for its kind of engine', () => {
+    const range = (id: string, isp: [number, number], thrust: [number, number], mass: [number, number]) => {
+      const p = shipComponents.find((c) => c.id === id)?.performance;
+      expect(p, id).toBeDefined();
+      if (!p) return;
+      expect(p.isp, `${id} isp`).toBeGreaterThanOrEqual(isp[0]);
+      expect(p.isp, `${id} isp`).toBeLessThanOrEqual(isp[1]);
+      expect(p.thrust, `${id} thrust`).toBeGreaterThanOrEqual(thrust[0]);
+      expect(p.thrust, `${id} thrust`).toBeLessThanOrEqual(thrust[1]);
+      expect(p.mass, `${id} mass`).toBeGreaterThanOrEqual(mass[0]);
+      expect(p.mass, `${id} mass`).toBeLessThanOrEqual(mass[1]);
+    };
+    range('kerolox_engine', [280, 340], [1e5, 3e6], [100, 3000]);
+    range('chemical_engine_methalox', [320, 390], [1e5, 4e6], [500, 3000]);
+    range('chemical_engine_hydrolox', [420, 470], [5e3, 3e6], [100, 4000]);
+    range('rcs_thruster', [200, 340], [1, 5e3], [0.5, 50]);
+    range('hall_thruster', [1000, 3500], [0.01, 5], [1, 100]);
+    range('ion_thruster', [2000, 10000], [0.01, 5], [1, 100]);
+    range('ntr_engine', [700, 1000], [5e4, 1e6], [5000, 30000]);
+    range('fusion_drive', [5000, 100000], [1, 1e4], [1000, 50000]);
+  });
+
+  it('keeps thrust and specific impulse consistent with the power an electric engine needs', () => {
+    for (const c of engines) {
+      const p = c.performance;
+      if (!p?.power) continue;
+      const jetPower = (p.thrust * p.isp * 9.80665) / 2;
+      expect(jetPower, `${c.id} jet power`).toBeLessThan(p.power * 1000);
+      expect(jetPower, `${c.id} efficiency`).toBeGreaterThan(p.power * 1000 * 0.2);
+    }
+  });
+
+  it('puts a sea-level thrust only on engines that can fire in atmosphere, below vacuum thrust', () => {
+    for (const c of engines) {
+      const p = c.performance;
+      if (p?.thrustSeaLevel === undefined) continue;
+      expect(p.thrustSeaLevel, c.id).toBeLessThan(p.thrust);
+    }
+  });
+
+  it('marks the fusion drive as a design study', () => {
+    expect(shipComponents.find((c) => c.id === 'fusion_drive')?.performance?.basis).toBe('design-study');
+  });
+});
