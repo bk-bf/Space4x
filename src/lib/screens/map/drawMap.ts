@@ -219,7 +219,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     b.R = R;
     if (b.parent) {
       const P = byId.get(b.parent);
-      if (!P || P.capped || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
+      if (!P || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
     }
   }
   const shown = bodies.filter((b) => !b.hide);
