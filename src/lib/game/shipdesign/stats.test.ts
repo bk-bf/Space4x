@@ -215,23 +215,22 @@ describe('design errors', () => {
     expect(warnings({ ...build(stage), load: { kerolox: 1e9 } })).toContain('overfull');
   });
 
-  it('rejects crew with no berth or no stores', () => {
-    expect(
-      errors(
-        build([
-          ['kerolox_engine', 1],
-          ['propellant_tank', 1],
-          ['sampling_arm', 1]
-        ])
-      )
-    ).not.toContain('crew-berths');
-    const reactor = build([
+  it('rejects crew with no berth or no stores, and lets avionics run machinery without crew', () => {
+    const base = [
       ['kerolox_engine', 1],
       ['propellant_tank', 1],
-      ['crew_capsule', 1]
-    ]);
-    expect(designStats(reactor).crew).toBe(2);
-    expect(errors(reactor)).not.toContain('crew-berths');
+      ['fission_reactor_ship', 1],
+      ['radiator', 1]
+    ] as const;
+    const crewed = build(base);
+    expect(designStats(crewed).crew).toBe(1);
+    expect(errors(crewed)).toEqual(expect.arrayContaining(['crew-berths', 'crew-supplies']));
+    const automated = build([...base, ['avionics', 1]]);
+    expect(designStats(automated).crew).toBe(0);
+    expect(errors(automated)).not.toContain('crew-berths');
+    const housed = build([...base, ['crew_capsule', 1]]);
+    expect(errors(housed)).not.toContain('crew-berths');
+    expect(errors(housed)).not.toContain('crew-supplies');
   });
 
   it('rejects a power deficit unless a battery carries it', () => {
@@ -336,6 +335,27 @@ describe('design errors', () => {
       role: 'lander'
     });
     expect(errors(heavy)).toContain('landing-overload');
+  });
+
+  it('warns when a lander cannot hover on the Moon', () => {
+    const d = build(
+      [
+        ['rcs_thruster', 1],
+        ['propellant_tank', 1],
+        ['landing_legs', 1]
+      ],
+      { role: 'lander' }
+    );
+    expect(warnings(d)).toContain('lander-thrust');
+    const strong = build(
+      [
+        ['chemical_engine_hydrolox', 1],
+        ['propellant_tank', 1],
+        ['landing_legs', 1]
+      ],
+      { role: 'lander' }
+    );
+    expect(warnings(strong)).not.toContain('lander-thrust');
   });
 
   it('asks a returning capsule for a heat shield that can bring its mass home', () => {

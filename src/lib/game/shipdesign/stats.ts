@@ -199,7 +199,8 @@ export function designStats(design: ShipDesign, unlocked = Infinity): DesignStat
   const loaded = condition(mainLoaded, dryMass, propellantMass, payloadCapacity);
   const empty = condition(mainEmpty, dryMass, propellantMass, 0);
 
-  const crew = sum(items, (c) => c.design.crew ?? 0);
+  const automated = items.some(({ c }) => c.design.automates === true);
+  const crew = sum(items, (c) => (automated && !c.design.housing ? 0 : (c.design.crew ?? 0)));
   const berths = sum(items, (c) => c.design.housing ?? 0);
   const stores = sum(items, (c) => c.design.stores ?? 0);
   const regenerative = Math.min(

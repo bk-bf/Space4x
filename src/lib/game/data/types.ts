@@ -113,6 +113,7 @@ export interface ComponentDesign {
   landing?: number;
   reentry?: number;
   insulates?: boolean;
+  automates?: boolean;
   basis: string;
   source?: string;
   estimated: boolean;

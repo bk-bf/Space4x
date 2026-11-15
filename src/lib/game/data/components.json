@@ -259,7 +259,8 @@
       "propellants": ["hydrogen"],
       "basis": "Reactor heat leaves with the propellant; nothing is left to radiate.",
       "source": "https://en.wikipedia.org/wiki/NERVA",
-      "estimated": false
+      "estimated": false,
+      "crew": 1
     }
   },
   {
@@ -284,7 +285,8 @@
       "heat": 30,
       "basis": "The 10 kW electric Kilopower design for Mars, 1,500 kg; a Stirling converter at about 25 percent efficiency sends the other 30 kW of its 40 kW to the radiators.",
       "source": "https://en.wikipedia.org/wiki/Kilopower",
-      "estimated": false
+      "estimated": false,
+      "crew": 1
     }
   },
   {
@@ -316,7 +318,8 @@
       "heat": 2000,
       "basis": "Electric output and waste heat are placeholders; the drive figures are the cited study.",
       "source": "https://ntrs.nasa.gov/api/citations/20170003126/downloads/20170003126.pdf",
-      "estimated": true
+      "estimated": true,
+      "crew": 2
     }
   },
   {
@@ -539,8 +542,9 @@
     "design": {
       "mass": 60,
       "power": 0.5,
-      "basis": "Flight computer, radios and sensors.",
-      "estimated": true
+      "basis": "Flight computer, radios and sensors; with it aboard reactors and drives run without an operator.",
+      "estimated": true,
+      "automates": true
     }
   },
   {
