@@ -1,0 +1,34 @@
+name: promote
+
+on:
+  push:
+    branches: ['promote/**']
+  workflow_dispatch:
+
+concurrency:
+  group: promote-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/prepare
+      - run: pnpm exec playwright install ${{ runner.environment == 'github-hosted' && '--with-deps' || '' }} chromium
+      - run: pnpm check:all
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7.0.2
+        if: failure()
+        with:
+          name: layout-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore

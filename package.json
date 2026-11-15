@@ -11,6 +11,7 @@
     "dev": "vite dev --host",
     "build": "vite build",
     "preview": "vite preview --host",
+    "promote": "node tools/promote.mjs",
     "check": "node tools/remote/run.mjs node tools/ci/gate.mjs",
     "check:all": "node tools/remote/run.mjs node tools/ci/gate.mjs --all",
     "check:types": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",

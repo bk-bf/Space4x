@@ -132,7 +132,7 @@ The global stylesheet is `src/app.css`, ported from the mockup. Its tokens (`--b
 
 ## Scripts and the remote runner
 
-`pnpm check` runs only the legs the change needs and `pnpm check:all` runs all six. `tools/ci/gate.mjs` reads the same change scope as CI (`tools/ci/scope.json`): it diffs against the merge-base with `origin/main` (`--base <ref>` overrides; uncommitted and untracked files count), runs `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout` in that order for the legs that are true, prints which run and which are skipped, and stops at the first failure with its exit code. A docs-only change runs none. `node --test 'tools/ci/*.test.mjs'` tests the leg selection. `pnpm check`, `pnpm check:all`, `pnpm test` and `pnpm test:layout` go through `tools/remote/run.mjs`: on that server, or with `CI=true`, they run in place; anywhere else they send the committed `HEAD` to the server over ssh and run it there and never fall back to the local machine; commit first. They forward `SPACE4X_*`, `VITEST_*`, `SHOTS`, `SIZE` and `PORT`; `SPACE4X_FETCH=<dir>` copies a directory back afterwards.
+`pnpm check` runs only the legs the change needs and `pnpm check:all` runs all six. `tools/ci/gate.mjs` reads the same change scope as CI (`tools/ci/scope.json`): it diffs against the merge-base with `origin/dev` (`--base <ref>` overrides; uncommitted and untracked files count), runs `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout` in that order for the legs that are true, prints which run and which are skipped, and stops at the first failure with its exit code. A docs-only change runs none. `node --test 'tools/ci/*.test.mjs'` tests the leg selection. `pnpm check`, `pnpm check:all`, `pnpm test` and `pnpm test:layout` go through `tools/remote/run.mjs`: on that server, or with `CI=true`, they run in place; anywhere else they send the committed `HEAD` to the server over ssh and run it there and never fall back to the local machine; commit first. They forward `SPACE4X_*`, `VITEST_*`, `SHOTS`, `SIZE` and `PORT`; `SPACE4X_FETCH=<dir>` copies a directory back afterwards.
 
 The Playwright web server picks a free port, or uses `PORT` when it is set, so several checkouts can run at once.
 
@@ -149,3 +149,21 @@ For a change to layout or behaviour, also look at the result: `SHOTS=<dir> pnpm 
 - Mock data stays visibly mock: the red "mock data" tag in the top bar stays while any is shown.
 - Follow the mockup: Aurora 4X's screen organisation and density; icons, not text, for screen buttons and status values; compact tables; no gaps; nothing laid over the map except the windows; one Selection window for whatever is selected; screen buttons switch whole screens, never popups.
 - Commit messages say why and how the change was verified.
+
+## Branches, promotion and the dev build
+
+`dev` is the default branch: features and fixes land on it through pull requests (a feature of ten commits or more) or direct commits (everything smaller), as the global rules say, and CI (`.github/workflows/ci.yml`) runs on pushes to `dev` and `main` and on every pull request. `main` moves only by `pnpm promote`, after a playtest of the dev build at https://space4x.callmedaddy.dedyn.io/. Branch from `dev`, open pull requests against `dev`, and never push `main`.
+
+- `pnpm promote --list` shows the commits and merged pull requests on `origin/dev` that `origin/main` lacks.
+- `pnpm promote` merges `origin/dev` onto `origin/main` in the worktree `.claude/worktrees/promote` as branch `promote/main`, pushes that branch, and waits for `.github/workflows/promote.yml` on that commit. It reuses an unchanged candidate (same `main` and `dev` parents). Green, it installs dependencies in the worktree and prints the playtest steps: the dev build, and `cd .claude/worktrees/promote && pnpm dev` for the candidate itself. Red, `main` is untouched and the worktree stays for a look.
+- `pnpm promote --push` pushes the green candidate to `main` and removes the worktree.
+- `promote.yml` runs on `promote/**` pushes and by `workflow_dispatch`: `pnpm check:all` and `pnpm build`. It is listed under `"full"` in `tools/ci/scope.json` because it runs every leg on purpose.
+
+### The dev build
+
+`install.sh` installs the user units of `deploy/` for the checkout it is run from, which must be on `dev` (`HOST` overrides the machine's Tailscale address, `PORT` overrides `8800`). It does not touch `deploy/runner/`, which `deploy/runner/setup.sh` owns.
+
+- `space4x-serve.service` serves `build/` with `tools/serve.mjs` (a static server with a single-page fallback) on the machine's Tailscale address, port 8800; Caddy publishes it as https://space4x.callmedaddy.dedyn.io/. Before it starts, `deploy/build --if-stale` runs `pnpm install --frozen-lockfile` and `pnpm build` unless `build/.built-head` already names `HEAD`.
+- `space4x-update.path` fires `space4x-update.service` when `.git/refs/heads/dev` or `.git/refs/remotes/origin/dev` changes. `deploy/update` does nothing unless the checkout is on `dev`; with a clean tree it fast-forwards `dev` from `origin/dev`, and when `HEAD` is not what `build/` was built from it rebuilds and restarts the server (or re-runs `install.sh` first when `deploy/` or `install.sh` changed).
+- Nothing in the repo fetches. `git-autofetch.timer` fetches every repo under `~/Documents/Projects` every two minutes, which moves `origin/dev` and so triggers the path unit.
+- Keep the main checkout `~/Documents/Projects/Space4x` on `dev` with a clean tree: it is what the build serves. Check it with `systemctl --user status space4x-serve.service space4x-update.path` and `journalctl --user -u space4x-update.service -n 50`.
