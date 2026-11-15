@@ -86,7 +86,7 @@ function travel(r: Run, goal: Goal): boolean {
 
 function transit(r: Run, goal: Goal): void {
   const f = r.fleet,
-    pair = goal.jump ? r.game.jump(goal.jump.to) : undefined;
+    pair = goal.jump?.to ? r.game.jump(goal.jump.to) : undefined;
   if (!pair) return;
   f.system = pair.system.id;
   f.x = pair.point.x;

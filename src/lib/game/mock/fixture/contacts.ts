@@ -1,12 +1,12 @@
-import type { Contact } from '../types';
-import { AU } from '../units';
+import type { Contact } from '../../types';
+import { AU } from '../../units';
 
 const au2 = (x: number, y: number) => [x * AU, y * AU] as const;
 const xy = (x: number, y: number) => ({ x: x * AU, y: y * AU });
 
 const at = (day: number, hour: number, minute: number) => Date.UTC(2087, 2, day, hour, minute);
 
-export const mockContacts = (): Contact[] => [
+export const fixtureContacts = (): Contact[] => [
   {
     id: 'C-014',
     system: 'sol',

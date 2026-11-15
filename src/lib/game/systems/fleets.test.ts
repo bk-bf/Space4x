@@ -1,3 +1,4 @@
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { describe, expect, it } from 'vitest';
 import { DAY } from '../clock';
 import {
@@ -17,7 +18,7 @@ const texts = (g: Game) => g.events.map((e) => e.text);
 
 describe('fleet orders', () => {
   it('flies a fleet toward its move target and parks it there on arrival', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     const mars = () => bodyPosition(g.body('mars')!, g.world.bodies);
     const gap = () => Math.hypot(survey.x - mars()[0], survey.y - mars()[1]);
@@ -34,7 +35,7 @@ describe('fleet orders', () => {
   });
 
   it('surveys for a time that grows with the root of the radius and then starts the next order', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     g.advance(2 * DAY);
     expect(g.body('mars')!.surveyed).toBe(true);
@@ -49,7 +50,7 @@ describe('fleet orders', () => {
   });
 
   it('carries leftover time from one order into the next within one long step', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const convoy = g.fleet('convoy')!;
     g.advance(10 * DAY);
     expect(texts(g)).toEqual(
@@ -69,7 +70,7 @@ describe('fleet orders', () => {
   });
 
   it('holds orbit until the order is removed, then runs the next one', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const picket = g.fleet('picket')!;
     addOrder(picket, 'move', 'saturn');
     g.advance(30 * DAY);
@@ -82,7 +83,7 @@ describe('fleet orders', () => {
   });
 
   it('reorders, removes and clears queued orders', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     const labels = () => survey.orders.map((o) => orderLabel(g, o));
     expect(moveOrder(survey, 2, -1)).toBe(1);
@@ -95,7 +96,7 @@ describe('fleet orders', () => {
   });
 
   it('jumps a fleet through a jump point into the paired system', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     clearOrders(survey);
     addOrder(survey, 'move', 'sol-a');
@@ -106,7 +107,7 @@ describe('fleet orders', () => {
   });
 
   it('merges a fleet into the fleet it joins and passes the selection on', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     clearOrders(survey);
     addOrder(survey, 'join', 'picket');
@@ -118,7 +119,7 @@ describe('fleet orders', () => {
   });
 
   it('drops an order whose target is in another system and warns', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     clearOrders(survey);
     addOrder(survey, 'survey', 'acen-3');
@@ -128,7 +129,7 @@ describe('fleet orders', () => {
   });
 
   it('offers cargo orders only to civilian fleets and only colonies as their targets', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const colonies = g.world.bodies.filter((b) => b.system === 'sol' && b.colony).map((b) => b.name);
     expect(colonies).toContain('Luna');
     expect(orderTargets(g, g.fleet('convoy')!, 'load').map((t) => t.name)).toEqual(colonies);

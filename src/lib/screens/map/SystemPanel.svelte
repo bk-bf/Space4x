@@ -86,6 +86,9 @@
           {/each}
         </details>
       {/each}
+      {#if !world.fleets.length}<p class="none" id="noFleets">
+          No fleets. Nothing of ours flies beyond Earth yet.
+        </p>{/if}
     </div>
   {:else if tab === 'bodies'}
     <Table
@@ -99,16 +102,20 @@
       onpick={(i) => select('body', bodies[i]!.id)}
     />
   {:else if tab === 'contacts'}
-    <Table
-      head={['Id', 'Kind', '>Range']}
-      rows={contactRows}
-      keys={contacts.map((c) => 'contact:' + c.id)}
-      selected={pickedRow(
-        'contact',
-        contacts.map((c) => c.id)
-      )}
-      onpick={(i) => select('contact', contacts[i]!.id)}
-    />
+    {#if contacts.length}
+      <Table
+        head={['Id', 'Kind', '>Range']}
+        rows={contactRows}
+        keys={contacts.map((c) => 'contact:' + c.id)}
+        selected={pickedRow(
+          'contact',
+          contacts.map((c) => c.id)
+        )}
+        onpick={(i) => select('contact', contacts[i]!.id)}
+      />
+    {:else}
+      <p class="none" id="noContacts">No contacts.</p>
+    {/if}
   {:else}
     <h3>Show on map</h3>
     <div id="toggles">
@@ -155,6 +162,10 @@
 </Window>
 
 <style>
+  .none {
+    margin: 0;
+    color: var(--dim);
+  }
   #mapScale,
   #mapZoom {
     display: flex;

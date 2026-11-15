@@ -1,9 +1,10 @@
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { describe, expect, it } from 'vitest';
 import { AU, Game, parkingRadius } from '#lib/game/index.ts';
 import { locate, presetFor, presets, systemExtent } from './targets';
 
 describe('map presets', () => {
-  const g = new Game(),
+  const g = withFixture(new Game()),
     W = 410,
     H = 280;
 

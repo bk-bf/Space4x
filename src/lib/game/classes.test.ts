@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { setEngines } from './design';
 import {
   buildOf,
@@ -50,7 +51,7 @@ describe('the ship class registry', () => {
   });
 
   it('gives a fleet the speed of its slowest class, the number the designer shows', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const picket = g.fleet('picket')!;
     expect(picket.ships.map((s) => s.classId)).toEqual(['bastion', 'lancer', 'lancer']);
     expect(fleetSpeed(picket)).toBe(classStats('bastion')!.speed);
@@ -60,7 +61,7 @@ describe('the ship class registry', () => {
   });
 
   it('moves every fleet that carries a class the moment the class is redesigned', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     const survey = g.fleet('survey')!;
     const before = fleetSpeed(survey);
     const eta = () => orderEtas(g, survey)[0];
@@ -73,7 +74,7 @@ describe('the ship class registry', () => {
   });
 
   it('refuses to forget a class a fleet or a registered user still needs', () => {
-    const g = new Game();
+    const g = withFixture(new Game());
     expect(classInUse(g, 'bastion')).toBe(true);
     expect(classInUse(g, 'lighthouse')).toBe(false);
   });

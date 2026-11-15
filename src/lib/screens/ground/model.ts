@@ -83,7 +83,7 @@ export const KINDS: Record<UnitKind, KindInfo> = {
 
 export const KIND_ORDER: readonly UnitKind[] = ['hq', 'inf', 'tank', 'art', 'aa'];
 
-export const PLACES = ['Mars', 'Earth', 'Luna'] as const;
+export const PLACES = ['Earth'] as const;
 
 export const STANCE_USE: Record<Stance, number> = {
   'Dug in': 0.45,
@@ -93,7 +93,7 @@ export const STANCE_USE: Record<Stance, number> = {
 };
 export const STANCE_MORALE: Record<Stance, number> = { 'Dug in': 8, Advance: -4, Reserve: 10, Support: 6 };
 
-export const PLACE_SUPPLY: Record<string, number> = { Mars: 2, Earth: 4, Luna: 2.6 };
+export const PLACE_SUPPLY: Record<string, number> = { Earth: 4 };
 
 const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
@@ -115,9 +115,9 @@ interface FormationSeed {
 
 const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
-    id: 'mars-garrison',
-    name: 'Mars garrison',
-    place: 'Mars',
+    id: 'home-guard',
+    name: 'Home guard',
+    place: 'Earth',
     units: [
       ['hq', 1, 'Dug in', 100, 92, 80],
       ['inf', 6, 'Dug in', 94, 88, 76],
@@ -127,8 +127,8 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
     ]
   },
   {
-    id: 'home-guard',
-    name: 'Home guard',
+    id: 'capital-guard',
+    name: 'Capital guard',
     place: 'Earth',
     units: [
       ['hq', 1, 'Dug in', 100, 90, 96],
@@ -156,9 +156,9 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
     ]
   },
   {
-    id: 'luna-guard',
-    name: 'Luna guard',
-    place: 'Luna',
+    id: 'coastal-guard',
+    name: 'Coastal guard',
+    place: 'Earth',
     units: [
       ['hq', 1, 'Dug in', 100, 85, 72],
       ['inf', 2, 'Dug in', 90, 82, 68],
@@ -182,7 +182,6 @@ export function mockUnits(): Unit[] {
   const out: Unit[] = [];
   let n = 0;
   for (const f of FORMATION_SEEDS) {
-    const trained = f.place === 'Luna' ? 'Luna' : 'Earth';
     for (const [kind, count, stance, strength, morale, supply] of f.units)
       for (let i = 0; i < count; i++) {
         n++;
@@ -195,7 +194,7 @@ export function mockUnits(): Unit[] {
           morale: bound(morale + jitter(n, 2, 6)),
           supply: bound(supply + jitter(n, 3, 8)),
           stance,
-          trainedAt: trained
+          trainedAt: 'Earth'
         });
       }
   }

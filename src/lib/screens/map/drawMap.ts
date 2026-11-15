@@ -310,16 +310,17 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
   for (const j of system?.jumps ?? []) {
     const P = S(j.x, j.y),
       key2 = target('jump', j.id),
-      b = under(P);
+      b = under(P),
+      text = j.surveyed === false ? `${j.name}, unsurveyed` : j.name;
     if (b) {
-      b.list.push({ id: key2, text: j.name, target: key2, ...pickOf(key2, false) });
+      b.list.push({ id: key2, text, target: key2, ...pickOf(key2, false) });
       continue;
     }
     if (!vis(P, 20)) continue;
     jumpMark(f, P[0], P[1], t);
     an.push({
       id: key2,
-      text: j.name,
+      text,
       x: P[0],
       y: P[1],
       rx: 6,

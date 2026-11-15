@@ -130,7 +130,9 @@ export interface JumpPoint {
   name: string;
   x: number;
   y: number;
-  to: string;
+  to?: string;
+  surveyed?: boolean;
+  stable?: boolean;
 }
 
 export interface StarSystem {
