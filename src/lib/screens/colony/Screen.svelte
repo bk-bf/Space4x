@@ -3,6 +3,7 @@
   import type { BuildingKind } from '#lib/game/data/index.ts';
   import { economy, flowsOf } from '#lib/game/economy/index.ts';
   import { surfaceScene } from '#lib/gfx/index.ts';
+  import { gallery } from '#lib/shell/mode.ts';
   import {
     CanvasView,
     DefList,
@@ -57,6 +58,12 @@
   );
 </script>
 
+{#snippet pick()}
+  <select id="colonyPick" aria-label="Site" bind:value={ui.site}>
+    {#each economy.sites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
+  </select>
+{/snippet}
+
 <ScreenGrid id="colony" columns="minmax(0,5fr) minmax(0,7fr)">
   <Panel title={site.name} body="fill">
     <CanvasView
@@ -67,16 +74,13 @@
     />
   </Panel>
   <Stack>
-    <Panel title="Surface" body="fill">
-      {#snippet tools()}
-        <select id="colonyPick" aria-label="Site" bind:value={ui.site}>
-          {#each economy.sites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
-        </select>
-      {/snippet}
-      <CanvasView scale={3} vignette={0.7} height={258} draw={(fb, t) => surfaceScene(fb, t)} />
-    </Panel>
+    {#if gallery}
+      <Panel title="Surface" body="fill" tools={pick}>
+        <CanvasView scale={3} vignette={0.7} height={258} draw={(fb, t) => surfaceScene(fb, t)} />
+      </Panel>
+    {/if}
     <Split grow>
-      <Panel title="Site">
+      <Panel title="Site" tools={gallery ? undefined : pick}>
         <DefList
           rows={[
             ['People', formatPeople(site.population)],

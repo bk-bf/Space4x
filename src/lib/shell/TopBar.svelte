@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatClock, game, STEPS } from '#lib/game/index.ts';
   import { SCREENS } from '#lib/screens/list.ts';
+  import { gallery } from './mode.ts';
   import { Icon, requestRender, shell, wm } from '#lib/ui/index.ts';
   import { SETTINGS_ID } from '#lib/ui/wm/wm.svelte.ts';
 
@@ -15,7 +16,15 @@
   }
 </script>
 
-<header id="top">
+<svelte:head
+  >{#if gallery}<title>Space4x gallery</title>{/if}</svelte:head
+>
+
+<header
+  id="top"
+  class:gallery
+  title={gallery ? 'Gallery build: includes mock screens and scenes' : undefined}
+>
   <span class="brand"><Icon name="logo" /><b>Space4x</b></span>
   <nav id="nav">
     {#each SCREENS as s (s.id)}<button
