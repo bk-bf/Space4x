@@ -1,0 +1,111 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 10
+    outputs:
+      typecheck: ${{ steps.scope.outputs.typecheck }}
+      lint: ${{ steps.scope.outputs.lint }}
+      knip: ${{ steps.scope.outputs.knip }}
+      format: ${{ steps.scope.outputs.format }}
+      unit: ${{ steps.scope.outputs.unit }}
+      layout: ${{ steps.scope.outputs.layout }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24.20.0
+      - id: scope
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          case "$GITHUB_EVENT_NAME" in
+            push) base="$BEFORE" ;;
+            pull_request) base="$(git rev-parse HEAD^1)" ;;
+            *) base="" ;;
+          esac
+          node tools/ci/scope.mjs --base "$base"
+
+  typecheck:
+    needs: scope
+    if: needs.scope.outputs.typecheck == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm check:types
+
+  lint:
+    needs: scope
+    if: needs.scope.outputs.lint == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm lint
+
+  knip:
+    needs: scope
+    if: needs.scope.outputs.knip == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm knip
+
+  format:
+    needs: scope
+    if: needs.scope.outputs.format == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm format:check
+
+  unit:
+    needs: scope
+    if: needs.scope.outputs.unit == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm test
+
+  layout:
+    needs: scope
+    if: needs.scope.outputs.layout == 'true'
+    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-24.04"') }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/prepare
+      - run: pnpm exec playwright install ${{ runner.environment == 'github-hosted' && '--with-deps' || '' }} chromium
+      - run: pnpm test:layout
+      - uses: actions/upload-artifact@v7.0.2
+        if: failure()
+        with:
+          name: layout-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore

@@ -1,0 +1,15 @@
+name: prepare
+description: Install the pinned pnpm and Node, then the locked dependencies, in a checked-out tree.
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6.1.1
+
+    - uses: actions/setup-node@v7.1.0
+      with:
+        node-version: 24.20.0
+        cache: ${{ runner.environment == 'github-hosted' && 'pnpm' || '' }}
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
