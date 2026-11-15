@@ -5,6 +5,8 @@ import { mockWorld } from './mock/world';
 import { runSystems } from './systems';
 import type { Body, Contact, EventCategory, Fleet, GameEvent, Selection, StatusValue, World } from './types';
 
+const EVENT_LIMIT = 500;
+
 export class Game {
   time = $state(START_TIME);
   running = $state(false);
@@ -48,6 +50,7 @@ export class Game {
 
   log(category: EventCategory, text: string, warn = false): void {
     this.events.unshift(warn ? { at: this.time, category, text, warn } : { at: this.time, category, text });
+    if (this.events.length > EVENT_LIMIT) this.events.length = EVENT_LIMIT;
   }
 
   body(id: string): Body | undefined {

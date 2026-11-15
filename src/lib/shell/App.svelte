@@ -12,12 +12,17 @@
   const CHECK_DELAY_MS = 900;
 
   function onKey(e: KeyboardEvent) {
-    const screen = SCREENS.find((s) => s.key === e.key);
+    if (e.defaultPrevented) return;
+    const plain = !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey;
+    const screen = plain ? SCREENS.find((s) => s.key === e.key) : undefined;
     if (screen) {
       e.preventDefault();
       shell.setScreen(screen.id);
     }
-    if (e.key === ' ' && !(e.target as Element).closest?.('select,button,input,textarea')) {
+    if (
+      e.key === ' ' &&
+      !(e.target as Element).closest?.('select,button,input,textarea,summary,a,[tabindex]')
+    ) {
       e.preventDefault();
       game.toggleRunning();
     }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { FB, type Background } from '#lib/gfx/framebuffer.ts';
-  import { onFrame } from '../frame';
+  import { onFrame, requestRender } from '../frame';
 
   interface Props {
     width: number;
@@ -22,6 +22,7 @@
     const next = new FB(canvas, width, height, scale, vignette);
     if (bg) next.makeBg(bg);
     fb = next;
+    requestRender();
   });
 
   $effect(() =>

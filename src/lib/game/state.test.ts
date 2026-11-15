@@ -14,6 +14,13 @@ describe('Game', () => {
     expect(g.elapsed).toBe(0);
   });
 
+  it('keeps only the newest 500 events', () => {
+    const g = new Game();
+    for (let i = 0; i < 600; i++) g.log('ship', `event ${i}`);
+    expect(g.events).toHaveLength(500);
+    expect(g.events[0]?.text).toBe('event 599');
+  });
+
   it('advances game time by the given seconds', () => {
     const g = new Game();
     g.advance(3600);

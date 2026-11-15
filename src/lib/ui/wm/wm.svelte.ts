@@ -297,13 +297,16 @@ class WindowManager {
 function stackColumn(list: Win[], x: number, width: number, colH: number): void {
   let y = 0;
   list.forEach((w, i) => {
-    const el = w.el!;
+    const el = w.el!,
+      body = el.querySelector<HTMLElement>('.wb'),
+      scrolled = body?.scrollTop ?? 0;
     Object.assign(el.style, { left: px(x + 2), top: px(y + 2), width: px(width - 4), height: '' });
     const after = list.slice(i + 1),
       rest = colH - y - after.length * (TITLE_H + GAP),
       last = after.every((q) => q.min);
     const hh = w.min ? TITLE_H : w.grow && last ? rest : Math.min(el.offsetHeight + 4, rest);
     el.style.height = px(hh - 4);
+    if (body) body.scrollTop = scrolled;
     y += hh + GAP;
   });
 }

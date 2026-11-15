@@ -35,7 +35,10 @@ function checkPanel(
   starved: [HTMLElement, number][]
 ) {
   const b = p.querySelector<HTMLElement>('.wb, .pb');
-  if (!b) return;
+  if (!b) {
+    out.push(`structure: ${name(p)} has no .wb or .pb body`);
+    return;
+  }
   const cs = getComputedStyle(b),
     inner = R(b).right - parseFloat(cs.paddingRight),
     floating = onMap && !p.dataset.dock;
@@ -131,7 +134,8 @@ function checkDesk(d: DOMRect, out: string[]) {
     for (const w of windows().filter((x) => !x.hidden))
       if (hit(a.r, R(w), 1)) out.push(`label under panel: "${a.s.textContent}" and ${name(w)}`);
   const map = document.querySelector('#mapCv');
-  if (map) {
+  if (!map) out.push('canvas: the map canvas #mapCv is missing');
+  else {
     const mc = R(map);
     if (d.width - mc.width >= 2 || d.height - mc.height >= 2)
       out.push(
