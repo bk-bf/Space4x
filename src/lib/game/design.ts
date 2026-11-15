@@ -1,21 +1,22 @@
 import {
-  ATT,
-  BOW,
-  CORE,
+  ATTACHMENT_KEYS,
+  BOW_KEYS,
+  CORE_KEYS,
   PNAME,
-  PW,
-  STERN,
+  STERN_KEYS,
   type AttachmentKey,
   type BowKey,
   type CoreKey,
   type PartKey,
+  type Section,
+  type ShipSpec,
   type SternKey
-} from '#lib/gfx/ships/parts.ts';
-import type { Section, ShipSpec } from '#lib/gfx/ships/specs.ts';
+} from '#lib/gfx/ships/specs.ts';
+import { METRES_PER_UNIT, specParts, type PartTarget } from '#lib/gfx/topdown/parts.ts';
 
 export type Slot = 'top' | 'bottom';
 
-export type Target = { kind: 'stern' | 'aft' | 'bow' } | { kind: 'section'; index: number };
+export type Target = PartTarget;
 
 export type Selection = { kind: 'stern' | 'aft' | 'bow' } | { kind: 'section'; index: number; slot: Slot };
 
@@ -73,7 +74,6 @@ interface PartStat {
 export const MAX_SECTIONS = 14;
 export const MAX_ENGINES = 3;
 export const MAX_CARGO_LAYERS = 3;
-export const METRES_PER_PIXEL = 4;
 
 const ENGINE_BASE_MASS = 60;
 const ENGINE_MASS = 90;
@@ -117,39 +117,21 @@ const ATT_STATS: Record<AttachmentKey, PartStat> = {
   fin: { mass: 12, crew: 0 }
 };
 
-const STERN_WIDTH: Record<SternKey, number> = { engines: 8, big: 12 };
-
-const CORE_HALF_HEIGHT: Record<CoreKey, number> = {
-  hull: 3,
-  crew: 3,
-  reactor: 3,
-  fuel: 4,
-  armor: 5,
-  truss: 2,
-  tank: 6,
-  ring: 12,
-  hangar: 5
-};
-
-const BOW_HALF_HEIGHT: Record<BowKey, number> = { bridge: 3, blunt: 3, gun: 3, prow: 5, dock: 3 };
-
 const ATTACHMENT = /^(\D+)(\d*)$/;
 
-export const keysOf = <T extends object>(o: T): (keyof T)[] => Object.keys(o) as (keyof T)[];
-
 export const PALETTE: readonly PaletteItem[] = [
-  ...keysOf(CORE).map((key) => ({ kind: 'core' as const, key, name: PNAME[key] })),
-  ...keysOf(STERN).map((key) => ({ kind: 'stern' as const, key, name: PNAME[key] })),
-  ...keysOf(BOW).map((key) => ({ kind: 'bow' as const, key, name: PNAME[key] })),
-  ...keysOf(ATT).map((key) => ({ kind: 'att' as const, key, name: PNAME[key] }))
+  ...CORE_KEYS.map((key) => ({ kind: 'core' as const, key, name: PNAME[key] })),
+  ...STERN_KEYS.map((key) => ({ kind: 'stern' as const, key, name: PNAME[key] })),
+  ...BOW_KEYS.map((key) => ({ kind: 'bow' as const, key, name: PNAME[key] })),
+  ...ATTACHMENT_KEYS.map((key) => ({ kind: 'att' as const, key, name: PNAME[key] }))
 ];
 
 export const paletteId = (item: PaletteItem): string => `${item.kind}:${item.key}`;
 
 export function attachmentKey(name: string): AttachmentKey | undefined {
   const m = ATTACHMENT.exec(name);
-  const key = m?.[1];
-  return key && key in ATT ? (key as AttachmentKey) : undefined;
+  const key = ATTACHMENT_KEYS.find((k) => k === m?.[1]);
+  return key;
 }
 
 export function cargoLayers(name: string): number {
@@ -252,29 +234,17 @@ export function clearAft(sp: ShipClass): ShipClass {
 }
 
 export function layout(sp: ShipSpec): LaidPart[] {
-  const out: LaidPart[] = [];
-  let x = 0;
-  const add = (target: Target, key: PartKey, w: number, hh: number) => {
-    out.push({ target, key, name: PNAME[key], x, w, hh });
-    x += w;
-  };
-  if (sp.stern) {
-    const [key, n = 2] = sp.stern;
-    add({ kind: 'stern' }, key, STERN_WIDTH[key], key === 'big' ? 4 : 2 + n);
-  }
-  if (sp.aft) add({ kind: 'aft' }, sp.aft, PW[sp.aft], BOW_HALF_HEIGHT[sp.aft]);
-  sp.parts.forEach(([core], index) =>
-    add({ kind: 'section', index }, core, PW[core], CORE_HALF_HEIGHT[core])
-  );
-  if (sp.bow) add({ kind: 'bow' }, sp.bow, PW[sp.bow], BOW_HALF_HEIGHT[sp.bow]);
-  return out;
+  return specParts(sp).parts.map((p) => ({
+    target: p.target,
+    key: p.k,
+    name: PNAME[p.k],
+    x: p.x,
+    w: p.L,
+    hh: p.hw
+  }));
 }
 
-export const lengthOf = (sp: ShipSpec): number => {
-  const parts = layout(sp);
-  const last = parts[parts.length - 1];
-  return last ? (last.x + last.w) * METRES_PER_PIXEL : 0;
-};
+export const lengthOf = (sp: ShipSpec): number => specParts(sp).len * METRES_PER_UNIT;
 
 function addStat(total: { mass: number; crew: number; fuel: number; armour: number }, s: PartStat, n = 1) {
   total.mass += s.mass * n;
@@ -332,6 +302,66 @@ export function designStats(sp: ShipSpec): DesignStats {
     cargo,
     weapons
   };
+}
+
+export interface Figures {
+  mass: number;
+  crew: number;
+  fuel: number;
+  armour: number;
+  thrust: number;
+  cargo: number;
+  weapons: Weapons;
+}
+
+const figures = (s: PartStat, n = 1): Figures => ({
+  mass: s.mass * n,
+  crew: s.crew * n,
+  fuel: (s.fuel ?? 0) * n,
+  armour: (s.armour ?? 0) * n,
+  thrust: 0,
+  cargo: 0,
+  weapons: { turrets: 0, launchers: 0, pods: 0, spinal: 0, hangars: 0 }
+});
+
+function sternFigures(key: SternKey, n: number): Figures {
+  if (key === 'big') return { ...figures(BIG_STERN), thrust: BIG_THRUST };
+  return {
+    ...figures({ mass: ENGINE_BASE_MASS + ENGINE_MASS * n, crew: ENGINE_CREW * n }),
+    thrust: ENGINE_THRUST * n
+  };
+}
+
+function attachmentFigures(name: string): Figures | undefined {
+  const key = attachmentKey(name);
+  if (!key) return undefined;
+  const layers = key === 'cargo' ? cargoLayers(name) : 1;
+  const f = figures(ATT_STATS[key], layers);
+  if (key === 'cargo') f.cargo = layers * CARGO_TONNES_PER_LAYER;
+  if (key === 'turret') f.weapons.turrets = 1;
+  if (key === 'launcher') f.weapons.launchers = 1;
+  if (key === 'pod') f.weapons.pods = 1;
+  return f;
+}
+
+export function partFigures(sp: ShipSpec, target: Target, slot?: Slot): Figures | undefined {
+  if (target.kind === 'stern') return sp.stern ? sternFigures(sp.stern[0], sp.stern[1] ?? 2) : undefined;
+  if (target.kind !== 'section') {
+    const key = target.kind === 'aft' ? sp.aft : sp.bow;
+    if (!key) return undefined;
+    const f = figures(BOW_STATS[key]);
+    if (key === 'gun') f.weapons.spinal = 1;
+    return f;
+  }
+  const section = sp.parts[target.index];
+  if (!section) return undefined;
+  if (slot) {
+    const name = section[slot === 'top' ? 1 : 2];
+    return name ? attachmentFigures(name) : undefined;
+  }
+  const f = figures(CORE_STATS[section[0]]);
+  if (section[0] === 'hangar') f.weapons.hangars = 1;
+  return f;
 }
 
 const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;

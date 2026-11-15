@@ -20,6 +20,18 @@ const sections = (page: Page) => page.locator('.col[data-part^="section:"] .tag'
 const label = (page: Page) => page.locator('#partLabel');
 const cards = (page: Page) => page.locator('#gallery .card');
 
+async function shipPoint(page: Page, part: number, dy = 0) {
+  const col = (await page.locator('.col').nth(part).boundingBox())!;
+  const top = (await page.locator('.col [data-zone="top"]').first().boundingBox())!;
+  return { x: col.x + col.width / 2, y: top.y + top.height + dy };
+}
+
+async function shot(page: Page, name: string) {
+  if (!SHOTS) return;
+  mkdirSync(SHOTS, { recursive: true });
+  await page.screenshot({ path: join(SHOTS, `${name}.png`) });
+}
+
 async function dragOnto(page: Page, source: Locator, x: number, y: number) {
   const stage = (await page.locator('.stage').boundingBox())!;
   await source.dragTo(page.locator('.stage'), { targetPosition: { x: x - stage.x, y: y - stage.y } });
@@ -186,6 +198,88 @@ test.describe('ship designer', () => {
     await expect(cards(page).filter({ hasText: 'Beacon' })).toHaveClass(/on/);
     await cards(page).filter({ hasText: 'Bastion' }).click();
     await expect(page.locator('main.screen [data-act="delete"]')).toBeDisabled();
+    await expectCleanLayout(page);
+  });
+
+  test('a part is picked and inspected on the top-down drawing', async ({ page }) => {
+    await open(page, 'screen=classes&cls=bastion');
+    const hangar = await shipPoint(page, 3);
+    await page.mouse.move(hangar.x, hangar.y);
+    await expect(page.locator('#partName')).toHaveText('Hangar deck');
+    await expect(page.locator('#partFigures')).toHaveText('520 t · crew 60 · 1 hangar');
+    const prow = await shipPoint(page, 6);
+    await page.mouse.move(prow.x, prow.y);
+    await expect(page.locator('#partName')).toHaveText('Armoured prow');
+    await page.mouse.click(prow.x, prow.y);
+    await expect(label(page)).toHaveText('Bow: Prow');
+
+    const zone = (await page.locator('.col[data-part="section:0"] [data-zone="top"]').boundingBox())!;
+    await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height - 4);
+    await expect(page.locator('#partName')).toHaveText('Armour belt');
+    const radiator = await shipPoint(page, 1, -60);
+    await page.mouse.move(radiator.x, radiator.y);
+    await expect(page.locator('#partName')).toHaveText('Radiator');
+    await expect(page.locator('#partFigures')).toHaveText('25 t');
+    await page.mouse.click(radiator.x, radiator.y);
+    await expect(label(page)).toHaveText('Section 1 of 5: Armour');
+    await expect(page.locator('[data-slot="top"]')).toHaveClass(/on/);
+    await page.mouse.move(0, 0);
+    await expect(page.locator('#partName')).toHaveText('Armour belt');
+    await expectCleanLayout(page);
+  });
+
+  test('turn, systems and take hit change the drawing and turning keeps picking on the hull', async ({
+    page
+  }) => {
+    await open(page, 'screen=classes&cls=bastion');
+    const centre = await shipPoint(page, 3);
+    const purple = () =>
+      page.locator('#designCv').evaluate((c: HTMLCanvasElement) => {
+        const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+        let n = 0;
+        for (let p = 0; p < d.length; p += 4) if (d[p + 2]! > 150 && d[p]! > 100 && d[p + 1]! < 140) n++;
+        return n;
+      });
+    const before = await purple();
+    await page.locator('main.screen [data-act="systems"]').click();
+    await expect(page.locator('main.screen [data-act="systems"]')).toHaveClass(/on/);
+    await expect.poll(purple).toBeGreaterThan(before + 200);
+    await shot(page, 'inspector-systems');
+    await page.locator('main.screen [data-act="systems"]').click();
+
+    await expect(page.locator('main.screen [data-act="repair"]')).toBeDisabled();
+    const pixels = () =>
+      page
+        .locator('#designCv')
+        .evaluate((c: HTMLCanvasElement) =>
+          Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data).join()
+        );
+    for (let i = 0; i < 6; i++) await page.locator('main.screen [data-act="hit"]').click();
+    await expect(page.locator('main.screen [data-act="repair"]')).toBeEnabled();
+    await page.waitForTimeout(150);
+    const charred = await page.locator('#designCv').evaluate((c: HTMLCanvasElement) => {
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let p = 0; p < d.length; p += 4)
+        if (Math.abs(d[p]! - 44) < 30 && Math.abs(d[p + 1]! - 34) < 24 && Math.abs(d[p + 2]! - 42) < 24) n++;
+      return n;
+    });
+    expect(charred).toBeGreaterThan(100);
+    await shot(page, 'inspector-hit');
+    await page.locator('main.screen [data-act="repair"]').click();
+    await expect(page.locator('main.screen [data-act="repair"]')).toBeDisabled();
+
+    await page.locator('main.screen [data-act="turn"]').click();
+    await expect(page.locator('[data-zone]')).toHaveCount(0);
+    const first = await pixels();
+    await expect.poll(pixels, { timeout: 5000 }).not.toBe(first);
+    await page.mouse.click(centre.x, centre.y);
+    await expect(label(page)).toHaveText('Section 3 of 5: Hangar');
+    await page.mouse.move(centre.x, centre.y);
+    await expect(page.locator('#partName')).toHaveText('Hangar deck');
+    await shot(page, 'inspector-turn');
+    await page.locator('main.screen [data-act="turn"]').click();
+    await expect(page.locator('[data-zone="top"]')).toHaveCount(5);
     await expectCleanLayout(page);
   });
 

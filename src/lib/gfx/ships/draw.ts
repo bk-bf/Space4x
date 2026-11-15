@@ -1,8 +1,7 @@
-import type { FB, Surface } from '../framebuffer';
-import { PAL, type RGB } from '../palette';
+import type { Surface } from '../framebuffer';
 import { C } from './colors';
-import { ATT, BOW, CORE, PNAME, STERN, type AttachmentKey, type PartKey, type PartSize } from './parts';
-import type { ShipSpec } from './specs';
+import { ATT, BOW, CORE, STERN, type PartSize } from './parts';
+import { PNAME, type AttachmentKey, type PartKey, type ShipSpec } from './specs';
 
 export interface PlacedPart {
   x: number;
@@ -105,32 +104,4 @@ export function measure(sp: ShipSpec): Extent {
   const m = { x0: b.x0 - 2, x1: b.x1, y0: b.y0, y1: b.y1, w: b.x1 - b.x0 + 3, h: b.y1 - b.y0 + 1 };
   extents.set(sp, m);
   return m;
-}
-
-export function shipCentered(fb: Surface, sp: ShipSpec, t: number, cy?: number): PlacedPart[] {
-  const m = measure(sp);
-  return drawShip(fb, Math.round((fb.w - m.w) / 2) - m.x0, cy ?? Math.round((fb.h - m.h) / 2) - m.y0, sp, t);
-}
-
-const HOSTILE_TONES: readonly RGB[] = [
-  [239, 111, 94],
-  [168, 64, 70],
-  [96, 36, 58]
-];
-
-export function silhouette(f: FB, sp: ShipSpec, t: number): void {
-  const bg = PAL.bg;
-  f.fill(bg);
-  shipCentered(f, sp, t);
-  const d = f.d;
-  for (let i = 0; i < d.length; i += 4) {
-    if (d[i] === bg[0] && d[i + 1] === bg[1] && d[i + 2] === bg[2]) continue;
-    const l = d[i]! * 0.3 + d[i + 1]! * 0.59 + d[i + 2]! * 0.11,
-      y = Math.floor(i / 4 / f.w),
-      k = (y + (t >> 1)) % 4 === 0 ? 0.6 : 1;
-    const c = HOSTILE_TONES[l > 140 ? 0 : l > 70 ? 1 : 2]!;
-    d[i] = c[0] * k;
-    d[i + 1] = c[1] * k;
-    d[i + 2] = c[2] * k;
-  }
 }
