@@ -26,6 +26,7 @@ import {
   yearsLeft,
   type Log
 } from './sim.ts';
+import { colonyName } from './lookup.ts';
 
 let eco: Economy;
 let events: { category: EventCategory; text: string; warn: boolean }[];
@@ -37,7 +38,7 @@ const colony = (id: string): Colony => {
   return c;
 };
 
-const run = (seconds: number) => stepEconomy(eco, seconds, START_TIME + seconds * 1000, log);
+const run = (seconds: number) => stepEconomy(eco, seconds, START_TIME + seconds * 1000, log, colonyName);
 
 beforeEach(() => {
   eco = mockEconomy();

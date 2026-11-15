@@ -46,6 +46,8 @@ export const SHIP_MINERALS_PER_BP: Readonly<Partial<Record<MineralId, number>>> 
 
 export type Log = (category: EventCategory, text: string, warn?: boolean) => void;
 
+export type NameOf = (colony: Colony) => string;
+
 const years = (seconds: number): number => seconds / YEAR;
 const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
 
@@ -363,14 +365,14 @@ function runOrder(c: Colony, order: BuildOrder, wanted: number): void {
   }
 }
 
-function runQueue(c: Colony, eco: Economy, y: number, log: Log): void {
+function runQueue(c: Colony, eco: Economy, y: number, log: Log, name: NameOf): void {
   const plan = allocate(c, eco);
   for (const a of plan) if (a.fraction > 0) runOrder(c, a.order, a.bpPerYear * y);
   for (const a of plan) {
     if (a.order.quantity > 0) continue;
     const def = item(a.order.item);
     const noun = a.order.ordered === 1 ? def.name.toLowerCase() : def.plural;
-    log('factory', `${c.name} finished ${a.order.ordered} ${noun}.`);
+    log('factory', `${name(c)} finished ${a.order.ordered} ${noun}.`);
   }
   c.queue = c.queue.filter((o) => o.quantity > 0);
 }
@@ -395,7 +397,7 @@ function drawDown(c: Colony, y: number): void {
   c.fuel = Math.max(0, c.fuel - c.draw.fuel * y);
 }
 
-function warnLow(c: Colony, log: Log): void {
+function warnLow(c: Colony, log: Log, nameOf: NameOf): void {
   const keys: (MineralId | 'fuel')[] = [...MINERALS.map((m) => m.id), 'fuel'];
   for (const key of keys) {
     const use = c.draw[key];
@@ -404,7 +406,7 @@ function warnLow(c: Colony, log: Log): void {
     if (stock < use && !c.lowStock[key]) {
       c.lowStock[key] = true;
       const name = key === 'fuel' ? 'Fuel' : MINERALS.find((m) => m.id === key)?.name;
-      log('factory', `${name} stock at ${c.name} fell below one year of use.`, true);
+      log('factory', `${name} stock at ${nameOf(c)} fell below one year of use.`, true);
     } else if (stock >= use * 1.2) c.lowStock[key] = false;
   }
 }
@@ -482,7 +484,7 @@ function rollMonth(eco: Economy, now: number): void {
   eco.monthIndex = index;
 }
 
-function stepOnce(eco: Economy, dt: number, now: number, log: Log): void {
+function stepOnce(eco: Economy, dt: number, now: number, log: Log, name: NameOf): void {
   const y = years(dt);
   const t = trade(eco);
   let income = 0;
@@ -497,9 +499,9 @@ function stepOnce(eco: Economy, dt: number, now: number, log: Log): void {
     mine(c, eco, y);
     refine(c, eco, y);
     drawDown(c, y);
-    runQueue(c, eco, y, log);
+    runQueue(c, eco, y, log, name);
     for (const yard of c.yards) runYard(c, eco, yard, y, log, spend);
-    warnLow(c, log);
+    warnLow(c, log, name);
     incomeRate += wealthIncome(lines);
     income += wealthIncome(lines) * y;
     spending += (lines.maintenance + lines.research) * y;
@@ -512,12 +514,24 @@ function stepOnce(eco: Economy, dt: number, now: number, log: Log): void {
   rollMonth(eco, now);
 }
 
-export function stepEconomy(eco: Economy, dt: number, endTime: number, log: Log): void {
+export function stepEconomy(
+  eco: Economy,
+  dt: number,
+  endTime: number,
+  log: Log,
+  name: NameOf = (c) => c.id
+): void {
   const start = endTime - dt * 1000;
   let elapsed = 0;
   while (elapsed < dt - 1e-9) {
     const h = Math.min(SUBSTEP, dt - elapsed);
     elapsed += h;
-    stepOnce(eco, h, start + elapsed * 1000, (category, text, warn = false) => log(category, text, warn));
+    stepOnce(
+      eco,
+      h,
+      start + elapsed * 1000,
+      (category, text, warn = false) => log(category, text, warn),
+      name
+    );
   }
 }

@@ -29,7 +29,6 @@ const FLAME_HOT: RGB = [255, 214, 120];
 const FLAME_COOL: RGB = [240, 130, 60];
 const BELT_ROCKS = 230;
 const TRAIL_UNITS = 44;
-const MOON_ORBIT = 15;
 
 type Project = (wx: number, wy: number) => readonly [number, number];
 
@@ -129,7 +128,7 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
     contacts = here(world.contacts);
   const an: Anchor[] = [];
   f.start();
-  if (layers.Orbits) for (const b of bodies) f.ring(X(0), Y(0), b.orbit * z, PAL.orbit, 3);
+  if (layers.Orbits) for (const b of bodies) if (!b.parent) f.ring(X(0), Y(0), b.orbit * z, PAL.orbit, 3);
   if (layers.Asteroids && system?.belt) drawBelt(f, P, S, system.belt);
   const sf = sel.kind === 'fleet' ? fleets.find((x) => x.id === sel.id) : undefined;
   if (sf) {
@@ -143,7 +142,7 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
     if (on(x, y, sr + 8)) sun(f, x, y, sr, A, s.tint);
   }
   for (const b of bodies) {
-    const [wx, wy] = bodyPosition(b);
+    const [wx, wy] = bodyPosition(b, world.bodies);
     const x = Math.round(X(wx)),
       y = Math.round(Y(wy)),
       R = Math.max(2, Math.round(b.radius * z)),
@@ -160,23 +159,9 @@ export function drawMap(f: FB, game: Game, A: number): Anchor[] {
       pick: () => select('body', b.id),
       centre: () => {
         const body = game.body(b.id);
-        if (body) centreOn(...bodyPosition(body));
+        if (body) centreOn(...bodyPosition(body, game.world.bodies));
       }
     });
-  }
-  const earth = bodies.find((b) => b.id === 'earth');
-  if (earth) {
-    const [ex, ey] = bodyPosition(earth),
-      la = S * 0.012 + 1,
-      mr = Math.max(1, Math.round(2 * z));
-    planet(
-      f,
-      Math.round(X(ex + Math.cos(la) * MOON_ORBIT)),
-      Math.round(Y(ey + Math.sin(la) * MOON_ORBIT)),
-      mr,
-      'rock',
-      0
-    );
   }
   for (const fl of fleets) {
     const x = X(fl.x),

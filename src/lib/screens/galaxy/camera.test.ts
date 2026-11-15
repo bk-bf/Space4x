@@ -54,7 +54,7 @@ describe('camera', () => {
 
   it('has one unsurveyed system with unknown facts and links only between known ids', () => {
     expect(SYSTEMS.filter((s) => s.unknown)).toHaveLength(1);
-    expect(SYSTEMS.find((s) => s.unknown)!.bodies).toBeNull();
+    expect(SYSTEMS.find((s) => s.unknown)!.counts).toBeUndefined();
     expect(new Set(SYSTEMS.map((s) => s.id)).size).toBe(SYSTEMS.length);
   });
 });

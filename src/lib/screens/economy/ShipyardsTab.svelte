@@ -6,6 +6,7 @@
   import Bar from './Bar.svelte';
   import { SHIP_CLASSES, shipClass } from './catalog.ts';
   import Cols from './Cols.svelte';
+  import { colonyName } from './lookup.ts';
   import { formatCount, formatDate, formatYears } from './format.ts';
   import {
     buildFinish,
@@ -97,7 +98,7 @@
 </script>
 
 {#if !yard}
-  <p class="none" id="noYards">There are no shipyards at {colony.name}.</p>
+  <p class="none" id="noYards">There are no shipyards at {colonyName(colony)}.</p>
 {:else}
   <h3>Shipyards</h3>
   <div id="yards">

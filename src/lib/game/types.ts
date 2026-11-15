@@ -15,7 +15,6 @@ export interface BodyFacts {
   surface: string;
   air: string;
   size: string;
-  people: string;
 }
 
 export interface Body {
@@ -30,6 +29,8 @@ export interface Body {
   tilt?: number;
   rings?: boolean;
   surveyed?: boolean;
+  parent?: string;
+  colony?: boolean;
   facts: BodyFacts;
 }
 
@@ -217,9 +218,7 @@ export interface Governor {
 }
 
 export interface ColonyEnvironment {
-  air: string;
-  gravity: string;
-  surface: string;
+  domed: boolean;
   note: string;
 }
 
@@ -230,9 +229,6 @@ export interface TradeBalance {
 
 export interface Colony {
   id: string;
-  name: string;
-  system: string;
-  planet: PlanetType;
   moon: boolean;
   population: number;
   birthRate: number;

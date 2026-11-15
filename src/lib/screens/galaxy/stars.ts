@@ -1,5 +1,11 @@
 import type { RGB } from '#lib/gfx/palette.ts';
 
+export interface Counts {
+  bodies: number;
+  colonies: number;
+  fleets: number;
+}
+
 export interface StarSystem {
   id: string;
   name: string;
@@ -8,9 +14,7 @@ export interface StarSystem {
   color: RGB;
   radius: number;
   star: string;
-  bodies: number | null;
-  colonies: number | null;
-  fleets: number | null;
+  counts?: Counts;
   jumps: string;
   unknown?: boolean;
 }
@@ -24,9 +28,6 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [255, 216, 112],
     radius: 4,
     star: 'G2 yellow',
-    bodies: 8,
-    colonies: 3,
-    fleets: 3,
     jumps: '3 of 3'
   },
   {
@@ -37,9 +38,6 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [255, 236, 170],
     radius: 4,
     star: 'G2 and K1 pair',
-    bodies: 5,
-    colonies: 0,
-    fleets: 1,
     jumps: '2 of 4'
   },
   {
@@ -50,9 +48,6 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [230, 110, 70],
     radius: 2,
     star: 'M4 red dwarf',
-    bodies: 2,
-    colonies: 0,
-    fleets: 0,
     jumps: '2 of 2'
   },
   {
@@ -63,9 +58,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [230, 110, 70],
     radius: 2,
     star: 'M6 red dwarf',
-    bodies: 1,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 1, colonies: 0, fleets: 0 },
     jumps: '1 of 1'
   },
   {
@@ -76,9 +69,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [240, 150, 90],
     radius: 3,
     star: 'M2 red dwarf',
-    bodies: 3,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 3, colonies: 0, fleets: 0 },
     jumps: '1 of 3'
   },
   {
@@ -89,9 +80,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [200, 220, 255],
     radius: 5,
     star: 'A1 white pair',
-    bodies: 0,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 0, colonies: 0, fleets: 0 },
     jumps: '1 of 2'
   },
   {
@@ -102,9 +91,6 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [120, 116, 160],
     radius: 2,
     star: 'Unknown',
-    bodies: null,
-    colonies: null,
-    fleets: null,
     jumps: 'Unknown',
     unknown: true
   },
@@ -116,9 +102,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [250, 214, 140],
     radius: 3,
     star: 'G8 yellow dwarf',
-    bodies: 6,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 6, colonies: 0, fleets: 0 },
     jumps: '1 of 3'
   },
   {
@@ -129,9 +113,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [246, 168, 100],
     radius: 3,
     star: 'K2 orange dwarf',
-    bodies: 4,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 4, colonies: 0, fleets: 0 },
     jumps: '1 of 2'
   },
   {
@@ -142,9 +124,7 @@ export const SYSTEMS: readonly StarSystem[] = [
     color: [242, 236, 206],
     radius: 4,
     star: 'F5 pair',
-    bodies: 2,
-    colonies: 0,
-    fleets: 0,
+    counts: { bodies: 2, colonies: 0, fleets: 0 },
     jumps: '1 of 3'
   }
 ];

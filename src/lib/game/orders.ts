@@ -22,7 +22,7 @@ let lastOrderId = 0;
 
 export const nextOrderId = (): number => ++lastOrderId;
 
-export const isColony = (b: Body): boolean => b.facts.people !== 'None';
+export const isColony = (b: Body): boolean => b.colony === true;
 
 export const canCarry = (f: Fleet): boolean => f.kind === 'civ';
 
@@ -67,7 +67,7 @@ export function resolveGoal(game: Game, f: Fleet, o: Order): Goal | undefined {
   const b = game.body(o.target);
   if (b) {
     if (b.system !== f.system) return undefined;
-    const spot = parkingSpot(f, b, game.elapsed, parkingSlot(game, f, b.id));
+    const spot = parkingSpot(f, b, game.world.bodies, game.elapsed, parkingSlot(game, f, b.id));
     return { x: spot.x, y: spot.y, name: b.name, body: b };
   }
   const j = o.type === 'move' ? game.jump(o.target) : undefined;

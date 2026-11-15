@@ -22,6 +22,7 @@
     type OrderType
   } from '#lib/game/index.ts';
   import { hash } from '#lib/gfx/math.ts';
+  import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
@@ -80,7 +81,7 @@
       ['Surface', b.facts.surface],
       ['Air', b.facts.air],
       ['Size', b.facts.size],
-      ['People', b.facts.people],
+      ['People', peopleAt(b.id)],
       ['Survey', b.surveyed ? 'Done' : surveying ? 'Under way' : 'None'],
       ['System', systemName(b.system)]
     ];

@@ -21,10 +21,10 @@ function place({ transit, progress = 0, orders, ...seed }: FleetSeed, bodies: re
     y: 0,
     heading: 1
   };
-  if (seed.at) return { ...fleet, ...parkingSpot(fleet, bodyById(bodies, seed.at), 0) };
+  if (seed.at) return { ...fleet, ...parkingSpot(fleet, bodyById(bodies, seed.at), bodies, 0) };
   if (!transit) throw new Error(`fleet ${seed.id} has no position`);
-  const [px, py] = bodyPosition(bodyById(bodies, transit.from));
-  const [qx, qy] = bodyPosition(bodyById(bodies, transit.to));
+  const [px, py] = bodyPosition(bodyById(bodies, transit.from), bodies);
+  const [qx, qy] = bodyPosition(bodyById(bodies, transit.to), bodies);
   return {
     ...fleet,
     x: mix(px, qx, transit.progress),

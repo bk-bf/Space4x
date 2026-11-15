@@ -273,6 +273,9 @@ test.describe('commanders', () => {
     await expect(page.locator('#postRef option')).toHaveText([
       'Governor, Earth (vacant)',
       'Governor, Mars (T. Nakamura)',
+      'Governor, Ceres (vacant)',
+      'Governor, Luna (vacant)',
+      'Governor, Europa (vacant)',
       'Governor, Centauri II (vacant)'
     ]);
     await page.locator('#postRef').selectOption({ label: 'Governor, Earth (vacant)' });

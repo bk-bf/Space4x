@@ -26,7 +26,7 @@ export function observers(game: Game, system: string): Observer[] {
     ...game.world.bodies
       .filter((b) => b.system === system && isColony(b))
       .map((b) => {
-        const [x, y] = bodyPosition(b);
+        const [x, y] = bodyPosition(b, game.world.bodies);
         return { name: b.name, x, y, reach: COLONY_SENSOR };
       })
   ];

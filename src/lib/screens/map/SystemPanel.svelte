@@ -3,6 +3,7 @@
   import { game, type Selection } from '#lib/game/index.ts';
   import { select, Table, Tabs, Window } from '#lib/ui/index.ts';
   import { camera, layers, resetCamera, toggleLayer, zoomBy, type Layer } from './camera.svelte';
+  import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { focus, showSystem } from './focus';
 
   const TABS = [
@@ -21,7 +22,7 @@
   const groups = $derived(
     world.systems.map((s) => ({ system: s, fleets: world.fleets.filter((f) => f.system === s.id) }))
   );
-  const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, b.facts.people]));
+  const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
   const contactRows = $derived(contacts.map((c) => [{ text: c.id, warn: !!c.hostile }, c.kind, c.range]));
   const pickedRow = (kind: string, ids: string[]) => (sel.kind === kind ? ids.indexOf(sel.id) : -1);
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;

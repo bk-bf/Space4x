@@ -12,11 +12,9 @@ describe('Roster', () => {
     expect(fleets).toEqual(expect.arrayContaining(['Survey group 1', 'Freight convoy', 'Jupiter picket']));
     expect(postOptions('fleet', g).map((p) => p.label)).toEqual(fleets);
     expect(postOptions('ship', g)).toHaveLength(ships);
-    expect(postOptions('governor', g).map((p) => p.label)).toEqual([
-      'Governor, Earth',
-      'Governor, Mars',
-      'Governor, Centauri II'
-    ]);
+    const colonies = g.world.bodies.filter((b) => b.colony).map((b) => `Governor, ${b.name}`);
+    expect(colonies).toHaveLength(6);
+    expect(postOptions('governor', g).map((p) => p.label)).toEqual(colonies);
     const before = allPosts(g).length;
     const dropped = g.world.fleets.pop()!;
     expect(postOptions('fleet', g)).toHaveLength(fleets.length - 1);

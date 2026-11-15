@@ -3,6 +3,7 @@ import { KM_PER_UNIT, parkingSpot } from '../orbits';
 import {
   canCarry,
   FUEL_PER_UNIT,
+  isColony,
   orderLabel,
   parkingSlot,
   REFUEL_PER_DAY,
@@ -48,7 +49,7 @@ function burn(f: Fleet, units: number): void {
 }
 
 function park(game: Game, f: Fleet, body: Body): void {
-  Object.assign(f, parkingSpot(f, body, game.elapsed, parkingSlot(game, f, body.id)));
+  Object.assign(f, parkingSpot(f, body, game.world.bodies, game.elapsed, parkingSlot(game, f, body.id)));
 }
 
 function travel(r: Run, goal: Goal): boolean {
@@ -122,7 +123,7 @@ function refuse(r: Run, o: Order, body: Body): string | undefined {
   const f = r.fleet;
   if ((o.type === 'load' || o.type === 'unload') && !canCarry(f)) return `${f.name} has no cargo holds.`;
   if (o.type === 'unload' && !f.cargo) return `${f.name} has no cargo to unload at ${body.name}.`;
-  if (o.type !== 'survey' && body.facts.people === 'None') return `${body.name} has no colony to work with.`;
+  if (o.type !== 'survey' && !isColony(body)) return `${body.name} has no colony to work with.`;
   return undefined;
 }
 

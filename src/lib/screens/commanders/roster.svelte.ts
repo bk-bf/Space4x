@@ -1,4 +1,4 @@
-import { DAY, game, START_TIME, type Game } from '#lib/game/index.ts';
+import { DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
 import { hash } from '#lib/gfx/math.ts';
 import { shell } from '#lib/ui/index.ts';
 
@@ -76,7 +76,7 @@ export function postOptions(kind: PostKind, g: Game): PostOption[] {
     );
   if (kind === 'governor')
     return g.world.bodies
-      .filter((b) => b.facts.people !== 'None')
+      .filter(isColony)
       .map((b) => ({ kind, ref: b.id, label: `Governor, ${b.name}`, where: '' }));
   if (kind === 'staff') return STAFF_POSTS.map((p) => ({ kind, ref: p.id, label: p.label, where: '' }));
   return [];
