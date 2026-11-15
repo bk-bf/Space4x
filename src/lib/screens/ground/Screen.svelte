@@ -22,8 +22,8 @@
 <ScreenGrid id="ground" columns="260px minmax(0,1fr) 300px">
   <Panel title="Formations" body="col"><FormationTree /></Panel>
   <Stack>
-    <Panel title={ground.formation?.name ?? 'No formation'} body="fill"><Battlefield /></Panel>
-    <Panel title="Units" grow>
+    <Panel title={ground.formation?.name ?? 'No formation'} body="fill" grow><Battlefield /></Panel>
+    <Panel title="Units">
       <Table
         head={['Unit', '>Men', 'Strength', 'Morale', 'Supply', 'Stance']}
         {rows}

@@ -5,6 +5,7 @@ import type { Body, Fleet, World } from '../types';
 import { mockBodies } from './bodies';
 import { mockContacts } from './contacts';
 import { mockFleets, type FleetSeed } from './fleets';
+import { mockSites } from './sites';
 import { mockSystems } from './starSystems';
 
 function bodyById(bodies: readonly Body[], id: string): Body {
@@ -19,7 +20,7 @@ function place({ transit, progress = 0, orders, ...seed }: FleetSeed, bodies: re
     orders: orders.map((o, i) => ({ ...o, id: nextOrderId(), done: i ? 0 : progress })),
     x: 0,
     y: 0,
-    heading: 1
+    heading: 0
   };
   if (seed.at) return { ...fleet, ...parkingSpot(fleet, bodyById(bodies, seed.at), bodies, 0) };
   if (!transit) throw new Error(`fleet ${seed.id} has no position`);
@@ -29,7 +30,7 @@ function place({ transit, progress = 0, orders, ...seed }: FleetSeed, bodies: re
     ...fleet,
     x: mix(px, qx, transit.progress),
     y: mix(py, qy, transit.progress),
-    heading: qx > px ? 1 : -1
+    heading: Math.atan2(qy - py, qx - px)
   };
 }
 
@@ -40,6 +41,7 @@ export function mockWorld(): World {
     systems: mockSystems(),
     bodies,
     fleets: mockFleets().map((f) => place(f, bodies)),
-    contacts: mockContacts()
+    contacts: mockContacts(),
+    sites: mockSites()
   };
 }

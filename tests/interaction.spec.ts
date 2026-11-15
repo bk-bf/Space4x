@@ -194,16 +194,18 @@ test('clicking a map label or a list row selects it into the one Selection panel
   await expectCleanLayout(page);
 });
 
-test('the wheel zooms the map and from 3x fleets are drawn as ships', async ({ page }) => {
+test('the wheel zooms the map smoothly and Reset flies back to the whole system', async ({ page }) => {
   await open(page);
   await win(page, 'side').locator('[data-tab="display"]').click();
-  await expect(page.locator('#zoomNow')).toHaveText('1x');
+  const mpp = async () => Number(await page.locator('#zoomNow').getAttribute('data-mpp'));
+  const start = await mpp();
+  await expect(page.locator('#tiers .on')).toHaveText('Far');
   const d = await deskBox(page);
   await page.mouse.move(d.x + d.width / 2, d.y + d.height / 3);
   for (let i = 0; i < 3; i++) await page.mouse.wheel(0, -100);
-  await expect(page.locator('#zoomNow')).toHaveText('3x');
+  await expect.poll(mpp).toBeLessThan(start / 1.5);
   await win(page, 'side').locator('[data-zoom="0"]').click();
-  await expect(page.locator('#zoomNow')).toHaveText('1x');
+  await expect.poll(mpp, { timeout: 6000 }).toBeCloseTo(start, -6);
   await expectCleanLayout(page);
 });
 

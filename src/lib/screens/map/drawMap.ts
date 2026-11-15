@@ -1,75 +1,144 @@
 import {
+  AU,
   bodyPosition,
   FLEET_SENSOR,
-  fleetClassId,
   resolveGoal,
-  shipClass,
+  sitePosition,
   type Contact,
   type Fleet,
   type Game,
+  type SelectionKind,
   type StarSystem
 } from '#lib/game/index.ts';
-import type { FB, SpritePalette } from '#lib/gfx/framebuffer.ts';
-import { hash } from '#lib/gfx/math.ts';
+import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
+import { drawStar, starReach } from '#lib/gfx/bodies/star.ts';
+import type { FB } from '#lib/gfx/framebuffer.ts';
+import { clamp, hash, mix } from '#lib/gfx/math.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
-import { planet } from '#lib/gfx/planets.ts';
-import { C } from '#lib/gfx/ships/colors.ts';
-import { drawShip, measure } from '#lib/gfx/ships/draw.ts';
-import { sun } from '#lib/gfx/sun.ts';
+import type { PlanetType } from '#lib/gfx/planets.ts';
+import type { SunTint } from '#lib/gfx/sun.ts';
+import { METRES_PER_UNIT } from '#lib/gfx/topdown/index.ts';
 import { select } from '#lib/ui/index.ts';
-import { camera, layers, SHIP_ZOOM, viewCentre } from './camera.svelte';
-import { centreOn } from './focus';
-import type { Anchor } from './labels';
+import { cam, flyToTarget, hopTo, layers, MAP_SCALE } from './camera.svelte';
+import { LABEL_H, type Anchor, type LabelLine } from './labels';
+import { type Point, type Target } from './mapCamera';
+import { bodyMark, BODY_COLOUR, brackets, clipLine, jumpMark, MARK_R, orbitArc, starMark } from './markers';
+import {
+  contactGroup,
+  drawShipGroup,
+  fleetGroup,
+  type ShipGroup,
+  type ShipTally,
+  type ShipView
+} from './shipLayer';
+import { SCENE_REACH, sceneOf, siteIcon, siteMark, type SceneLabel } from './sites/index';
+import { target } from './targets';
 
-const SHIP_ICONS = {
-  mil: ['..ooo....', 'goHHHoo..', 'gohhhwwo.', 'goddddo..', '..ooo....'],
-  civ: ['.ooooooo...', 'gocCcCcHoo.', 'gocCcCchwwo', 'goddddddoo.', '.ooooooo...']
-} as const;
+const MARKER_BELOW = 2.5;
+const CAP_WIDTHS = 1.25;
+const CAP_EASE = 0.45;
+const BIG_LABEL = 110;
+const UNDER_MARK = 6;
+const UNDER_DISC = 13;
+const TRAIL_M = 0.6 * AU;
+const BELT_MIN = 60;
+const BELT_MAX = 900;
+const BELT_DENSITY = 5;
+const YEAR_S = 365.25 * 86_400;
+const FOCUS_PRI = 100;
+const SITE_PRI = 5;
+const SCENE_LABEL_PRI = 1;
+const NEAR_UNIT_PX = 0.75;
+const DRAWN_PRI = 50;
+const HOSTILE_PRI = 15;
+const PRIORITY: Record<PlanetType | 'star', number> = {
+  star: 20,
+  gas: 12,
+  saturn: 12,
+  ice: 10,
+  ice2: 10,
+  terran: 9,
+  mars: 8,
+  venus: 7,
+  rock: 6
+};
 
-const FLAME_HOT: RGB = [255, 214, 120];
-const FLAME_COOL: RGB = [240, 130, 60];
-const BELT_ROCKS = 230;
-const CORONA = 8;
-const TRAIL_UNITS = 44;
-
-type Project = (wx: number, wy: number) => readonly [number, number];
-
-function brackets(f: FB, x: number, y: number, bw: number, bh: number): void {
-  for (const [dx, dy] of [
-    [-1, -1],
-    [1, -1],
-    [-1, 1],
-    [1, 1]
-  ] as const)
-    for (let i = 0; i < 3; i++) {
-      f.px(x + dx * (bw - i), y + dy * bh, PAL.sel);
-      f.px(x + dx * bw, y + dy * (bh - i), PAL.sel);
-    }
+interface MapBody {
+  key: Target;
+  id: string;
+  name: string;
+  star: boolean;
+  selectable: boolean;
+  w: Point;
+  r: number;
+  orbit: number;
+  parent?: string;
+  type: PlanetType | 'star';
+  tint?: SunTint;
+  look?: { type: PlanetType; rot: number; tilt?: number; rings?: boolean; lights?: boolean };
+  col: RGB;
+  p: Point;
+  R: number;
+  mk: boolean;
+  capped: boolean;
+  hide: boolean;
+  list: LabelLine[];
 }
 
-function contactMark(f: FB, x: number, y: number, col: RGB): void {
-  for (let i = 0; i < 4; i++) {
-    f.px(x - 3 + i, y - i, col);
-    f.px(x + i, y - 3 + i, col);
-    f.px(x + 3 - i, y + i, col);
-    f.px(x - i, y + 3 - i, col);
-  }
+const ss = (v: number) => {
+  v = clamp(v, 0, 1);
+  return v * v * (3 - 2 * v);
+};
+
+function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
+  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, list: [] as LabelLine[] };
+  const stars: MapBody[] = (system?.stars ?? []).map((s, i) => ({
+    ...blank,
+    list: [],
+    key: target('star', i),
+    id: String(i),
+    name: s.name,
+    star: true,
+    selectable: false,
+    w: [s.x, s.y],
+    r: s.radius,
+    orbit: 0,
+    type: 'star',
+    tint: s.tint,
+    col: s.tint ? s.tint.core[1] : [255, 216, 112]
+  }));
+  const here = game.world.bodies.filter((b) => b.system === game.world.system);
+  const planets: MapBody[] = [...here.filter((b) => !b.parent), ...here.filter((b) => b.parent)].map((b) => ({
+    ...blank,
+    list: [],
+    key: target('body', b.id),
+    id: b.id,
+    name: b.name,
+    star: false,
+    selectable: true,
+    w: bodyPosition(b, game.world.bodies),
+    r: b.radius,
+    orbit: b.orbit,
+    parent: b.parent,
+    type: b.type,
+    look: {
+      type: b.type,
+      rot: (b.orbit % 1e11) * 1e-11 + 0.6,
+      tilt: b.tilt,
+      rings: b.rings,
+      lights: b.colony && b.type === 'terran'
+    },
+    col: BODY_COLOUR[b.type]
+  }));
+  return [...stars, ...planets];
 }
 
-function drawBelt(f: FB, P: Project, S: number, belt: NonNullable<StarSystem['belt']>): void {
-  for (let i = 0; i < BELT_ROCKS; i++) {
-    const r = belt.inner + hash(i, 5, 2) * belt.width,
-      a = hash(i, 6, 2) * 6.283 + S * 0.0002;
-    const [x, y] = P(Math.cos(a) * r, Math.sin(a) * r);
-    f.px(x, y, PAL.belt[i & 1 ? 1 : 0]);
-  }
-}
-
-function trail(c: Contact): [number, number][] {
-  const pts: [number, number][] = [[c.x, c.y]],
+function trail(c: Contact): Point[] {
+  const pts: Point[] = [[c.x, c.y]],
     n = c.route.length;
-  let budget = TRAIL_UNITS,
-    [x, y] = [c.x, c.y];
+  let budget = TRAIL_M,
+    x = c.x,
+    y = c.y;
   for (let k = 1; k <= n && budget > 0; k++) {
     const [px, py] = c.route[(((c.leg - k) % n) + n) % n]!,
       d = Math.hypot(px - x, py - y);
@@ -79,13 +148,14 @@ function trail(c: Contact): [number, number][] {
     }
     pts.push([px, py]);
     budget -= d;
-    [x, y] = [px, py];
+    x = px;
+    y = py;
   }
   return pts;
 }
 
-function course(game: Game, fleet: Fleet): [number, number][] {
-  const pts: [number, number][] = [[fleet.x, fleet.y]];
+function course(game: Game, fleet: Fleet): Point[] {
+  const pts: Point[] = [[fleet.x, fleet.y]];
   let at = fleet.at;
   for (const o of fleet.orders) {
     const goal = resolveGoal(game, fleet, o);
@@ -97,142 +167,370 @@ function course(game: Game, fleet: Fleet): [number, number][] {
   return pts;
 }
 
-function polyline(
-  f: FB,
-  P: Project,
-  pts: readonly (readonly [number, number])[],
-  col: RGB,
-  gap: number,
-  phase: number
-) {
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = P(...pts[i - 1]!),
-      [x1, y1] = P(...pts[i]!);
-    f.line(x0, y0, x1, y1, col, gap, phase);
-  }
+let cacheKey = '';
+let lastKey = '';
+let cache: Uint8ClampedArray | null = null;
+let useCache = true;
+
+export function setFrameCache(on: boolean): void {
+  useCache = on;
+  cacheKey = lastKey = '';
 }
 
-export function drawMap(f: FB, game: Game, A: number): Anchor[] {
-  const z = camera.z,
-    [cx0, cy0] = viewCentre(),
-    S = game.elapsed / 2000,
+export interface MapFrame {
+  anchors: Anchor[];
+  ships: ShipTally;
+  live: string[];
+}
+
+export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
+  const s = cam.s,
+    [ccx, ccy] = cam.centre,
+    { ox, oy, w: fw, h: fh } = cam.frame,
+    S = (x: number, y: number): Point => [ox + (x - ccx) / s, oy + (y - ccy) / s],
+    vis = (p: Point, r = 0) => p[0] > -r && p[1] > -r && p[0] < f.w + r && p[1] < f.h + r,
+    system = game.starSystem(game.world.system),
     sel = game.selection,
-    world = game.world,
-    system = game.starSystem(world.system);
-  const X = (wx: number) => cx0 + (wx - camera.x) * z,
-    Y = (wy: number) => cy0 + (wy - camera.y) * z;
-  const P: Project = (wx, wy) => [X(wx), Y(wy)];
-  const on = (x: number, y: number, r: number) => x > -r && y > -r && x < f.w + r && y < f.h + r;
-  const here = <T extends { system: string }>(list: readonly T[]) =>
-    list.filter((o) => o.system === world.system);
-  const bodies = here(world.bodies),
-    fleets = here(world.fleets),
-    contacts = here(world.contacts);
-  const an: Anchor[] = [];
-  f.start();
-  if (layers.Orbits) for (const b of bodies) if (!b.parent) f.ring(X(0), Y(0), b.orbit * z, PAL.orbit, 3);
-  if (layers.Asteroids && system?.belt) drawBelt(f, P, S, system.belt);
-  const sf = sel.kind === 'fleet' ? fleets.find((x) => x.id === sel.id) : undefined;
-  if (sf) {
-    if (layers.Course) polyline(f, P, course(game, sf), PAL.course, 3, A >> 1);
-    if (layers.Sensors) f.ring(X(sf.x), Y(sf.y), FLEET_SENSOR * z, PAL.sensor, 3, A >> 2);
-  }
-  for (const [i, s] of (system?.stars ?? []).entries()) {
-    const sr = Math.round(s.radius * z),
-      x = Math.round(X(s.x)),
-      y = Math.round(Y(s.y));
-    if (on(x, y, sr + CORONA)) sun(f, x, y, sr, A, s.tint);
-    an.push({ id: `star-${i}`, x, y, rx: sr + CORONA, ry: sr + CORONA });
-  }
+    aim = cam.aim,
+    cap = fw * CAP_WIDTHS,
+    E = fh * CAP_EASE;
+  const bodies = mapBodies(game, system),
+    byId = new Map(bodies.filter((b) => !b.star).map((b) => [b.id, b]));
   for (const b of bodies) {
-    const [wx, wy] = bodyPosition(b, world.bodies);
-    const x = Math.round(X(wx)),
-      y = Math.round(Y(wy)),
-      R = Math.max(2, Math.round(b.radius * z)),
-      rr = R * (b.rings ? 1.92 : 1);
-    if (on(x, y, rr + 2)) planet(f, x, y, R, b.type, A * 0.01 + b.orbit, b);
-    an.push({
-      id: 'b-' + b.id,
-      text: b.name,
-      x,
-      y,
-      rx: rr,
-      ry: R,
-      sel: sel.kind === 'body' && sel.id === b.id,
-      pick: () => select('body', b.id),
-      centre: () => {
-        const body = game.body(b.id);
-        if (body) centreOn(...bodyPosition(body, game.world.bodies));
-      }
-    });
-  }
-  for (const fl of fleets) {
-    const x = X(fl.x),
-      y = Y(fl.y),
-      chosen = sel.kind === 'fleet' && sel.id === fl.id;
-    const sp = shipClass(fleetClassId(fl) ?? '');
-    let bw: number, bh: number;
-    if (z >= SHIP_ZOOM && sp) {
-      const m = measure(sp);
-      drawShip(f, Math.round(x - m.w / 2) - m.x0, Math.round(y - (m.y0 + m.y1) / 2), sp, A);
-      bw = m.w / 2 + 3;
-      bh = m.h / 2 + 3;
-    } else {
-      const ic = SHIP_ICONS[fl.kind],
-        w = ic[0].length;
-      const pal: SpritePalette = { ...C, g: hash(A, w, 1) > 0.5 ? FLAME_HOT : FLAME_COOL };
-      f.sprite(ic, Math.round(x - w / 2), Math.round(y - 2), pal, fl.heading < 0);
-      bw = w / 2 + 3;
-      bh = 5;
+    let p = S(b.w[0], b.w[1]);
+    const Rt = b.r / s;
+    let R = Rt;
+    b.mk = Rt < MARKER_BELOW;
+    if (b.mk) R = MARK_R;
+    if (Rt > cap) {
+      const dx = p[0] - ox,
+        dy = p[1] - oy,
+        d = Math.hypot(dx, dy) || 1e-9,
+        e = d - Rt,
+        q = e / Rt;
+      const eB = e < 0 ? (e * cap) / Rt : E * (1 - Math.exp(-q * 6) + (q > 2 ? (q - 2) * (q - 2) * 3 : 0));
+      const e2 = e < 0 ? eB : mix(Math.min(e, 1e6), eB, ss((Rt / cap - 1) / 3)),
+        d2 = cap + e2;
+      p = [ox + (dx / d) * d2, oy + (dy / d) * d2];
+      R = cap;
+      b.capped = true;
     }
-    if (chosen) brackets(f, x, y, bw, bh);
-    an.push({
-      id: 'f-' + fl.id,
-      text: fl.name,
-      cls: 'fl',
-      x,
-      y,
-      rx: bw,
-      ry: bh,
-      sel: chosen,
-      pick: () => select('fleet', fl.id),
-      centre: () => {
-        const now = game.fleet(fl.id);
-        if (now) centreOn(now.x, now.y);
-      }
-    });
+    b.p = p;
+    b.R = R;
+    if (b.parent) {
+      const P = byId.get(b.parent);
+      if (!P || P.capped || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
+    }
   }
-  for (const c of contacts) {
-    const x = Math.round(X(c.x)),
-      y = Math.round(Y(c.y)),
-      col = c.hostile ? PAL.hot : PAL.belt[1],
-      chosen = sel.kind === 'contact' && sel.id === c.id;
-    if (c.hostile && c.route.length && c.speedKmS > 0) polyline(f, P, trail(c), PAL.hot, 4, A >> 2);
-    if (!c.hostile || (A >> 2) & 1 || chosen) contactMark(f, x, y, col);
-    f.px(x, y, col);
-    an.push({
-      id: 'c-' + c.id,
-      text: c.id + ' ' + c.kind.toLowerCase(),
-      cls: c.hostile ? 'hot' : '',
-      x,
-      y,
-      rx: 5,
-      ry: 5,
-      sel: chosen,
-      pick: () => select('contact', c.id),
-      centre: () => {
-        const now = game.contact(c.id);
-        if (now) centreOn(now.x, now.y);
-      }
-    });
+  const shown = bodies.filter((b) => !b.hide);
+  const liveStar = shown.some((b) => b.star && !b.mk && vis(b.p, starReach(b.R)));
+  const key = [
+    ccx,
+    ccy,
+    s,
+    f.w,
+    f.h,
+    ox,
+    oy,
+    game.world.system,
+    game.elapsed,
+    layers.Orbits,
+    layers.Asteroids
+  ].join('|');
+  if (useCache && !liveStar && key === cacheKey && cache) f.d.set(cache);
+  else {
+    f.start();
+    if (layers.Orbits)
+      for (const b of shown)
+        if (b.orbit > 0) {
+          const P = b.parent ? byId.get(b.parent) : undefined;
+          if (P?.capped) continue;
+          const c = P ? P.p : S(0, 0);
+          orbitArc(f, c[0], c[1], b.orbit / s, PAL.orbit);
+        }
+    if (layers.Asteroids && system?.belt) drawBelt(f, S, s, game.elapsed, system.belt);
+    for (const b of shown) {
+      if (b.mk) {
+        if (b.star) starMark(f, b.p[0], b.p[1], b.tint?.core[0], b.tint?.core[2]);
+        else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
+      } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
+      else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
+    }
+    if (useCache && !liveStar && key === lastKey) {
+      cache = cache && cache.length === f.d.length ? cache : new Uint8ClampedArray(f.d.length);
+      cache.set(f.d);
+      cacheKey = key;
+    }
   }
+  lastKey = key;
+
+  const under = (P: Point): MapBody | undefined => {
+    let best: MapBody | undefined,
+      bd = Infinity;
+    for (const b of shown) {
+      if (b.capped) continue;
+      const d = Math.hypot(P[0] - b.p[0], P[1] - b.p[1]);
+      if (d < b.R + (b.mk ? UNDER_MARK : UNDER_DISC) && d < bd) {
+        bd = d;
+        best = b;
+      }
+    }
+    return best;
+  };
+  const an: Anchor[] = [];
+  const pickOf = (t: Target, selectable: boolean, kind?: SelectionKind, id?: string) => ({
+    pick: () => {
+      if (selectable && kind && id) select(kind, id);
+      hopTo(t);
+    },
+    centre: () => flyToTarget(t)
+  });
+
+  const selFleet = sel.kind === 'fleet' ? game.fleet(sel.id) : undefined;
+  if (selFleet && selFleet.system === game.world.system) {
+    if (layers.Course) {
+      const pts = course(game, selFleet).map(([x, y]) => S(x, y));
+      for (let i = 1; i < pts.length; i++)
+        clipLine(f, pts[i - 1]![0], pts[i - 1]![1], pts[i]![0], pts[i]![1], PAL.course, 3, t >> 1);
+    }
+    if (layers.Sensors) {
+      const P = S(selFleet.x, selFleet.y);
+      orbitArc(f, P[0], P[1], FLEET_SENSOR / s, PAL.sensor, 3, t >> 2);
+    }
+  }
+
+  const contacts = game.world.contacts.filter((c) => c.system === game.world.system);
+  for (const c of contacts)
+    if (c.hostile && c.route.length && c.speedKmS > 0) {
+      const pts = trail(c).map(([x, y]) => S(x, y));
+      for (let i = 1; i < pts.length; i++)
+        clipLine(f, pts[i - 1]![0], pts[i - 1]![1], pts[i]![0], pts[i]![1], PAL.hot, 4, t >> 2);
+    }
+
   for (const j of system?.jumps ?? []) {
-    const [jx, jy] = P(j.x, j.y);
-    f.ring(jx, jy, 5, PAL.jump, 2, A >> 1);
-    f.ring(jx, jy, 2, PAL.jump, 2, -(A >> 1));
-    f.px(jx, jy, PAL.jump);
-    an.push({ id: 'j-' + j.id, text: j.name, x: jx, y: jy, rx: 6, ry: 6 });
+    const P = S(j.x, j.y),
+      key2 = target('jump', j.id),
+      b = under(P);
+    if (b) {
+      b.list.push({ id: key2, text: j.name, target: key2, ...pickOf(key2, false) });
+      continue;
+    }
+    if (!vis(P, 20)) continue;
+    jumpMark(f, P[0], P[1], t);
+    an.push({
+      id: key2,
+      text: j.name,
+      x: P[0],
+      y: P[1],
+      rx: 6,
+      ry: 6,
+      pri: aim === key2 ? FOCUS_PRI : 4,
+      target: key2,
+      ...pickOf(key2, false)
+    });
+  }
+
+  const star = system?.stars[0] ?? { x: 0, y: 0 },
+    sun = S(star.x, star.y),
+    St = METRES_PER_UNIT / s,
+    tally: ShipTally = { marker: 0, icon: 0, true: 0 },
+    view: ShipView = { project: S, pxPerMetre: 1 / s, tier: cam.tier, sun, t };
+  const sites = game.world.sites
+    .filter((x) => x.system === game.world.system)
+    .flatMap((site) => {
+      const w = sitePosition(game, site);
+      return w ? [{ site, w, P: S(w[0], w[1]), key: target('site', site.id) }] : [];
+    });
+  const live = St >= NEAR_UNIT_PX ? sites.filter((x) => vis(x.P, SCENE_REACH * St + 40)) : [];
+  const hidden = new Set(
+    live.flatMap((x) => ('contact' in x.site.place ? [target('contact', x.site.place.contact)] : []))
+  );
+  const sitePicks = (key: Target, id: string) => pickOf(key, true, 'site', id);
+  for (const { site, w, P, key } of live) {
+    const labels: SceneLabel[] = [],
+      picks = sitePicks(key, site.id),
+      chosen = sel.kind === 'site' && sel.id === site.id;
+    sceneOf(site).draw(
+      {
+        f,
+        W: (x, y) => [P[0] + x * St, P[1] + y * St],
+        S: St,
+        dt,
+        frame: t * 3,
+        sun: Math.atan2(star.y - w[1], star.x - w[0])
+      },
+      labels
+    );
+    an.push({
+      id: key,
+      text: site.name,
+      cls: site.hostile ? 'hot' : 'fl',
+      x: P[0],
+      y: P[1],
+      rx: 6,
+      ry: 6,
+      sel: chosen,
+      pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      target: key,
+      ...picks
+    });
+    for (const l of labels)
+      an.push({
+        id: `${key}/${l.key}`,
+        text: l.text,
+        cls: l.cls,
+        x: l.x,
+        y: l.y,
+        rx: l.r,
+        ry: l.r,
+        pri: SCENE_LABEL_PRI,
+        solid: false,
+        target: key,
+        ...picks
+      });
+  }
+
+  const groups: ShipGroup[] = [
+    ...game.world.fleets
+      .filter((x) => x.system === game.world.system)
+      .map((x) => fleetGroup(x, sel.kind === 'fleet' && sel.id === x.id)),
+    ...contacts.map((c) => contactGroup(c, sel.kind === 'contact' && sel.id === c.id))
+  ];
+  for (const g of groups) {
+    if (hidden.has(g.key)) continue;
+    const P = S(g.x, g.y),
+      [kind, id] = g.contact ? (['contact', g.name] as const) : (['fleet', g.key.slice(6)] as const),
+      picks = pickOf(g.key, true, kind, id),
+      b = under(P);
+    if (b) {
+      b.list.push({
+        id: g.key,
+        text: g.label,
+        cls: g.side === 'foe' ? 'hot' : 'fl',
+        target: g.key,
+        ...picks
+      });
+      continue;
+    }
+    if (!vis(P, 200)) continue;
+    for (const m of drawShipGroup(f, g, view, tally))
+      an.push({
+        id: m.key,
+        text: m.text,
+        cls: g.side === 'foe' ? 'hot' : g.contact ? '' : 'fl',
+        x: m.x,
+        y: m.y,
+        rx: m.rx,
+        ry: m.ry,
+        sel: g.selected,
+        pri: aim === g.key ? FOCUS_PRI : g.contact ? (g.side === 'foe' ? HOSTILE_PRI : 2) : 3,
+        target: g.key,
+        ...picks
+      });
+  }
+
+  for (const { site, P, key } of sites) {
+    if (live.some((x) => x.key === key)) continue;
+    const picks = sitePicks(key, site.id),
+      chosen = sel.kind === 'site' && sel.id === site.id,
+      line: LabelLine = { id: key, text: site.name, cls: site.hostile ? 'hot' : 'fl', target: key, ...picks },
+      host =
+        'contact' in site.place
+          ? target('contact', site.place.contact)
+          : 'jump' in site.place
+            ? target('jump', site.place.jump)
+            : null,
+      at = host ? an.findIndex((a) => a.id === host) : -1;
+    if (at >= 0) {
+      const a = an[at]!;
+      an[at] = { ...a, lines: [...(a.lines ?? []), line] };
+      continue;
+    }
+    const b = under(P);
+    if (b) {
+      if (cam.tier !== 'far') b.list.push(line);
+      continue;
+    }
+    if (host || !vis(P, 20)) continue;
+    const half =
+      cam.tier === 'far'
+        ? (siteMark(f, site, P[0], P[1], t), 4)
+        : siteIcon(f, site, P[0], P[1], Math.atan2(sun[1] - P[1], sun[0] - P[0]), t);
+    an.push({
+      id: key,
+      text: site.name,
+      cls: site.hostile ? 'hot' : 'fl',
+      x: P[0],
+      y: P[1],
+      rx: half,
+      ry: half,
+      sel: chosen,
+      pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      solid: cam.tier !== 'far',
+      target: key,
+      ...picks
+    });
+    if (chosen) brackets(f, P[0], P[1], half + 3, half + 1);
+  }
+
+  for (const b of shown) {
+    const chosen = b.selectable && sel.kind === 'body' && sel.id === b.id,
+      picks = pickOf(b.key, b.selectable, 'body', b.id),
+      pri = aim === b.key ? FOCUS_PRI : b.capped || !b.mk ? DRAWN_PRI : PRIORITY[b.type],
+      base = { id: b.key, text: b.name, sel: chosen, pri, lines: b.list, target: b.key, ...picks };
+    if (b.capped) {
+      if (!vis(b.p, b.R)) continue;
+      const rows = 1 + b.list.length;
+      an.push({
+        ...base,
+        x: ox - fw / 2 + 4,
+        y: oy + fh / 2 - 4 - (rows * LABEL_H) / MAP_SCALE,
+        rx: 0,
+        ry: 0,
+        fixed: true,
+        solid: false,
+        pick: undefined
+      });
+    } else if (b.R > BIG_LABEL) {
+      if (!vis(b.p, b.R)) continue;
+      an.push({
+        ...base,
+        x: clamp(b.p[0], ox - fw / 2 + 30, ox + fw / 2 - 60),
+        y: clamp(b.p[1] - 8, oy - fh / 2 + 12, oy + fh / 2 - 20),
+        rx: 0,
+        ry: 0,
+        solid: false
+      });
+    } else {
+      if (!vis(b.p)) continue;
+      const r = b.mk ? MARK_R + 1 : b.star ? b.R * 1.3 + 4 : b.R * (b.look?.rings ? 2.3 : 1);
+      an.push({ ...base, x: b.p[0], y: b.p[1], rx: r, ry: b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R });
+    }
   }
   f.present();
-  return an;
+  return { anchors: an, ships: tally, live: live.map((x) => x.site.id) };
+}
+
+function drawBelt(
+  f: FB,
+  S: (x: number, y: number) => Point,
+  s: number,
+  elapsed: number,
+  belt: NonNullable<StarSystem['belt']>
+): void {
+  const mid = belt.inner + belt.width / 2,
+    n = clamp(Math.round((mid / s) * BELT_DENSITY), BELT_MIN, BELT_MAX);
+  for (let i = 0; i < n; i++) {
+    const r = (belt.inner + hash(i, 5, 2) * belt.width) * (1 + (hash(i, 9, 2) - 0.5) * 0.04),
+      period = YEAR_S * Math.pow(r / AU, 1.5),
+      a = hash(i, 6, 2) * Math.PI * 2 + (elapsed / period) * Math.PI * 2,
+      p = S(Math.cos(a) * r, Math.sin(a) * r);
+    if (p[0] < 0 || p[1] < 0 || p[0] >= f.w || p[1] >= f.h) continue;
+    const v = hash(i, 7, 2);
+    f.px(p[0], p[1], v > 0.9 ? [176, 168, 176] : v > 0.5 ? PAL.belt[1] : PAL.belt[0]);
+    if (v > 0.96) {
+      f.px(p[0] + 1, p[1], PAL.belt[0]);
+      f.px(p[0], p[1] + 1, [70, 66, 92]);
+    }
+  }
 }

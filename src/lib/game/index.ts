@@ -32,7 +32,8 @@ export {
   formatEventTime,
   type TimeStep
 } from './clock';
-export { bodyPosition, KM_PER_UNIT, type Point } from './orbits';
+export { bodyPosition, parkingRadius, type Point } from './orbits';
+export { AU, KM, au, formatAu, formatDistance } from './units';
 export {
   ORDER_TYPES,
   addOrder,
@@ -47,5 +48,6 @@ export {
   resolveGoal,
   workSeconds
 } from './orders';
-export { FLEET_SENSOR, bearing, formatAu, nearest, observers } from './systems/contacts';
+export { sitePosition } from './mock/sites';
+export { FLEET_SENSOR, bearing, nearest, observers } from './systems/contacts';
 export type * from './types';

@@ -1,13 +1,13 @@
 import { formatEventTime } from '../clock';
-import { bodyPosition, KM_PER_UNIT } from '../orbits';
+import { bodyPosition } from '../orbits';
 import { isColony } from '../orders';
 import type { Game } from '../state.svelte';
 import { registerSystem } from '../systems';
 import type { Contact } from '../types';
+import { AU, formatAu, KM } from '../units';
 
-export const FLEET_SENSOR = 40;
-export const COLONY_SENSOR = 60;
-export const UNITS_PER_AU = 74;
+export const FLEET_SENSOR = 0.5 * AU;
+export const COLONY_SENSOR = 0.8 * AU;
 const FIX_EVERY_MS = 6 * 3600 * 1000;
 const FIXES_KEPT = 8;
 
@@ -48,11 +48,9 @@ export function nearest(
 export const bearing = (from: { x: number; y: number }, x: number, y: number): number =>
   Math.round(((Math.atan2(x - from.x, -(y - from.y)) * 180) / Math.PI + 360) % 360);
 
-export const formatAu = (units: number): string => `${(units / UNITS_PER_AU).toFixed(1)} AU`;
-
 function move(c: Contact, dt: number): void {
   if (!c.route.length || c.speedKmS <= 0) return;
-  let reach = (c.speedKmS * dt) / KM_PER_UNIT;
+  let reach = c.speedKmS * KM * dt;
   for (let n = 0; n < 500 && reach > 0; n++) {
     const [tx, ty] = c.route[c.leg % c.route.length]!,
       d = Math.hypot(tx - c.x, ty - c.y);

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space4x scenes</title>
+<style>
+@font-face{font-family:"Pixelify";src:url("../PixelifySans.ttf");font-weight:400 700}
+@font-face{font-family:"VT";src:url("../VT323.ttf")}
+:root{--bg:#14112a;--panel:#1c1838;--panel2:#2a2458;--line:#443d80;--text:#dcd8f4;--dim:#948fc0;--accent:#f2b35d;--hot:#ef6f5e;--cool:#5fd0c5;--edge:0 -2px 0 var(--line),0 2px 0 var(--line),-2px 0 0 var(--line),2px 0 0 var(--line)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:18px/1.1 "VT",monospace;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;padding:8px}
+button{font:inherit;color:inherit;background:var(--panel2);border:0;padding:2px 7px;cursor:pointer;box-shadow:var(--edge);margin:2px}
+button:hover{background:var(--line)}
+button.on{background:var(--accent);color:var(--bg)}
+button:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;background:var(--panel);box-shadow:var(--edge);margin:2px;padding:3px 8px}
+.lab{color:var(--dim);font:500 14px "Pixelify";margin-right:2px}
+#stage{position:relative;min-height:0;min-width:0;overflow:hidden;box-shadow:var(--edge);margin:2px}
+canvas{image-rendering:pixelated;display:block;position:absolute;left:0;top:0}
+#cv{cursor:grab}
+#labels{position:absolute;inset:0;pointer-events:none;z-index:1}
+#labels span{position:absolute;white-space:nowrap;color:var(--dim);text-shadow:1px 1px 0 var(--bg),-1px -1px 0 var(--bg);line-height:18px;font-size:17px}
+#labels span.fl{color:var(--cool)}
+#labels span.hot{color:var(--hot)}
+#labels span.gold{color:var(--accent)}
+#labels span.dim{color:var(--dim);font-size:15px}
+#readout{position:absolute;right:10px;top:10px;z-index:2;background:rgba(28,24,56,.9);box-shadow:var(--edge);padding:4px 8px;font-size:17px;line-height:20px;max-width:min(46%,330px);pointer-events:none}
+#readout b{font:600 14px "Pixelify";color:var(--accent);display:block;margin-bottom:2px}
+#readout[hidden]{display:none}
+#tiers span{padding:0 6px;color:var(--dim);box-shadow:var(--edge);margin:2px}
+#tiers span.on{background:var(--accent);color:var(--bg)}
+#tiers,#scale,#zoomUI{display:flex;align-items:center;gap:4px}
+#scale{gap:8px;flex:none;width:470px;overflow:hidden;white-space:nowrap}
+#barbox{width:204px;flex:none;display:flex;justify-content:flex-end}
+#scaleTxt{overflow:hidden;text-overflow:clip}
+#tiers{flex:none}
+#bottom{align-items:flex-start}
+#readout{width:330px}
+#bar{height:7px;border:2px solid var(--text);border-top:0;flex:none}
+#bar[hidden]{display:none}
+#note{color:var(--dim);flex:1 1 320px}
+.tag{font-size:16px;color:var(--bg);background:var(--hot);padding:0 5px;white-space:nowrap}
+#zoomUI{flex-wrap:wrap}
+#zoomUI[hidden]{display:none}
+#zoomUI button{padding:1px 6px;font-size:17px}
+input[type=range]{accent-color:var(--accent);width:170px}
+select{font:inherit;color:inherit;background:var(--panel2);border:0;padding:2px 7px;box-shadow:var(--edge);margin:2px}
+#ctl{display:flex;flex-wrap:wrap;align-items:center}
+#ctl:empty{display:none}
+#ctl button{padding:1px 7px}
+.mt{display:inline-block;width:72px;height:8px;background:var(--panel2);position:relative;vertical-align:middle}
+.mt::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--v);background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 6px)}
+.mt.sh::before{background:repeating-linear-gradient(90deg,var(--cool) 0 4px,transparent 4px 6px)}
+.arm{display:grid;grid-template-columns:repeat(26,6px);gap:1px;margin:3px 0 4px}
+.arm i{height:5px;background:var(--dim)}
+.arm i.x{background:var(--hot);opacity:.85}
+#readout .gold{color:var(--accent)}
+#readout .dim{color:var(--dim)}
+#top .lab{margin-left:10px}
+#top .lab:first-child{margin-left:0}
+</style>
+</head>
+<body>
+<div class="bar" id="top"><span class="lab">Scenes</span></div>
+<div id="stage"><canvas id="cv"></canvas><div id="labels"></div><div id="readout" hidden></div></div>
+<div class="bar" id="bottom">
+  <div id="tiers"><span data-t="far">Far</span><span data-t="mid">Mid</span><span data-t="near">Near</span></div>
+  <div id="scale"><div id="barbox"><div id="bar"></div></div><span id="scaleTxt"></span></div>
+  <div id="zoomUI" hidden><span class="lab">Zoom</span><input id="zoom" type="range" min="-10.4" max="0.4" step="0.01" aria-label="Zoom"><span id="presets"></span></div>
+  <span id="ctl"></span>
+  <span id="note"></span>
+  <span class="tag">Mock data</span>
+</div>
+<script src="gfx.js"></script>
+<script src="ships.js"></script>
+<script src="bodies.js"></script>
+<script src="scenes.js"></script>
+<script src="map.js"></script>
+<script src="scenes2.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

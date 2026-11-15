@@ -1,4 +1,8 @@
 import type { Contact } from '../types';
+import { AU } from '../units';
+
+const au2 = (x: number, y: number) => [x * AU, y * AU] as const;
+const xy = (x: number, y: number) => ({ x: x * AU, y: y * AU });
 
 const at = (day: number, hour: number, minute: number) => Date.UTC(2087, 2, day, hour, minute);
 
@@ -10,26 +14,25 @@ export const mockContacts = (): Contact[] => [
     signal: 'Thermal 240',
     range: '3.1 AU',
     seen: '04:12',
-    x: -24,
-    y: 116,
+    ...xy(-0.46, 2.24),
     hostile: true,
     alienClass: 'x1',
     speedKmS: 1900,
     route: [
-      [-120, 64],
-      [-178, -30],
-      [-70, -150],
-      [110, -150],
-      [212, -10],
-      [140, 120],
-      [-24, 116]
+      au2(-2.84, 1.52),
+      au2(-7.46, -1.26),
+      au2(-2.39, -5.12),
+      au2(4.89, -6.66),
+      au2(10.66, -0.5),
+      au2(6.12, 5.24),
+      au2(-0.46, 2.24)
     ],
     leg: 0,
     held: false,
     fixes: [
-      { at: at(11, 6, 0), x: 128, y: 176 },
-      { at: at(12, 1, 30), x: 32, y: 148 },
-      { at: at(12, 4, 12), x: -24, y: 116 }
+      { at: at(11, 6, 0), ...xy(6.5, 8.93) },
+      { at: at(12, 1, 30), ...xy(0.93, 4.3) },
+      { at: at(12, 4, 12), ...xy(-0.46, 2.24) }
     ]
   },
   {
@@ -39,20 +42,14 @@ export const mockContacts = (): Contact[] => [
     signal: 'Transponder',
     range: '0.4 AU',
     seen: '06:38',
-    x: -104,
-    y: -8,
+    ...xy(-1.7, -0.13),
     speedKmS: 300,
-    route: [
-      [-40, -70],
-      [24, -58],
-      [-60, 20],
-      [-104, -8]
-    ],
+    route: [au2(-0.56, -0.98), au2(0.33, -0.79), au2(-0.82, 0.27), au2(-1.7, -0.13)],
     leg: 0,
     held: true,
     fixes: [
-      { at: at(12, 0, 38), x: -112, y: 6 },
-      { at: at(12, 6, 38), x: -104, y: -8 }
+      { at: at(12, 0, 38), ...xy(-2.02, 0.11) },
+      { at: at(12, 6, 38), ...xy(-1.7, -0.13) }
     ]
   },
   {
@@ -62,13 +59,12 @@ export const mockContacts = (): Contact[] => [
     signal: 'Radar echo',
     range: '5.2 AU',
     seen: '2 Mar',
-    x: 150,
-    y: -118,
+    ...xy(6.98, -5.49),
     speedKmS: 0,
     route: [],
     leg: 0,
     held: false,
-    fixes: [{ at: Date.UTC(2087, 2, 2, 9, 0), x: 150, y: -118 }]
+    fixes: [{ at: Date.UTC(2087, 2, 2, 9, 0), ...xy(6.98, -5.49) }]
   },
   {
     id: 'C-017',
@@ -77,23 +73,16 @@ export const mockContacts = (): Contact[] => [
     signal: 'EM 80',
     range: '2.2 AU',
     seen: '05:50',
-    x: 60,
-    y: 120,
+    ...xy(0.81, 1.62),
     hostile: true,
     alienClass: 'x2',
     speedKmS: 800,
-    route: [
-      [-80, 110],
-      [-150, -20],
-      [-40, -130],
-      [130, -40],
-      [60, 120]
-    ],
+    route: [au2(-1.08, 1.49), au2(-2.03, -0.27), au2(-0.54, -1.76), au2(1.76, -0.54), au2(0.81, 1.62)],
     leg: 0,
     held: false,
     fixes: [
-      { at: at(11, 22, 10), x: 120, y: 30 },
-      { at: at(12, 5, 50), x: 60, y: 120 }
+      { at: at(11, 22, 10), ...xy(1.62, 0.41) },
+      { at: at(12, 5, 50), ...xy(0.81, 1.62) }
     ]
   },
   {
@@ -103,13 +92,12 @@ export const mockContacts = (): Contact[] => [
     signal: 'Radar echo',
     range: '1.4 AU',
     seen: '8 Mar',
-    x: -96,
-    y: -64,
+    ...xy(-1.3, -0.86),
     speedKmS: 0,
     route: [],
     leg: 0,
     held: false,
-    fixes: [{ at: Date.UTC(2087, 2, 8, 14, 0), x: -96, y: -64 }]
+    fixes: [{ at: Date.UTC(2087, 2, 8, 14, 0), ...xy(-1.3, -0.86) }]
   },
   {
     id: 'C-019',
@@ -118,21 +106,14 @@ export const mockContacts = (): Contact[] => [
     signal: 'Gravitic 30',
     range: '1.9 AU',
     seen: '03:05',
-    x: 110,
-    y: 40,
+    ...xy(1.49, 0.54),
     speedKmS: 450,
-    route: [
-      [40, 110],
-      [-100, 60],
-      [-60, -80],
-      [90, -70],
-      [110, 40]
-    ],
+    route: [au2(0.54, 1.49), au2(-1.35, 0.81), au2(-0.81, -1.08), au2(1.22, -0.95), au2(1.49, 0.54)],
     leg: 0,
     held: false,
     fixes: [
-      { at: at(11, 18, 0), x: 112, y: -30 },
-      { at: at(12, 3, 5), x: 110, y: 40 }
+      { at: at(11, 18, 0), ...xy(1.51, -0.41) },
+      { at: at(12, 3, 5), ...xy(1.49, 0.54) }
     ]
   }
 ];
