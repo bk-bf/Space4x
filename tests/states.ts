@@ -62,6 +62,8 @@ const QUERIES = [
   'sel=jump:sol-a&scenario=jump&outpost=1',
   'screen=research',
   'screen=research&milestone=12',
+  'screen=research&milestone=22&reached=8',
+  'screen=research&milestone=29&reached=28',
   'screen=research&rtab=programmes&milestone=6',
   'screen=research&rtab=unlocks&milestone=3',
   'screen=classes',
@@ -81,6 +83,8 @@ const SHORT_WINDOW: readonly [number, number] = [1280, 720];
 
 const SHORT_WINDOW_QUERIES = [
   'screen=research&milestone=17',
+  'screen=research&milestone=22&reached=8',
+  'screen=research&milestone=29&reached=28',
   'screen=research&rtab=programmes&milestone=6',
   'screen=research&rtab=unlocks&milestone=3',
   'screen=classes',

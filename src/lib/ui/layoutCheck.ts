@@ -56,7 +56,7 @@ function checkPanel(
   }
   let k = 0;
   for (const el of all(b, 'td,th,dd,dt,button,select,canvas,summary')) {
-    if (!shown(el) || k > 3) continue;
+    if (!shown(el) || k > 3 || el.closest('[data-scrolls-x]')) continue;
     if (R(el).right > inner + 1) {
       out.push(
         `overflow: ${name(el)} runs ${Math.round(R(el).right - inner)}px past the right edge of ${name(p)}`

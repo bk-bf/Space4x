@@ -1,55 +1,30 @@
 <script lang="ts">
-  import { milestone } from '#lib/game/data/index.ts';
+  import { milestone, milestones, shortName, TIER_NAMES } from '#lib/game/data/index.ts';
   import { economy, homeSite, runningProgramme } from '#lib/game/economy/index.ts';
   import { Icon, Tile, dim, tipText, warn, type Tip } from '#lib/ui/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
-  import { CHAIN } from './chain.ts';
-  import { shortName, TIER_NAMES } from './names.ts';
+  import { CHAIN, LABEL_W, SUBJECT_ICONS, TILE_W } from './chain.ts';
   import { milestoneIcon, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
-  const GAP = 4;
-  const TILE_H = { min: 54, max: 88, tiny: 84 };
-  const TILE_W = { min: 64, max: 100, narrow: 92 };
+  const VIEW_PAD = 16;
 
-  let width = $state(0);
-  let height = $state(0);
+  let scroller = $state<HTMLElement>();
+  let hovered = $state<number | null>(null);
 
   const site = $derived(homeSite());
-  const rows = CHAIN.rows;
-  const cols = CHAIN.cols;
-  const th = $derived(
-    Math.max(TILE_H.min, Math.min(TILE_H.max, Math.floor((height - GAP * (rows - 1)) / rows)))
-  );
-  const tw = $derived(
-    Math.max(TILE_W.min, Math.min(TILE_W.max, Math.floor((width - GAP * (cols - 1)) / cols)))
-  );
-  const tiny = $derived(th < TILE_H.tiny);
-  const narrow = $derived(tw < TILE_W.narrow);
+  const focus = $derived(hovered ?? research.selected);
+  const needs = $derived(new Set(milestone(focus).requires));
+  const feeds = $derived(new Set(milestones.filter((m) => m.requires.includes(focus)).map((m) => m.number)));
 
-  const selected = $derived(milestone(research.selected));
+  type Kind = 'into' | 'out' | 'done' | 'open';
 
-  const place = (n: { col: number; row: number }) => ({
-    x: Math.round(((width - tw) * n.col) / Math.max(1, cols - 1)),
-    y: Math.round(((height - th) * n.row) / Math.max(1, rows - 1))
-  });
-
-  const edges = $derived.by(() => {
-    const at = new Map(CHAIN.nodes.map((n) => [n.number, place(n)]));
-    const done: string[] = [];
-    const open: string[] = [];
-    for (const n of CHAIN.nodes)
-      for (const r of n.requires) {
-        const a = at.get(r),
-          b = at.get(n.number);
-        if (!a || !b) continue;
-        const x1 = a.x + tw,
-          y1 = a.y + th / 2,
-          x2 = b.x,
-          y2 = b.y + th / 2;
-        (economy.done.includes(r) ? done : open).push(`M${x1} ${y1}H${x2 - GAP}V${y2}H${x2}`);
-      }
-    return { done: done.join(''), open: open.join('') };
+  const lines = $derived.by(() => {
+    const kindOf = (from: number, to: number): Kind =>
+      to === focus ? 'into' : from === focus ? 'out' : economy.done.includes(from) ? 'done' : 'open';
+    const all = CHAIN.edges.map((e) => ({ ...e, kind: kindOf(e.from, e.to) }));
+    const rank: Record<Kind, number> = { open: 0, done: 1, into: 2, out: 3 };
+    return all.sort((a, b) => rank[a.kind] - rank[b.kind]);
   });
 
   const GLYPH: Record<string, { icon: IconName; tone: 'accent' | 'cool' | 'dim' | 'hot' }> = {
@@ -71,72 +46,140 @@
   function tipFor(n: number): Tip {
     const m = milestone(n);
     const status = statusOf(economy, site, m);
-    const before = m.requires.filter((r) => !economy.done.includes(r));
+    const before = m.requires.filter((r) => !economy.done.includes(r)).map(shortName);
     return tipText(
-      `${m.number}. ${m.name}`,
+      m.name,
       dim(m.unlocks),
-      status === 'locked' ? warn(`Needs ${before.join(', ')}`) : STATE_LINE[status],
+      status === 'locked' ? warn(`Locked until ${before.join(' and ')} done`) : STATE_LINE[status],
       TIER_NAMES[m.tier]
     );
+  }
+
+  function reveal(number: number) {
+    const el = scroller;
+    if (!el) return;
+    const n = CHAIN.at(number);
+    const left = n.x - LABEL_W - VIEW_PAD;
+    const right = n.x + TILE_W + VIEW_PAD - el.clientWidth;
+    if (el.scrollLeft <= left && el.scrollLeft >= right) return;
+    const middle = n.x - LABEL_W - (el.clientWidth - LABEL_W - TILE_W) / 2;
+    el.scrollLeft = Math.max(0, middle);
+  }
+
+  $effect(() => {
+    const n = research.selected;
+    if (scroller) reveal(n);
+  });
+
+  function wheel(node: HTMLElement) {
+    const onwheel = (e: WheelEvent) => {
+      const roomY = node.scrollHeight > node.clientHeight + 1;
+      if (roomY || e.deltaX !== 0 || e.ctrlKey) return;
+      if (node.scrollWidth <= node.clientWidth) return;
+      e.preventDefault();
+      node.scrollLeft += e.deltaY;
+    };
+    node.addEventListener('wheel', onwheel, { passive: false });
+    return { destroy: () => node.removeEventListener('wheel', onwheel) };
+  }
+
+  function pan(node: HTMLElement) {
+    let start: { x: number; y: number; left: number; top: number; id: number } | undefined;
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return;
+      start = { x: e.clientX, y: e.clientY, left: node.scrollLeft, top: node.scrollTop, id: e.pointerId };
+      node.setPointerCapture(e.pointerId);
+      node.classList.add('panning');
+    };
+    const move = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return;
+      node.scrollLeft = start.left - (e.clientX - start.x);
+      node.scrollTop = start.top - (e.clientY - start.y);
+    };
+    const up = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return;
+      start = undefined;
+      node.releasePointerCapture(e.pointerId);
+      node.classList.remove('panning');
+    };
+    node.addEventListener('pointerdown', down);
+    node.addEventListener('pointermove', move);
+    node.addEventListener('pointerup', up);
+    node.addEventListener('pointercancel', up);
+    return {
+      destroy() {
+        node.removeEventListener('pointerdown', down);
+        node.removeEventListener('pointermove', move);
+        node.removeEventListener('pointerup', up);
+        node.removeEventListener('pointercancel', up);
+      }
+    };
   }
 </script>
 
 <div class="treewrap">
-  <div
-    class="tree"
-    class:tiny
-    class:narrow
-    id="techTree"
-    bind:clientWidth={width}
-    bind:clientHeight={height}
-    style:--tw="{tw}px"
-    style:--th="{th}px"
-  >
-    <svg {width} {height} aria-hidden="true">
-      <path d={edges.open} fill="none" stroke="#443d80" stroke-width="2" stroke-dasharray="4 3" />
-      <path d={edges.done} fill="none" stroke="#f2b35d" stroke-width="2" />
-    </svg>
-    {#each CHAIN.nodes as n (n.number)}
-      {@const status = statusOf(economy, site, milestone(n.number))}
-      {@const glyph = GLYPH[status]!}
-      {@const p = place(n)}
-      {@const running = runningProgramme(economy, n.number)}
-      <div
-        class="tpos"
-        data-milestone={n.number}
-        data-status={status}
-        style:left="{p.x}px"
-        style:top="{p.y}px"
-      >
-        <Tile
-          variant="node"
-          class="tn {status}{selected.requires.includes(n.number) ? ' needs' : ''}{milestone(
-            n.number
-          ).requires.includes(selected.number)
-            ? ' feeds'
-            : ''}"
-          corner={String(n.number)}
-          mark={glyph.icon}
-          markTone={glyph.tone}
-          icons={milestoneIcon(n.number) ? [milestoneIcon(n.number)!] : []}
-          name={shortName(n.number)}
-          meter={running ? running.progress : undefined}
-          meterTone="cool"
-          locked={status === 'locked'}
-          selected={n.number === research.selected}
-          tip={tipFor(n.number)}
-          onselect={() => (research.selected = n.number)}
-        />
+  <div class="scroller" id="techTree" data-scrolls-x bind:this={scroller} use:wheel use:pan>
+    <div class="canvas" style:width="{CHAIN.width}px" style:height="{CHAIN.height}px">
+      {#each CHAIN.lanes as lane (lane.id)}
+        <div class="lane" style:top="{lane.top}px" style:height="{lane.height}px"></div>
+      {/each}
+      <svg width={CHAIN.width} height={CHAIN.height} aria-hidden="true">
+        {#each lines as e (`${e.from}-${e.to}`)}
+          <path class="e {e.kind}" d={e.d} data-edge="{e.from}-{e.to}" />
+        {/each}
+      </svg>
+      {#each CHAIN.nodes as n (n.number)}
+        {@const status = statusOf(economy, site, milestone(n.number))}
+        {@const glyph = GLYPH[status]!}
+        {@const running = runningProgramme(economy, n.number)}
+        {@const icon = milestoneIcon(n.number)}
+        <div
+          class="tpos"
+          role="presentation"
+          data-milestone={n.number}
+          data-status={status}
+          style:left="{n.x}px"
+          style:top="{n.y}px"
+          onpointerenter={() => (hovered = n.number)}
+          onpointerleave={() => (hovered = null)}
+          onfocusin={() => reveal(n.number)}
+        >
+          <Tile
+            variant="wide"
+            class="tn {status}{needs.has(n.number) ? ' needs' : ''}{feeds.has(n.number) ? ' feeds' : ''}"
+            corner={String(n.number)}
+            mark={glyph.icon}
+            markTone={glyph.tone}
+            icons={icon ? [icon] : []}
+            name={shortName(n.number)}
+            meter={running ? running.progress : undefined}
+            meterTone="cool"
+            locked={status === 'locked'}
+            selected={n.number === research.selected}
+            tip={tipFor(n.number)}
+            onselect={() => (research.selected = n.number)}
+          />
+        </div>
+      {/each}
+      <div class="lanelabels" style:width="{LABEL_W}px" style:height="{CHAIN.height}px">
+        {#each CHAIN.lanes as lane (lane.id)}
+          <div class="lanelabel" data-lane={lane.id} style:top="{lane.top}px" style:height="{lane.height}px">
+            <Icon name={SUBJECT_ICONS[lane.id] ?? 'star'} class="sm" />
+            <span>{lane.name}</span>
+          </div>
+        {/each}
       </div>
-    {/each}
+    </div>
   </div>
   <div class="tkey">
     <span><i class="d"></i>done</span>
     <span><i class="a"></i>open or running</span>
     <span><i class="l"></i>locked</span>
-    <span><u class="done"></u>line from a done milestone</span>
-    <span><u></u>line from one not yet done</span>
-    <span><Icon name="arrowR" class="sm" />selected: prerequisites amber, what it opens teal</span>
+    <span><u class="done"></u>from a done milestone</span>
+    <span
+      ><Icon name="arrowR" class="sm" />selected: <b class="amber">prerequisites</b>,
+      <b class="teal">opens</b></span
+    >
   </div>
 </div>
 
@@ -147,39 +190,98 @@
     flex: 1 1 auto;
     min-height: 0;
   }
-  .tree {
+  .scroller {
     position: relative;
     flex: 0 1 auto;
-    height: 440px;
-    min-height: 236px;
+    overflow: auto;
     margin: 2px 0 8px;
+    cursor: grab;
+    user-select: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
   }
-  .tree svg {
+  .scroller:global(.panning) {
+    cursor: grabbing;
+  }
+  .canvas {
+    position: relative;
+  }
+  .lane {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+  }
+  .lanelabels {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--panel);
+  }
+  .lanelabel {
+    position: absolute;
+    left: 0;
+    right: 2px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    background: var(--bg);
+    color: var(--dim);
+    line-height: 1;
+  }
+  svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
     pointer-events: none;
-    overflow: hidden;
+    overflow: visible;
+  }
+  .e {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+  .e.open {
+    stroke: var(--line);
+    stroke-dasharray: 4 3;
+  }
+  .e.done {
+    stroke: var(--accent);
+    opacity: 0.4;
+  }
+  .e.into,
+  .e.out {
+    stroke-width: 3;
+  }
+  .e.into {
+    stroke: var(--accent);
+  }
+  .e.out {
+    stroke: var(--cool);
   }
   .tpos {
     position: absolute;
-    width: var(--tw);
-    height: var(--th);
+    z-index: 2;
+    width: 144px;
+    height: 56px;
   }
   .tpos :global(.ui-tile) {
     width: 100%;
     height: 100%;
-    padding-top: 6px;
     background: var(--panel2);
     opacity: 1;
   }
   .tpos :global(.ui-tile.lock) {
-    background: #221d46;
+    background: var(--panel);
   }
   .tpos :global(.ui-tile.sel) {
     background: #38306e;
   }
   .tpos :global(.ui-tile.lock > *) {
-    opacity: 0.55;
+    opacity: 0.6;
   }
   .tpos :global(.ui-tile.done),
   .tpos :global(.ui-tile.needs) {
@@ -191,7 +293,6 @@
   }
   .tpos :global(.ui-tile.ready),
   .tpos :global(.ui-tile.running),
-  .tpos :global(.ui-tile.waiting),
   .tpos :global(.ui-tile.feeds) {
     box-shadow:
       0 -2px 0 var(--cool),
@@ -199,31 +300,8 @@
       -2px 0 0 var(--cool),
       2px 0 0 var(--cool);
   }
-  .tpos :global(.ui-tile.waiting:not(.feeds)) {
+  .tpos :global(.ui-tile.waiting:not(.feeds):not(.needs)) {
     box-shadow: var(--edge);
-  }
-  .tpos :global(.ui-art) {
-    height: 38px;
-    margin-top: 6px;
-  }
-  .tpos :global(.ui-nm b) {
-    font-size: 15px;
-  }
-  .narrow .tpos :global(.ui-nm b) {
-    font-size: 13px;
-    word-break: normal;
-    overflow-wrap: normal;
-  }
-  .narrow .tpos :global(.ui-corner) {
-    font-size: 12px;
-  }
-  .tiny .tpos :global(.ui-art),
-  .tiny .tpos :global(.ui-bar) {
-    display: none;
-  }
-  .tiny .tpos :global(.ui-nm) {
-    height: auto;
-    flex: 1;
   }
   .tkey {
     display: flex;
@@ -236,6 +314,15 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+  .tkey b {
+    font-weight: 400;
+  }
+  .tkey .amber {
+    color: var(--accent);
+  }
+  .tkey .teal {
+    color: var(--cool);
   }
   .tkey i {
     width: 18px;

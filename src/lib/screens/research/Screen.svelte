@@ -65,7 +65,7 @@
           tip={tipText(
             'Ready to start',
             dim('Open milestones with every building, site and material in place.'),
-            `${open} milestones have their earlier gates done`
+            `${open} milestones have their prerequisites done`
           )}
         />
         <Stat
@@ -139,6 +139,7 @@
     display: flex;
     flex-direction: column;
     padding-bottom: 4px;
+    overflow: hidden;
   }
   .side {
     padding: 4px 4px 8px;

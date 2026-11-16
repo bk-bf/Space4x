@@ -753,6 +753,16 @@ div.ui-tile {
   width: 104px;
   height: 100px;
 }
+.ui-tile.wide {
+  width: 144px;
+  height: 56px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 6px;
+  text-align: left;
+}
 .ui-tile.off {
   width: 112px;
   height: 138px;
@@ -822,6 +832,16 @@ div.ui-tile {
 .ui-tile.node .ui-corner.r {
   top: 2px;
 }
+.ui-tile.wide .ui-corner {
+  font: 600 13px 'Pixelify';
+  top: 3px;
+  left: 56px;
+}
+.ui-tile.wide .ui-corner.r {
+  left: auto;
+  right: 5px;
+  top: 3px;
+}
 .ui-trend {
   position: absolute;
   top: 3px;
@@ -856,6 +876,34 @@ div.ui-tile {
 }
 .ui-tile.bld .ui-art {
   margin-top: 9px;
+}
+.ui-tile.wide .ui-art {
+  width: 48px;
+  height: 100%;
+  flex: none;
+}
+.ui-tile.wide .ui-nm {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+  box-sizing: border-box;
+  padding-top: 13px;
+  justify-content: flex-start;
+}
+.ui-tile.wide .ui-nm b {
+  font-size: 13px;
+  line-height: 1.05;
+  text-align: left;
+}
+.ui-tile.wide .ui-bar {
+  position: absolute;
+  left: 56px;
+  right: 6px;
+  bottom: 4px;
+  width: auto;
+  height: 4px;
+  flex: none;
 }
 .ui-nm {
   display: flex;

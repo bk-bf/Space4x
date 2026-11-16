@@ -230,6 +230,32 @@
             mark="lock"
             note="S"
           />
+          <Tile
+            variant="wide"
+            icons={[mat('compute')]}
+            name="Data centres"
+            corner="5"
+            mark="check"
+            markTone="accent"
+          />
+          <Tile
+            variant="wide"
+            icons={[mat('exotic_matter')]}
+            name="Megastructures and more"
+            corner="26"
+            mark="hammer"
+            markTone="cool"
+            meter={0.4}
+            meterTone="cool"
+          />
+          <Tile
+            variant="wide"
+            locked
+            icons={[mat('exotic_matter')]}
+            name="Exotic matter"
+            corner="28"
+            mark="lock"
+          />
           <Tile variant="off" name="A. Mwangi" sub="Vice admiral" selected>
             {#snippet art()}
               <Portrait

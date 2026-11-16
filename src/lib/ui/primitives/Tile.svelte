@@ -9,7 +9,7 @@
   import PixIcon from './PixIcon.svelte';
   import { tooltip, type Tip } from './tooltip.ts';
 
-  type Variant = 'auto' | 'prod' | 'stk' | 'bld' | 'q' | 'cmp' | 'node' | 'off' | 'slot';
+  type Variant = 'auto' | 'prod' | 'stk' | 'bld' | 'q' | 'cmp' | 'node' | 'wide' | 'off' | 'slot';
 
   interface Props {
     variant?: Variant;

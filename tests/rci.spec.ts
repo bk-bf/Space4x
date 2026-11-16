@@ -58,34 +58,115 @@ test.describe('research', () => {
     await expectCleanLayout(page);
   });
 
-  test('selecting a milestone outlines what it needs and what it opens, and the lines follow the done ones', async ({
+  test('selecting a milestone outlines what it needs and what it opens, and colours the lines to match', async ({
     page
   }) => {
     await open(page, 'screen=research&milestone=3');
     await expect(tile(page, 1)).toHaveClass(/needs/);
+    await expect(tile(page, 2)).toHaveClass(/needs/);
     await expect(tile(page, 6)).toHaveClass(/feeds/);
     await expect(tile(page, 11)).toHaveClass(/feeds/);
-    await expect(tile(page, 2)).not.toHaveClass(/needs|feeds/);
-    const open_ = page.locator('#techTree svg path[stroke="#443d80"]');
-    const done = page.locator('#techTree svg path[stroke="#f2b35d"]');
-    expect(await open_.getAttribute('d')).toMatch(/^M/);
-    expect(await done.getAttribute('d')).toBe('');
-    await open(page, 'screen=research&reached=3');
-    expect(await done.getAttribute('d')).toMatch(/^M/);
+    await expect(tile(page, 5)).not.toHaveClass(/needs|feeds/);
+    await expect(page.locator('#techTree path.e.into')).toHaveCount(2);
+    await expect(page.locator('#techTree path.e.out')).toHaveCount(3);
+    await expect(page.locator('#techTree path.e.done')).toHaveCount(0);
+    await open(page, 'screen=research&milestone=12&reached=3');
+    await expect(page.locator('#techTree path.e.done').first()).toHaveAttribute('d', /^M/);
   });
 
-  test('the tree shrinks its tiles to fit a short window and keeps every tile on screen', async ({
+  test('the tiles keep one size and never overlap, in a tall and in a short window', async ({ page }) => {
+    for (const size of [
+      { width: 1440, height: 900 },
+      { width: 1280, height: 720 }
+    ]) {
+      await page.setViewportSize(size);
+      await open(page, 'screen=research');
+      const boxes = [];
+      for (let n = 1; n <= 29; n++) {
+        const b = await tile(page, n).boundingBox();
+        expect(b, `milestone ${n}`).not.toBeNull();
+        expect(b!.width, `milestone ${n}`).toBe(144);
+        expect(b!.height, `milestone ${n}`).toBe(56);
+        boxes.push({ n, ...b! });
+      }
+      for (const a of boxes)
+        for (const b of boxes) {
+          if (a.n >= b.n) continue;
+          const apart =
+            a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y;
+          expect(apart, `${a.n} and ${b.n} at ${size.width}`).toBe(true);
+        }
+    }
+  });
+
+  test('the whole tree is in view without vertical scrolling at 1440x900', async ({ page }) => {
+    await open(page, 'screen=research');
+    const m = await page.locator('#techTree').evaluate((el) => ({
+      sh: el.scrollHeight,
+      ch: el.clientHeight,
+      page: document.documentElement.scrollHeight - innerHeight
+    }));
+    expect(m.sh).toBeLessThanOrEqual(m.ch + 1);
+    expect(m.page).toBeLessThanOrEqual(0);
+  });
+
+  test('the tree scrolls sideways inside its panel and brings the selected tile into view', async ({
     page
   }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
     await open(page, 'screen=research');
-    const box = await page.locator('#techTree').boundingBox();
-    for (const n of [1, 15, 29]) {
-      const b = await tile(page, n).boundingBox();
-      expect(b!.y).toBeGreaterThanOrEqual(box!.y);
-      expect(b!.y + b!.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
-      expect(b!.x + b!.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
-    }
+    const tree = page.locator('#techTree');
+    const metrics = () =>
+      tree.evaluate((el) => ({ left: el.scrollLeft, wide: el.scrollWidth, shown: el.clientWidth }));
+    const first = await metrics();
+    expect(first.wide).toBeGreaterThan(first.shown);
+    expect(first.left).toBe(0);
+    const box = (await tree.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 400);
+    await expect.poll(async () => (await metrics()).left).toBeGreaterThan(0);
+    expect(await page.evaluate(() => document.documentElement.scrollTop)).toBe(0);
+    const wheeled = (await metrics()).left;
+    await page.mouse.move(box.x + box.width - 30, box.y + 4);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 230, box.y + 4, { steps: 5 });
+    await page.mouse.up();
+    await expect.poll(async () => (await metrics()).left).toBeGreaterThan(wheeled + 100);
+
+    await open(page, 'screen=research&milestone=29');
+    const t = (await tile(page, 29).boundingBox())!;
+    const v = (await page.locator('#techTree').boundingBox())!;
+    expect((await metrics()).left).toBeGreaterThan(0);
+    expect(t.x).toBeGreaterThanOrEqual(v.x + 132);
+    expect(t.x + t.width).toBeLessThanOrEqual(v.x + v.width + 1);
+    await tile(page, 1).click();
+    await expect.poll(async () => (await metrics()).left).toBe(0);
+  });
+
+  test('the lane labels stay in place while the tree scrolls', async ({ page }) => {
+    await open(page, 'screen=research&milestone=29');
+    const label = page.locator('#techTree [data-lane="launch"]');
+    const v = (await page.locator('#techTree').boundingBox())!;
+    expect(Math.abs((await label.boundingBox())!.x - v.x)).toBeLessThanOrEqual(1);
+    await expect(label).toContainText('Launch and logistics');
+    await expect(page.locator('#techTree [data-lane]')).toHaveCount(8);
+  });
+
+  test('a locked tile names the prerequisites it waits for, and a milestone whose prerequisites are done is not locked while a lower unrelated one is open', async ({
+    page
+  }) => {
+    await open(page, 'screen=research');
+    await tile(page, 3).hover();
+    await expect(page.locator('#ui-tip')).toContainText(
+      'Locked until Orbital launch and Propellant transfer done'
+    );
+    await open(page, 'screen=research&reached=4&milestone=6');
+    await expect(slot(page, 5)).toHaveAttribute('data-status', 'waiting');
+    await expect(slot(page, 6)).toHaveAttribute('data-status', 'waiting');
+    await expect(slot(page, 7)).toHaveAttribute('data-status', 'locked');
+    await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
+    await expect(page.locator('#programmeWhy')).not.toContainText('Needs');
+    await tile(page, 7).hover();
+    await expect(page.locator('#ui-tip')).toContainText('Locked until Lunar outpost done');
   });
 
   test('the query selects a milestone and a tab', async ({ page }) => {
@@ -132,12 +213,10 @@ test.describe('research', () => {
     await expect(needs).toContainText('Crewed outpost on the Moon');
     await expect(card(page).locator('.ui-have.short').first()).toBeVisible();
     await expect(page.locator('#requires')).toContainText('LEO station');
-    await expect(page.locator('#earlier')).toContainText('Every milestone before it');
     await open(page, 'screen=research&milestone=17');
     await expect(page.locator('#siteNeeds')).toContainText('Miner on a metallic asteroid');
     await expect(card(page).locator('.ui-have.stand.short').first()).toBeVisible();
     await open(page, 'screen=research&milestone=2&reached=1');
-    await expect(page.locator('#earlier')).toHaveCount(0);
     await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
   });
 
@@ -179,7 +258,7 @@ test.describe('research', () => {
     await expect(page.locator('.slot[data-status="done"]')).toHaveCount(1);
     await rtab(page, 'tree');
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'done');
-    await expect(page.locator('#techTree svg path[stroke="#f2b35d"]')).toHaveAttribute('d', /^M/);
+    await expect(page.locator('#techTree path.e').first()).toHaveAttribute('d', /^M/);
     await expect(page.locator('#chips .chip[title="Milestones reached"]')).toHaveText('1/29');
     const events = await eventTexts(page);
     expect(events.some((e) => e.includes('Milestone 1 reached: Reusable orbital launch.'))).toBe(true);
