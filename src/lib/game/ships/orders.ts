@@ -100,10 +100,10 @@ const itemName = (i: Item): string =>
       : PROPELLANTS[i.id].name.toLowerCase();
 
 export function orderLabel(game: Game, o: Order): string {
-  const body = (id: string) => game.body(id)?.name ?? id;
+  const body = (id: string) => game.placeName(id) ?? id;
   switch (o.type) {
     case 'fly':
-      return `Fly to ${body(o.body)} orbit`;
+      return game.jump(o.body) ? `Fly to ${body(o.body)}` : `Fly to ${body(o.body)} orbit`;
     case 'land':
       return `Land on ${body(o.body)}`;
     case 'dock':

@@ -21,6 +21,15 @@ export const siteNeedMet = (site: Site, need: SiteNeed): boolean =>
   Object.entries(need.ran ?? {}).every(([b, hours]) => (site.ran[b] ?? 0) >= hours) &&
   site.built >= (need.built ?? 0);
 
+export function siteNeedProgress(eco: Economy, need: SiteNeed): number | undefined {
+  const best = (read: (s: Site) => number, target: number): number =>
+    Math.min(1, Math.max(0, ...eco.sites.filter((s) => where(s, need)).map(read)) / target);
+  if (need.made) return best((s) => s.made[need.made!.material] ?? 0, need.made.amount);
+  const ran = Object.entries(need.ran ?? {})[0];
+  if (ran) return best((s) => s.ran[ran[0]] ?? 0, ran[1]);
+  return undefined;
+}
+
 export function siteNeedMissing(eco: Economy, need: SiteNeed): string | undefined {
   if (need.flown) return (eco.flown[need.flown] ?? 0) > 0 ? undefined : need.label;
   return eco.sites.some((s) => siteNeedMet(s, need)) ? undefined : need.label;

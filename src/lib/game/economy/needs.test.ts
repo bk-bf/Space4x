@@ -8,6 +8,7 @@ import {
   newSite,
   programmeBill,
   siteNeedMet,
+  siteNeedProgress,
   standFirst,
   startEconomy,
   type Economy,
@@ -204,5 +205,20 @@ describe('what a site has done', () => {
     expect(bill.lithium6).toBe(200);
     expect(bill.rebco).toBe(1_100_000);
     expect(programmeBill(milestone(25)).deuterium).toBe(200);
+  });
+});
+
+describe('how far a counted need has got', () => {
+  it('is the share of the best site in the right place, and nothing for a need without a count', () => {
+    const eco = startEconomy();
+    const need = { label: 'No helium-3', world: 'luna', made: { material: 'helium_3', amount: 1000 } };
+    expect(siteNeedProgress(eco, need)).toBe(0);
+    eco.sites[0]!.made.helium_3 = 5000;
+    expect(siteNeedProgress(eco, need)).toBe(0);
+    moonSite(eco).made.helium_3 = 250;
+    moonSite(eco, 'luna-maria').made.helium_3 = 400;
+    expect(siteNeedProgress(eco, need)).toBeCloseTo(0.4);
+    expect(siteNeedProgress(eco, { label: 'No outpost', world: 'luna', people: 1 })).toBeUndefined();
+    expect(siteNeedProgress(eco, { label: 'No run', world: 'luna', ran: { ice_mine: 24 } })).toBe(0);
   });
 });

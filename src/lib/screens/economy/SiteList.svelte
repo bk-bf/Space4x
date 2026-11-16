@@ -3,7 +3,7 @@
   import { game } from '#lib/game/index.ts';
   import type { PlanetType } from '#lib/gfx/planets.ts';
   import { Icon, Panel, dim, fmt, tipText, tooltip, warn } from '#lib/ui/index.ts';
-  import { siteBody } from './lookup.ts';
+  import { siteBody, siteKind } from './lookup.ts';
   import { planetSprite } from './planetSprite.ts';
   import { ui } from './state.svelte.ts';
 
@@ -11,7 +11,7 @@
     game.world.systems
       .map((s) => ({
         system: s,
-        sites: economy.sites.filter((x) => siteBody(x.worldBody)?.system === s.id)
+        sites: economy.sites.filter((x) => game.placeSystem(x.worldBody) === s.id)
       }))
       .filter((g) => g.sites.length)
   );
@@ -43,7 +43,7 @@
           onclick={() => (ui.site = s.id)}
           use:tooltip={tipText(
             s.name,
-            dim(s.place === 'orbit' ? 'Orbital station' : 'Surface outpost'),
+            dim(siteKind(s)),
             `${fmt.population(s.population)} people`,
             troubled(s.id) && warn('Short of food or power')
           )}

@@ -114,7 +114,7 @@ function hop(
   v.at =
     kind === 'descent' ? arrivalPlace(game, dest) : { kind: 'orbit', body: dest.body, angle: dest.angle };
   v.blocked = null;
-  const name = game.body(o.body)?.name ?? o.body;
+  const name = game.placeName(o.body) ?? o.body;
   say(
     game,
     v,
