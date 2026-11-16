@@ -1,5 +1,4 @@
 import { mix } from '#lib/gfx/math.ts';
-import { nextOrderId } from '../../orders';
 import { bodyPosition, parkingSpot } from '../../orbits';
 import type { Body, Fleet, Game, World } from '../../index';
 import { mockWorld } from '../world';
@@ -7,6 +6,9 @@ import { fixtureBodies } from './bodies';
 import { fixtureContacts } from './contacts';
 import { fixtureFleets, type FleetSeed } from './fleets';
 import { fixtureSystems } from './systems';
+
+let lastOrderId = 0;
+const nextOrderId = (): number => ++lastOrderId;
 
 const COLONIES = ['mars', 'ceres', 'luna', 'europa', 'acen-2'];
 

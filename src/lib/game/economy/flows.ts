@@ -2,8 +2,8 @@ import { building, milestone } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { foodIds, isMass, isStockless, POWER, process } from './processes.ts';
-import { programmeCompute } from './programmes.ts';
-import type { BuildOrder, Economy, Group, Programme, Site } from './types.ts';
+import { programmeCompute, standing } from './programmes.ts';
+import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
 
 export const STOCK_EPS = 1e-6;
 export const STARVE_PER_YEAR = 0.25;
@@ -46,7 +46,13 @@ export interface ProgrammeActor extends ActorBase {
   hours: number;
 }
 
-export type Actor = GroupActor | BuildActor | ProgrammeActor;
+export interface YardActor extends ActorBase {
+  kind: 'yard';
+  order: YardOrder;
+  hours: number;
+}
+
+export type Actor = GroupActor | BuildActor | ProgrammeActor | YardActor;
 
 export interface Balance {
   supply: number;
@@ -95,6 +101,32 @@ function groupActor(site: Site, g: Group, workerShare: number): GroupActor {
 
 export const activeOrders = (site: Site): BuildOrder[] =>
   site.queue.filter((o) => !o.paused).slice(0, BUILD_SLOTS);
+
+export function activeYardOrders(site: Site): YardOrder[] {
+  const taken: Record<string, number> = {};
+  return site.yard.filter((o) => {
+    if (o.paused) return false;
+    const n = taken[o.yard] ?? 0;
+    if (n >= standing(site, o.yard)) return false;
+    taken[o.yard] = n + 1;
+    return true;
+  });
+}
+
+function yardActor(o: YardOrder): YardActor {
+  return {
+    kind: 'yard',
+    order: o,
+    hours: o.hours,
+    cap: 1,
+    share: 0,
+    inputs: scaled(o.cost, 1 / o.hours),
+    outputs: {},
+    extracts: {},
+    limit: null,
+    worst: 1
+  };
+}
 
 function buildActor(o: BuildOrder): BuildActor {
   const hours = buildHours(o.building);
@@ -205,6 +237,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(site, g, workerShare)),
     ...activeOrders(site).map(buildActor),
+    ...activeYardOrders(site).map(yardActor),
     ...eco.running.filter((p) => p.site === site.id).map(programmeActor)
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);
@@ -221,7 +254,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     for (const [m, v] of Object.entries(a.inputs)) consumed[m] = (consumed[m] ?? 0) + v * a.share;
     const extracted = massOf(a.extracts) * a.share;
     extractedMass += extracted;
-    if (a.kind === 'build') builtMass += massOf(a.inputs) * a.share;
+    if (a.kind === 'build' || a.kind === 'yard') builtMass += massOf(a.inputs) * a.share;
     else lostMass += massOf(a.inputs) * a.share + extracted - massOf(a.outputs) * a.share;
   }
   const net: Amounts = {};

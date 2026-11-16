@@ -1,4 +1,5 @@
 import { shipClass, type Contact, type Fleet } from '#lib/game/index.ts';
+import type { Vessel } from '#lib/game/ships/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { ALIEN_SPECS, type ShipSpec } from '#lib/gfx/ships/specs.ts';
 import {
@@ -20,6 +21,8 @@ export interface ShipPlace {
 
 export interface ShipGroup {
   key: string;
+  kind: 'fleet' | 'contact' | 'ship';
+  id: string;
   name: string;
   label: string;
   side: Side;
@@ -100,6 +103,8 @@ export function fleetShips(fleet: Fleet): ShipPlace[] {
 export function fleetGroup(fleet: Fleet, selected: boolean): ShipGroup {
   return {
     key: 'fleet:' + fleet.id,
+    kind: 'fleet',
+    id: fleet.id,
     name: fleet.name,
     label: `${fleet.name} ×${fleet.ships.length}`,
     side: fleet.kind === 'mil' ? 'navy' : 'civ',
@@ -119,6 +124,8 @@ export function contactGroup(c: Contact, selected: boolean): ShipGroup {
     heading = next ? Math.atan2(next[1] - c.y, next[0] - c.x) : 0;
   return {
     key: 'contact:' + c.id,
+    kind: 'contact',
+    id: c.id,
     name: c.id,
     label: c.id + ' ' + c.kind.toLowerCase(),
     side: c.hostile ? 'foe' : 'neutral',
@@ -130,6 +137,32 @@ export function contactGroup(c: Contact, selected: boolean): ShipGroup {
     selected,
     blink: !!c.hostile,
     thrust: c.speedKmS > 0 ? 0.6 : 0
+  };
+}
+
+export function vesselGroup(
+  v: Vessel,
+  x: number,
+  y: number,
+  heading: number,
+  selected: boolean,
+  thrust: number
+): ShipGroup {
+  return {
+    key: 'ship:' + v.id,
+    kind: 'ship',
+    id: v.id,
+    name: v.name,
+    label: v.name,
+    side: 'civ',
+    contact: false,
+    x,
+    y,
+    heading,
+    ships: [{ name: v.name, classId: v.design, x, y, heading }],
+    selected,
+    blink: false,
+    thrust
   };
 }
 

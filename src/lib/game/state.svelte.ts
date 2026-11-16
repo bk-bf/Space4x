@@ -109,6 +109,7 @@ export class Game {
     if (sel.kind === 'fleet') return this.fleet(sel.id)?.system;
     if (sel.kind === 'body') return this.body(sel.id)?.system;
     if (sel.kind === 'site') return this.site(sel.id)?.system;
+    if (sel.kind === 'ship' || sel.kind === 'base') return this.world.systems[0]?.id;
     return this.contact(sel.id)?.system;
   }
 }

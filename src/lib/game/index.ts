@@ -1,23 +1,19 @@
 import './systems/orbits';
-import './systems/fleets';
 import './systems/contacts';
 
 export { Game, game, advance } from './state.svelte';
 export {
-  buildOf,
   className,
-  classBuild,
   classes,
   ClassRegistry,
   classInUse,
   classStats,
   fleetClassId,
-  fleetSpeed,
   registerClassUse,
   shipClass,
   shipClasses,
-  statsFor,
-  type ClassBuild
+  specFor,
+  statsFor
 } from './classes.svelte';
 export { registerSystem, systemNames, type System } from './systems';
 export { registerStatus, STATUS_IDS, type StatusId, type StatusSource } from './status';
@@ -32,22 +28,8 @@ export {
   formatEventTime,
   type TimeStep
 } from './clock';
-export { bodyPosition, parkingRadius, type Point } from './orbits';
+export { bodyPosition, isColony, parkingRadius, type Point } from './orbits';
 export { AU, KM, au, formatAu, formatDistance } from './units';
-export {
-  ORDER_TYPES,
-  addOrder,
-  clearOrders,
-  isColony,
-  moveOrder,
-  orderEtas,
-  orderLabel,
-  orderTargets,
-  orderTypesFor,
-  removeOrder,
-  resolveGoal,
-  workSeconds
-} from './orders';
 export { sitePosition } from './mock/sites';
 export { FLEET_SENSOR, bearing, nearest, observers } from './systems/contacts';
 export type * from './types';

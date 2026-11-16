@@ -46,11 +46,14 @@ export type Missing =
 export const standing = (site: Site, buildingId: string): number =>
   site.groups.filter((g) => g.building === buildingId).reduce((a, g) => a + g.count, 0);
 
+export const standsAnywhere = (eco: Economy, buildingId: string): boolean =>
+  eco.sites.some((s) => standing(s, buildingId) > 0);
+
 export function missingFor(eco: Economy, site: Site, m: Milestone): Missing[] {
   const out: Missing[] = [];
   for (const r of m.requires) if (!eco.done.includes(r)) out.push({ kind: 'requires', number: r });
   if (m.number > unlockedUpTo(eco)) out.push({ kind: 'locked' });
-  for (const id of m.needs.buildings) if (standing(site, id) <= 0) out.push({ kind: 'building', id });
+  for (const id of m.needs.buildings) if (!standsAnywhere(eco, id)) out.push({ kind: 'building', id });
   for (const id of m.needs.components) {
     const c = shipComponent(id);
     if (!c.builtAt.some((b) => standing(site, b) > 0)) out.push({ kind: 'builder', id: c.builtAt[0] ?? id });

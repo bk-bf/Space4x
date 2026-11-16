@@ -53,6 +53,7 @@ export interface TripRequest {
   ship: Ship;
   system: FlightSystem;
   aerobrake?: boolean;
+  only?: Profile;
 }
 
 interface Stage {
@@ -646,7 +647,7 @@ export function planTrip(req: TripRequest): TripPlan {
     return { options: [], reasons: why };
   }
   built.push({ profile: 'cheapest', b: cheap });
-  if (cheap.option.model === 'orbit') {
+  if (cheap.option.model === 'orbit' && req.only !== 'cheapest') {
     const floor = crossingFloor(ctx);
     const budget = shipDeltaV(req.ship) * 0.999999999;
     const fast = floor === undefined ? undefined : bestAtBudget(ctx, budget, floor);

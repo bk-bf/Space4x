@@ -81,6 +81,19 @@ export function diamond(f: FB, x: number, y: number, col: RGB): void {
   }
 }
 
+export function baseMark(f: FB, x: number, y: number, col: RGB): void {
+  x = Math.round(x);
+  y = Math.round(y);
+  f.rect(x - 1, y - 1, 3, 3, col);
+  for (const [i, j] of [
+    [-3, 0],
+    [3, 0],
+    [0, -3],
+    [0, 3]
+  ] as const)
+    f.px(x + i, y + j, col);
+}
+
 export function jumpMark(f: FB, x: number, y: number, t: number): void {
   f.ring(x, y, 5, PAL.jump, 2, t >> 1);
   f.ring(x, y, 2, PAL.jump, 2, -(t >> 1));

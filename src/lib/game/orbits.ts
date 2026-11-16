@@ -1,6 +1,8 @@
 import { hash } from '#lib/gfx/math.ts';
 import type { Body, Fleet } from './types';
 
+export const isColony = (b: Body): boolean => b.colony === true;
+
 export type Point = readonly [number, number];
 
 export function bodyPosition(b: Body, bodies: readonly Body[]): Point {

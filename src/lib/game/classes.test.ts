@@ -1,88 +1,65 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { withFixture } from '#lib/game/mock/fixture/index.ts';
-import { setEngines } from './design';
 import {
-  buildOf,
-  classBuild,
+  className,
   classes,
   classInUse,
   classStats,
   ClassRegistry,
-  fleetSpeed,
   shipClass,
   shipClasses,
-  TONS_PER_MASS
+  specFor,
+  statsFor
 } from './classes.svelte';
 import { Game } from './index';
-import { orderEtas } from './orders';
-
-const shipped = classes.saved;
+import { setCount } from './shipdesign/edit.ts';
+import { build, upperStage } from './shipdesign/fixtures.ts';
 
 afterEach(() => {
-  classes.saved = shipped;
+  classes.saved = [];
 });
 
 describe('the ship class registry', () => {
-  it('holds the shipped classes and finds them by id', () => {
-    expect(shipClasses().map((c) => c.id)).toEqual(
-      expect.arrayContaining([
-        'pathfinder',
-        'atlas',
-        'mule',
-        'bastion',
-        'lancer',
-        'pike',
-        'ark',
-        'lighthouse'
-      ])
-    );
-    expect(shipClass('bastion')?.name).toBe('Bastion');
-    expect(shipClass('nothing')).toBeUndefined();
+  it('starts empty: no ship class is premade', () => {
+    expect(shipClasses()).toEqual([]);
+    expect(shipClass('bastion')).toBeUndefined();
+    expect(className('bastion')).toBe('Unknown class');
+    expect(classStats('bastion')).toBeUndefined();
   });
 
-  it('takes tons, cost and yard kind from the part tables of the design', () => {
-    const bastion = classStats('bastion')!;
-    expect(classBuild('bastion')).toEqual(buildOf(bastion));
-    expect(classBuild('bastion')!.tons).toBe(Math.round(bastion.mass * TONS_PER_MASS));
-    expect(classBuild('bastion')!.kind).toBe('naval');
-    expect(classBuild('pathfinder')!.kind).toBe('commercial');
-    expect(classBuild('lighthouse')!.kind).toBe('commercial');
-    expect(classBuild('bastion')!.bp).toBeGreaterThan(classBuild('lancer')!.bp);
+  it('holds the designs the player makes and finds them by id', () => {
+    const r = new ClassRegistry();
+    const a = build(upperStage, { id: 'a' });
+    r.add(a);
+    expect(r.find('a')).toBe(a);
+    const renamed = { ...a, name: 'Dray' };
+    r.replace(renamed);
+    expect(r.find('a')?.name).toBe('Dray');
+    r.remove('a');
+    expect(r.saved).toEqual([]);
   });
 
-  it('gives a fleet the speed of its slowest class, the number the designer shows', () => {
+  it('never hands out an id that is taken', () => {
+    const r = new ClassRegistry();
+    r.add(build([], { id: 'design-1' }));
+    expect(r.newId()).toBe('design-2');
+  });
+
+  it('draws and measures a class from its design, once per edit', () => {
+    const d = build(upperStage, { id: 'dray' });
+    classes.add(d);
+    expect(shipClass('dray')).toBe(specFor(d));
+    expect(classStats('dray')).toBe(statsFor(d));
+    expect(className('dray')).toBe('Test');
+    const edited = setCount(d, 'propellant_tank', 6);
+    classes.replace(edited);
+    expect(shipClass('dray')).not.toBe(specFor(d));
+    expect(classStats('dray')!.propellantMass).toBeGreaterThan(statsFor(d).propellantMass);
+  });
+
+  it('keeps a class in use while a fleet or a screen holds it', () => {
     const g = withFixture(new Game());
-    const picket = g.fleet('picket')!;
-    expect(picket.ships.map((s) => s.classId)).toEqual(['bastion', 'lancer', 'lancer']);
-    expect(fleetSpeed(picket)).toBe(classStats('bastion')!.speed);
-    expect(fleetSpeed(picket)).toBeLessThan(classStats('lancer')!.speed);
-    expect(fleetSpeed(g.fleet('survey')!)).toBe(classStats('pathfinder')!.speed);
-    expect(fleetSpeed(g.fleet('convoy')!)).toBe(classStats('atlas')!.speed);
-  });
-
-  it('moves every fleet that carries a class the moment the class is redesigned', () => {
-    const g = withFixture(new Game());
-    const survey = g.fleet('survey')!;
-    const before = fleetSpeed(survey);
-    const eta = () => orderEtas(g, survey)[0];
-    const slow = eta();
-    const faster = setEngines(shipClass('pathfinder')!, 3);
-    classes.replace(faster);
-    expect(fleetSpeed(survey)).toBeGreaterThan(before);
-    expect(fleetSpeed(survey)).toBe(classStats('pathfinder')!.speed);
-    expect(eta()).not.toBe(slow);
-  });
-
-  it('refuses to forget a class a fleet or a registered user still needs', () => {
-    const g = withFixture(new Game());
-    expect(classInUse(g, 'bastion')).toBe(true);
-    expect(classInUse(g, 'lighthouse')).toBe(false);
-  });
-
-  it('keeps separate registries separate', () => {
-    const other = new ClassRegistry();
-    other.remove('atlas');
-    expect(other.find('atlas')).toBeUndefined();
-    expect(classes.find('atlas')).toBeDefined();
+    expect(classInUse(g, 'pathfinder')).toBe(true);
+    expect(classInUse(g, 'unused')).toBe(false);
   });
 });

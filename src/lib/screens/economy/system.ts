@@ -1,5 +1,6 @@
 import { advanceEconomy, economy, flowsOf, homeSite, siteById, touch } from '#lib/game/economy/index.ts';
 import { registerStatus, registerSystem, START_TIME } from '#lib/game/index.ts';
+import { advanceShips } from '#lib/game/ships/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
 import { formatDays, formatPeople, formatPercent, formatPower, formatCount, shortName } from './format.ts';
 import { scarcest } from './view.ts';
@@ -12,6 +13,7 @@ registerSystem('economy', (game, dt) => {
       ...(body ? { subject: { kind: 'body' as const, id: body } } : {})
     });
   });
+  advanceShips(game, dt);
   touch();
 });
 

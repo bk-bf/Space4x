@@ -2,7 +2,7 @@ import type { IconName } from '#lib/gfx/icons.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { SunTint } from '#lib/gfx/sun.ts';
 
-export type SelectionKind = 'fleet' | 'body' | 'contact' | 'site';
+export type SelectionKind = 'fleet' | 'body' | 'contact' | 'site' | 'ship' | 'base';
 
 export interface Selection {
   kind: SelectionKind;
