@@ -51,9 +51,9 @@
   const km = (n: number) => `${n.toLocaleString('en')} km/s`;
   const systemName = (id: string) => game.starSystem(id)?.name ?? '';
 
-  function openColony(b: Body, screen: 'colony' | 'economy') {
+  function openColony(b: Body) {
     showColony(b.id);
-    shell.setScreen(screen);
+    shell.setScreen('economy');
   }
 
   function openIntel(c: Contact) {
@@ -191,10 +191,7 @@
       <div class="add">
         <button data-go="show" onclick={() => flyTo(body.id)}>Show</button>
         {#if isColony(body)}
-          <button data-go="colony" onclick={() => openColony(body, 'colony')}>Colony</button><button
-            data-go="economy"
-            onclick={() => openColony(body, 'economy')}>Economy</button
-          >
+          <button data-go="economy" onclick={() => openColony(body)}>Economy</button>
         {/if}
       </div>
     {:else if site}

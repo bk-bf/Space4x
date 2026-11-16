@@ -13,11 +13,13 @@ async function expectCleanLayout(page: Page) {
 
 const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
 const issue = (page: Page, code: string) => page.locator(`[data-issue="${code}"]`);
-const add = (page: Page, id: string) => page.locator(`[data-add="${id}"]`);
-const kind = (page: Page, id: string) => page.locator(`[data-tab="${id}"]`);
-const stat = (page: Page, term: string) =>
-  page.locator('[data-screen="classes"] dl dt', { hasText: new RegExp(`^${term}$`) }).locator('+ dd');
+const part = (page: Page, id: string) => page.locator(`[data-part="${id}"]`);
+const add = (page: Page, id: string) => part(page, id).locator('button');
+const figure = (page: Page, key: string) => page.locator(`[data-screen="classes"] [data-stat="${key}"]`);
+const value = (page: Page, key: string) => figure(page, key).locator('.big');
+const label = (page: Page, key: string) => figure(page, key).locator('small');
 const count = (page: Page, id: string) => page.locator(`[data-count="${id}"]`);
+const lock = (page: Page) => page.locator('[data-act="lock"]');
 const drawing = (page: Page) =>
   page.locator('[data-screen="classes"] canvas').evaluate((c: HTMLCanvasElement) => c.toDataURL());
 
@@ -29,42 +31,50 @@ async function setCount(page: Page, id: string, n: number) {
 test.describe('ship designer', () => {
   test('a class is built from nothing, its errors appear and resolve, and it locks', async ({ page }) => {
     await open(page, 'screen=classes');
+    await expect(page.locator('#emptyDesign')).toBeVisible();
     await expect(page.locator('#noClass')).toBeVisible();
-    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(lock(page)).toBeDisabled();
 
     await page.locator('[data-act="new"]').click();
+    await expect(page.locator('#emptyDesign')).toBeVisible();
     await expect(issue(page, 'no-parts')).toBeVisible();
     await page.locator('#clsName').fill('Dray');
-    await kind(page, 'structure').click();
     await add(page, 'propellant_tank').click();
+    await expect(page.locator('#emptyDesign')).toHaveCount(0);
     await expect(issue(page, 'no-parts')).toHaveCount(0);
     await expect(issue(page, 'no-engine')).toBeVisible();
-    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(lock(page)).toBeDisabled();
 
-    await kind(page, 'propulsion').click();
     await add(page, 'chemical_engine_methalox').click();
     await expect(issue(page, 'no-engine')).toHaveCount(0);
     await expect(page.locator('#issues .error')).toHaveCount(0);
-    await expect(stat(page, 'Dry mass')).toHaveText('2.10 t');
-    await expect(stat(page, 'Propellant')).toHaveText('16.3 t methane and oxygen');
+    await expect(label(page, 'mass')).toHaveText('dry 2.1 t');
+    await expect(value(page, 'propellant')).toHaveText('16.3 t');
+    await expect(label(page, 'propellant')).toHaveText('methane and oxygen');
 
     await setCount(page, 'propellant_tank', 40);
     await expect(issue(page, 'no-liftoff')).toBeVisible();
     await expect(page.locator('#issues .error')).toHaveCount(0);
-    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
-    await expect(stat(page, 'Earth thrust/weight')).toContainText('too low');
+    await expect(lock(page)).toBeEnabled();
+    await expect(label(page, 'twr-earth')).toContainText('too low');
 
     await setCount(page, 'propellant_tank', 3);
     await expect(issue(page, 'no-liftoff')).toHaveCount(0);
-    await expect(stat(page, 'Earth thrust/weight')).toContainText('lifts off');
-    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
+    await expect(label(page, 'twr-earth')).toContainText('lifts off');
+    await expect(page.locator('#noIssues')).toBeVisible();
+    await expect(lock(page)).toBeEnabled();
 
-    await page.locator('[data-act="lock"]').click();
+    await lock(page).click();
     await expect(page.locator('#clsLocked')).toBeVisible();
+    await expect(page.locator('#isLocked')).toBeVisible();
     await expect(page.locator('#clsName')).toBeDisabled();
+    await expect(page.locator('#clsRole')).toBeDisabled();
+    await expect(page.locator('#clsYard')).toBeDisabled();
     await expect(add(page, 'chemical_engine_methalox')).toBeDisabled();
     await expect(count(page, 'propellant_tank')).toBeDisabled();
-    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(page.locator('[data-take="propellant_tank"]')).toBeDisabled();
+    await expect(lock(page)).toBeDisabled();
+    await expect(page.locator('[data-act="copy"]')).toBeEnabled();
 
     await page.locator('[data-act="copy"]').click();
     await expect(page.locator('#clsName')).toHaveValue('Dray copy');
@@ -74,49 +84,130 @@ test.describe('ship designer', () => {
     await expectCleanLayout(page);
   });
 
-  test('components the milestones have not reached are locked and name what they wait for', async ({
+  test('clicking a component with no class open starts one with that component', async ({ page }) => {
+    await open(page, 'screen=classes');
+    await add(page, 'chemical_engine_methalox').click();
+    await expect(page.locator('#classList [data-class]')).toHaveText(['New class']);
+    await expect(page.locator('[data-line="chemical_engine_methalox"]')).toBeVisible();
+    await expect(part(page, 'chemical_engine_methalox')).toContainText('×1');
+  });
+
+  test('a class is renamed, given a role and deleted, and the class list picks between classes', async ({
     page
   }) => {
     await open(page, 'screen=classes');
-    await expect(add(page, 'chemical_engine_methalox')).toBeVisible();
-    await expect(add(page, 'chemical_engine_hydrolox')).toHaveCount(0);
-    await expect(page.locator('[data-locked="chemical_engine_hydrolox"]')).toContainText(
-      'Crewed lunar landing and surface outpost'
-    );
+    await page.locator('[data-act="new"]').click();
+    await page.locator('#clsName').fill('Dray');
+    await page.locator('#clsRole').selectOption('freighter');
+    await page.locator('[data-act="new"]').click();
+    await expect(page.locator('#clsRole')).toHaveValue('launcher');
+    await expect(page.locator('#classList [data-class]')).toHaveText(['Dray', 'New class']);
+    await page.locator('#classList [data-class]').first().click();
+    await expect(page.locator('#clsName')).toHaveValue('Dray');
+    await expect(page.locator('#clsRole')).toHaveValue('freighter');
+    await page.locator('[data-act="delete"]').click();
+    await expect(page.locator('#classList [data-class]')).toHaveText(['New class']);
+    await page.locator('[data-act="delete"]').click();
+    await expect(page.locator('#classList [data-class]')).toHaveCount(0);
+    await expect(page.locator('#noClass')).toBeVisible();
+    await expect(page.locator('[data-act="delete"]')).toBeDisabled();
+  });
+
+  test('the yard a class is built at is chosen among the yards that can build every part', async ({
+    page
+  }) => {
+    await open(page, 'screen=classes&new=crewed&reached=6');
+    await expect(page.locator('#clsYard')).toHaveValue('orbital_shipyard');
+    await expect(page.locator('#clsYard option')).toHaveText(['Rocket factory', 'Orbital shipyard (locked)']);
+    await expect(label(page, 'built-at')).toHaveText('can be built at');
+    await expect(value(page, 'built-at')).toContainText('Orbital shipyard');
+    await page.locator('#clsYard').selectOption('rocket_factory');
+    await expect(page.locator('#clsYard')).toHaveValue('rocket_factory');
+  });
+
+  test('components the milestones have not reached are dimmed and name what they wait for', async ({
+    page
+  }) => {
+    await open(page, 'screen=classes');
+    await expect(add(page, 'chemical_engine_methalox')).toBeEnabled();
+    await expect(add(page, 'chemical_engine_hydrolox')).toBeDisabled();
+    await expect(part(page, 'chemical_engine_hydrolox')).toHaveAttribute('data-locked', '6');
+    await expect(part(page, 'chemical_engine_hydrolox')).toContainText('after 6');
+    await part(page, 'chemical_engine_hydrolox').hover();
+    await expect(page.locator('#ui-tip')).toContainText('Crewed lunar landing and surface outpost');
     await open(page, 'screen=classes&reached=6');
-    await expect(add(page, 'chemical_engine_hydrolox')).toBeVisible();
-    await expect(page.locator('[data-locked="chemical_engine_hydrolox"]')).toHaveCount(0);
-    await expect(page.locator('[data-locked="hall_thruster"]')).toBeVisible();
+    await expect(add(page, 'chemical_engine_hydrolox')).toBeEnabled();
+    await expect(part(page, 'chemical_engine_hydrolox')).not.toHaveAttribute('data-locked', /./);
+    await expect(part(page, 'hall_thruster')).toHaveAttribute('data-locked', '13');
+  });
+
+  test('the components are grouped by kind with a name and a key figure', async ({ page }) => {
+    await open(page, 'screen=classes');
+    await expect(page.locator('.ui-tile.cmp')).not.toHaveCount(0);
+    await expect(part(page, 'chemical_engine_methalox').locator('.ui-amt')).toHaveText('363 s');
+    await expect(part(page, 'chemical_engine_methalox').locator('.ui-nm')).toContainText('Methalox');
+    await expect(page.getByText('Drives', { exact: true })).toBeVisible();
+    await expect(page.getByText('Structure', { exact: true })).toBeVisible();
   });
 
   test('the numbers follow the design: mass, delta-v and thrust to weight', async ({ page }) => {
     await open(page, 'screen=classes&new=stage');
-    await expect(stat(page, 'Dry mass')).toHaveText('5.00 t');
-    await expect(stat(page, 'Payload')).toHaveText('4.00 t');
-    await expect(stat(page, 'Propellant')).toHaveText('65.3 t methane and oxygen');
-    await expect(stat(page, 'Total mass')).toHaveText('74.3 t');
-    await expect(stat(page, 'Delta-v full')).toHaveText('7.51 km/s');
-    await expect(stat(page, 'Delta-v empty')).toHaveText('9.41 km/s');
-    await expect(stat(page, 'Earth thrust/weight')).toHaveText('3.15, lifts off');
+    await expect(label(page, 'mass')).toHaveText('dry 5 t');
+    await expect(value(page, 'mass')).toHaveText('74.3 t');
+    await expect(value(page, 'payload')).toHaveText('4 t');
+    await expect(value(page, 'propellant')).toHaveText('65.3 t');
+    await expect(value(page, 'delta-v')).toHaveText('7.51 km/s');
+    await expect(value(page, 'dv-empty')).toHaveText('9.41 km/s');
+    await expect(value(page, 'twr')).toHaveText('3.15');
+    await expect(value(page, 'twr-earth')).toHaveText('3.15');
+    await expect(label(page, 'twr-earth')).toHaveText('Earth, lifts off');
     await expect(issue(page, 'short-of-orbit')).toBeVisible();
 
     await setCount(page, 'propellant_tank', 8);
-    await expect(stat(page, 'Delta-v empty')).toHaveText(/^1[0-9]\.\d\d km\/s$/);
+    await expect(value(page, 'dv-empty')).toHaveText(/^1[0-9]\.\d\d km\/s$/);
     await expectCleanLayout(page);
+  });
+
+  test('the payload shown can be lowered and changes mass and delta-v', async ({ page }) => {
+    await open(page, 'screen=classes&new=stage');
+    await expect(page.locator('#payload')).toHaveValue('4');
+    await page.locator('#payload').fill('0');
+    await page.locator('#payload').press('Tab');
+    await expect(value(page, 'mass')).toHaveText('70.3 t');
+    await expect(value(page, 'delta-v')).toHaveText('9.41 km/s');
+    await page.locator('#payload').fill('99');
+    await page.locator('#payload').press('Tab');
+    await expect(page.locator('#payload')).toHaveValue('4');
+    await expect(value(page, 'mass')).toHaveText('74.3 t');
   });
 
   test('a crewed vehicle reports crew, life support, power and heat, and has no errors', async ({ page }) => {
     await open(page, 'screen=classes&reached=6&new=crewed');
-    await expect(stat(page, 'Crew')).toHaveText('2 of 4 berths');
-    await expect(stat(page, 'Life support')).toHaveText('100 days');
-    await expect(stat(page, 'Power')).toContainText('20 kW made');
+    await expect(value(page, 'crew')).toHaveText('2');
+    await expect(label(page, 'crew')).toHaveText('berths 4');
+    await expect(value(page, 'endurance')).toHaveText('100 days');
+    await expect(label(page, 'power')).toContainText('20 kW');
+    await expect(label(page, 'heat')).toContainText('sheds');
     await expect(page.locator('#issues .error')).toHaveCount(0);
-    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
+    await expect(lock(page)).toBeEnabled();
 
     await page.locator('[data-take="heat_shield"]').click();
     await expect(page.locator('[data-line="heat_shield"]')).toHaveCount(0);
     await expect(issue(page, 'no-reentry')).toBeVisible();
-    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(lock(page)).toBeDisabled();
+    await expect(page.locator('#noIssues')).toHaveCount(0);
+  });
+
+  test('every warning and error of the design is listed as a flag, and the build cost as materials', async ({
+    page
+  }) => {
+    await open(page, 'screen=classes&new=stage');
+    await expect(page.locator('#issues .warning')).not.toHaveCount(0);
+    await expect(page.locator('#issues .flag')).not.toHaveCount(0);
+    expect(await page.locator('#issues .flag.warning').count()).toBe(
+      await page.locator('#issues [data-issue]').count()
+    );
+    await expect(page.locator('[data-screen="classes"] .ui-rate').first()).toBeVisible();
   });
 
   test('the drawing is made from the components and changes with them', async ({ page }) => {
@@ -132,13 +223,13 @@ test.describe('ship designer', () => {
     await open(page, 'screen=classes&new=stage');
     await page.locator('[data-load="methalox"]').fill('10000');
     await page.locator('[data-load="methalox"]').press('Tab');
-    await expect(stat(page, 'Propellant')).toHaveText('10.00 t methane and oxygen');
+    await expect(value(page, 'propellant')).toHaveText('10 t');
     await goTo(page, 'map');
     await goTo(page, 'classes');
     await expect(page.locator('#classList [data-class]')).toHaveText(['Small stage']);
-    await expect(stat(page, 'Propellant')).toHaveText('10.00 t methane and oxygen');
+    await expect(value(page, 'propellant')).toHaveText('10 t');
     await page.locator('[data-fill="methalox"]').click();
-    await expect(stat(page, 'Propellant')).toHaveText('65.3 t methane and oxygen');
+    await expect(value(page, 'propellant')).toHaveText('65.3 t');
   });
 
   test('the other screens that read classes work with none designed', async ({ page }) => {

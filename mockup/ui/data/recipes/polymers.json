@@ -1,0 +1,112 @@
+[
+  {
+    "id": "pan_polymerisation",
+    "building": "polymer_plant",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "ethylene": 800, "ammonia": 400, "oxygen": 200 },
+    "outputs": { "pan": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "epoxy_curing_resin",
+    "building": "polymer_plant",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "ethylene": 700, "oxygen": 300 },
+    "outputs": { "epoxy": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "phenolic_resin_synthesis",
+    "building": "polymer_plant",
+    "milestone": 6,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "ethylene": 700, "oxygen": 300 },
+    "outputs": { "phenolic_resin": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "polyimide_synthesis",
+    "building": "polymer_plant",
+    "milestone": 2,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "ethylene": 800, "nitrogen": 100, "oxygen": 200 },
+    "outputs": { "polyimide": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "pet_film_extrusion",
+    "building": "polymer_plant",
+    "milestone": 2,
+    "estimated": true,
+    "inputs": { "ethylene": 700, "oxygen": 450 },
+    "outputs": { "pet_film": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "aramid_spinning",
+    "building": "polymer_plant",
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "ethylene": 800, "nitrogen": 150, "oxygen": 100 },
+    "outputs": { "aramid": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "vectran_spinning",
+    "building": "polymer_plant",
+    "milestone": 11,
+    "estimated": true,
+    "inputs": { "ethylene": 1050 },
+    "outputs": { "vectran": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "uhmwpe_polymerisation",
+    "building": "polymer_plant",
+    "milestone": 6,
+    "thin": true,
+    "estimated": false,
+    "inputs": { "ethylene": 1000 },
+    "outputs": { "uhmwpe": 1000 },
+    "power": 200,
+    "hours": 1,
+    "reaction": "n C2H4 -> (C2H4)n; polymerisation keeps all mass",
+    "source": "https://en.wikipedia.org/wiki/Ultra-high-molecular-weight_polyethylene"
+  },
+  {
+    "id": "ptfe_polymerisation",
+    "building": "polymer_plant",
+    "milestone": 18,
+    "estimated": true,
+    "inputs": { "fluorite": 1800, "ethylene": 250 },
+    "outputs": { "ptfe": 1000 },
+    "power": 200,
+    "hours": 1
+  },
+  {
+    "id": "silicone_synthesis",
+    "building": "polymer_plant",
+    "milestone": 3,
+    "estimated": false,
+    "inputs": { "silicon": 561.7, "methane": 641.7, "oxygen": 320.0 },
+    "outputs": { "silicone": 1483.0, "hydrogen": 40.32 },
+    "power": 200,
+    "hours": 1,
+    "reaction": "Si + 2 CH4 + 1/2 O2 -> (CH3)2SiO + H2",
+    "source": "https://en.wikipedia.org/wiki/Silicone"
+  }
+]

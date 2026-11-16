@@ -15,7 +15,7 @@ async function expectCleanLayout(page: Page) {
 
 const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
 const tab = (page: Page, id: string) => page.locator(`[data-tab="${id}"]`).click();
-const add = (page: Page, id: string) => page.locator(`[data-add="${id}"]`).click();
+const add = (page: Page, id: string) => page.locator(`[data-part="${id}"] button`).click();
 
 async function setCount(page: Page, id: string, n: number) {
   const input = page.locator(`[data-count="${id}"]`);
@@ -27,8 +27,7 @@ async function design(page: Page, name: string, role: string, parts: [string, st
   await page.locator('[data-act="new"]').click();
   await page.locator('#clsName').fill(name);
   await page.locator('#clsRole').selectOption(role);
-  for (const [kind, id, n] of parts) {
-    await tab(page, kind);
+  for (const [, id, n] of parts) {
     await add(page, id);
     await setCount(page, id, n);
   }
@@ -36,12 +35,6 @@ async function design(page: Page, name: string, role: string, parts: [string, st
   await page.locator('[data-act="lock"]').click();
   await expect(page.locator('#clsLocked')).toBeVisible();
 }
-
-const row = (page: Page, table: string, ...cells: string[]) => {
-  let r = page.locator(`${table} tr.pick`);
-  for (const c of cells) r = r.filter({ has: page.locator('td', { hasText: c }) });
-  return r;
-};
 
 test.describe('leaving Earth', () => {
   test('designs a two-stage launcher and a station module, builds them, launches, founds a station and delivers cargo', async ({
@@ -65,37 +58,45 @@ test.describe('leaving Earth', () => {
 
     await goTo(page, 'economy');
     await tab(page, 'production');
-    await row(page, '#groups', 'Alloy works', 'Stainless steel').first().click();
-    await page.locator('#recipePick').selectOption({ label: 'GRCop copper-chromium-niobium alloy' });
+    await page
+      .locator('#groups button.ui-tile', { hasText: 'Stainless steel' })
+      .filter({ hasText: 'Alloy works' })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'GRCop copper-chromium-niobium alloy', exact: true }).click();
     await page.locator('input[name="switchCount"]').fill('2');
     await page.locator('#recipeSwitch').click();
 
     await tab(page, 'yard');
     await expect(page.locator('#yardEmpty')).toBeVisible();
     for (const name of ['Booster', 'Orbiter']) {
-      await page.locator('#yardDesign').selectOption({ label: name });
+      await page.locator('#yardDesigns button', { hasText: name }).click();
       await page.locator('#yardAdd').click();
     }
-    await expect(page.locator('#yardQueue tr.pick')).toHaveCount(2);
+    await expect(page.locator('#yardQueue button')).toHaveCount(2);
+    await page.locator('#yardQueue button').first().click();
+    await expect(page.locator('#yardQueue button').first()).toContainText('Booster');
+    await page.locator('#yardDown').click();
+    await expect(page.locator('#yardQueue button').first()).toContainText('Orbiter');
+    await page.locator('#yardUp').click();
+    await expect(page.locator('#yardQueue button').first()).toContainText('Booster');
+    await page.locator('#yardPause').click();
+    await expect(page.locator('#yardPause')).toContainText('Resume');
+    await page.locator('#yardPause').click();
+    await expect(page.locator('#yardPause')).toContainText('Pause');
     await expectCleanLayout(page);
     for (let i = 0; i < 2; i++) await page.locator(MONTH).click();
     await expect(page.locator('#yardEmpty')).toBeVisible();
 
     await tab(page, 'ships');
-    await expect(page.locator('#vessels tr.pick')).toHaveCount(2);
+    await expect(page.locator('#vessels button')).toHaveCount(2);
 
     await tab(page, 'launch');
-    const names = await page.locator('#launchStage option').allTextContents();
-    expect(names.some((n) => n.startsWith('Booster'))).toBe(true);
-    await page.locator('#launchStage').selectOption({ label: names.find((n) => n.startsWith('Booster'))! });
-    await page.locator('#launchAdd').click();
-    const upper = (await page.locator('#launchStage option').allTextContents()).find((n) =>
-      n.startsWith('Orbiter')
-    )!;
-    await page.locator('#launchStage').selectOption({ label: upper });
-    await page.locator('#launchAdd').click();
-    await expect(page.locator('#stages tr')).toHaveCount(3);
-    await page.locator('#launchPayload').selectOption('cargo');
+    await expect(page.locator('#launchStage button', { hasText: 'Booster' })).toHaveCount(1);
+    await page.locator('#launchStage button', { hasText: 'Booster' }).click();
+    await page.locator('#launchStage button', { hasText: 'Orbiter' }).click();
+    await expect(page.locator('#stages .ui-tile')).toHaveCount(2);
+    await page.locator('#launchPayload [data-filter="cargo"]').click();
     for (const [material, kg] of [
       ['Stainless steel', 1500],
       ['Aluminium', 200],
@@ -106,28 +107,31 @@ test.describe('leaving Earth', () => {
       await page.locator('input[name="launchAmount"]').fill(String(kg));
       await page.locator('#launchCargoAdd').click();
     }
-    await expect(page.locator('#launchCargo')).toContainText('Stainless steel');
+    await expect(page.locator('#launchCargo .ui-rate')).toHaveCount(3);
+    await expect(page.locator('#launchCargo')).toContainText('2.5 t');
     await expect(page.locator('#launchPlan')).toContainText('Thrust to weight');
     await expect(page.locator('#launchReasons')).toHaveCount(0);
     await expect(page.locator('#launchGo')).toBeEnabled();
     await expectCleanLayout(page);
     await page.locator('#launchGo').click();
-    await expect(page.locator('#launchLog tr')).toHaveCount(2);
+    await expect(page.locator('#launchLog .entry')).toHaveCount(1);
     await expect(page.locator('#launchLog')).toContainText('1 back, 0 lost');
 
     await tab(page, 'ships');
-    const orbiter = page.locator('#vessels tr.pick', { hasText: 'Earth orbit' });
+    const orbiter = page.locator('#vessels button', { hasText: 'Earth orbit' });
     await expect(orbiter).toHaveCount(1);
     await orbiter.click();
-    await expect(page.locator('#foundBuilding option', { hasText: 'Fibre works' })).toHaveCount(1);
-    await page.locator('#foundBuilding').selectOption({ label: 'Fibre works' });
+    await expect(page.locator('#foundBuilding button', { hasText: 'Fibre works' })).toHaveCount(1);
+    await page.locator('#foundBuilding button', { hasText: 'Fibre works' }).click();
     await expect(page.locator('#foundGo')).toBeEnabled();
     await page.locator('#foundGo').click();
 
-    await expect(page.locator('#colonyTree [data-colony]')).toHaveCount(2);
-    await expect(page.locator('#colonyTree [data-colony="orbit-earth"]')).toContainText('orbital station');
+    await expect(page.locator('#siteList [data-site]')).toHaveCount(2);
+    await expect(page.locator('#siteList [data-site="orbit-earth"]')).toContainText('orbital station');
     await tab(page, 'stockpiles');
-    await expect(page.locator('#stockpiles tr', { hasText: 'Stainless steel' })).toContainText('1.00 t');
+    await expect(page.locator('#stockpiles button.ui-tile', { hasText: 'Stainless steel' })).toContainText(
+      '1 t'
+    );
     await expectCleanLayout(page);
   });
 
@@ -142,9 +146,38 @@ test.describe('leaving Earth', () => {
     expect(state.launches).toBe(2);
     await page.locator(MONTH).click();
     await expect(page.locator('.chip[title="Milestones reached"]')).toContainText('3/29');
-    await expect(page.locator('#colonyTree [data-colony]')).toHaveCount(2);
-    await tab(page, 'milestones');
-    await expect(page.locator('#milestones tr.pick').nth(2).locator('td').nth(3)).toContainText('Done');
+    await expect(page.locator('#siteList [data-site]')).toHaveCount(2);
+  });
+});
+
+test.describe('ships and supply tabs', () => {
+  test('the Ships tab filters by state and gives a ship an order', async ({ page }) => {
+    await open(page, 'screen=economy&tab=ships&scenario=travel');
+    await expect(page.locator('#vessels button')).toHaveCount(6);
+    await page.locator('[data-filter="trip"]').click();
+    await expect(page.locator('#vessels button')).toHaveCount(1);
+    await page.locator('[data-filter="all"]').click();
+    await page.locator('#vessels button', { hasText: 'Orbiter 2' }).click();
+    await page.locator('#orderType [data-filter="wait"]').click();
+    await page.locator('input[name="orderHours"]').fill('5');
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders')).toContainText('Wait');
+    await page.locator('#orderRemove').click();
+    await expect(page.locator('#noOrders')).toBeVisible();
+    await expectCleanLayout(page);
+  });
+
+  test('the Supply tab lists what a station needs and refuses a run from a launch site', async ({ page }) => {
+    await open(page, 'screen=economy&tab=supply&colony=orbit-earth&scenario=travel');
+    await expect(page.locator('#supplyTable button')).toHaveCount(4);
+    await page.locator('#supplyTable button', { hasText: 'Stainless steel' }).click();
+    await expect(page.locator('#supplySource option')).toHaveText(['Earth']);
+    await expect(page.locator('#supplyShip button')).toHaveCount(4);
+    await page.locator('#supplyShip button').first().click();
+    await page.locator('#supplyStart').click();
+    await expect(page.locator('#supplyMessage')).toContainText('launch site');
+    await expect(page.locator('#noRuns')).toBeVisible();
+    await expectCleanLayout(page);
   });
 });
 

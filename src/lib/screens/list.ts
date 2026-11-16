@@ -6,7 +6,6 @@ const ALL = [
   { id: 'economy', title: 'Economy', icon: 'factory', key: 'F2', mock: false },
   { id: 'research', title: 'Research', icon: 'flask', key: 'F3', mock: false },
   { id: 'classes', title: 'Ship classes', icon: 'ship', key: 'F4', mock: false },
-  { id: 'colony', title: 'Colony', icon: 'dome', key: 'F5', mock: false },
   { id: 'ground', title: 'Ground forces', icon: 'tank', key: 'F6', mock: true },
   { id: 'commanders', title: 'Commanders', icon: 'star', key: 'F7', mock: true },
   { id: 'intel', title: 'Intelligence', icon: 'eye', key: 'F8', mock: true },

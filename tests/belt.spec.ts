@@ -20,6 +20,8 @@ async function expectCleanLayout(page: Page) {
   expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
 }
 
+const ship = (page: Page, name: string) => page.locator('#vessels button', { hasText: name });
+
 const row = (page: Page, table: string, ...cells: string[]) => {
   let r = page.locator(`${table} tr.pick`);
   for (const c of cells) r = r.filter({ has: page.locator('td', { hasText: c }) });
@@ -108,8 +110,8 @@ test.describe('survey through the UI', () => {
     await open(page, 'sel=body:mars');
     await expect(win(page, 'sel').locator('#regionsUnknown')).toBeVisible();
     await open(page, 'screen=economy&tab=ships&scenario=belt');
-    await row(page, '#vessels', 'Survey probe 1').click();
-    await page.locator('#orderType').selectOption('survey');
+    await ship(page, 'Survey probe 1').click();
+    await page.locator('#orderType [data-filter="survey"]').click();
     await page.locator('#orderSurvey').selectOption({ label: 'Mars' });
     await page.locator('#orderAdd').click();
     await expect(page.locator('#vesselOrders')).toContainText('Survey Mars');
@@ -135,19 +137,19 @@ test.describe('survey through the UI', () => {
 test.describe('food at an outpost', () => {
   test('the Summary counts the crew in calories and how long the rations last', async ({ page }) => {
     await open(page, 'screen=economy&colony=luna&scenario=belt&outpost=1');
-    const term = (text: RegExp) =>
-      page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
-    await expect(term(/^Calories made$/)).toHaveText('0 kcal a day against 11.2 k kcal needed');
-    await expect(term(/^Calorie shares$/)).toHaveText('Food ration 100%');
-    await expect(term(/^Food in store$/)).toHaveText('5.00 t, 3.4 y');
+    await expect(page.locator('#summaryStats .ui-kpi').nth(1).locator('small')).toHaveText(
+      '0 kcal each a day'
+    );
+    await expect(page.locator('#calorieShares')).toHaveText('Eaten Food ration 100%');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('5 t, 3.4 y in store');
   });
 });
 
 test.describe('sampling through the UI', () => {
   test('a sample order is offered and a probe without a sampling arm is told so', async ({ page }) => {
     await open(page, 'screen=economy&tab=ships&scenario=belt');
-    await row(page, '#vessels', 'Survey probe 2').click();
-    await page.locator('#orderType').selectOption('sample');
+    await ship(page, 'Survey probe 2').click();
+    await page.locator('#orderType [data-filter="sample"]').click();
     await page.locator('#orderAdd').click();
     await expect(page.locator('#vesselOrders')).toContainText('Take a sample');
     await expect(page.locator('#vesselBlocked')).toContainText('no sampling arm');
@@ -161,7 +163,7 @@ test.describe('founding in a region', () => {
   }) => {
     test.setTimeout(90_000);
     await open(page, 'screen=economy&tab=ships&scenario=belt');
-    await row(page, '#vessels', 'Lander').click();
+    await ship(page, 'Lander').click();
     await expect(page.locator('#foundRegion option')).toHaveText([
       'South polar cold traps',
       'Maria',
@@ -169,30 +171,36 @@ test.describe('founding in a region', () => {
       'Procellarum KREEP terrane'
     ]);
     await page.locator('#foundRegion').selectOption({ label: 'Maria' });
-    const buildings = page.locator('#foundBuilding option');
+    const buildings = page.locator('#foundBuilding button');
     await expect(buildings.filter({ hasText: 'Regolith excavator' })).toHaveCount(1);
     await expect(buildings.filter({ hasText: 'Ice mine' })).toHaveCount(0);
     await page.locator('#foundRegion').selectOption({ label: 'South polar cold traps' });
     await expect(buildings.filter({ hasText: 'Ice mine' })).toHaveCount(1);
     await page.locator('#foundRegion').selectOption({ label: 'Maria' });
-    await page.locator('#foundBuilding').selectOption({ label: 'Regolith excavator' });
+    await buildings.filter({ hasText: 'Regolith excavator' }).click();
     await expectCleanLayout(page);
     await page.locator('#foundGo').click();
     await expect(page.locator('#siteRegion')).toContainText('Maria');
-    await expect(page.locator('#siteRegion')).toContainText('Ilmenite');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('Ilmenite');
     await page.locator('[data-tab="production"]').click();
     await expect(page.locator('#groups')).toContainText('Regolith excavator');
-    await expect(page.locator('#groups')).toContainText('Grade');
+    await page.locator('#groups button.ui-tile', { hasText: 'Regolith excavator' }).click();
+    await expect(
+      page.locator('[data-screen="economy"] .ui-card .ui-pill', { hasText: 'grade' })
+    ).toBeVisible();
     await expectCleanLayout(page);
   });
 
   test('shows the region and the grade an extraction group applies', async ({ page }) => {
     await open(page, 'screen=economy&tab=production&colony=luna&scenario=belt&outpost=1');
     await expect(page.locator('#groups')).toContainText('Ice mine');
-    await expect(page.locator('#groups')).toContainText('2.00');
+    await page.locator('#groups button.ui-tile', { hasText: 'Ice mine' }).click();
+    await expect(
+      page.locator('[data-screen="economy"] .ui-card .ui-pill', { hasText: 'grade 2.00' })
+    ).toBeVisible();
     await page.locator('[data-tab="summary"]').click();
     await expect(page.locator('#siteRegion')).toContainText('South polar cold traps');
-    await expect(page.locator('#siteRegion')).toContainText('Water');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('Water');
     await expectCleanLayout(page);
   });
 });

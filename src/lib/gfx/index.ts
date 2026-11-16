@@ -6,6 +6,8 @@ export { planet, type PlanetLook, type PlanetType } from './planets';
 export { sun } from './sun';
 export { stars, surfaceScene, duskSky, regolith } from './scenes';
 export { ICONS, iconPath, type IconName } from './icons';
+export * from './icons/index.ts';
+export * from './portraits/index.ts';
 export {
   SPECS,
   ALIEN_SPECS,

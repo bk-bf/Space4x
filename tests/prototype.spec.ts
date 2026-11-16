@@ -14,16 +14,18 @@ async function expectCleanLayout(page: Page) {
 }
 
 const tab = (page: Page, id: string) => page.locator(`[data-tab="${id}"]`).click();
-const row = (page: Page, table: string, ...cells: string[]) => {
-  let r = page.locator(`${table} tr.pick`);
-  for (const c of cells) r = r.filter({ has: page.locator('td', { hasText: c }) });
-  return r;
+const group = (page: Page, ...texts: string[]) => {
+  let t = page.locator('#groups button.ui-tile');
+  for (const text of texts) t = t.filter({ hasText: text });
+  return t;
 };
+const recipe = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
+const numeric = (text: string | null) => Number((text ?? '').replace(/[^0-9.]/g, ''));
 
 async function switchRecipe(page: Page, building: string, from: string, to: string, count: number) {
   await tab(page, 'production');
-  await row(page, '#groups', building, from).first().click();
-  await page.locator('#recipePick').selectOption({ label: to });
+  await group(page, from, building).first().click();
+  await recipe(page, to).click();
   await page.locator('input[name="switchCount"]').fill(String(count));
   await page.locator('#recipeSwitch').click();
 }
@@ -31,53 +33,96 @@ async function switchRecipe(page: Page, building: string, from: string, to: stri
 test.describe('the prototype on present-day Earth', () => {
   test('starts with Earth as the only site', async ({ page }) => {
     await open(page, 'screen=economy');
-    await expect(page.locator('#colonyTree [data-colony]')).toHaveCount(1);
-    await expect(page.locator('#colonyTree [data-colony="earth"]')).toContainText('Earth');
-    await expect(page.locator('#colonyTree summary')).toHaveText([/Sol/]);
-    await expect(page.locator('.chip[title="People"]')).toContainText('8.20 bn');
+    await expect(page.locator('#siteList [data-site]')).toHaveCount(1);
+    await expect(page.locator('#siteList [data-site="earth"]')).toContainText('Earth');
+    await expect(page.locator('#siteList')).toContainText('Sol');
+    await expect(page.locator('.chip[title="People"]')).toContainText('8,200 M');
     await expect(page.locator('.chip[title="Milestones reached"]')).toContainText('0/29');
-    await page.locator('#openColony').click();
-    await expect(page.locator('#colonyPick option')).toHaveText(['Earth']);
+    await tab(page, 'people');
+    await expect(page.locator('[data-screen="economy"] .ui-card header .t')).toHaveText('Population');
     await expectCleanLayout(page);
   });
 
-  test('changes stockpiles while the clock runs', async ({ page }) => {
+  test('switches every rate between a day and a year', async ({ page }) => {
     await open(page, 'screen=economy&tab=stockpiles');
-    const cell = page.locator('#stockpiles tr', { hasText: 'Wheat' }).first().locator('td').nth(1);
-    const before = await cell.textContent();
+    const wheat = page.locator('#stockpiles button.ui-tile', { hasText: 'Wheat' }).first();
+    await expect(page.locator('[data-period="day"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(wheat.locator('.ui-net')).toContainText('/d');
+    await page.locator('[data-period="year"]').click();
+    await expect(wheat.locator('.ui-net')).toContainText('/yr');
+    await tab(page, 'summary');
+    await expect(page.locator('[data-screen="economy"] .ui-net').first()).toContainText('/yr');
+    await expectCleanLayout(page);
+  });
+
+  test('selects a stock tile and shows its card, and the stock changes while the clock runs', async ({
+    page
+  }) => {
+    await open(page, 'screen=economy&tab=stockpiles');
+    const wheat = page.locator('#stockpiles button.ui-tile', { hasText: 'Wheat' }).first();
+    await wheat.click();
+    await expect(wheat).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-screen="economy"] .ui-card header .t')).toHaveText('Wheat');
+    const before = await wheat.locator('.ui-amt').textContent();
     await page.locator(MONTH).click();
-    await expect(cell).not.toHaveText(before ?? '');
+    await expect(wheat.locator('.ui-amt')).not.toHaveText(before ?? '');
+    await page.locator('#showEmpty').click();
+    await expect(page.locator('#showEmpty')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('[data-filter="food"]').click();
+    await expect(page.locator('#stockpiles button.ui-tile').first()).toBeVisible();
     await expectCleanLayout(page);
   });
 
   test('builds a queued building, which then produces', async ({ page }) => {
     await open(page, 'screen=economy&tab=construction');
-    await page.locator('#items tr.pick', { hasText: 'Alloy works' }).click();
-    await expect(page.locator('#chosen')).toHaveText('Alloy works');
-    await page.locator('#buildRecipe').selectOption({ label: 'GRCop copper-chromium-niobium alloy' });
+    await page.locator('#items button.ui-tile', { hasText: 'Alloy works' }).click();
+    await expect(page.locator('[data-screen="economy"] .ui-card header .t')).toHaveText('Alloy works');
+    await recipe(page, 'GRCop copper-chromium-niobium alloy').click();
     await page.locator('#orderAdd').click();
-    await expect(page.locator('#queue tr.pick')).toHaveCount(1);
-    await expect(page.locator('#queue tr.pick')).toContainText('Alloy works');
+    await expect(page.locator('#queue button.ui-tile')).toHaveCount(1);
+    await expect(page.locator('#queue button.ui-tile')).toContainText('Alloy works');
     await page.locator(MONTH).click();
     await expect(page.locator('#queueEmpty')).toBeVisible();
     await tab(page, 'production');
-    const built = page.locator('#groups tr.pick', { hasText: 'GRCop' });
+    const built = group(page, 'GRCop');
     await expect(built).toHaveCount(1);
-    await expect(built.locator('td').nth(2)).toHaveText('1');
-    await expect(built.locator('td').nth(4)).toContainText('t GRCop');
+    await expect(built.locator('.n')).toHaveText('1');
+    await expect(built).toContainText('Alloy works');
+    await expectCleanLayout(page);
+  });
+
+  test('queues two buildings, reorders, pauses and removes them', async ({ page }) => {
+    await open(page, 'screen=economy&tab=construction');
+    await page.locator('#items button.ui-tile', { hasText: 'Alloy works' }).click();
+    await page.locator('#orderAdd').click();
+    await page.locator('#items button.ui-tile', { hasText: 'Polymer plant' }).click();
+    await page.locator('#orderAdd').click();
+    const queue = page.locator('#queue button.ui-tile');
+    await expect(queue).toHaveCount(2);
+    await expect(queue.nth(1)).toContainText('Polymer plant');
+    await expect(queue.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('#orderUp').click();
+    await expect(queue.nth(0)).toContainText('Polymer plant');
+    await expect(page.locator('#orderUp')).toBeDisabled();
+    await page.locator('#orderPause').click();
+    await expect(queue.nth(0)).toContainText('paused');
+    await page.locator('#orderRemove').click();
+    await expect(queue).toHaveCount(1);
+    await expect(queue.first()).toContainText('Alloy works');
     await expectCleanLayout(page);
   });
 
   test('switches part of a group to another recipe and switches it off', async ({ page }) => {
     await open(page, 'screen=economy&tab=production');
     await switchRecipe(page, 'Alloy works', 'Stainless steel', 'GRCop copper-chromium-niobium alloy', 10);
-    const grcop = page.locator('#groups tr.pick', { hasText: 'GRCop' });
-    await expect(grcop.locator('td').nth(2)).toHaveText('10');
-    await expect(grcop).toHaveClass(/on/);
+    const grcop = group(page, 'GRCop');
+    await expect(grcop.locator('.n')).toHaveText('10');
+    await expect(grcop).toHaveAttribute('aria-pressed', 'true');
     await page.locator('#groupToggle').click();
-    await expect(grcop.locator('td').nth(5)).toHaveText('Switched off');
+    await expect(page.locator('#groupLimit')).toHaveText('Switched off');
+    await expect(grcop).toHaveClass(/idle/);
     await page.locator('#groupToggle').click();
-    await expect(grcop.locator('td').nth(5)).toHaveText('Running');
+    await expect(page.locator('#groupLimit')).toHaveCount(0);
     await expectCleanLayout(page);
   });
 
@@ -86,37 +131,26 @@ test.describe('the prototype on present-day Earth', () => {
     const people = page.locator('.chip[title="People"]');
     await expect(page.locator('.chip[title^="Food"]')).toHaveClass(/warn/);
     await expect(page.locator('.chip[title^="Food"]')).toContainText('fed');
-    const pane = page.locator('[data-screen="economy"]');
-    await expect(
-      pane.locator('dt', { hasText: 'Growth' }).first().locator('xpath=following-sibling::dd[1]')
-    ).toContainText('-');
+    await expect(page.locator('#summaryStats .ui-kpi').first().locator('small')).toContainText('-');
     const before = await people.textContent();
     await page.locator(MONTH).click();
     await expect(people).not.toHaveText(before ?? '');
-    const after = Number((await people.textContent())?.replace(/[^0-9.]/g, ''));
-    expect(after).toBeLessThan(Number(before?.replace(/[^0-9.]/g, '')));
+    expect(numeric(await people.textContent())).toBeLessThan(numeric(before));
     await expectCleanLayout(page);
   });
 
   test('starts milestone 1 once its needs are met and opens what it unlocks', async ({ page }) => {
-    await open(page, 'screen=economy&tab=milestones');
-    const first = page.locator('#milestones tr.pick').first();
-    await expect(first.locator('td').nth(3)).toContainText('GRCop short');
-    await expect(page.locator('#programmeStart')).toHaveCount(0);
+    await open(page, 'screen=economy&tab=production&test');
+    const start = () => page.evaluate(() => window.space4xTest?.startProgramme(1));
+    expect(await start()).toBe(false);
     await switchRecipe(page, 'Alloy works', 'Stainless steel', 'GRCop copper-chromium-niobium alloy', 1);
     await page.locator('[data-step="86400"]').click();
-    await tab(page, 'milestones');
-    await expect(first.locator('td').nth(3)).toContainText('Ready to start');
-    await page.locator('#programmeStart').click();
-    await expect(first.locator('td').nth(3)).toContainText('Running');
-    await tab(page, 'production');
-    await page.locator('#groups tr.pick', { hasText: 'Polymer plant' }).first().click();
-    await expect(page.locator('#recipePick option', { hasText: 'Polyimide' })).toHaveCount(0);
+    expect(await start()).toBe(true);
+    await group(page, 'Polymer plant').first().click();
+    await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(0);
     for (let i = 0; i < 3; i++) await page.locator(MONTH).click();
     await expect(page.locator('.chip[title="Milestones reached"]')).toContainText('1/29');
-    await expect(page.locator('#recipePick option', { hasText: 'Polyimide' })).toHaveCount(1);
-    await tab(page, 'milestones');
-    await expect(first.locator('td').nth(3)).toContainText('Done');
+    await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(1);
     await expectCleanLayout(page);
   });
 });

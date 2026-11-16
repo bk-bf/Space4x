@@ -1,14 +1,5 @@
-import { building, material } from '#lib/game/data/index.ts';
-import type { BuildingKind } from '#lib/game/data/index.ts';
-import {
-  isStockless,
-  POWER,
-  process,
-  type Limit,
-  type Site,
-  type SiteFlows
-} from '#lib/game/economy/index.ts';
-import { formatAmount, materialName } from './format.ts';
+import { isStockless, type Limit, type Site, type SiteFlows } from '#lib/game/economy/index.ts';
+import { materialName } from './format.ts';
 
 export const SCARCE_DAYS = 365;
 
@@ -43,29 +34,3 @@ export function limitText(limit: Limit | null): string {
   if (limit.kind === 'slot') return 'Waiting for a crew';
   return 'Paused';
 }
-
-export function mainOutput(site: Site, processId: string): string | undefined {
-  const p = process(processId, site.body);
-  return Object.entries(p.outputs)
-    .filter(([m]) => m !== POWER)
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
-}
-
-export const perDay = (id: string, perHour: number): string => `${formatAmount(id, perHour * 24)}`;
-
-const KIND_NAMES: Record<BuildingKind, string> = {
-  extraction: 'Extraction',
-  processing: 'Processing',
-  nuclear: 'Nuclear',
-  power: 'Power',
-  electronics: 'Electronics',
-  habitat: 'Habitat and food',
-  infrastructure: 'Infrastructure',
-  special: 'Special'
-};
-
-export const kindName = (kind: BuildingKind): string => KIND_NAMES[kind];
-
-export const buildingName = (id: string): string => building(id).name;
-
-export const unitOf = (id: string): string => (material(id).unit === 'cu' ? 'cu' : '');

@@ -17,4 +17,5 @@ export const columnLabel = (head: string): string => (isNumericColumn(head) ? he
 export interface Tab {
   id: string;
   label: string;
+  icon?: IconName;
 }

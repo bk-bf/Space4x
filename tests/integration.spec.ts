@@ -14,7 +14,6 @@ const mapLabel = (page: Page, text: string) =>
   page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}( ×\\d+)?$`) });
 const term = (page: Page, text: RegExp): Locator =>
   page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
-const heading = (page: Page, screen: string) => page.locator(`[data-screen="${screen}"] .pan > h2`).first();
 
 test.describe('classes', () => {
   test('a class designed from nothing can be named and deleted while nothing builds it', async ({ page }) => {
@@ -27,23 +26,14 @@ test.describe('classes', () => {
 });
 
 test.describe('cross-screen buttons', () => {
-  test('Earth on the map opens its site in Economy and in Colony', async ({ page }) => {
+  test('Earth on the map opens its site in Economy', async ({ page }) => {
     await open(page, 'screen=economy&tab=stockpiles');
     await goTo(page, 'map');
     await mapLabel(page, 'Earth').click();
+    await expect(page.locator('#w-sel [data-go="colony"]')).toHaveCount(0);
     await page.locator('#w-sel [data-go="economy"]').click();
     await expect(page.locator('[data-screen="economy"]')).toBeVisible();
-    await expect(page.locator('#colonyTree [data-colony="earth"]')).toHaveClass(/on/);
-
-    await goTo(page, 'map');
-    await mapLabel(page, 'Earth').click();
-    await page.locator('#w-sel [data-go="colony"]').click();
-    await expect(heading(page, 'colony')).toContainText('Earth');
-    await expect(page.locator('#colonyPick')).toHaveValue('earth');
-    await page.locator('#openEconomy').click();
-    await expect(page.locator('#colonyTree [data-colony="earth"]')).toHaveClass(/on/);
-    await page.locator('#openColony').click();
-    await expect(heading(page, 'colony')).toContainText('Earth');
+    await expect(page.locator('#siteList [data-site="earth"]')).toHaveClass(/sel/);
   });
 
   test('Galaxy opens Sol, the one mapped system, and counts what the world holds', async ({ page }) => {
@@ -64,16 +54,15 @@ test.describe('the top bar', () => {
     page
   }) => {
     await open(page, 'screen=economy');
-    const people = term(page, /^People$/).first();
+    const stat = (n: number) => page.locator('#summaryStats .ui-kpi').nth(n).locator('.big');
+    const people = stat(0);
     await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
-    await expect(page.locator('#colonyTree [data-colony="earth"]')).toContainText(
+    await expect(page.locator('#siteList [data-site="earth"]')).toContainText(
       (await chip(page, 'People').textContent())!
     );
-    await expect(chip(page, 'Power: generation less demand')).toHaveText(
-      (await term(page, /^Balance$/).textContent())!
-    );
+    await expect(chip(page, 'Power: generation less demand')).toHaveText((await stat(2).textContent())!);
     await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(
-      (await term(page, /^Food balance$/).textContent())!
+      (await stat(1).textContent())!
     );
 
     const before = (await people.textContent())!;
@@ -87,28 +76,26 @@ test.describe('the top bar', () => {
 
   test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {
     await open(page, 'screen=economy');
-    const made = await term(page, /^Calories made$/).textContent();
-    expect(made).toMatch(/T kcal a day against .* T kcal needed$/);
-    const shares = term(page, /^Calorie shares$/);
-    await expect(shares).toContainText(/Wheat \d+%/);
-    await expect(shares).toContainText(/Meat \d+%/);
-    const balance = (await term(page, /^Food balance$/).textContent())!;
+    const bar = page.locator('#calorieBar');
+    await expect(page.locator('#calorieShares')).toContainText(/Wheat \d+%/);
+    await expect(page.locator('#calorieShares')).toContainText(/Meat \d+%/);
+    await expect(bar.locator('[data-food="wheat"]')).toHaveAttribute('data-share', /^0\.\d+$/);
+    await expect(bar.locator('[data-food="meat"]')).toHaveAttribute('data-share', /^0\.\d+$/);
+    await expect(page.locator('[data-screen="economy"]')).toContainText(
+      'kcal a person a day made against 2,800 needed'
+    );
+    const balance = (await page.locator('#summaryStats .ui-kpi').nth(1).locator('.big').textContent())!;
     expect(balance).toMatch(/^\+\d+%$/);
     await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
   });
 
   test('a milestone lists the site it needs and what is still missing', async ({ page }) => {
-    await open(page, 'screen=economy&tab=milestones&milestone=6');
-    const detail = page.locator('#milestoneDetail');
-    await expect(detail).toContainText('6. Crewed lunar landing and surface outpost');
-    const site = detail.locator('tr', { hasText: 'crewed outpost on the Moon' });
-    await expect(site).toContainText('Site');
-    await expect(site).toContainText('None');
-    await goTo(page, 'economy');
-    await open(page, 'screen=economy&tab=milestones&milestone=17');
-    await expect(
-      page.locator('#milestoneDetail tr', { hasText: 'miner on a metallic asteroid' })
-    ).toContainText('None');
+    await open(page, 'screen=research&milestone=6');
+    const outpost = page.locator('#siteNeeds [data-site-need]', { hasText: /crewed outpost on the Moon/i });
+    await expect(outpost).toHaveAttribute('data-site-need', 'missing');
+    await open(page, 'screen=research&milestone=17');
+    const miner = page.locator('#siteNeeds [data-site-need]', { hasText: /miner on a metallic asteroid/i });
+    await expect(miner).toHaveAttribute('data-site-need', 'missing');
   });
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
