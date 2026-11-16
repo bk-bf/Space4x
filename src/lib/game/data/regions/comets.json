@@ -1,0 +1,31 @@
+[
+  {
+    "id": "comet",
+    "world": "comet",
+    "body": "comet",
+    "template": true,
+    "name": "Whole nucleus",
+    "kind": "ground",
+    "deposits": [
+      {
+        "material": "water",
+        "grade": 2
+      },
+      {
+        "material": "comet_ice",
+        "grade": 1.5
+      },
+      {
+        "material": "carbon_dioxide",
+        "grade": 0.8
+      },
+      {
+        "material": "ammonia",
+        "grade": 0.1
+      }
+    ],
+    "basis": "A comet nucleus is dust bound by ice: Rosetta measured a dust to ice mass ratio near 4 at 67P, with water the main ice and carbon dioxide, carbon monoxide and a trace of ammonia beside it. One region stands for the whole nucleus. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/67P/Churyumov%E2%80%93Gerasimenko",
+    "estimated": true
+  }
+]

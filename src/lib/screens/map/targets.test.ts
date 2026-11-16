@@ -1,7 +1,7 @@
 import { withFixture } from '#lib/game/mock/fixture/index.ts';
 import { describe, expect, it } from 'vitest';
 import { AU, Game, parkingRadius } from '#lib/game/index.ts';
-import { locate, presetFor, presets, systemExtent } from './targets';
+import { locate, planetExtent, presetFor, presets, systemExtent } from './targets';
 
 describe('map presets', () => {
   const g = withFixture(new Game()),
@@ -10,10 +10,15 @@ describe('map presets', () => {
 
   it('fits the whole system, out to Neptune, in the System view', () => {
     const p = presetFor(g, 'system', W, H)!;
-    const extent = systemExtent(g, 'sol');
+    const extent = planetExtent(g, 'sol');
     expect(extent).toBeGreaterThan(30 * AU);
+    expect(extent).toBeLessThan(31 * AU);
     expect(extent / 10 ** p.L).toBeLessThan(H / 2);
     expect(extent / 10 ** p.L).toBeGreaterThan(H / 2 - 20);
+  });
+
+  it('lets the zoom reach the farthest dwarf planet and comet', () => {
+    expect(systemExtent(g, 'sol')).toBeGreaterThan(planetExtent(g, 'sol') * 10);
   });
 
   it('fits the rocky bodies and the belt, not the giants, in the Inner system view', () => {

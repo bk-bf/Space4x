@@ -1,5 +1,6 @@
+import { isSmallBody } from '#lib/game/data/index.ts';
 import { economy } from '#lib/game/economy/index.ts';
-import { bodyPosition, game, parkingRadius, sitePosition, type Game } from '#lib/game/index.ts';
+import { AU, bodyPosition, game, parkingRadius, sitePosition, type Game } from '#lib/game/index.ts';
 import { ships, stateOf, vesselById, vesselState } from '#lib/game/ships/index.ts';
 import type { SiteKind } from '#lib/game/index.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
@@ -83,6 +84,7 @@ const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
 const SHIP_VIEW_M = 4e6;
 const BELT_VIEW_M = 2e11;
+const INNER_LIMIT = 3.5 * AU;
 const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
 export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
   yard: 0.4,
@@ -93,21 +95,27 @@ export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
   gate: 0.34
 };
 
-export function systemExtent(g: Game, system: string): number {
+function reachOf(g: Game, system: string, only: (id: string) => boolean): number {
   const sys = g.starSystem(system);
   const reach = [
-    ...g.world.bodies.filter((b) => b.system === system && !b.parent).map((b) => b.orbit + b.radius),
+    ...g.world.bodies
+      .filter((b) => b.system === system && !b.parent && only(b.id))
+      .map((b) => b.orbit + b.radius),
     ...(sys?.stars ?? []).map((s) => Math.hypot(s.x, s.y) + s.radius),
     ...(sys?.jumps ?? []).map((j) => Math.hypot(j.x, j.y))
   ];
   return Math.max(1e9, ...reach);
 }
 
+export const systemExtent = (g: Game, system: string): number => reachOf(g, system, () => true);
+
+export const planetExtent = (g: Game, system: string): number => reachOf(g, system, (id) => !isSmallBody(id));
+
 function innerExtent(g: Game, system: string): number {
   const rocky = g.world.bodies
-    .filter((b) => b.system === system && !b.parent && !GIANTS.includes(b.type))
+    .filter((b) => b.system === system && !b.parent && !GIANTS.includes(b.type) && b.orbit < INNER_LIMIT)
     .map((b) => b.orbit);
-  return rocky.length ? Math.max(...rocky) * INNER_MARGIN : systemExtent(g, system) / 4;
+  return rocky.length ? Math.max(...rocky) * INNER_MARGIN : planetExtent(g, system) / 4;
 }
 
 const fit = (metres: number, px: number) => Math.log10(metres / Math.max(1, px));
@@ -117,7 +125,7 @@ export function presets(g: Game, fw: number, fh: number): Preset[] {
     sys = g.starSystem(system),
     half = Math.min(fw, fh) / 2;
   const list: Preset[] = [
-    { id: 'system', label: 'System', L: fit(systemExtent(g, system), half * SYSTEM_MARGIN), aim: [0, 0] },
+    { id: 'system', label: 'System', L: fit(planetExtent(g, system), half * SYSTEM_MARGIN), aim: [0, 0] },
     { id: 'inner', label: 'Inner system', L: fit(innerExtent(g, system), half), aim: [0, 0] }
   ];
   if (g.body('ceres'))

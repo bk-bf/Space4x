@@ -1,7 +1,8 @@
-import { isAsteroid, regionsOf, regions, type Region } from '#lib/game/data/index.ts';
+import { diameterOf, regionsOf, regions, type Region } from '#lib/game/data/index.ts';
 
 export const SURVEY_ERROR = 0.3;
 export const SURVEY_DAYS_SMALL_BODY = 14;
+const SMALL_BODY_KM = 1000;
 export const SURVEY_DAYS_PLANET = 60;
 export const JUMP_SURVEY_DAYS = 30;
 
@@ -25,7 +26,7 @@ export const regionKnown = (r: Region): boolean => r.kind === 'atmosphere' || is
 export const knownRegions = (world: string): Region[] => regionsOf(world).filter(regionKnown);
 
 export const surveyDays = (world: string): number =>
-  isAsteroid(world) ? SURVEY_DAYS_SMALL_BODY : SURVEY_DAYS_PLANET;
+  (diameterOf(world) ?? Infinity) < SMALL_BODY_KM ? SURVEY_DAYS_SMALL_BODY : SURVEY_DAYS_PLANET;
 
 export function completeSurvey(world: string, level = 1): void {
   if (isSurveyable(world) && surveyLevel(world) < level) survey.levels[world] = level;

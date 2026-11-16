@@ -6,6 +6,8 @@ import {
   WORLD_BODIES,
   asteroids,
   atmosphereOf,
+  comets,
+  moons,
   bodyTypeOf,
   buildings,
   dataFiles,
@@ -639,9 +641,9 @@ describe('regions', () => {
       }
   });
 
-  it('give Earth none and keep comets out until they are bodies', () => {
+  it('give Earth none and give comets a region each', () => {
     expect(regions.filter((r) => r.body === 'earth')).toEqual([]);
-    expect(regions.filter((r) => r.body === 'comet')).toEqual([]);
+    expect(regions.some((r) => r.body === 'comet')).toBe(true);
     expect(depositGrade('earth', null, 'iron')).toBe(1);
   });
 
@@ -687,26 +689,30 @@ describe('asteroids', () => {
 
   it('are real bodies with unique ids and numbers, an orbit, a size, a mass and a source', () => {
     expect(new Set(asteroids.map((a) => a.id)).size).toBe(asteroids.length);
-    expect(new Set(asteroids.map((a) => a.number)).size).toBe(asteroids.length);
+    const numbers = asteroids.flatMap((a) => (a.number === undefined ? [] : [a.number]));
+    expect(new Set(numbers).size).toBe(numbers.length);
     for (const a of asteroids) {
       expect(Object.keys(WORLD_BODIES), a.id).not.toContain(a.id);
       expect(Object.keys(ASTEROID_BODY), a.id).toContain(a.type);
       expect(a.a, a.id).toBeGreaterThan(0.8);
-      expect(a.a, a.id).toBeLessThan(4);
+      expect(a.a, a.id).toBeLessThan(1000);
       expect(a.e, a.id).toBeGreaterThanOrEqual(0);
-      expect(a.e, a.id).toBeLessThan(0.7);
+      expect(a.e, a.id).toBeLessThan(1);
       expect(a.diameter, a.id).toBeGreaterThan(0.1);
       expect(a.mass, a.id).toBeGreaterThan(1e9);
       expect(a.source, a.id).toMatch(/^https:\/\//);
     }
   });
 
-  it('hold near-Earth asteroids and a main belt of named bodies, all three types', () => {
+  it('hold near-Earth asteroids, a main belt, Trojans, centaurs and the dwarf planets, all four types', () => {
     const names = (list: typeof asteroids) => list.map((a) => a.name);
     expect(names(near)).toEqual(expect.arrayContaining(['Bennu', 'Ryugu', 'Eros', 'Itokawa', 'Apophis']));
     expect(asteroids.length - near.length).toBeGreaterThanOrEqual(40);
     expect(names(asteroids)).toEqual(
       expect.arrayContaining(['Ceres', 'Vesta', 'Pallas', 'Hygiea', 'Psyche', 'Kalliope'])
+    );
+    expect(names(asteroids.filter((a) => a.dwarf))).toEqual(
+      expect.arrayContaining(['Ceres', 'Pluto', 'Eris', 'Haumea', 'Makemake', 'Quaoar', 'Sedna'])
     );
     for (const type of Object.keys(ASTEROID_BODY))
       expect(asteroids.filter((a) => a.type === type).length, type).toBeGreaterThanOrEqual(5);
@@ -729,16 +735,108 @@ describe('asteroids', () => {
     const carbon = asteroids.find((a) => a.type === 'carbonaceous' && a.id !== 'ceres')!;
     expect(depositGrade(carbon.id, `${carbon.id}-body`, 'water')).toBeGreaterThan(0);
     expect(depositGrade(carbon.id, `${carbon.id}-body`, 'iron')).toBeUndefined();
+    const ice = asteroids.find((a) => a.type === 'icy')!;
+    expect(depositGrade(ice.id, `${ice.id}-body`, 'water')).toBeGreaterThan(0);
+    expect(depositGrade(ice.id, `${ice.id}-body`, 'iron')).toBeUndefined();
   });
 
-  it('mark an estimated mass as such and keep real masses near the density of the type', () => {
+  it('mark an estimated mass as such and keep every mass near the density of the type', () => {
     for (const a of asteroids) {
       const rho = a.mass / ((Math.PI / 6) * Math.pow(a.diameter * 1000, 3));
-      expect(rho, a.id).toBeGreaterThan(500);
+      expect(rho, a.id).toBeGreaterThan(300);
       expect(rho, a.id).toBeLessThan(8000);
     }
     expect(asteroids.find((a) => a.id === 'bennu')?.massEstimated).toBeUndefined();
     expect(asteroids.find((a) => a.id === 'apophis')?.massEstimated).toBe(true);
+  });
+
+  it('say how a type was found when it did not come from a spectral class', () => {
+    for (const a of asteroids) {
+      if (a.typeBasis === 'assumed') expect(['stony', 'icy'], a.id).toContain(a.type);
+    }
+    expect(asteroids.find((a) => a.id === 'bennu')?.typeBasis).toBeUndefined();
+  });
+});
+
+describe('moons', () => {
+  it('are real, with a parent, an orbit, a size, a mass and a source, each once', () => {
+    expect(new Set(moons.map((m) => m.id)).size).toBe(moons.length);
+    expect(new Set(moons.map((m) => m.code)).size).toBe(moons.length);
+    const ids = new Set([
+      ...Object.keys(WORLD_BODIES),
+      ...asteroids.map((a) => a.id),
+      ...comets.map((c) => c.id)
+    ]);
+    const parents = new Set([
+      ...Object.keys(WORLD_BODIES),
+      ...asteroids.filter((a) => a.dwarf).map((a) => a.id)
+    ]);
+    for (const m of moons) {
+      expect(ids.has(m.id), m.id).toBe(false);
+      expect(parents.has(m.planet), `${m.id} parent`).toBe(true);
+      expect(m.aKm, m.id).toBeGreaterThan(0);
+      expect(m.e, m.id).toBeGreaterThanOrEqual(0);
+      expect(m.e, m.id).toBeLessThan(1);
+      expect(m.period, m.id).toBeGreaterThan(0);
+      expect(m.diameter, m.id).toBeGreaterThan(1);
+      expect(m.mass, m.id).toBeGreaterThan(1e12);
+      expect(m.source, m.id).toMatch(/^https:\/\//);
+    }
+  });
+
+  it('fall into the types of their bodies: dark irregular and Martian moons carbonaceous, the rest icy', () => {
+    for (const m of moons) {
+      expect(bodyTypeOf(m.id), m.id).toBe(ASTEROID_BODY[m.type]);
+      expect(m.type, m.id).toBe(m.irregular || m.planet === 'mars' ? 'carbonaceous' : 'icy');
+      expect(
+        regionsOf(m.id).map((r) => r.id),
+        m.id
+      ).toEqual([`${m.id}-body`]);
+    }
+  });
+
+  it('have the Martian moons, the small moons of every giant and the moons of Pluto', () => {
+    const names = moons.map((m) => m.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'Phobos',
+        'Deimos',
+        'Himalia',
+        'Rhea',
+        'Titania',
+        'Triton',
+        'Charon',
+        'Amalthea'
+      ])
+    );
+  });
+});
+
+describe('comets', () => {
+  it('are real, with an orbit, a nucleus, an estimated mass and a source, each once', () => {
+    expect(new Set(comets.map((c) => c.id)).size).toBe(comets.length);
+    for (const c of comets) {
+      expect(c.a, c.id).toBeGreaterThan(1);
+      expect(c.e, c.id).toBeLessThan(1);
+      expect(c.diameter, c.id).toBeGreaterThan(0.1);
+      expect(c.massEstimated, c.id).toBe(true);
+      const rho = c.mass / ((Math.PI / 6) * Math.pow(c.diameter * 1000, 3));
+      expect(rho, c.id).toBeGreaterThan(495);
+      expect(rho, c.id).toBeLessThan(505);
+      expect(c.source, c.id).toMatch(/^https:\/\//);
+      expect(bodyTypeOf(c.id), c.id).toBe('comet');
+      expect(
+        regionsOf(c.id).map((r) => r.id),
+        c.id
+      ).toEqual([`${c.id}-body`]);
+    }
+    expect(comets.map((c) => c.name)).toEqual(expect.arrayContaining(['Halley', 'Encke', 'Hale-Bopp']));
+  });
+
+  it('hold only water and carbon and nitrogen ices, and no metal', () => {
+    for (const c of comets)
+      for (const d of regionsOf(c.id).flatMap((r) => r.deposits))
+        expect(['water', 'comet_ice', 'carbon_dioxide', 'ammonia'], c.id).toContain(d.material);
   });
 });
 

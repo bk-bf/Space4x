@@ -9,8 +9,16 @@ export interface State {
   vel: V2;
 }
 
-export const bodyOf = (system: FlightSystem, id: string): FlightBody | undefined =>
-  system.bodies.find((b) => b.id === id);
+const indexes = new WeakMap<readonly FlightBody[], Map<string, FlightBody>>();
+
+export function bodyOf(system: FlightSystem, id: string): FlightBody | undefined {
+  let index = indexes.get(system.bodies);
+  if (!index || index.size !== system.bodies.length) {
+    index = new Map(system.bodies.map((b) => [b.id, b]));
+    indexes.set(system.bodies, index);
+  }
+  return index.get(id);
+}
 
 export const gmOfPrimary = (system: FlightSystem, id: string): number =>
   id === STAR ? system.star.gm : (bodyOf(system, id)?.gm ?? NaN);

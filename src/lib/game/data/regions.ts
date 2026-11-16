@@ -1,6 +1,8 @@
 import asteroidFile from './asteroids.json';
+import cometFile from './comets.json';
+import moonFile from './moons.json';
 import { material } from './records.ts';
-import type { AsteroidRecord, AsteroidType, Body, Region } from './types.ts';
+import type { AsteroidRecord, AsteroidType, Body, CometRecord, MoonRecord, Region } from './types.ts';
 
 export const GRADE_MIN = 0.05;
 export const GRADE_MAX = 4;
@@ -8,7 +10,8 @@ export const GRADE_MAX = 4;
 export const ASTEROID_BODY: Readonly<Record<AsteroidType, Body>> = {
   carbonaceous: 'asteroid-c',
   stony: 'asteroid-s',
-  metallic: 'asteroid-m'
+  metallic: 'asteroid-m',
+  icy: 'icy-moon'
 };
 
 export const WORLD_BODIES: Readonly<Record<string, Body>> = {
@@ -31,11 +34,33 @@ export const WORLD_BODIES: Readonly<Record<string, Body>> = {
 
 export const asteroids = asteroidFile as AsteroidRecord[];
 
+export const moons = moonFile as MoonRecord[];
+
+export const comets = cometFile as CometRecord[];
+
 const asteroidIndex = new Map(asteroids.map((a) => [a.id, a]));
+const moonIndex = new Map(moons.map((m) => [m.id, m]));
+const cometIndex = new Map(comets.map((c) => [c.id, c]));
 
 export const asteroidRecord = (id: string): AsteroidRecord | undefined => asteroidIndex.get(id);
 
-export const isAsteroid = (id: string): boolean => asteroidIndex.has(id);
+export const moonRecord = (id: string): MoonRecord | undefined => moonIndex.get(id);
+
+export const cometRecord = (id: string): CometRecord | undefined => cometIndex.get(id);
+
+export const depletableRecord = (id: string): AsteroidRecord | CometRecord | undefined =>
+  asteroidIndex.get(id) ?? cometIndex.get(id);
+
+export const diameterOf = (id: string): number | undefined =>
+  (asteroidIndex.get(id) ?? moonIndex.get(id) ?? cometIndex.get(id))?.diameter;
+
+const smallTypes = new Map<string, Body>([
+  ...asteroids.map((a): [string, Body] => [a.id, ASTEROID_BODY[a.type]]),
+  ...moons.map((m): [string, Body] => [m.id, ASTEROID_BODY[m.type]]),
+  ...comets.map((c): [string, Body] => [c.id, 'comet'])
+]);
+
+export const isSmallBody = (id: string): boolean => smallTypes.has(id);
 
 const files = import.meta.glob<Region[]>('./regions/*.json', { eager: true, import: 'default' });
 
@@ -46,11 +71,11 @@ export const regionFiles = Object.entries(files)
 const records = regionFiles.flatMap((f) => f.items);
 const templates = new Map(records.filter((r) => r.template).map((r) => [r.body, r]));
 
-const generated: Region[] = asteroids
-  .filter((a) => !records.some((r) => r.world === a.id))
-  .map((a) => {
-    const { template: _, ...base } = templates.get(ASTEROID_BODY[a.type])!;
-    return { ...base, id: `${a.id}-body`, world: a.id };
+const generated: Region[] = [...smallTypes]
+  .filter(([id]) => !records.some((r) => r.world === id))
+  .map(([id, type]) => {
+    const { template: _, ...base } = templates.get(type)!;
+    return { ...base, id: `${id}-body`, world: id };
   });
 
 export const regions: Region[] = [...records.filter((r) => !r.template), ...generated];
@@ -59,16 +84,17 @@ const regionIndex = new Map(regions.map((r) => [r.id, r]));
 
 export const region = (id: string): Region | undefined => regionIndex.get(id);
 
-export const bodyTypeOf = (world: string): Body | undefined => {
-  const a = asteroidIndex.get(world);
-  return a ? ASTEROID_BODY[a.type] : WORLD_BODIES[world];
-};
+export const bodyTypeOf = (world: string): Body | undefined => smallTypes.get(world) ?? WORLD_BODIES[world];
 
-export const regionsOf = (world: string): Region[] =>
-  regions.filter((r) => r.world === world && r.kind === 'ground');
+const groundOf = new Map<string, Region[]>();
+const airOf = new Map<string, Region>();
+for (const r of regions)
+  if (r.kind === 'ground') groundOf.set(r.world, [...(groundOf.get(r.world) ?? []), r]);
+  else if (!airOf.has(r.world)) airOf.set(r.world, r);
 
-export const atmosphereOf = (world: string): Region | undefined =>
-  regions.find((r) => r.world === world && r.kind === 'atmosphere');
+export const regionsOf = (world: string): Region[] => groundOf.get(world) ?? [];
+
+export const atmosphereOf = (world: string): Region | undefined => airOf.get(world);
 
 const mappedTypes = new Set<Body>(regions.map((r) => r.body));
 

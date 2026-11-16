@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    asteroidRecord,
+    depletableRecord,
     building,
     materials,
     milestone,
@@ -80,7 +80,7 @@
 
   const place = $derived(regionRecord(site.region ?? ''));
   const deposits = $derived(siteDeposits(site));
-  const rock = $derived(asteroidRecord(site.worldBody));
+  const rock = $derived(depletableRecord(site.worldBody));
   const deposited = $derived([
     ...deposits.ground.map((d) => ({ ...d, where: 'Ground' })),
     ...deposits.air.map((d) => ({ ...d, where: 'Atmosphere' }))

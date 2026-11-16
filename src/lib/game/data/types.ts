@@ -16,7 +16,9 @@ export type Body =
   | 'gas-giant'
   | 'ice-giant';
 
-export type AsteroidType = 'carbonaceous' | 'stony' | 'metallic';
+export type AsteroidType = 'carbonaceous' | 'stony' | 'metallic' | 'icy';
+
+export type TypeBasis = 'albedo' | 'assumed';
 
 export type RegionKind = 'ground' | 'atmosphere';
 
@@ -41,15 +43,47 @@ export interface Region {
 
 export interface AsteroidRecord {
   id: string;
-  number: number;
+  number?: number;
   name: string;
   type: AsteroidType;
+  typeBasis?: TypeBasis;
   spectral?: string;
+  dwarf?: boolean;
+  a: number;
+  e: number;
+  diameter: number;
+  diameterEstimated?: boolean;
+  mass: number;
+  massEstimated?: boolean;
+  source: string;
+}
+
+export interface MoonRecord {
+  id: string;
+  code: number;
+  name: string;
+  planet: string;
+  type: AsteroidType;
+  irregular?: boolean;
+  aKm: number;
+  e: number;
+  period: number;
+  diameter: number;
+  diameterEstimated?: boolean;
+  mass: number;
+  massEstimated?: boolean;
+  source: string;
+}
+
+export interface CometRecord {
+  id: string;
+  designation: string;
+  name: string;
   a: number;
   e: number;
   diameter: number;
   mass: number;
-  massEstimated?: boolean;
+  massEstimated: true;
   source: string;
 }
 
