@@ -1,0 +1,161 @@
+[
+  {
+    "id": "stainless_steel_304",
+    "building": "alloy_works",
+    "milestone": 1,
+    "thin": true,
+    "estimated": false,
+    "inputs": { "iron": 740, "chromium": 180, "nickel": 80 },
+    "outputs": { "stainless_steel": 1000 },
+    "power": 800,
+    "hours": 1,
+    "reaction": "18/8 stainless steel: 18 percent chromium, 8 percent nickel, rest iron",
+    "source": "https://en.wikipedia.org/wiki/Stainless_steel"
+  },
+  {
+    "id": "al_li_alloy_blending",
+    "building": "alloy_works",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "aluminium": 950, "copper": 40, "lithium": 10 },
+    "outputs": { "al_li_alloy": 1000 },
+    "power": 800,
+    "hours": 1
+  },
+  {
+    "id": "ti_6al_4v_melting",
+    "building": "alloy_works",
+    "milestone": 1,
+    "estimated": false,
+    "inputs": { "titanium": 900, "aluminium": 60, "vanadium": 40 },
+    "outputs": { "ti_6al_4v": 1000 },
+    "power": 800,
+    "hours": 1,
+    "reaction": "Ti-6Al-4V: 6 percent aluminium, 4 percent vanadium, rest titanium",
+    "source": "https://en.wikipedia.org/wiki/Ti-6Al-4V"
+  },
+  {
+    "id": "nickel_superalloy_melting",
+    "building": "alloy_works",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "nickel": 535, "chromium": 190, "iron": 185, "niobium": 55, "molybdenum": 35 },
+    "outputs": { "nickel_superalloy": 1000 },
+    "power": 800,
+    "hours": 1
+  },
+  {
+    "id": "grcop_42_melting",
+    "building": "alloy_works",
+    "milestone": 1,
+    "thin": true,
+    "estimated": false,
+    "inputs": { "copper": 938, "chromium": 33, "niobium": 29 },
+    "outputs": { "grcop": 1000 },
+    "power": 800,
+    "hours": 1,
+    "reaction": "GRCop-42: Cu-4Cr-2Nb in atomic percent converted to mass",
+    "source": "https://www.nasa.gov/centers-and-facilities/marshall/3d-printed-rocket-launched-using-innovative-nasa-alloy/"
+  },
+  {
+    "id": "c103_melting",
+    "building": "alloy_works",
+    "milestone": 1,
+    "estimated": false,
+    "inputs": { "niobium": 890, "hafnium": 100, "titanium": 10 },
+    "outputs": { "c103": 1000 },
+    "power": 800,
+    "hours": 1,
+    "reaction": "C-103: 89 percent niobium, 10 percent hafnium, 1 percent titanium",
+    "source": "https://en.wikipedia.org/wiki/Niobium"
+  },
+  {
+    "id": "haynes_230_melting",
+    "building": "alloy_works",
+    "milestone": 7,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "nickel": 600, "chromium": 220, "tungsten": 140, "molybdenum": 20, "iron": 20 },
+    "outputs": { "haynes_230": 1000 },
+    "power": 800,
+    "hours": 1
+  },
+  {
+    "id": "zircaloy_melting",
+    "building": "alloy_works",
+    "milestone": 7,
+    "estimated": true,
+    "inputs": { "zirconium": 985, "tin": 15 },
+    "outputs": { "zircaloy": 1000 },
+    "power": 800,
+    "hours": 1
+  },
+  {
+    "id": "asteroidal_steel_refining",
+    "building": "metal_refinery",
+    "milestone": 17,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "fe_ni_metal": 990, "carbon": 10 },
+    "outputs": { "asteroidal_steel": 1000 },
+    "power": 1500,
+    "hours": 1
+  },
+  {
+    "id": "asteroid_metal_separation",
+    "building": "metal_refinery",
+    "milestone": 17,
+    "estimated": true,
+    "inputs": { "fe_ni_metal": 1000 },
+    "outputs": { "iron": 700, "nickel": 250, "cobalt": 15, "platinum": 1, "iridium": 0.5, "copper": 2 },
+    "power": 1500,
+    "hours": 1
+  },
+  {
+    "id": "regolith_oxygen_extraction",
+    "building": "regolith_oxygen_plant",
+    "milestone": 9,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "lunar_regolith": 1000 },
+    "outputs": { "oxygen": 400, "silicon": 200, "iron": 100, "aluminium": 70, "calcium": 80 },
+    "power": 3000,
+    "hours": 1
+  },
+  {
+    "id": "martian_regolith_oxygen",
+    "building": "regolith_oxygen_plant",
+    "milestone": 21,
+    "estimated": true,
+    "inputs": { "martian_regolith": 1000 },
+    "outputs": { "oxygen": 250, "iron": 120, "silicon": 150 },
+    "power": 3000,
+    "hours": 1
+  },
+  {
+    "id": "ilmenite_reduction",
+    "building": "smelter",
+    "milestone": 9,
+    "estimated": false,
+    "inputs": { "ilmenite": 3034.0 },
+    "outputs": { "iron": 1117.0, "titanium": 957.3, "oxygen": 959.9 },
+    "power": 2000,
+    "hours": 1,
+    "reaction": "FeTiO3 -> Fe + Ti + 3/2 O2 (molten-salt electro-reduction)",
+    "source": "https://en.wikipedia.org/wiki/Ilmenite"
+  },
+  {
+    "id": "anorthite_electrolysis",
+    "building": "smelter",
+    "milestone": 9,
+    "estimated": false,
+    "inputs": { "anorthite": 2782.0 },
+    "outputs": { "calcium": 400.8, "aluminium": 539.6, "silicon": 561.7, "oxygen": 1280.0 },
+    "power": 2000,
+    "hours": 1,
+    "reaction": "CaAl2Si2O8 -> Ca + 2 Al + 2 Si + 4 O",
+    "source": "https://en.wikipedia.org/wiki/Anorthite"
+  }
+]

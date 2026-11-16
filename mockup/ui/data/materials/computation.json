@@ -1,0 +1,22 @@
+[
+  {
+    "id": "compute",
+    "name": "Compute",
+    "category": "computation",
+    "tier": "P",
+    "thin": true,
+    "unit": "cu",
+    "why": "Design, simulation and logistics planning capacity",
+    "source": "https://en.wikipedia.org/wiki/Data_center"
+  },
+  {
+    "id": "ai_models",
+    "name": "Trained AI models (autonomy)",
+    "category": "computation",
+    "tier": "P",
+    "thin": true,
+    "unit": "model",
+    "why": "Autonomous operation where light-delay forbids teleoperation",
+    "source": "https://en.wikipedia.org/wiki/Autonomous_robot"
+  }
+]

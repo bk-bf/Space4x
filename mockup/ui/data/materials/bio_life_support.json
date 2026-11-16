@@ -1,0 +1,59 @@
+[
+  {
+    "id": "phosphorus",
+    "name": "Phosphorus",
+    "category": "bio_life_support",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "asteroid-c", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Essential crop nutrient; dopant and InGaP element in semiconductors",
+    "source": "https://en.wikipedia.org/wiki/Phosphorite"
+  },
+  {
+    "id": "zeolite",
+    "name": "Zeolite molecular sieve",
+    "category": "bio_life_support",
+    "tier": "P",
+    "why": "Adsorbs CO2 and water from cabin air in the ISS CDRA molecular sieve beds",
+    "source": "https://ntrs.nasa.gov/api/citations/20180006333/downloads/20180006333.pdf"
+  },
+  {
+    "id": "lioh",
+    "name": "Lithium hydroxide",
+    "category": "bio_life_support",
+    "tier": "P",
+    "why": "Non-regenerable CO2 scrubber (Apollo, spacesuits)",
+    "source": "https://en.wikipedia.org/wiki/Lithium_hydroxide"
+  },
+  {
+    "id": "amine_sorbent",
+    "name": "Solid amine CO2 sorbent",
+    "category": "bio_life_support",
+    "tier": "P",
+    "thin": true,
+    "why": "Regenerable CO2 capture in ESA's ACLS on the ISS",
+    "source": "https://en.wikipedia.org/wiki/ISS_ECLSS"
+  },
+  {
+    "id": "plant_biomass",
+    "name": "Food crops",
+    "category": "bio_life_support",
+    "tier": "P",
+    "thin": true,
+    "why": "Food and air revitalisation without resupply (ISS Veggie)",
+    "source": "https://en.wikipedia.org/wiki/Vegetable_Production_System"
+  },
+  {
+    "id": "spirulina",
+    "name": "Cyanobacteria (Arthrospira)",
+    "category": "bio_life_support",
+    "tier": "E",
+    "why": "Photobioreactor food and oxygen in ESA MELiSSA loop",
+    "source": "https://en.wikipedia.org/wiki/MELiSSA"
+  }
+]

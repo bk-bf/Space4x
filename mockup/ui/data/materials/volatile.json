@@ -1,0 +1,202 @@
+[
+  {
+    "id": "water",
+    "name": "Water",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "moon", "how": "ice", "building": "ice_mine" },
+      { "body": "mars", "how": "ice", "building": "ice_mine" },
+      { "body": "asteroid-c", "how": "ice", "building": "asteroid_miner" },
+      { "body": "comet", "how": "ice", "building": "asteroid_miner" },
+      { "body": "icy-moon", "how": "ice", "building": "ice_mine" }
+    ],
+    "why": "Drinking, oxygen and hydrogen by electrolysis, propellant feedstock and radiation shielding",
+    "source": "https://en.wikipedia.org/wiki/Lunar_water"
+  },
+  {
+    "id": "hydrogen",
+    "name": "Hydrogen",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "moon", "how": "solar-wind", "building": "regolith_excavator" },
+      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
+      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
+    ],
+    "why": "Highest-Isp chemical fuel and NTR propellant; reduces CO2 and ilmenite",
+    "source": "https://en.wikipedia.org/wiki/Hydrogen_production"
+  },
+  {
+    "id": "oxygen",
+    "name": "Oxygen",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "why": "Oxidiser for every chemical engine and breathing gas; most of propellant mass",
+    "source": "https://en.wikipedia.org/wiki/In_situ_resource_utilization"
+  },
+  {
+    "id": "nitrogen",
+    "name": "Nitrogen",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "mars", "how": "atmosphere", "building": "air_separation_plant" },
+      { "body": "titan", "how": "atmosphere", "building": "atmosphere_skimmer" },
+      { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" }
+    ],
+    "why": "Inert buffer gas in cabin air and feedstock for fertiliser and ammonia",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Titan"
+  },
+  {
+    "id": "helium4",
+    "name": "Helium-4",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
+      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
+    ],
+    "why": "Tank pressurant and the coolant for low-temperature superconducting magnets",
+    "source": "https://en.wikipedia.org/wiki/Helium"
+  },
+  {
+    "id": "argon",
+    "name": "Argon",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "mars", "how": "atmosphere", "building": "air_separation_plant" }],
+    "why": "Cheap Hall-thruster propellant (Starlink V2) and inert process gas",
+    "source": "https://en.wikipedia.org/wiki/Hall-effect_thruster"
+  },
+  {
+    "id": "krypton",
+    "name": "Krypton",
+    "category": "volatile",
+    "tier": "P",
+    "why": "Hall-thruster propellant, cheaper than xenon",
+    "source": "https://en.wikipedia.org/wiki/Hall-effect_thruster"
+  },
+  {
+    "id": "xenon",
+    "name": "Xenon",
+    "category": "volatile",
+    "tier": "P",
+    "why": "Standard high-performance electric propulsion propellant; scarce and costly",
+    "source": "https://en.wikipedia.org/wiki/Ion_thruster"
+  },
+  {
+    "id": "carbon_dioxide",
+    "name": "Carbon dioxide",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "mars", "how": "atmosphere", "building": "air_separation_plant" },
+      { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" },
+      { "body": "comet", "how": "ice", "building": "asteroid_miner" }
+    ],
+    "why": "Feed for MOXIE-type oxygen production, Sabatier methane and plant growth",
+    "source": "https://en.wikipedia.org/wiki/Mars_Oxygen_ISRU_Experiment"
+  },
+  {
+    "id": "methane",
+    "name": "Methane",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "titan", "how": "liquid", "building": "atmosphere_skimmer" }
+    ],
+    "why": "Fuel that can be made in situ on Mars; feedstock for polymers and diamond",
+    "source": "https://en.wikipedia.org/wiki/Sabatier_reaction"
+  },
+  {
+    "id": "ammonia",
+    "name": "Ammonia",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "comet", "how": "ice", "building": "asteroid_miner" },
+      { "body": "icy-moon", "how": "ice", "building": "ice_mine" }
+    ],
+    "why": "ISS external coolant loop fluid, fertiliser and hydrazine feedstock",
+    "source": "https://ntrs.nasa.gov/citations/20110023292"
+  },
+  {
+    "id": "sulfur",
+    "name": "Sulfur",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" },
+      { "body": "io", "how": "mined", "building": "regolith_excavator" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Binder for waterless sulfur concrete; sulfuric acid for metal leaching",
+    "source": "https://en.wikipedia.org/wiki/Sulfur_concrete"
+  },
+  {
+    "id": "sulfuric_acid",
+    "name": "Sulfuric acid",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" }],
+    "why": "Universal industrial reagent for ore leaching and wafer cleaning",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Venus"
+  },
+  {
+    "id": "iodine",
+    "name": "Iodine",
+    "category": "volatile",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "brine", "building": "mine_earth" }],
+    "why": "Electric propulsion propellant stored as a solid, demonstrated in orbit (NPT30-I2)",
+    "source": "https://en.wikipedia.org/wiki/Ion_thruster"
+  },
+  {
+    "id": "comet_ice",
+    "name": "Cometary ice (mixed volatiles)",
+    "category": "volatile",
+    "tier": "E",
+    "sources": [
+      { "body": "comet", "how": "ice", "building": "asteroid_miner" },
+      { "body": "icy-moon", "how": "ice", "building": "ice_mine" }
+    ],
+    "why": "Mixed water, CO, CO2 and ammonia in one body: hydrogen, carbon, nitrogen and oxygen",
+    "source": "https://en.wikipedia.org/wiki/Comet_nucleus"
+  },
+  {
+    "id": "carbonaceous_chondrite",
+    "name": "Carbonaceous asteroid material (C-type)",
+    "category": "volatile",
+    "tier": "E",
+    "thin": true,
+    "sources": [{ "body": "asteroid-c", "how": "mined", "building": "asteroid_miner" }],
+    "why": "Water-bearing clays, carbon and organics: volatiles without a gravity well",
+    "source": "https://en.wikipedia.org/wiki/OSIRIS-REx"
+  },
+  {
+    "id": "air",
+    "name": "Air (Earth atmosphere)",
+    "category": "volatile",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "atmosphere", "building": "air_separation_plant" }],
+    "why": "Raw feed of air separation: nitrogen, oxygen, argon, carbon dioxide and the noble gases are all separated from it",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Earth"
+  }
+]

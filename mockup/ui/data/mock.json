@@ -1,0 +1,51 @@
+{
+ "materials": [
+  {
+   "id": "meat",
+   "name": "Meat",
+   "category": "food",
+   "tier": "P",
+   "thin": false,
+   "why": "Beef, pork and poultry, about 2,500 kcal a kilogram. Grown on feed grain and soy, so it costs farmland as well as ranches.",
+   "mock": true
+  }
+ ],
+ "buildings": [
+  {
+   "id": "ranch",
+   "name": "Ranch",
+   "kind": "habitat",
+   "where": [
+    "earth"
+   ],
+   "milestone": 1,
+   "start": true,
+   "estimated": true,
+   "cost": {
+    "stainless_steel": 200,
+    "aluminium": 50
+   },
+   "workers": 3,
+   "mock": true
+  }
+ ],
+ "recipes": [
+  {
+   "id": "ranch_meat",
+   "building": "ranch",
+   "milestone": 1,
+   "estimated": true,
+   "inputs": {
+    "water": 300,
+    "wheat": 1200,
+    "soybean": 800
+   },
+   "outputs": {
+    "meat": 1000
+   },
+   "power": 1,
+   "hours": 10,
+   "mock": true
+  }
+ ]
+}
