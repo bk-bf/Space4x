@@ -180,7 +180,7 @@ test('clicking a map label or a list row selects it into the one Selection panel
   await open(page);
   await page.locator('#mapLabels span', { hasText: 'Mars' }).click();
   await expect(titleBar(page, 'sel')).toContainText('Mars');
-  await expect(win(page, 'sel').locator('dl')).toContainText('Thin CO2');
+  await expect(win(page, 'sel').locator('dl').first()).toContainText('Thin CO2');
   await win(page, 'side').locator('[data-tab="bodies"]').click();
   await win(page, 'side').locator('tr', { hasText: 'Jupiter' }).click();
   await expect(titleBar(page, 'sel')).toContainText('Jupiter');

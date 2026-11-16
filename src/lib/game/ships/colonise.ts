@@ -1,15 +1,16 @@
-import { building, material } from '#lib/game/data/index.ts';
-import type { Building } from '#lib/game/data/index.ts';
+import { building, material, region as regionRecord, regionsOf } from '#lib/game/data/index.ts';
+import type { Building, Region } from '#lib/game/data/index.ts';
 import {
   economy,
   firstBuildings,
   newSite,
-  siteAt,
+  siteIn,
   standFirst,
   touch,
   type Site
 } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
+import { knownRegions } from '#lib/game/survey.svelte.ts';
 import { PROPELLANT_KINDS } from '#lib/game/shipdesign/index.ts';
 import { returnPropellant } from './cargo.ts';
 import { statsOf } from './model.ts';
@@ -29,10 +30,22 @@ function placeFor(v: Vessel): { worldBody: string; place: 'surface' | 'orbit'; a
   return undefined;
 }
 
-export function foundOptions(v: Vessel): FoundOption[] {
+export function foundRegions(v: Vessel): Region[] {
   const p = placeFor(v);
-  if (!p || siteAt(economy, p.worldBody, p.place)) return [];
-  return firstBuildings(economy, p.worldBody, p.place).map((b) => ({
+  if (!p || p.place !== 'surface') return [];
+  return knownRegions(p.worldBody).filter((r) => !siteIn(economy, p.worldBody, 'surface', r.id));
+}
+
+export function needsRegion(v: Vessel): boolean {
+  const p = placeFor(v);
+  return !!p && p.place === 'surface' && regionsOf(p.worldBody).length > 0;
+}
+
+export function foundOptions(v: Vessel, region: string | null = null): FoundOption[] {
+  const p = placeFor(v);
+  if (!p || siteIn(economy, p.worldBody, p.place, p.place === 'surface' ? region : null)) return [];
+  if (needsRegion(v) && !region) return [];
+  return firstBuildings(economy, p.worldBody, p.place, region).map((b) => ({
     building: b,
     missing: Object.entries(b.cost)
       .filter(([m, need]) => (v.cargo[m] ?? 0) + 1e-9 < need)
@@ -52,17 +65,30 @@ function absorb(site: Site, v: Vessel): void {
   clearTripOption(v.id);
 }
 
-export function foundSite(game: Game, v: Vessel, buildingId: string): Site | string {
+export function foundSite(
+  game: Game,
+  v: Vessel,
+  buildingId: string,
+  region: string | null = null
+): Site | string {
   const p = placeFor(v);
   if (!p) return `${v.name} must be in orbit or on the ground, not docked or flying.`;
-  if (siteAt(economy, p.worldBody, p.place)) return 'There is a site here already.';
-  const option = foundOptions(v).find((o) => o.building.id === buildingId);
+  const bodyLabel = game.body(p.worldBody)?.name ?? p.worldBody;
+  if (needsRegion(v)) {
+    if (!region) return 'Choose a region to found the site in.';
+    const r = regionRecord(region);
+    if (!r || r.world !== p.worldBody || r.kind !== 'ground') return 'That region is not on this body.';
+    if (!knownRegions(p.worldBody).some((x) => x.id === region))
+      return `${bodyLabel} has not been surveyed; its regions are unknown.`;
+  }
+  const where = p.place === 'surface' ? region : null;
+  if (siteIn(economy, p.worldBody, p.place, where)) return 'There is a site here already.';
+  const option = foundOptions(v, where).find((o) => o.building.id === buildingId);
   if (!option) return `${building(buildingId).name} cannot be built here yet.`;
   const first = option.missing[0];
   if (first)
     return `${material(first.id).name} is short by ${Math.ceil(first.need - first.have).toLocaleString('en-US')} kg.`;
-  const bodyName = game.body(p.worldBody)?.name ?? p.worldBody;
-  const site = newSite(economy, { ...p, bodyName });
+  const site = newSite(economy, { ...p, region: where, bodyName: bodyLabel });
   if (!site) return 'This place cannot hold a site.';
   for (const [m, need] of Object.entries(building(buildingId).cost)) v.cargo[m] = (v.cargo[m] ?? 0) - need;
   standFirst(economy, site, buildingId);

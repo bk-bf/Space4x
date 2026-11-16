@@ -1,0 +1,75 @@
+[
+  {
+    "id": "mars-atmosphere",
+    "world": "mars",
+    "body": "mars",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "carbon_dioxide", "grade": 3 },
+      { "material": "nitrogen", "grade": 0.09 },
+      { "material": "argon", "grade": 0.06 }
+    ],
+    "basis": "A thin atmosphere of 95 percent carbon dioxide, 2.8 percent nitrogen and 1.9 percent argon by volume, the same everywhere. The grades keep those proportions. Known from spectroscopy and landers.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Mars",
+    "estimated": true
+  },
+  {
+    "id": "mars-polar-layered-deposits",
+    "world": "mars",
+    "body": "mars",
+    "name": "Polar layered deposits",
+    "kind": "ground",
+    "deposits": [{ "material": "water", "grade": 3 }],
+    "basis": "The polar caps are stacks of nearly pure water ice, with dust under about 10 percent in SHARAD radar profiles, and the richest ice on the planet. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Planum_Boreum",
+    "estimated": true
+  },
+  {
+    "id": "mars-midlatitude-ice",
+    "world": "mars",
+    "body": "mars",
+    "name": "Mid-latitude ice plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 1.5 },
+      { "material": "martian_regolith", "grade": 1 }
+    ],
+    "basis": "Buried ice sheets tens of metres thick lie under a metre or two of soil across Arcadia and Utopia Planitia, and erosion scarps expose them in section. Poorer than the caps but far from the poles. Grade is relative.",
+    "source": "https://doi.org/10.1126/science.aao1619",
+    "estimated": true
+  },
+  {
+    "id": "mars-basaltic-plains",
+    "world": "mars",
+    "body": "mars",
+    "name": "Basaltic lowland plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "basalt", "grade": 2 },
+      { "material": "martian_regolith", "grade": 1.5 },
+      { "material": "silicon", "grade": 1 },
+      { "material": "iron", "grade": 1 },
+      { "material": "phosphorus", "grade": 1 },
+      { "material": "potassium", "grade": 0.5 }
+    ],
+    "basis": "Basaltic soil of about 45 percent silica, 18 percent iron oxide, close to 1 percent phosphorus pentoxide and 0.3 to 0.6 percent potassium oxide (Mars Odyssey gamma-ray spectrometer and the rovers). Grades are relative.",
+    "source": "https://doi.org/10.1029/2010gl043528",
+    "estimated": true
+  },
+  {
+    "id": "mars-meridiani",
+    "world": "mars",
+    "body": "mars",
+    "name": "Meridiani hematite plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "iron", "grade": 3 },
+      { "material": "martian_regolith", "grade": 1 }
+    ],
+    "basis": "Opportunity drove over a plain strewn with hematite spherules, an iron oxide concentrate that stands for the iron-rich spot on Mars. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Meridiani_Planum",
+    "estimated": true
+  }
+]

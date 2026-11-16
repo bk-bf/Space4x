@@ -1,6 +1,7 @@
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
+import type { AsteroidType } from '#lib/game/data/index.ts';
 
 export const MARK_R = 3;
 
@@ -14,6 +15,20 @@ export const BODY_COLOUR: Record<PlanetType, RGB> = {
   ice2: [80, 120, 220],
   rock: [150, 146, 150]
 };
+
+export const ASTEROID_COLOUR: Record<AsteroidType, RGB> = {
+  carbonaceous: [176, 150, 132],
+  stony: [236, 196, 140],
+  metallic: [150, 200, 240]
+};
+
+export function asteroidMark(f: FB, x: number, y: number, col: RGB, plus: boolean): void {
+  x = Math.round(x);
+  y = Math.round(y);
+  if (!plus) return f.px(x, y, col);
+  f.rect(x - 1, y, 3, 1, col);
+  f.rect(x, y - 1, 1, 3, col);
+}
 
 export const SIDE_COLOUR = {
   navy: [95, 208, 197],

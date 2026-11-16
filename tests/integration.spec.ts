@@ -72,7 +72,7 @@ test.describe('the top bar', () => {
     await expect(chip(page, 'Power: generation less demand')).toHaveText(
       (await term(page, /^Balance$/).textContent())!
     );
-    await expect(chip(page, 'Food: production against need')).toHaveText(
+    await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(
       (await term(page, /^Food balance$/).textContent())!
     );
 
@@ -85,12 +85,38 @@ test.describe('the top bar', () => {
     await expect(page.locator('[data-screen="research"]')).toContainText('0 of 29 reached');
   });
 
+  test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {
+    await open(page, 'screen=economy');
+    const made = await term(page, /^Calories made$/).textContent();
+    expect(made).toMatch(/T kcal a day against .* T kcal needed$/);
+    const shares = term(page, /^Calorie shares$/);
+    await expect(shares).toContainText(/Wheat \d+%/);
+    await expect(shares).toContainText(/Meat \d+%/);
+    const balance = (await term(page, /^Food balance$/).textContent())!;
+    expect(balance).toMatch(/^\+\d+%$/);
+    await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
+  });
+
+  test('a milestone lists the site it needs and what is still missing', async ({ page }) => {
+    await open(page, 'screen=economy&tab=milestones&milestone=6');
+    const detail = page.locator('#milestoneDetail');
+    await expect(detail).toContainText('6. Crewed lunar landing and surface outpost');
+    const site = detail.locator('tr', { hasText: 'crewed outpost on the Moon' });
+    await expect(site).toContainText('Site');
+    await expect(site).toContainText('None');
+    await goTo(page, 'economy');
+    await open(page, 'screen=economy&tab=milestones&milestone=17');
+    await expect(
+      page.locator('#milestoneDetail tr', { hasText: 'miner on a metallic asteroid' })
+    ).toContainText('None');
+  });
+
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
     await expect(page.locator('#chips .chip')).toHaveCount(6);
     for (const title of [
       'People',
-      'Food: production against need',
+      'Food: calories made against calories needed',
       'Power: generation less demand',
       'Compute produced an hour',
       'Scarcest material',

@@ -3,7 +3,10 @@ import { drainDeliveries, economy, touch } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, unloadItem } from './cargo.ts';
 import { classes } from '#lib/game/classes.svelte.ts';
-import { mainKind } from './model.ts';
+import { completeSurvey, isSurveyable, isSurveyed, surveyDays } from '#lib/game/survey.svelte.ts';
+import { burnHop, planHop, surfaceBodyOf, type HopKind } from './hop.ts';
+import { canSample, canSurvey, cargoRoom, designOf, mainKind } from './model.ts';
+import { SAMPLE_DAYS, SAMPLE_KG, sampleMaterial } from './sample.ts';
 import { cycleOrders } from './run.ts';
 import { ships } from './state.svelte.ts';
 import {
@@ -18,7 +21,7 @@ import {
   type Destination
 } from './trips.ts';
 import type { Order, Vessel } from './types.ts';
-import { tripOptionOf } from './world.ts';
+import { bodyOfWhereabouts, tripOptionOf } from './world.ts';
 import { siteOf } from './orders.ts';
 
 const MAX_STEPS = 256;
@@ -79,6 +82,41 @@ function block(v: Vessel, reason: string): void {
   v.blocked = reason;
 }
 
+function hopKind(v: Vessel, o: Order & { type: 'fly' | 'land' }): HopKind | null {
+  if (o.type === 'land') return sameOrbit(v, { kind: 'orbit', body: o.body, angle: 0 }) ? 'descent' : null;
+  const on = surfaceBodyOf(v);
+  return on === o.body ? 'ascent' : null;
+}
+
+function hop(
+  game: Game,
+  v: Vessel,
+  kind: HopKind,
+  o: Order & { type: 'fly' | 'land' },
+  cursor: { t: number },
+  end: number
+) {
+  const dest = destinationOf(o)!;
+  const plan = planHop(game, v, kind, o.body);
+  if (typeof plan === 'string') {
+    block(v, plan);
+    return false;
+  }
+  if (!work(v, plan.seconds, cursor, end)) return false;
+  burnHop(v, plan);
+  v.at =
+    kind === 'descent' ? arrivalPlace(game, dest) : { kind: 'orbit', body: dest.body, angle: dest.angle };
+  v.blocked = null;
+  const name = game.body(o.body)?.name ?? o.body;
+  say(
+    game,
+    v,
+    kind === 'descent' ? `${v.name} landed on ${name}.` : `${v.name} reached orbit of ${name}.`,
+    cursor.t
+  );
+  return true;
+}
+
 function fly(game: Game, v: Vessel, o: Order & { type: 'fly' | 'land' }, t: number): boolean {
   const dest = destinationOf(o)!;
   if (sameOrbit(v, dest)) {
@@ -116,7 +154,57 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
       block(v, 'A ship on Earth leaves by launch stack, not by trip.');
       return 'stop';
     }
-    if (!fly(game, v, order, cursor.t)) return 'stop';
+    const local = hopKind(v, order);
+    if (local) {
+      if (!hop(game, v, local, order, cursor, end)) return 'stop';
+    } else if (!fly(game, v, order, cursor.t)) return 'stop';
+    v.orders.shift();
+    return 'next';
+  }
+  if (order.type === 'survey') {
+    const world = order.body;
+    const name = game.body(world)?.name ?? world;
+    if (!isSurveyable(world) || isSurveyed(world)) {
+      v.orders.shift();
+      v.progress = 0;
+      v.blocked = null;
+      return 'next';
+    }
+    if (!canSurvey(designOf(v))) {
+      block(v, `${v.name} carries no survey instruments.`);
+      return 'stop';
+    }
+    if (!sameOrbit(v, { kind: 'orbit', body: world, angle: 0 })) {
+      block(v, `${v.name} must be in orbit of ${name} to survey it.`);
+      return 'stop';
+    }
+    v.blocked = null;
+    if (!work(v, surveyDays(world) * DAY, cursor, end)) return 'stop';
+    completeSurvey(world);
+    say(game, v, `${v.name} surveyed ${name}: its regions and grades are known.`, cursor.t);
+    v.orders.shift();
+    touch();
+    return 'next';
+  }
+  if (order.type === 'sample') {
+    const world = bodyOfWhereabouts(v.at);
+    const found = world ? sampleMaterial(world) : undefined;
+    if (!world || !found) {
+      block(v, `${v.name} is not at an asteroid.`);
+      return 'stop';
+    }
+    if (!canSample(designOf(v))) {
+      block(v, `${v.name} carries no sampling arm.`);
+      return 'stop';
+    }
+    if (cargoRoom(v) <= 0) {
+      block(v, `${v.name} has no room for a sample.`);
+      return 'stop';
+    }
+    v.blocked = null;
+    if (!work(v, SAMPLE_DAYS * DAY, cursor, end)) return 'stop';
+    v.cargo[found] = (v.cargo[found] ?? 0) + Math.min(SAMPLE_KG, cargoRoom(v));
+    say(game, v, `${v.name} took a sample of ${game.body(world)?.name ?? world}.`, cursor.t);
     v.orders.shift();
     return 'next';
   }

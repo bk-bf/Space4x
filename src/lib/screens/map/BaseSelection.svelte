@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { building } from '#lib/game/data/index.ts';
+  import { building, region } from '#lib/game/data/index.ts';
   import { flowsOf, type Site } from '#lib/game/economy/index.ts';
   import { game } from '#lib/game/index.ts';
   import { ships } from '#lib/game/ships/index.ts';
@@ -19,6 +19,7 @@
   const facts = $derived<[string, string][]>([
     ['Kind', site.place === 'orbit' ? 'Orbital station' : 'Surface outpost'],
     ['Around', game.body(site.worldBody)?.name ?? site.worldBody],
+    ...(site.region ? [['Region', region(site.region)?.name ?? ''] as [string, string]] : []),
     ['People', `${Math.round(site.population)} of ${site.berths ?? 0} berths`],
     ['Fed', `${Math.round(flows.food.cover * 100)}%`],
     ['Power', `${formatPower(flows.power.used)} of ${formatPower(flows.power.supply)}`],

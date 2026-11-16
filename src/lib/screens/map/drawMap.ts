@@ -8,6 +8,7 @@ import {
   type SelectionKind,
   type StarSystem
 } from '#lib/game/index.ts';
+import { asteroidRecord } from '#lib/game/data/index.ts';
 import { economy } from '#lib/game/economy/index.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
@@ -24,6 +25,8 @@ import { cam, flyToTarget, hopTo, layers, MAP_SCALE } from './camera.svelte';
 import { LABEL_H, type Anchor, type LabelLine } from './labels';
 import { type Point, type Target } from './mapCamera';
 import {
+  ASTEROID_COLOUR,
+  asteroidMark,
   baseMark,
   bodyMark,
   BODY_COLOUR,
@@ -63,6 +66,10 @@ const SITE_PRI = 5;
 const SCENE_LABEL_PRI = 1;
 const NEAR_UNIT_PX = 0.75;
 const DRAWN_PRI = 50;
+const ASTEROID_NAMES_BELOW = 1.5e9;
+const ASTEROID_PLUS_BELOW = 5e9;
+const ASTEROID_BASE_PRI = 1;
+const ASTEROID_MAX_BOOST = 4;
 const HOSTILE_PRI = 15;
 const PRIORITY: Record<PlanetType | 'star', number> = {
   star: 20,
@@ -82,6 +89,7 @@ interface MapBody {
   name: string;
   star: boolean;
   selectable: boolean;
+  asteroid?: number;
   w: Point;
   r: number;
   orbit: number;
@@ -141,7 +149,8 @@ function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
       rings: b.rings,
       lights: b.colony && b.type === 'terran'
     },
-    col: BODY_COLOUR[b.type]
+    ...(asteroidRecord(b.id) ? { asteroid: asteroidRecord(b.id)!.diameter } : {}),
+    col: asteroidRecord(b.id) ? ASTEROID_COLOUR[asteroidRecord(b.id)!.type] : BODY_COLOUR[b.type]
   }));
   return [...stars, ...planets];
 }
@@ -235,14 +244,19 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     game.world.system,
     game.elapsed,
     layers.Orbits,
-    layers.Asteroids
+    layers.Asteroids,
+    sel.kind === 'body' ? sel.id : '',
+    aim ?? ''
   ].join('|');
   if (useCache && !liveStar && key === cacheKey && cache) f.d.set(cache);
   else {
     f.start();
     if (layers.Orbits)
       for (const b of shown)
-        if (b.orbit > 0) {
+        if (
+          b.orbit > 0 &&
+          (b.asteroid === undefined || aim === b.key || (sel.kind === 'body' && sel.id === b.id))
+        ) {
           const P = b.parent ? byId.get(b.parent) : undefined;
           if (P?.capped) continue;
           const c = P ? P.p : S(0, 0);
@@ -252,6 +266,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     for (const b of shown) {
       if (b.mk) {
         if (b.star) starMark(f, b.p[0], b.p[1], b.tint?.core[0], b.tint?.core[2]);
+        else if (b.asteroid !== undefined) asteroidMark(f, b.p[0], b.p[1], b.col, s < ASTEROID_PLUS_BELOW);
         else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
@@ -529,8 +544,24 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
   for (const b of shown) {
     const chosen = b.selectable && sel.kind === 'body' && sel.id === b.id,
       picks = pickOf(b.key, b.selectable, 'body', b.id),
-      pri = aim === b.key ? FOCUS_PRI : b.capped || !b.mk ? DRAWN_PRI : PRIORITY[b.type],
-      base = { id: b.key, text: b.name, sel: chosen, pri, lines: b.list, target: b.key, ...picks };
+      pri =
+        aim === b.key
+          ? FOCUS_PRI
+          : b.capped || !b.mk
+            ? DRAWN_PRI
+            : b.asteroid !== undefined
+              ? ASTEROID_BASE_PRI + Math.min(ASTEROID_MAX_BOOST, Math.log10(1 + b.asteroid))
+              : PRIORITY[b.type],
+      named = b.asteroid === undefined || chosen || aim === b.key || s < ASTEROID_NAMES_BELOW || !b.mk,
+      base = {
+        id: b.key,
+        ...(named ? { text: b.name } : {}),
+        sel: chosen,
+        pri,
+        lines: b.list,
+        target: b.key,
+        ...picks
+      };
     if (b.capped) {
       if (!vis(b.p, b.R)) continue;
       const rows = 1 + b.list.length;
@@ -556,8 +587,23 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       });
     } else {
       if (!vis(b.p)) continue;
-      const r = b.mk ? MARK_R + 1 : b.star ? b.R * 1.3 + 4 : b.R * (b.look?.rings ? 2.3 : 1);
-      an.push({ ...base, x: b.p[0], y: b.p[1], rx: r, ry: b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R });
+      const r =
+        b.asteroid !== undefined && b.mk
+          ? 3
+          : b.mk
+            ? MARK_R + 1
+            : b.star
+              ? b.R * 1.3 + 4
+              : b.R * (b.look?.rings ? 2.3 : 1);
+      if (chosen && b.mk && b.asteroid !== undefined) brackets(f, b.p[0], b.p[1], 5, 4);
+      an.push({
+        ...base,
+        ...(b.asteroid !== undefined ? { solid: false } : {}),
+        x: b.p[0],
+        y: b.p[1],
+        rx: r,
+        ry: b.asteroid !== undefined && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R
+      });
     }
   }
   f.present();

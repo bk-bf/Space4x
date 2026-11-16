@@ -1,4 +1,5 @@
 import { buildings, materials, milestone, recipes, shipComponents } from './records.ts';
+import { typeHolds } from './regions.ts';
 import type { Body, Building, Component, Material, Recipe, Site } from './types.ts';
 
 export const recipesProducing = (id: string): Recipe[] => recipes.filter((r) => id in r.outputs);
@@ -73,7 +74,10 @@ export const reach = ({ upTo = Infinity, thinOnly = false, site }: ReachOptions 
     for (const m of materials) {
       if (have.has(m.id) || !wanted(m.id)) continue;
       const extracted = (m.sources ?? []).some(
-        (s) => built.has(s.building) && (site === undefined || s.body === site)
+        (s) =>
+          built.has(s.building) &&
+          (site === undefined || s.body === site) &&
+          typeHolds(s.body, m.id, s.how === 'atmosphere')
       );
       if (extracted) {
         have.add(m.id);

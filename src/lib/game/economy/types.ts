@@ -48,12 +48,13 @@ export interface Site {
   name: string;
   body: Where;
   worldBody: string;
+  region: string | null;
   place: SitePlace;
   angle: number;
   berths: number | null;
   population: number;
   workforceShare: number;
-  foodPerPersonDay: number;
+  kcalPerPersonDay: number;
   growthPerYear: number;
   gridKw: number;
   stock: Record<string, number>;
@@ -86,6 +87,8 @@ export interface Economy {
   elapsed: number;
   nextId: number;
   delivered: Delivery[];
+  mined: Record<string, number>;
+  exhausted: string[];
   ledger: Ledger;
 }
 

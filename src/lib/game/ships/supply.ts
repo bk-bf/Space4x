@@ -1,5 +1,5 @@
 import { DAY } from '#lib/game/clock.ts';
-import { economy, flowsOf, POWER, type Site } from '#lib/game/economy/index.ts';
+import { economy, flowsOf, kcalOf, POWER, type Site } from '#lib/game/economy/index.ts';
 import { hasMaterial } from '#lib/game/data/index.ts';
 import { planTrip } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
@@ -153,7 +153,7 @@ export function supplyRows(game: Game, site: Site): SupplyRow[] {
       if (m !== POWER && hasMaterial(m)) need[m] = (need[m] ?? 0) + v * a.cap;
   if (flows.food.demand > 0) {
     const food = Object.keys(flows.eaten)[0] ?? 'food_ration';
-    need[food] = (need[food] ?? 0) + flows.food.demand;
+    need[food] = (need[food] ?? 0) + flows.food.demand / Math.max(1, kcalOf(food));
   }
   const ids = new Set([
     ...Object.keys(need),

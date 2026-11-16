@@ -1,0 +1,103 @@
+[
+  {
+    "id": "ceres-polar-ice",
+    "world": "ceres",
+    "body": "asteroid-c",
+    "name": "Polar and high-latitude ice",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 3 },
+      { "material": "carbonaceous_chondrite", "grade": 0.5 }
+    ],
+    "basis": "Dawn's gamma-ray and neutron spectrometer found ice above 10 percent by mass within a metre of the surface at high latitudes, rising toward the poles. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Ceres_(dwarf_planet)",
+    "estimated": true
+  },
+  {
+    "id": "ceres-ernutet",
+    "world": "ceres",
+    "body": "asteroid-c",
+    "name": "Ernutet crater organics",
+    "kind": "ground",
+    "deposits": [
+      { "material": "carbon", "grade": 2.5 },
+      { "material": "water", "grade": 1 }
+    ],
+    "basis": "Dawn's spectrometer found aliphatic organic material concentrated around Ernutet crater, the one carbon-rich spot on Ceres. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Ceres_(dwarf_planet)",
+    "estimated": true
+  },
+  {
+    "id": "ceres-dark-plains",
+    "world": "ceres",
+    "body": "asteroid-c",
+    "name": "Dark cratered plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "carbonaceous_chondrite", "grade": 2 },
+      { "material": "water", "grade": 1 },
+      { "material": "carbon", "grade": 1 },
+      { "material": "phosphorus", "grade": 0.5 }
+    ],
+    "basis": "Most of the surface is dark carbonaceous material with ammoniated clays, like a carbonaceous chondrite. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Ceres_(dwarf_planet)",
+    "estimated": true
+  },
+  {
+    "id": "asteroid-c",
+    "world": "asteroid-c",
+    "body": "asteroid-c",
+    "template": true,
+    "name": "Whole body",
+    "kind": "ground",
+    "deposits": [
+      { "material": "carbonaceous_chondrite", "grade": 2 },
+      { "material": "water", "grade": 1.5 },
+      { "material": "carbon", "grade": 1 },
+      { "material": "phosphorus", "grade": 0.3 }
+    ],
+    "basis": "A carbonaceous asteroid is hydrated clay and organics like a CI or CM carbonaceous chondrite: up to about 20 percent water by mass, 3 to 4 percent carbon, about 0.1 percent phosphorus. One region stands for the whole body. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Carbonaceous_chondrite",
+    "estimated": true
+  },
+  {
+    "id": "asteroid-s",
+    "world": "asteroid-s",
+    "body": "asteroid-s",
+    "template": true,
+    "name": "Whole body",
+    "kind": "ground",
+    "deposits": [
+      { "material": "ordinary_chondrite", "grade": 2 },
+      { "material": "iron", "grade": 1 },
+      { "material": "fe_ni_metal", "grade": 0.6 },
+      { "material": "nickel", "grade": 0.4 },
+      { "material": "silicon", "grade": 1 },
+      { "material": "copper", "grade": 0.05 }
+    ],
+    "basis": "A stony asteroid is ordinary-chondrite rock: silicates with iron-nickel metal grains, about a fifth to a third of the mass as iron in total and a few percent as free metal. One region stands for the whole body. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Ordinary_chondrite",
+    "estimated": true
+  },
+  {
+    "id": "asteroid-m",
+    "world": "asteroid-m",
+    "body": "asteroid-m",
+    "template": true,
+    "name": "Whole body",
+    "kind": "ground",
+    "deposits": [
+      { "material": "fe_ni_metal", "grade": 3 },
+      { "material": "iron", "grade": 3 },
+      { "material": "nickel", "grade": 1 },
+      { "material": "cobalt", "grade": 0.4 },
+      { "material": "copper", "grade": 0.1 },
+      { "material": "platinum", "grade": 0.08 },
+      { "material": "gold", "grade": 0.05 },
+      { "material": "iridium", "grade": 0.05 }
+    ],
+    "basis": "A metallic asteroid is the core of a broken planetesimal, iron-nickel with cobalt and a few parts per million of platinum-group metals and gold, like an iron meteorite. One region stands for the whole body. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/M-type_asteroid",
+    "estimated": true
+  }
+]

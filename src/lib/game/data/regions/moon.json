@@ -1,0 +1,79 @@
+[
+  {
+    "id": "luna-south-pole",
+    "world": "luna",
+    "body": "moon",
+    "name": "South polar cold traps",
+    "kind": "ground",
+    "known": true,
+    "deposits": [
+      { "material": "water", "grade": 2 },
+      { "material": "hydrogen", "grade": 0.5 },
+      { "material": "lunar_regolith", "grade": 1 }
+    ],
+    "basis": "Water ice survives only in craters that never see the Sun. LCROSS measured 5.6 plus or minus 2.9 percent water by mass in the plume from Cabeus, the figure the grade of 2 stands for; the rest of the pole is drier. Present-day science already knows the Moon's broad regions from Lunar Prospector, Clementine, Chandrayaan-1, LRO and LCROSS, so this region starts known.",
+    "source": "https://doi.org/10.1126/science.1186986",
+    "estimated": true
+  },
+  {
+    "id": "luna-maria",
+    "world": "luna",
+    "body": "moon",
+    "name": "Maria",
+    "kind": "ground",
+    "known": true,
+    "deposits": [
+      { "material": "ilmenite", "grade": 2.5 },
+      { "material": "basalt", "grade": 2 },
+      { "material": "iron", "grade": 1.5 },
+      { "material": "helium3", "grade": 1.5 },
+      { "material": "hydrogen", "grade": 1 },
+      { "material": "sulfur", "grade": 1 },
+      { "material": "lunar_regolith", "grade": 1 },
+      { "material": "potassium", "grade": 0.3 }
+    ],
+    "basis": "The dark basalt plains hold the titanium-rich regolith: Apollo 11 and 17 soils carry up to about 10 percent titanium dioxide, bound in ilmenite, and the solar-wind helium-3 and hydrogen stay in ilmenite grains, so the maria hold about twice the helium-3 of the highlands. Mare basalt carries 16 to 22 percent iron oxide against 4 to 6 in the highlands, and troilite gives sulfur. Grades are relative, scaled from those figures. Known from orbit and from sample return.",
+    "source": "https://doi.org/10.1016/j.icarus.2007.03.014",
+    "estimated": true
+  },
+  {
+    "id": "luna-highlands",
+    "world": "luna",
+    "body": "moon",
+    "name": "Highlands",
+    "kind": "ground",
+    "known": true,
+    "deposits": [
+      { "material": "anorthite", "grade": 3 },
+      { "material": "lunar_regolith", "grade": 1 },
+      { "material": "iron", "grade": 0.4 },
+      { "material": "helium3", "grade": 0.7 },
+      { "material": "hydrogen", "grade": 0.6 }
+    ],
+    "basis": "The old crust is anorthosite, rock that is over 90 percent plagioclase, the calcium aluminium silicate anorthite, with 25 to 30 percent alumina; iron is low. Grades are relative. Known from orbit and from sample return.",
+    "source": "https://en.wikipedia.org/wiki/Anorthosite",
+    "estimated": true
+  },
+  {
+    "id": "luna-kreep",
+    "world": "luna",
+    "body": "moon",
+    "name": "Procellarum KREEP terrane",
+    "kind": "ground",
+    "known": true,
+    "deposits": [
+      { "material": "thorium", "grade": 3 },
+      { "material": "potassium", "grade": 3 },
+      { "material": "phosphorus", "grade": 3 },
+      { "material": "neodymium", "grade": 3 },
+      { "material": "basalt", "grade": 1 },
+      { "material": "iron", "grade": 1 },
+      { "material": "helium3", "grade": 0.8 },
+      { "material": "hydrogen", "grade": 1 },
+      { "material": "lunar_regolith", "grade": 1 }
+    ],
+    "basis": "Around Oceanus Procellarum and Imbrium the last dregs of the magma ocean, rich in potassium, rare earth elements and phosphorus (KREEP), left thorium at up to about ten parts per million where the rest of the Moon holds well under one; Lunar Prospector mapped it by gamma-ray spectrometry. Grades are relative. Known from orbit.",
+    "source": "https://doi.org/10.1126/science.281.5382.1484",
+    "estimated": true
+  }
+]

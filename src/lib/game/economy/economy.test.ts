@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { milestone } from '#lib/game/data/index.ts';
+import { milestone, material } from '#lib/game/data/index.ts';
+import { newSite } from './index.ts';
 import {
   advanceEconomy,
   assign,
@@ -218,6 +219,82 @@ describe('population and food', () => {
     advanceEconomy(eco, 30 * DAY);
     expect(site.population).toBeGreaterThan(p0);
     expect(site.stock.wheat).toBeLessThan(earthOf(startEconomy()).stock.wheat ?? 0);
+  });
+});
+
+describe('food in calories', () => {
+  const colony = (eco: Economy, people: number, stock: Record<string, number>): Site => {
+    const site = newSite(eco, { worldBody: 'luna', bodyName: 'Luna', place: 'orbit', angle: 0 })!;
+    site.population = people;
+    site.stock = stock;
+    return site;
+  };
+
+  it('needs 2,800 kcal a person a day from the reference person, on Earth and off it', () => {
+    const eco = startEconomy();
+    const earth = earthOf(eco);
+    expect(earth.kcalPerPersonDay).toBe(2800);
+    const f = siteFlows(eco, earth);
+    expect(f.food.demand).toBeCloseTo((earth.population * 2800) / 24, -3);
+    expect(colony(eco, 10, {}).kcalPerPersonDay).toBe(2800);
+  });
+
+  it('eats a kilogram of wheat as 3,270 kcal and a kilogram of lettuce as 150', () => {
+    const eco = startEconomy();
+    const wheat = colony(eco, 100, { wheat: 1e6 });
+    const f = siteFlows(eco, wheat);
+    expect(f.food.demand).toBeCloseTo((100 * 2800) / 24, 6);
+    expect(f.eaten.wheat).toBeCloseTo(f.food.demand / material('wheat').kcalPerKg!, 6);
+    expect(f.eatenMass).toBeCloseTo(f.food.demand / 3270, 6);
+    const greens = newSite(eco, { worldBody: 'luna', bodyName: 'Luna', place: 'surface', angle: 0 })!;
+    greens.population = 100;
+    greens.stock = { leafy_greens: 1e6 };
+    expect(siteFlows(eco, greens).eatenMass).toBeCloseTo(f.food.demand / 150, 6);
+  });
+
+  it('splits what is eaten between foods by calories held, not by mass', () => {
+    const eco = startEconomy();
+    const site = colony(eco, 100, { wheat: 1e6, soybean: 1e6 });
+    const f = siteFlows(eco, site);
+    const kcal = (m: string) => material(m).kcalPerKg!;
+    expect(f.food.eatenBy.wheat! / f.food.eatenBy.soybean!).toBeCloseTo(kcal('wheat') / kcal('soybean'), 6);
+    expect(f.eaten.wheat).toBeCloseTo(f.eaten.soybean!, 6);
+    expect(f.food.cover).toBeCloseTo(1, 12);
+  });
+
+  it('shrinks in proportion to the calorie shortfall and grows only when the need is met', () => {
+    const eco = startEconomy();
+    const earth = earthOf(eco);
+    for (const m of ['wheat', 'potato', 'soybean', 'leafy_greens', 'meat']) earth.stock[m] = 0;
+    for (const g of earth.groups) if (g.process === 'farm_wheat') g.on = false;
+    const f = siteFlows(eco, earth);
+    expect(f.food.cover).toBeLessThan(1);
+    expect(f.food.cover).toBeGreaterThan(0);
+    expect(f.food.cover).toBeCloseTo(f.food.eaten / f.food.demand, 12);
+    expect(f.growthPerHour).toBeCloseTo((-0.25 * (1 - f.food.cover)) / 8766, 12);
+    const fed = siteFlows(startEconomy(), earthOf(startEconomy()));
+    expect(fed.growthPerHour).toBeGreaterThan(0);
+  });
+
+  it('runs a small site out of stored food and then shrinks it', () => {
+    const eco = startEconomy();
+    const site = colony(eco, 100, { wheat: (100 * 2800 * 0.5) / 3270 });
+    expect(siteFlows(eco, site).food.cover).toBe(1);
+    advanceEconomy(eco, 24 * 3600);
+    expect(site.stock.wheat ?? 0).toBeLessThan(1e-6);
+    expect(siteFlows(eco, site).food.cover).toBe(0);
+    expect(site.population).toBeLessThan(100);
+  });
+
+  it('feeds Earth with the ranches making meat for about a tenth of the calories', () => {
+    const eco = startEconomy();
+    const f = siteFlows(eco, earthOf(eco));
+    const meat = f.food.madeBy.meat ?? 0;
+    expect(meat / f.food.demand).toBeGreaterThan(0.08);
+    expect(meat / f.food.demand).toBeLessThan(0.12);
+    const meatPerYear = (f.produced.meat ?? 0) * 8766;
+    expect(meatPerYear).toBeGreaterThan(2e11);
+    expect(meatPerYear).toBeLessThan(6e11);
   });
 });
 

@@ -1,22 +1,11 @@
-import { building } from '#lib/game/data/index.ts';
-import type { Body, Site as Where } from '#lib/game/data/index.ts';
-import { buildingsAt, isMass } from './processes.ts';
+import { building, bodyTypeOf, region as regionRecord } from '#lib/game/data/index.ts';
+import type { Site as Where } from '#lib/game/data/index.ts';
+import { gradeIn } from './deposits.ts';
+import { buildingsAt, isMass, processesAt } from './processes.ts';
 import { unlockedProcesses } from './actions.ts';
+import { earthStart } from './start.ts';
 import type { Economy, Site, SitePlace } from './types.ts';
 import { isUnlocked } from './unlocks.ts';
-
-export const DATA_BODIES: Readonly<Record<string, Body>> = {
-  earth: 'earth',
-  luna: 'moon',
-  mars: 'mars',
-  venus: 'venus',
-  europa: 'icy-moon',
-  jupiter: 'gas-giant',
-  saturn: 'gas-giant',
-  uranus: 'ice-giant',
-  neptune: 'ice-giant',
-  ceres: 'asteroid-c'
-};
 
 export const FOUNDING_CREW_SHARE = 1;
 
@@ -24,36 +13,72 @@ export interface Foundation {
   worldBody: string;
   bodyName: string;
   place: SitePlace;
+  region?: string | null;
   angle: number;
 }
 
 export const whereOf = (worldBody: string, place: SitePlace): Where | undefined =>
-  place === 'orbit' ? 'orbit' : DATA_BODIES[worldBody];
+  place === 'orbit' ? 'orbit' : bodyTypeOf(worldBody);
 
 export const siteAt = (eco: Economy, worldBody: string, place: SitePlace): Site | undefined =>
   eco.sites.find((s) => s.worldBody === worldBody && s.place === place);
 
-export function firstBuildings(eco: Economy, worldBody: string, place: SitePlace) {
+export const siteIn = (
+  eco: Economy,
+  worldBody: string,
+  place: SitePlace,
+  region: string | null
+): Site | undefined =>
+  eco.sites.find((s) => s.worldBody === worldBody && s.place === place && s.region === region);
+
+export function workableHere(buildingId: string, where: Where, worldBody: string, region: string | null) {
+  if (building(buildingId).kind !== 'extraction') return true;
+  return processesAt(buildingId, where).some((p) =>
+    Object.keys(p.extracts).every((m) => gradeIn(worldBody, region, m) !== undefined)
+  );
+}
+
+export function firstBuildings(
+  eco: Economy,
+  worldBody: string,
+  place: SitePlace,
+  region: string | null = null
+) {
   const where = whereOf(worldBody, place);
-  return where ? buildingsAt(where).filter((b) => isUnlocked(eco, b)) : [];
+  return where
+    ? buildingsAt(where).filter((b) => isUnlocked(eco, b) && workableHere(b.id, where, worldBody, region))
+    : [];
 }
 
 export function newSite(eco: Economy, f: Foundation): Site | undefined {
   const where = whereOf(f.worldBody, f.place);
-  if (!where || siteAt(eco, f.worldBody, f.place)) return undefined;
+  const region = f.place === 'surface' ? (f.region ?? null) : null;
+  if (!where || siteIn(eco, f.worldBody, f.place, region)) return undefined;
   const taken = eco.sites.filter((s) => s.worldBody === f.worldBody && s.place === f.place).length;
-  const id = f.place === 'surface' ? f.worldBody : `orbit-${f.worldBody}${taken ? `-${taken + 1}` : ''}`;
+  const regionName = region ? regionRecord(region)?.name : undefined;
+  const id =
+    f.place === 'surface'
+      ? taken
+        ? (region ?? `${f.worldBody}-${taken + 1}`)
+        : f.worldBody
+      : `orbit-${f.worldBody}${taken ? `-${taken + 1}` : ''}`;
   const site: Site = {
     id,
-    name: f.place === 'surface' ? `${f.bodyName} outpost` : `${f.bodyName} orbital station`,
+    name:
+      f.place === 'surface'
+        ? taken && regionName
+          ? `${f.bodyName} outpost, ${regionName.toLowerCase()}`
+          : `${f.bodyName} outpost`
+        : `${f.bodyName} orbital station`,
     body: where,
     worldBody: f.worldBody,
+    region,
     place: f.place,
     angle: f.angle,
     berths: 0,
     population: 0,
     workforceShare: FOUNDING_CREW_SHARE,
-    foodPerPersonDay: 1,
+    kcalPerPersonDay: earthStart.kcalPerPersonDay,
     growthPerYear: 0,
     gridKw: 0,
     stock: {},

@@ -4,13 +4,11 @@
   "population": 8200000000.0,
   "populationSource": "https://population.un.org/wpp/",
   "workforceShare": 0.45,
-  "foodPerPersonDay": 1,
-  "foodSource": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf",
   "growthPerYear": 0.009,
-  "gridKw": 200000000.0,
+  "gridKw": 250000000.0,
   "stockDays": 90,
   "sizing": {
-    "food": "farmland feeds the population at foodPerPersonDay with a 5% surplus, split 40% wheat, 25% potato, 25% soybean, 10% leafy greens by mass",
+    "food": "ranches make meat for 10% of the calories at 2,200 kcal per kg from cereal and soybean feed, farmland makes the other crops, and together they feed the population at kcalPerPersonDay with a 5% surplus, the crops split 40% wheat, 25% potato, 25% soybean, 10% leafy greens by mass after the ranches have taken their feed",
     "endProducts": "each end product is made at its present-day world output, in kg a year",
     "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
     "grid": "gridKw covers the start demand with about 15% to spare",
@@ -30,27 +28,32 @@
     {
       "building": "farmland",
       "process": "farm_wheat",
-      "count": 1435001
+      "count": 2360403
     },
     {
       "building": "farmland",
       "process": "farm_potato",
-      "count": 896876
+      "count": 863746
     },
     {
       "building": "farmland",
       "process": "farm_soybean",
-      "count": 896876
+      "count": 1189883
     },
     {
       "building": "farmland",
       "process": "farm_leafy_greens",
-      "count": 358751
+      "count": 345499
+    },
+    {
+      "building": "ranch",
+      "process": "ranch_meat",
+      "count": 1043637
     },
     {
       "building": "mine_earth",
       "process": "extract:water",
-      "count": 536435
+      "count": 777619
     },
     {
       "building": "mine_earth",
@@ -65,7 +68,7 @@
     {
       "building": "mine_earth",
       "process": "extract:potassium",
-      "count": 1949
+      "count": 2266
     },
     {
       "building": "mine_earth",
@@ -75,12 +78,12 @@
     {
       "building": "mine_earth",
       "process": "extract:phosphorus",
-      "count": 1178
+      "count": 1378
     },
     {
       "building": "mine_earth",
       "process": "extract:sulfur",
-      "count": 879
+      "count": 935
     },
     {
       "building": "mine_earth",
@@ -135,42 +138,42 @@
     {
       "building": "air_separation_plant",
       "process": "air_separation",
-      "count": 2316
+      "count": 2354
     },
     {
       "building": "chemical_plant",
       "process": "haber_bosch",
-      "count": 5241
+      "count": 7250
     },
     {
       "building": "chemical_plant",
       "process": "steam_methane_reforming",
-      "count": 4645
+      "count": 6493
     },
     {
       "building": "chemical_plant",
       "process": "urea_synthesis",
-      "count": 4227
+      "count": 6336
     },
     {
       "building": "chemical_plant",
       "process": "potassium_sulfate_synthesis",
-      "count": 2265
+      "count": 2860
     },
     {
       "building": "chemical_plant",
       "process": "sulfuric_acid_synthesis",
-      "count": 1246
+      "count": 1449
     },
     {
       "building": "chemical_plant",
       "process": "map_neutralisation",
-      "count": 1047
+      "count": 1434
     },
     {
       "building": "chemical_plant",
       "process": "phosphoric_acid_thermal",
-      "count": 864
+      "count": 1097
     },
     {
       "building": "alloy_works",
@@ -237,5 +240,8 @@
       "process": null,
       "count": 100
     }
-  ]
+  ],
+  "kcalPerPersonDay": 2800,
+  "kcalSource": "https://www.fao.org/3/y5686e/y5686e08.htm",
+  "kcalBasis": "Reference person: a moderately active man of 18 to 30 years, 1.70 m, with a physical activity level of 1.75, whose recommended intake is about 2,800 kcal a day in the FAO, WHO and UNU report on human energy requirements; every person in the game needs this, on Earth and off it"
 }

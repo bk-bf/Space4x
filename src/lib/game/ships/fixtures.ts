@@ -10,12 +10,14 @@ import {
   type ShipDesign,
   type Yard
 } from '#lib/game/shipdesign/index.ts';
+import { resetSurvey } from '#lib/game/survey.svelte.ts';
 import { resetShips, ships } from './state.svelte.ts';
 import type { Vessel, Whereabouts } from './types.ts';
 
 export function freshGame(): Game {
   resetEconomy();
   resetShips();
+  resetSurvey();
   classes.saved = [];
   return new Game();
 }

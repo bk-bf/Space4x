@@ -5,7 +5,10 @@
     "category": "food",
     "tier": "P",
     "why": "Staple cereal; dwarf wheat completed seed-to-seed life cycles on the Mir space station greenhouse",
-    "source": "https://ntrs.nasa.gov/citations/20020044749"
+    "source": "https://ntrs.nasa.gov/citations/20020044749",
+    "kcalPerKg": 3270,
+    "kcalSource": "https://fdc.nal.usda.gov/food-details/168890/nutrients",
+    "kcalBasis": "USDA FoodData Central 168890, wheat (hard red winter), 327 kcal per 100 g"
   },
   {
     "id": "potato",
@@ -13,7 +16,10 @@
     "category": "food",
     "tier": "P",
     "why": "High-yield tuber staple; grown in a Mars-conditions simulator by the International Potato Center",
-    "source": "https://www.foxnews.com/world/in-lab-simulating-harsh-mars-climate-a-nascent-potato-grows"
+    "source": "https://www.foxnews.com/world/in-lab-simulating-harsh-mars-climate-a-nascent-potato-grows",
+    "kcalPerKg": 770,
+    "kcalSource": "https://fdc.nal.usda.gov/food-details/170026/nutrients",
+    "kcalBasis": "USDA FoodData Central 170026, potatoes (flesh and skin, raw), 77 kcal per 100 g"
   },
   {
     "id": "soybean",
@@ -21,7 +27,10 @@
     "category": "food",
     "tier": "P",
     "why": "Plant protein and oil crop: the main staple source of protein where no livestock is kept",
-    "source": "https://en.wikipedia.org/wiki/Soybean"
+    "source": "https://en.wikipedia.org/wiki/Soybean",
+    "kcalPerKg": 4460,
+    "kcalSource": "https://fdc.nal.usda.gov/food-details/174270/nutrients",
+    "kcalBasis": "USDA FoodData Central 174270, soybeans (mature seeds, raw), 446 kcal per 100 g"
   },
   {
     "id": "leafy_greens",
@@ -29,7 +38,10 @@
     "category": "food",
     "tier": "P",
     "why": "Fresh vegetables grown on the ISS in the Veggie growth system",
-    "source": "https://en.wikipedia.org/wiki/Vegetable_Production_System"
+    "source": "https://en.wikipedia.org/wiki/Vegetable_Production_System",
+    "kcalPerKg": 150,
+    "kcalSource": "https://fdc.nal.usda.gov/food-details/169249/nutrients",
+    "kcalBasis": "USDA FoodData Central, lettuce (green leaf, raw), 15 kcal per 100 g"
   },
   {
     "id": "single_cell_protein",
@@ -37,7 +49,11 @@
     "category": "food",
     "tier": "E",
     "why": "Protein-rich bacterial biomass grown on methane and ammonia in a fermenter, so Sabatier methane can feed a crew with no farmland",
-    "source": "https://en.wikipedia.org/wiki/Single-cell_protein"
+    "source": "https://en.wikipedia.org/wiki/Single-cell_protein",
+    "kcalPerKg": 3500,
+    "kcalSource": "https://en.wikipedia.org/wiki/Single-cell_protein",
+    "kcalBasis": "About 65 to 70 percent protein by dry mass at 4 kcal per gram of protein, the rest nucleic acids, fat and carbohydrate at similar or higher energy; a figure for dry cells, not a measured diet",
+    "kcalEstimated": true
   },
   {
     "id": "food_ration",
@@ -46,6 +62,22 @@
     "tier": "P",
     "thin": true,
     "why": "What a crew actually eats: dried, packaged food, about 1 kg dry mass per person per day on beyond-LEO missions",
-    "source": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf"
+    "source": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf",
+    "kcalPerKg": 2800,
+    "kcalSource": "https://ntrs.nasa.gov/api/citations/20230013896/downloads/Logistics_BeyondLEO-ASCEND2023-Pres.pdf",
+    "kcalBasis": "One kilogram of packaged dry food a person a day, as the source plans for missions beyond low Earth orbit, feeding the 2,800 kcal reference diet; the ration is defined by that figure",
+    "kcalEstimated": true
+  },
+  {
+    "id": "meat",
+    "name": "Meat (boneless)",
+    "category": "food",
+    "tier": "P",
+    "kcalPerKg": 2200,
+    "kcalSource": "https://fdc.nal.usda.gov/food-details/171796/nutrients",
+    "kcalBasis": "A blend of raw boneless beef (ground 85 percent lean, 215 kcal per 100 g, USDA FoodData Central 171796), pork and poultry meat with skin, all between 200 and 250 kcal per 100 g",
+    "kcalEstimated": true,
+    "why": "Livestock meat: the protein and fat food that ranches make from feed crops and water",
+    "source": "https://en.wikipedia.org/wiki/Meat"
   }
 ]
