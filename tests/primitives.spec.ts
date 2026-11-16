@@ -183,3 +183,32 @@ test('the portrait catalogue lays out cleanly, draws every option and switches s
   await expect.poll(() => faces.first().getAttribute('src')).toBe(gritty);
   expect(errors).toEqual([]);
 });
+
+test('the small body catalogue draws every shape without errors and switches size', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/dev/bodies');
+  await expect(page.locator('[data-screen="bodies"]')).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('h3[data-section]')).toHaveCount(8);
+  const cells = page.locator('[data-body] canvas');
+  expect(await cells.count()).toBeGreaterThan(20);
+  await page.waitForTimeout(1500);
+  const blank = await cells.evaluateAll(
+    (all) =>
+      all.filter((c) => {
+        const cv = c as HTMLCanvasElement,
+          d = cv.getContext('2d')!.getImageData(0, 0, cv.width, cv.height).data;
+        let lit = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i]! > 55) lit++;
+        return lit < 600;
+      }).length
+  );
+  expect(blank).toBe(0);
+  const before = await cells.first().evaluate((c: HTMLCanvasElement) => c.toDataURL());
+  await page.waitForTimeout(1500);
+  expect(await cells.first().evaluate((c: HTMLCanvasElement) => c.toDataURL())).not.toBe(before);
+  await page.locator('[data-filter="map"]').click();
+  await expect(page.locator('[data-filter="map"]')).toHaveClass(/on/);
+  expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
+  expect(errors).toEqual([]);
+});

@@ -33,33 +33,33 @@ const SPIN_UP: Vec3 = [0, 0, 0];
 const NAMED: Readonly<Record<string, Named>> = {
   bennu: {
     family: 'top',
-    spec: shapeSpec(101, [lobe(SPIN_UP, [1, 0.96, 1], 1.55)], {
-      ridge: 0.05,
-      ridgeWidth: 0.1,
+    spec: shapeSpec(101, [lobe(SPIN_UP, [1, 0.97, 1], 1.72)], {
+      ridge: 0.03,
+      ridgeWidth: 0.15,
       lumps: 0.03,
       lumpFreq: 2.6,
       craters: 0.35,
       craterDepth: 0.12,
-      boulders: 90
+      boulders: 150
     })
   },
   ryugu: {
     family: 'top',
-    spec: shapeSpec(103, [lobe(SPIN_UP, [1, 0.92, 1], 1.65)], {
-      ridge: 0.06,
-      ridgeWidth: 0.11,
+    spec: shapeSpec(103, [lobe(SPIN_UP, [1, 0.94, 1], 1.78)], {
+      ridge: 0.03,
+      ridgeWidth: 0.15,
       lumps: 0.04,
       lumpFreq: 2.4,
       craters: 0.55,
       craterDepth: 0.14,
-      boulders: 60
+      boulders: 100
     })
   },
   didymos: {
     family: 'top',
-    spec: shapeSpec(107, [lobe(SPIN_UP, [1, 0.88, 1], 1.75)], {
-      ridge: 0.05,
-      ridgeWidth: 0.1,
+    spec: shapeSpec(107, [lobe(SPIN_UP, [1, 0.9, 1], 1.85)], {
+      ridge: 0.03,
+      ridgeWidth: 0.15,
       lumps: 0.03,
       craters: 0.3,
       craterDepth: 0.12,

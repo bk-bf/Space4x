@@ -58,6 +58,7 @@ export const shapeSpec = (
 });
 
 const FIBONACCI = 360;
+const EQUATOR_SOFT = 0.004;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
 const smoothMax = (a: number, b: number, k: number): number => {
@@ -74,7 +75,7 @@ function lobesRadius(spec: ShapeSpec, x: number, y: number, z: number): number {
     if (lobe.n !== undefined) {
       const rho = Math.hypot(x, z),
         n = lobe.n;
-      t = Math.pow(Math.pow(rho / ax, n) + Math.pow(Math.abs(y) / ay, n), -1 / n);
+      t = Math.pow(Math.pow(rho / ax, n) + Math.pow(Math.sqrt(y * y + EQUATOR_SOFT) / ay, n), -1 / n);
     } else {
       const [cx, cy, cz] = lobe.c,
         a2 = (x / ax) ** 2 + (y / ay) ** 2 + (z / az) ** 2,
@@ -244,12 +245,12 @@ export function featuresOf(spec: ShapeSpec): Features {
   });
   const hills: { rho: number; i: number }[] = [];
   for (let i = 0; i < spec.boulders; i++)
-    hills.push({ rho: 0.016 + 0.05 * hash(spec.seed, i, 41) ** 2.4, i });
+    hills.push({ rho: 0.016 + 0.065 * hash(spec.seed, i, 41) ** 2.4, i });
   hills.sort((p, q) => q.rho - p.rho);
   const boulders = new Float64Array(hills.length * FEATURE),
     boulderRho = new Float64Array(hills.length);
   hills.forEach(({ rho, i }, k) => {
-    put(boulders, k, onSphere(spec.seed, i, 43), rho, rho * 0.55, 0, 0, 0, KIND_HILL);
+    put(boulders, k, onSphere(spec.seed, i, 43), rho, rho * 0.85, 0, 0, 0, KIND_HILL);
     boulderRho[k] = rho;
   });
   f = { big, bigCount: n, craters, craterRho, boulders, boulderRho };

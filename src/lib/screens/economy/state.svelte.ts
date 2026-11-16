@@ -97,7 +97,7 @@ export function applyEconomyParams(params: URLSearchParams): void {
     ui.vessel ??= ships.vessels.find((v) => v.trip)?.id ?? null;
   }
   if (scenario === 'belt') {
-    seedBelt(game, params.has('outpost'));
+    seedBelt(game, params.has('outpost'), params.get('asteroid') ?? undefined);
     ui.vessel ??= ships.vessels[0]?.id ?? null;
   }
   if (scenario === 'jump') {

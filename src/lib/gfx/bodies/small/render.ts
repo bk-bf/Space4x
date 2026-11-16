@@ -52,7 +52,8 @@ const BISECT = 5;
 const MAX_MARCH = 90;
 const SAFETY = 0.85;
 const GRAIN_COARSE = 8;
-const GRAIN_FINE = 24;
+const MID_PERIOD = 11;
+const GRIT_PERIOD = 3.2;
 const FINE_FROM = 30;
 const SHEEN: RGB = [236, 241, 255];
 const HALF_V = (() => {
@@ -204,6 +205,8 @@ function paintBody(
     L1 = LIGHT[1],
     L2 = LIGHT[2],
     fine = rn > FINE_FROM,
+    mid = rn / MID_PERIOD,
+    grit = rn / GRIT_PERIOD,
     grainOn = rn > 8,
     j0 = Math.max(-half, -cy),
     j1 = Math.min(half, oh - 1 - cy),
@@ -263,9 +266,10 @@ function paintBody(
         k = shades[s]!;
       let albedo = 1 + sampleTone(field, dx, dy, dz) * look.toneGain;
       if (grainOn) {
-        let n = noise3(dx * GRAIN_COARSE + 3, dy * GRAIN_COARSE, dz * GRAIN_COARSE) - 0.5;
-        if (fine) n += (noise3(dx * GRAIN_FINE, dy * GRAIN_FINE + 5, dz * GRAIN_FINE) - 0.5) * 0.6;
-        albedo += n * look.grain * 2;
+        let n = (noise3(dx * GRAIN_COARSE + 3, dy * GRAIN_COARSE, dz * GRAIN_COARSE) - 0.5) * 2;
+        if (fine) n += (noise3(dx * mid + 9, dy * mid, dz * mid) - 0.5) * 1.6;
+        if (fine) n += (noise3(dx * grit + 5, dy * grit, dz * grit) - 0.5) * 1.4;
+        albedo += n * look.grain;
       }
       albedo = clamp(albedo, 0.45, 1.5);
       let rr = br * albedo * k,
@@ -344,6 +348,7 @@ function blit(f: Pixels, s: Sprite, cx: number, cy: number): void {
         D[b] = S[a]!;
         D[b + 1] = S[a + 1]!;
         D[b + 2] = S[a + 2]!;
+        D[b + 3] = 255;
       }
   }
 }

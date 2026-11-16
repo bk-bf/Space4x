@@ -15,7 +15,12 @@ import { drawStation } from '#lib/gfx/topdown/index.ts';
 export const PICTURE_W = 140;
 export const PICTURE_H = 72;
 const FRAMES_PER_TICK = 3;
-const BODY_REACH = 32;
+const HALF_WIDTH = 62;
+const HALF_HEIGHT = 34;
+const LONG_AXIS_TURN = 0.55;
+
+const fitSmall = (reach: number): number =>
+  Math.floor(Math.min(HALF_HEIGHT / (1 + (reach - 1) * LONG_AXIS_TURN), HALF_WIDTH / reach));
 
 function unknownMark(f: FB, col: RGB): void {
   f.start();
@@ -59,7 +64,7 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
     const b = game.body(sel.id);
     f.start();
     const small = b ? smallBodyOf(b) : undefined;
-    if (b && small) drawSmallBody(f, small, 70, 36, Math.floor(BODY_REACH / smallReach(small)), spinStep(t));
+    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), spinStep(t));
     else if (b) planet(f, 70, 36, b.rings ? 19 : 30, b.type, t * 0.02, b);
   } else if (sel.kind === 'site') {
     const site = game.site(sel.id);

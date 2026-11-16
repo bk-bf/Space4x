@@ -1,6 +1,7 @@
 <script lang="ts">
   import { economy, flowsOf } from '#lib/game/economy/index.ts';
   import { game } from '#lib/game/index.ts';
+  import { smallBodyOf } from '#lib/game/smallBodies.ts';
   import type { PlanetType } from '#lib/gfx/planets.ts';
   import { Icon, Panel, dim, fmt, tipText, tooltip, warn } from '#lib/ui/index.ts';
   import { siteBody, siteKind } from './lookup.ts';
@@ -22,6 +23,10 @@
     return site ? site.alerts.food || site.alerts.power || flowsOf(site).food.cover < 1 : false;
   };
   const planetOf = (worldBody: string): PlanetType => siteBody(worldBody)?.type ?? 'terran';
+  const smallOf = (worldBody: string) => {
+    const body = siteBody(worldBody);
+    return body ? smallBodyOf(body) : undefined;
+  };
 </script>
 
 <Panel title="Sites">
@@ -53,7 +58,7 @@
           {:else}
             <img
               class="ui-px"
-              src={planetSprite(planetOf(s.worldBody), 30)}
+              src={planetSprite(planetOf(s.worldBody), 30, smallOf(s.worldBody))}
               width="30"
               height="30"
               alt=""
