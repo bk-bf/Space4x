@@ -29,6 +29,7 @@
   let labelHost: HTMLDivElement;
   let fb: FB | null = null;
   let anchors: Anchor[] = [];
+  let marks: Anchor[] = [];
   let last = 0;
   let benched = false;
   let live = false;
@@ -69,6 +70,7 @@
     const t0 = performance.now(),
       drawn = drawMap(fb, game, t, dt);
     anchors = drawn.anchors;
+    marks = drawn.marks;
     live = drawn.live.length > 0;
     const painted = performance.now() - t0,
       d = desk(),
@@ -109,7 +111,7 @@
     const [x, y] = at(e);
     let best: Anchor | undefined,
       bd = Infinity;
-    for (const q of anchors) {
+    for (const q of [anchors, marks].flat()) {
       if (!q.pick || Math.abs(x - q.x) >= q.rx + 4 || Math.abs(y - q.y) >= q.ry + 4) continue;
       const d = Math.hypot(x - q.x, y - q.y);
       if (d < bd) {

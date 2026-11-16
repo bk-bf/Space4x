@@ -75,7 +75,7 @@ test.describe('asteroids on the map', () => {
     await row(page, '#rockList', 'Psyche').click();
     await expect(heading(page)).toHaveText('Psyche');
     await expect(win(page, 'sel').locator('#asteroidFacts')).toContainText('Metallic');
-    await page.locator('#rockFilter').selectOption('near');
+    await page.locator('#rockFilter').selectOption('near-earth');
     await expect(row(page, '#rockList', 'Bennu')).toHaveCount(1);
     await expect(row(page, '#rockList', 'Psyche')).toHaveCount(0);
   });
@@ -230,6 +230,7 @@ test.describe('the jump point through the UI', () => {
   }) => {
     await open(page, 'screen=economy&tab=ships&scenario=jump&outpost=1');
     await ship(page, 'Survey probe 2').click();
+    await page.locator('#tripGroup').selectOption({ label: 'Jump points' });
     await page.locator('#tripTo').selectOption({ label: 'Jump point A' });
     await page.locator('#tripPlan').click();
     await expect(page.locator('#tripOptions, #tripReasons')).toBeVisible();

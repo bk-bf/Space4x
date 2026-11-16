@@ -1,6 +1,6 @@
 import { economy, type Site } from '#lib/game/economy/index.ts';
-import { asteroidGm, asteroidRadius } from '#lib/game/asteroids.ts';
-import { asteroidRecord, asteroids } from '#lib/game/data/index.ts';
+import { smallBodyGm, smallBodyRadius } from '#lib/game/asteroids.ts';
+import { asteroids, cometRecord, comets, asteroidRecord, moonRecord, moons } from '#lib/game/data/index.ts';
 import {
   callisto,
   earth,
@@ -47,13 +47,13 @@ const REFERENCE: Readonly<Record<string, FlightBody>> = {
 export const NO_SURFACE: readonly string[] = ['venus', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SMALL_BODY_ORBIT_M = 100e3;
 
-function asteroidFlightBody(id: string): FlightBody | undefined {
-  const a = asteroidRecord(id);
-  if (!a) return undefined;
-  const radius = asteroidRadius(a);
+function smallFlightBody(id: string): FlightBody | undefined {
+  const r = asteroidRecord(id) ?? moonRecord(id) ?? cometRecord(id);
+  if (!r) return undefined;
+  const radius = smallBodyRadius(r);
   return {
     id,
-    gm: asteroidGm(a),
+    gm: smallBodyGm(r),
     radius,
     orbit: 0,
     angle: 0,
@@ -62,17 +62,31 @@ function asteroidFlightBody(id: string): FlightBody | undefined {
   };
 }
 
-const referenceOf = (id: string): FlightBody | undefined => REFERENCE[id] ?? asteroidFlightBody(id);
+const referenceOf = (id: string): FlightBody | undefined => REFERENCE[id] ?? smallFlightBody(id);
 
 const TWO_PI = Math.PI * 2;
 const wrap = (a: number): number => ((a % TWO_PI) + TWO_PI) % TWO_PI;
 
-export const FLYABLE: readonly string[] = [...Object.keys(REFERENCE), ...asteroids.map((a) => a.id)];
+export const FLYABLE: readonly string[] = [
+  ...Object.keys(REFERENCE),
+  ...moons.map((m) => m.id),
+  ...asteroids.map((a) => a.id),
+  ...comets.map((c) => c.id)
+];
 
 export const LANDABLE: readonly string[] = FLYABLE.filter((id) => !NO_SURFACE.includes(id));
 
+const systems = new WeakMap<
+  Game,
+  { elapsed: number; bodies: Game['world']['bodies']; length: number; system: FlightSystem }
+>();
+
 export function flightSystem(game: Game): FlightSystem {
-  const bodies = game.world.bodies.flatMap((b): FlightBody[] => {
+  const hit = systems.get(game),
+    all = game.world.bodies;
+  if (hit && hit.elapsed === game.elapsed && hit.bodies === all && hit.length === all.length)
+    return hit.system;
+  const bodies = all.flatMap((b): FlightBody[] => {
     const r = referenceOf(b.id);
     if (!r) return [];
     const base: FlightBody = { ...r };
@@ -87,7 +101,9 @@ export function flightSystem(game: Game): FlightSystem {
       }
     ];
   });
-  return { star: solar.star, bodies };
+  const system = { star: solar.star, bodies };
+  systems.set(game, { elapsed: game.elapsed, bodies: all, length: all.length, system });
+  return system;
 }
 
 export const flightBody = (game: Game, id: string): FlightBody | undefined =>

@@ -5,8 +5,8 @@
   import { ships } from '#lib/game/ships/index.ts';
   import { vesselWhere } from '#lib/screens/economy/shipsView.ts';
   import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
-  import { asteroids } from '#lib/game/data/index.ts';
-  import { TYPE_NAMES, formatSize, isNearEarth } from '#lib/game/asteroids.ts';
+  import { asteroids, comets, isSmallBody } from '#lib/game/data/index.ts';
+  import { GROUPS, TYPE_NAMES, formatSize, groupOf } from '#lib/game/asteroids.ts';
   import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
   import type { Preset } from './targets';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
@@ -23,31 +23,46 @@
   const openAtStart = untrack(() => [game.world.system, game.selection.id]);
   const world = $derived(game.world);
   const sel = $derived(game.selection);
-  const asteroidIds = new Set(asteroids.map((a) => a.id));
-  const bodies = $derived(world.bodies.filter((b) => b.system === world.system && !asteroidIds.has(b.id)));
+  const present = $derived(new Set(world.bodies.filter((b) => b.system === world.system).map((b) => b.id)));
+  const planets = $derived(
+    world.bodies.filter((b) => b.system === world.system && !b.parent && !isSmallBody(b.id))
+  );
+  const moonGroups = $derived(
+    world.bodies
+      .filter(
+        (b) =>
+          b.system === world.system &&
+          !b.parent &&
+          (!isSmallBody(b.id) || asteroids.some((a) => a.id === b.id && a.dwarf))
+      )
+      .map((p) => ({
+        planet: p,
+        moons: world.bodies.filter((b) => b.parent === p.id).sort((x, y) => x.orbit - y.orbit)
+      }))
+      .filter((g) => g.moons.length)
+  );
+  const moonCount = $derived(moonGroups.reduce((n, g) => n + g.moons.length, 0));
   const FILTERS = [
-    { id: 'all', label: 'All' },
-    { id: 'near', label: 'Near-Earth' },
-    { id: 'belt', label: 'Main belt' },
-    { id: 'carbonaceous', label: 'Carbonaceous' },
-    { id: 'stony', label: 'Stony' },
-    { id: 'metallic', label: 'Metallic' }
+    { id: 'all', label: 'All', test: () => true },
+    { id: 'dwarf', label: 'Dwarf planets', test: (a: (typeof asteroids)[number]) => !!a.dwarf },
+    ...GROUPS.map((g) => ({
+      id: g.toLowerCase().replace(/\W+/g, '-'),
+      label: g,
+      test: (a: (typeof asteroids)[number]) => groupOf(a) === g
+    })),
+    ...(['carbonaceous', 'stony', 'metallic', 'icy'] as const).map((t) => ({
+      id: t,
+      label: TYPE_NAMES[t],
+      test: (a: (typeof asteroids)[number]) => a.type === t
+    }))
   ];
   let rockFilter = $state('all');
   const rocks = $derived(
-    asteroids
-      .filter((a) => world.bodies.some((b) => b.id === a.id && b.system === world.system))
-      .filter(
-        (a) =>
-          rockFilter === 'all' ||
-          (rockFilter === 'near'
-            ? isNearEarth(a)
-            : rockFilter === 'belt'
-              ? !isNearEarth(a)
-              : a.type === rockFilter)
-      )
+    asteroids.filter((a) => present.has(a.id)).filter(FILTERS.find((f) => f.id === rockFilter)!.test)
   );
   const rockRows = $derived(rocks.map((a) => [a.name, TYPE_NAMES[a.type], formatSize(a.diameter)]));
+  const cometList = $derived(comets.filter((c) => present.has(c.id)));
+  const cometRows = $derived(cometList.map((c) => [c.name, formatSize(c.diameter)]));
   const contacts = $derived(world.contacts.filter((c) => c.system === world.system));
   const groups = $derived(
     world.systems.map((s) => ({ system: s, fleets: world.fleets.filter((f) => f.system === s.id) }))
@@ -56,7 +71,7 @@
   const bases = $derived(economy.sites.filter((x) => x.place === 'orbit' || x.place === 'point'));
   const vesselRows = $derived(vessels.map((v) => [v.name, vesselWhere(v)]));
   const baseRows = $derived(bases.map((b) => [b.name, Math.round(b.population)]));
-  const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
+  const bodyRows = $derived(planets.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
   const contactRows = $derived(contacts.map((c) => [{ text: c.id, warn: !!c.hostile }, c.kind, c.range]));
 
   function fly(p: Preset) {
@@ -153,16 +168,37 @@
         </p>{/if}
     </div>
   {:else if tab === 'bodies'}
+    <h3>Planets <small>{planets.length}</small></h3>
     <Table
       head={['Body', 'Kind', '>People']}
       rows={bodyRows}
-      keys={bodies.map((b) => 'body:' + b.id)}
+      keys={planets.map((b) => 'body:' + b.id)}
       selected={pickedRow(
         'body',
-        bodies.map((b) => b.id)
+        planets.map((b) => b.id)
       )}
-      onpick={(i) => select('body', bodies[i]!.id)}
+      onpick={(i) => select('body', planets[i]!.id)}
     />
+    <h3>Moons <small>{moonCount}</small></h3>
+    <div id="moonList">
+      {#each moonGroups as g (g.planet.id)}
+        <details data-moons={g.planet.id} open={g.moons.some((m) => sel.kind === 'body' && sel.id === m.id)}>
+          <summary><span>{g.planet.name}</span><small>{g.moons.length}</small></summary>
+          <div>
+            <Table
+              head={['Moon', 'Kind', '>Size']}
+              rows={g.moons.map((m) => [m.name, m.facts.kind, m.facts.size])}
+              keys={g.moons.map((m) => 'body:' + m.id)}
+              selected={pickedRow(
+                'body',
+                g.moons.map((m) => m.id)
+              )}
+              onpick={(i) => select('body', g.moons[i]!.id)}
+            />
+          </div>
+        </details>
+      {/each}
+    </div>
     <h3>
       Asteroids <small>{rocks.length}</small>
       <select class="tools" id="rockFilter" bind:value={rockFilter}>
@@ -179,6 +215,19 @@
           rocks.map((a) => a.id)
         )}
         onpick={(i) => select('body', rocks[i]!.id)}
+      />
+    </div>
+    <h3>Comets <small>{cometList.length}</small></h3>
+    <div id="cometList">
+      <Table
+        head={['Comet', '>Size']}
+        rows={cometRows}
+        keys={cometList.map((c) => 'body:' + c.id)}
+        selected={pickedRow(
+          'body',
+          cometList.map((c) => c.id)
+        )}
+        onpick={(i) => select('body', cometList[i]!.id)}
       />
     </div>
   {:else if tab === 'contacts'}
@@ -245,6 +294,13 @@
   .none {
     margin: 0;
     color: var(--dim);
+  }
+  #moonList details {
+    margin-left: 0;
+  }
+  #moonList details > div {
+    display: block;
+    margin-left: 0;
   }
   #mapScale,
   #mapZoom {

@@ -19,8 +19,11 @@ export const BODY_COLOUR: Record<PlanetType, RGB> = {
 export const ASTEROID_COLOUR: Record<AsteroidType, RGB> = {
   carbonaceous: [176, 150, 132],
   stony: [236, 196, 140],
-  metallic: [150, 200, 240]
+  metallic: [150, 200, 240],
+  icy: [196, 218, 232]
 };
+
+export const COMET_COLOUR: RGB = [214, 236, 244];
 
 export function asteroidMark(f: FB, x: number, y: number, col: RGB, plus: boolean): void {
   x = Math.round(x);

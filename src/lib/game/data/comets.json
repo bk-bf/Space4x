@@ -1,0 +1,200 @@
+[
+  {
+    "id": "hale-bopp",
+    "designation": "C/1995 O1",
+    "name": "Hale-Bopp",
+    "a": 177.43,
+    "e": 0.995,
+    "diameter": 60.0,
+    "mass": 5.655e16,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1995%20O1"
+  },
+  {
+    "id": "swift-tuttle",
+    "designation": "109P/Swift-Tuttle",
+    "name": "Swift-Tuttle",
+    "a": 26.092,
+    "e": 0.9632,
+    "diameter": 26.0,
+    "mass": 4601000000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=109P"
+  },
+  {
+    "id": "neujmin",
+    "designation": "28P/Neujmin 1",
+    "name": "Neujmin",
+    "a": 6.9655,
+    "e": 0.7735,
+    "diameter": 21.4,
+    "mass": 2566000000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=28P"
+  },
+  {
+    "id": "van-biesbroeck",
+    "designation": "53P/Van Biesbroeck",
+    "name": "Van Biesbroeck",
+    "a": 5.4047,
+    "e": 0.551,
+    "diameter": 6.66,
+    "mass": 77340000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=53P"
+  },
+  {
+    "id": "halley",
+    "designation": "1P/Halley",
+    "name": "Halley",
+    "a": 17.929,
+    "e": 0.9679,
+    "diameter": 11.0,
+    "mass": 348500000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1P"
+  },
+  {
+    "id": "tempel-1",
+    "designation": "9P/Tempel 1",
+    "name": "Tempel 1",
+    "a": 3.1461,
+    "e": 0.5097,
+    "diameter": 6.0,
+    "mass": 56550000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=9P"
+  },
+  {
+    "id": "borrelly",
+    "designation": "19P/Borrelly",
+    "name": "Borrelly",
+    "a": 3.607,
+    "e": 0.6379,
+    "diameter": 4.8,
+    "mass": 28950000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19P"
+  },
+  {
+    "id": "wild",
+    "designation": "81P/Wild 2",
+    "name": "Wild",
+    "a": 3.4497,
+    "e": 0.5374,
+    "diameter": 4.0,
+    "mass": 16760000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=81P"
+  },
+  {
+    "id": "encke",
+    "designation": "2P/Encke",
+    "name": "Encke",
+    "a": 2.2183,
+    "e": 0.847,
+    "diameter": 4.8,
+    "mass": 28950000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2P"
+  },
+  {
+    "id": "faye",
+    "designation": "4P/Faye",
+    "name": "Faye",
+    "a": 3.7979,
+    "e": 0.5845,
+    "diameter": 3.54,
+    "mass": 11610000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4P"
+  },
+  {
+    "id": "wolf",
+    "designation": "14P/Wolf",
+    "name": "Wolf",
+    "a": 4.26,
+    "e": 0.3561,
+    "diameter": 4.66,
+    "mass": 26490000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=14P"
+  },
+  {
+    "id": "schaumasse",
+    "designation": "24P/Schaumasse",
+    "name": "Schaumasse",
+    "a": 4.0557,
+    "e": 0.7079,
+    "diameter": 2.6,
+    "mass": 4601000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=24P"
+  },
+  {
+    "id": "reinmuth",
+    "designation": "30P/Reinmuth 1",
+    "name": "Reinmuth",
+    "a": 3.7709,
+    "e": 0.5023,
+    "diameter": 7.8,
+    "mass": 124200000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=30P"
+  },
+  {
+    "id": "comas-sola",
+    "designation": "32P/Comas Sola",
+    "name": "Comas Sola",
+    "a": 4.4989,
+    "e": 0.5567,
+    "diameter": 8.4,
+    "mass": 155200000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=32P"
+  },
+  {
+    "id": "whipple",
+    "designation": "36P/Whipple",
+    "name": "Whipple",
+    "a": 4.1646,
+    "e": 0.2582,
+    "diameter": 4.56,
+    "mass": 24820000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=36P"
+  },
+  {
+    "id": "wolf-harrington",
+    "designation": "43P/Wolf-Harrington",
+    "name": "Wolf-Harrington",
+    "a": 4.3072,
+    "e": 0.4386,
+    "diameter": 3.6,
+    "mass": 12210000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=43P"
+  },
+  {
+    "id": "tempel-tuttle",
+    "designation": "55P/Tempel-Tuttle",
+    "name": "Tempel-Tuttle",
+    "a": 10.338,
+    "e": 0.9056,
+    "diameter": 3.6,
+    "mass": 12210000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=55P"
+  },
+  {
+    "id": "machholz",
+    "designation": "96P/Machholz 1",
+    "name": "Machholz",
+    "a": 3.0351,
+    "e": 0.9592,
+    "diameter": 6.4,
+    "mass": 68630000000000.0,
+    "massEstimated": true,
+    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=96P"
+  }
+]

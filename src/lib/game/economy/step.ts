@@ -1,4 +1,4 @@
-import { asteroidRecord, building, material, milestone } from '#lib/game/data/index.ts';
+import { building, depletableRecord, material, milestone } from '#lib/game/data/index.ts';
 import { DEPLETED_EPS, remainingMass } from './deposits.ts';
 import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
@@ -49,7 +49,7 @@ function applySegment(
     site.stock[m] = Math.abs(next) <= STOCK_EPS * Math.max(1, Math.abs(rate)) ? 0 : next;
   }
   eco.ledger.extracted += flows.extractedMass * hours;
-  const body = asteroidRecord(site.worldBody);
+  const body = depletableRecord(site.worldBody);
   if (body && site.place === 'surface' && flows.extractedMass > 0) {
     const total = Math.min(body.mass, (eco.mined[site.worldBody] ?? 0) + flows.extractedMass * hours);
     eco.mined[site.worldBody] = body.mass - total <= DEPLETED_EPS ? body.mass : total;
@@ -141,7 +141,7 @@ function depletionEvent(eco: Economy, all: { site: Site; flows: SiteFlows }[]): 
   let t = Infinity;
   const rate: Record<string, number> = {};
   for (const { site, flows } of all)
-    if (site.place === 'surface' && asteroidRecord(site.worldBody) && flows.extractedMass > 0)
+    if (site.place === 'surface' && depletableRecord(site.worldBody) && flows.extractedMass > 0)
       rate[site.worldBody] = (rate[site.worldBody] ?? 0) + flows.extractedMass;
   for (const [id, r] of Object.entries(rate)) t = Math.min(t, remainingMass(eco, id) / r);
   return t;

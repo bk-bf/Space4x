@@ -1,14 +1,15 @@
 import {
   AU,
-  bodyPosition,
   FLEET_SENSOR,
   sitePosition,
+  type Body,
   type Contact,
   type Game,
   type SelectionKind,
   type StarSystem
 } from '#lib/game/index.ts';
-import { asteroidRecord } from '#lib/game/data/index.ts';
+import { isNearEarth } from '#lib/game/asteroids.ts';
+import { asteroidRecord, cometRecord, moonRecord } from '#lib/game/data/index.ts';
 import { economy } from '#lib/game/economy/index.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
@@ -27,6 +28,7 @@ import { type Point, type Target } from './mapCamera';
 import {
   ASTEROID_COLOUR,
   asteroidMark,
+  COMET_COLOUR,
   baseMark,
   bodyMark,
   BODY_COLOUR,
@@ -66,10 +68,15 @@ const SITE_PRI = 5;
 const SCENE_LABEL_PRI = 1;
 const NEAR_UNIT_PX = 0.75;
 const DRAWN_PRI = 50;
-const ASTEROID_NAMES_BELOW = 1.5e9;
-const ASTEROID_PLUS_BELOW = 5e9;
-const ASTEROID_BASE_PRI = 1;
-const ASTEROID_MAX_BOOST = 4;
+const NEAR_NAMES_BELOW = 1.5e9;
+const NAME_KM_PER_M_PER_PX = 1 / 4e6;
+const MINOR_PLUS_BELOW = 5e9;
+const MINOR_BASE_PRI = 1;
+const MINOR_MAX_BOOST = 4;
+const MOON_BASE_PRI = 6;
+const MOON_MAX_BOOST = 2;
+const OFF_SCREEN = 12;
+const ORIGIN = { wx: 0, wy: 0 };
 const HOSTILE_PRI = 15;
 const PRIORITY: Record<PlanetType | 'star', number> = {
   star: 20,
@@ -83,17 +90,25 @@ const PRIORITY: Record<PlanetType | 'star', number> = {
   rock: 6
 };
 
+type Minor = 'asteroid' | 'moon' | 'comet';
+
 interface MapBody {
   key: Target;
   id: string;
   name: string;
   star: boolean;
   selectable: boolean;
-  asteroid?: number;
-  w: Point;
+  minor?: Minor;
+  diameter: number;
+  near: boolean;
+  wx: number;
+  wy: number;
   r: number;
   orbit: number;
   parent?: string;
+  parentAt: number;
+  phase: number;
+  omega: number;
   type: PlanetType | 'star';
   tint?: SunTint;
   look?: { type: PlanetType; rot: number; tilt?: number; rings?: boolean; lights?: boolean };
@@ -103,6 +118,7 @@ interface MapBody {
   mk: boolean;
   capped: boolean;
   hide: boolean;
+  cull: boolean;
   list: LabelLine[];
 }
 
@@ -111,8 +127,32 @@ const ss = (v: number) => {
   return v * v * (3 - 2 * v);
 };
 
-function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
-  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, list: [] as LabelLine[] };
+interface Statics {
+  bodies: MapBody[];
+  moving: Body[];
+  byId: Map<string, MapBody>;
+}
+
+let statics: { source: Game['world']['bodies']; length: number; system: string; value: Statics } | null =
+  null;
+
+function minorOf(id: string): { minor?: Minor; diameter: number; near: boolean; col?: RGB } {
+  const a = asteroidRecord(id);
+  if (a)
+    return { minor: 'asteroid', diameter: a.diameter, near: isNearEarth(a), col: ASTEROID_COLOUR[a.type] };
+  const m = moonRecord(id);
+  if (m) return { minor: 'moon', diameter: m.diameter, near: false, col: ASTEROID_COLOUR[m.type] };
+  const c = cometRecord(id);
+  if (c) return { minor: 'comet', diameter: c.diameter, near: false, col: COMET_COLOUR };
+  return { diameter: 0, near: false };
+}
+
+function staticBodies(game: Game, system: StarSystem | undefined): Statics {
+  const source = game.world.bodies,
+    id = game.world.system;
+  if (statics && statics.source === source && statics.length === source.length && statics.system === id)
+    return statics.value;
+  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, cull: false };
   const stars: MapBody[] = (system?.stars ?? []).map((s, i) => ({
     ...blank,
     list: [],
@@ -121,38 +161,97 @@ function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
     name: s.name,
     star: true,
     selectable: false,
-    w: [s.x, s.y],
+    diameter: 0,
+    near: false,
+    wx: s.x,
+    wy: s.y,
     r: s.radius,
     orbit: 0,
+    parentAt: -1,
+    phase: 0,
+    omega: 0,
     type: 'star',
     tint: s.tint,
     col: s.tint ? s.tint.core[1] : [255, 216, 112]
   }));
-  const here = game.world.bodies.filter((b) => b.system === game.world.system);
-  const planets: MapBody[] = [...here.filter((b) => !b.parent), ...here.filter((b) => b.parent)].map((b) => ({
-    ...blank,
-    list: [],
-    key: target('body', b.id),
-    id: b.id,
-    name: b.name,
-    star: false,
-    selectable: true,
-    w: bodyPosition(b, game.world.bodies),
-    r: b.radius,
-    orbit: b.orbit,
-    parent: b.parent,
-    type: b.type,
-    look: {
+  const here = source.filter((b) => b.system === id),
+    ordered = [...here.filter((b) => !b.parent), ...here.filter((b) => b.parent)],
+    index = new Map(ordered.map((b, i) => [b.id, i + stars.length]));
+  const planets: MapBody[] = ordered.map((b) => {
+    const kind = minorOf(b.id);
+    return {
+      ...blank,
+      list: [],
+      key: target('body', b.id),
+      id: b.id,
+      name: b.name,
+      star: false,
+      selectable: true,
+      wx: 0,
+      wy: 0,
+      r: b.radius,
+      orbit: b.orbit,
+      parent: b.parent,
+      parentAt: b.parent ? (index.get(b.parent) ?? -1) : -1,
+      phase: b.angle - b.angularSpeed * game.elapsed,
+      omega: b.angularSpeed,
       type: b.type,
-      rot: (b.orbit % 1e11) * 1e-11 + 0.6,
-      tilt: b.tilt,
-      rings: b.rings,
-      lights: b.colony && b.type === 'terran'
-    },
-    ...(asteroidRecord(b.id) ? { asteroid: asteroidRecord(b.id)!.diameter } : {}),
-    col: asteroidRecord(b.id) ? ASTEROID_COLOUR[asteroidRecord(b.id)!.type] : BODY_COLOUR[b.type]
-  }));
-  return [...stars, ...planets];
+      look: {
+        type: b.type,
+        rot: (b.orbit % 1e11) * 1e-11 + 0.6,
+        tilt: b.tilt,
+        rings: b.rings,
+        lights: b.colony && b.type === 'terran'
+      },
+      ...(kind.minor ? { minor: kind.minor } : {}),
+      diameter: kind.diameter,
+      near: kind.near,
+      col: kind.col ?? BODY_COLOUR[b.type]
+    };
+  });
+  const bodies = [...stars, ...planets];
+  const value = {
+    bodies,
+    moving: ordered,
+    byId: new Map(planets.map((b) => [b.id, b]))
+  };
+  statics = { source, length: source.length, system: id, value };
+  return value;
+}
+
+function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
+  const { bodies, moving } = staticBodies(game, system),
+    first = bodies.length - moving.length,
+    elapsed = game.elapsed;
+  for (let i = 0; i < moving.length; i++) {
+    const m = bodies[first + i]!,
+      at = m.parentAt >= 0 ? bodies[m.parentAt]! : ORIGIN,
+      a = m.phase + m.omega * elapsed;
+    m.wx = at.wx + Math.cos(a) * m.orbit;
+    m.wy = at.wy + Math.sin(a) * m.orbit;
+    m.list.length = 0;
+    if (m.look?.type === 'terran') m.look.lights = !!moving[i]!.colony;
+  }
+  return bodies;
+}
+
+interface Picks {
+  pick: () => void;
+  centre: () => void;
+}
+
+const pickCache = new Map<string, Picks>();
+
+function bodyPicks(
+  b: MapBody,
+  make: (t: Target, selectable: boolean, kind?: SelectionKind, id?: string) => Picks
+): Picks {
+  let picks = pickCache.get(b.key);
+  if (!picks) {
+    picks = make(b.key, b.selectable, 'body', b.id);
+    pickCache.set(b.key, picks);
+  }
+  return picks;
 }
 
 function trail(c: Contact): Point[] {
@@ -188,6 +287,7 @@ export function setFrameCache(on: boolean): void {
 
 export interface MapFrame {
   anchors: Anchor[];
+  marks: Anchor[];
   ships: ShipTally;
   live: string[];
 }
@@ -204,13 +304,27 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     cap = fw * CAP_WIDTHS,
     E = fh * CAP_EASE;
   const bodies = mapBodies(game, system),
-    byId = new Map(bodies.filter((b) => !b.star).map((b) => [b.id, b]));
+    { byId } = staticBodies(game, system);
   for (const b of bodies) {
-    let p = S(b.w[0], b.w[1]);
     const Rt = b.r / s;
+    if (b.minor && Rt < MARKER_BELOW) {
+      const x = ox + (b.wx - ccx) / s,
+        y = oy + (b.wy - ccy) / s;
+      if (
+        !(x > -OFF_SCREEN && y > -OFF_SCREEN && x < f.w + OFF_SCREEN && y < f.h + OFF_SCREEN) &&
+        aim !== b.key &&
+        !(sel.kind === 'body' && sel.id === b.id)
+      ) {
+        b.mk = b.cull = true;
+        b.hide = b.capped = false;
+        continue;
+      }
+    }
+    let p = S(b.wx, b.wy);
     let R = Rt;
     b.mk = Rt < MARKER_BELOW;
     if (b.mk) R = MARK_R;
+    b.hide = b.cull = false;
     if (Rt > cap) {
       const dx = p[0] - ox,
         dy = p[1] - oy,
@@ -223,15 +337,17 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       p = [ox + (dx / d) * d2, oy + (dy / d) * d2];
       R = cap;
       b.capped = true;
-    }
+    } else b.capped = false;
     b.p = p;
     b.R = R;
     if (b.parent) {
       const P = byId.get(b.parent);
-      if (!P || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
+      if (!P || P.cull || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
     }
+    if (b.minor && b.mk && !vis(p, OFF_SCREEN) && aim !== b.key && !(sel.kind === 'body' && sel.id === b.id))
+      b.cull = true;
   }
-  const shown = bodies.filter((b) => !b.hide);
+  const shown = bodies.filter((b) => !b.hide && !b.cull);
   const liveStar = shown.some((b) => b.star && !b.mk && vis(b.p, starReach(b.R)));
   const key = [
     ccx,
@@ -255,7 +371,10 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       for (const b of shown)
         if (
           b.orbit > 0 &&
-          (b.asteroid === undefined || aim === b.key || (sel.kind === 'body' && sel.id === b.id))
+          (b.minor === undefined ||
+            b.minor === 'moon' ||
+            aim === b.key ||
+            (sel.kind === 'body' && sel.id === b.id))
         ) {
           const P = b.parent ? byId.get(b.parent) : undefined;
           if (P?.capped) continue;
@@ -266,7 +385,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     for (const b of shown) {
       if (b.mk) {
         if (b.star) starMark(f, b.p[0], b.p[1], b.tint?.core[0], b.tint?.core[2]);
-        else if (b.asteroid !== undefined) asteroidMark(f, b.p[0], b.p[1], b.col, s < ASTEROID_PLUS_BELOW);
+        else if (b.minor === 'asteroid' || b.minor === 'comet')
+          asteroidMark(f, b.p[0], b.p[1], b.col, s < MINOR_PLUS_BELOW);
         else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
@@ -292,7 +412,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     }
     return best;
   };
-  const an: Anchor[] = [];
+  const an: Anchor[] = [],
+    marks: Anchor[] = [];
   const pickOf = (t: Target, selectable: boolean, kind?: SelectionKind, id?: string) => ({
     pick: () => {
       if (selectable && kind && id) select(kind, id);
@@ -546,18 +667,28 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     if (chosen) brackets(f, P[0], P[1], half + 3, half + 1);
   }
 
+  const nameKm = s * NAME_KM_PER_M_PER_PX;
   for (const b of shown) {
-    const chosen = b.selectable && sel.kind === 'body' && sel.id === b.id,
-      picks = pickOf(b.key, b.selectable, 'body', b.id),
+    const chosen = b.selectable && sel.kind === 'body' && sel.id === b.id;
+    const drawn = b.capped || !b.mk,
+      named =
+        !b.minor ||
+        chosen ||
+        aim === b.key ||
+        !b.mk ||
+        b.diameter >= nameKm ||
+        (b.near && s < NEAR_NAMES_BELOW);
+    const picks = bodyPicks(b, pickOf),
       pri =
         aim === b.key
           ? FOCUS_PRI
-          : b.capped || !b.mk
+          : drawn
             ? DRAWN_PRI
-            : b.asteroid !== undefined
-              ? ASTEROID_BASE_PRI + Math.min(ASTEROID_MAX_BOOST, Math.log10(1 + b.asteroid))
-              : PRIORITY[b.type],
-      named = b.asteroid === undefined || chosen || aim === b.key || s < ASTEROID_NAMES_BELOW || !b.mk,
+            : b.minor === 'moon'
+              ? MOON_BASE_PRI + Math.min(MOON_MAX_BOOST, Math.log10(1 + b.diameter) / 2)
+              : b.minor
+                ? MINOR_BASE_PRI + Math.min(MINOR_MAX_BOOST, Math.log10(1 + b.diameter))
+                : PRIORITY[b.type],
       base = {
         id: b.key,
         ...(named ? { text: b.name } : {}),
@@ -565,8 +696,27 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
         pri,
         lines: b.list,
         target: b.key,
-        ...picks
+        pick: picks.pick,
+        centre: picks.centre
       };
+    if (!named && !b.capped && b.mk && !b.star) {
+      if (vis(b.p))
+        marks.push({
+          id: b.key,
+          sel: false,
+          pri,
+          lines: b.list,
+          target: b.key,
+          pick: picks.pick,
+          centre: picks.centre,
+          solid: false,
+          x: b.p[0],
+          y: b.p[1],
+          rx: 3,
+          ry: 3
+        });
+      continue;
+    }
     if (b.capped) {
       if (!vis(b.p, b.R)) continue;
       const rows = 1 + b.list.length;
@@ -592,27 +742,22 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       });
     } else {
       if (!vis(b.p)) continue;
-      const r =
-        b.asteroid !== undefined && b.mk
-          ? 3
-          : b.mk
-            ? MARK_R + 1
-            : b.star
-              ? b.R * 1.3 + 4
-              : b.R * (b.look?.rings ? 2.3 : 1);
-      if (chosen && b.mk && b.asteroid !== undefined) brackets(f, b.p[0], b.p[1], 5, 4);
+      const rock = b.minor === 'asteroid' || b.minor === 'comet',
+        r = rock && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R * 1.3 + 4 : b.R * (b.look?.rings ? 2.3 : 1),
+        ry = rock && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R;
+      if (chosen && b.mk && rock) brackets(f, b.p[0], b.p[1], 5, 4);
       an.push({
         ...base,
-        ...(b.asteroid !== undefined ? { solid: false } : {}),
+        ...(rock ? { solid: false } : {}),
         x: b.p[0],
         y: b.p[1],
         rx: r,
-        ry: b.asteroid !== undefined && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R
+        ry
       });
     }
   }
   f.present();
-  return { anchors: an, ships: tally, live: live.map((x) => x.site.id) };
+  return { anchors: an, marks, ships: tally, live: live.map((x) => x.site.id) };
 }
 
 function drawBelt(

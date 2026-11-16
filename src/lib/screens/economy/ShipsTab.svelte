@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { asteroids, material } from '#lib/game/data/index.ts';
+  import { material } from '#lib/game/data/index.ts';
   import { economy, isMass, touch } from '#lib/game/economy/index.ts';
   import { className, game } from '#lib/game/index.ts';
   import { PROPELLANTS, PROPELLANT_KINDS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
@@ -51,6 +51,7 @@
   import Field from './Field.svelte';
   import ShipTile from './ShipTile.svelte';
   import TabBody from './TabBody.svelte';
+  import { bodyGrouper, orderedGroups } from './bodyGroups.ts';
   import { bodyName, vesselWhere, whereabouts } from './shipsView.ts';
   import { daysText, kms, propellantIcon, propellantName, vesselIcon } from './shipTiles.ts';
   import { ui } from './state.svelte.ts';
@@ -87,11 +88,11 @@
   let profile = $state<'cheapest' | 'balanced' | 'fastest'>('cheapest');
   let planned = $state<{ vessel: string; key: string; plan: VesselPlan } | null>(null);
 
-  type Dest = { key: string; label: string; to: Destination; siteId?: string; group: string };
-  const rockIds = new Set(asteroids.map((a) => a.id));
+  type Dest = { key: string; label: string; to: Destination; siteId?: string; group: string; rank: number };
   const jumps = $derived(game.world.systems.flatMap((s) => s.jumps));
   const dests = $derived.by<Dest[]>(() => {
     const out: Dest[] = [];
+    const grouper = bodyGrouper(game);
     for (const s of economy.sites.slice(1)) {
       out.push({
         key: `site:${s.id}`,
@@ -101,7 +102,8 @@
             ? { kind: 'surface', body: s.worldBody, angle: 0 }
             : { kind: 'orbit', body: s.worldBody, angle: s.angle },
         siteId: s.id,
-        group: 'Sites'
+        group: 'Sites',
+        rank: 0
       });
     }
     for (const j of jumps)
@@ -109,36 +111,40 @@
         key: `jump:${j.id}`,
         label: j.name,
         to: { kind: 'orbit', body: j.id, angle: 0 },
-        group: 'Jump points'
+        group: 'Jump points',
+        rank: 1
       });
-    const groupOf = (b: string, what: string) =>
-      rockIds.has(b) ? `${what}, asteroids` : `${what}, planets and moons`;
     for (const b of FLYABLE)
       out.push({
         key: `orbit:${b}`,
         label: `${bodyName(b)} orbit`,
         to: { kind: 'orbit', body: b, angle: 0 },
-        group: groupOf(b, 'Orbit')
+        ...grouper(b)
       });
     for (const b of LANDABLE) {
       out.push({
         key: `surface:${b}`,
         label: `${bodyName(b)} surface`,
         to: { kind: 'surface', body: b, angle: 0 },
-        group: groupOf(b, 'Surface')
+        ...grouper(b)
       });
       for (const r of knownRegions(b))
         out.push({
           key: `surface:${b}:${r.id}`,
           label: `${bodyName(b)} surface, ${r.name.toLowerCase()}`,
           to: { kind: 'surface', body: b, angle: 0, region: r.id },
-          group: groupOf(b, 'Surface')
+          ...grouper(b)
         });
     }
     return out;
   });
-  const groups = $derived([...new Set(dests.map((d) => d.group))]);
-  const dest = $derived(dests.find((d) => d.key === destKey) ?? dests[0]);
+  const groups = $derived(orderedGroups(dests));
+  let destGroup = $state('');
+  const activeGroup = $derived(
+    groups.includes(destGroup) ? destGroup : (dests.find((d) => d.key === destKey)?.group ?? groups[0] ?? '')
+  );
+  const inGroup = $derived(dests.filter((d) => d.group === activeGroup));
+  const dest = $derived(inGroup.find((d) => d.key === destKey) ?? inGroup[0]);
 
   function plan() {
     if (!vessel || !dest) return;
@@ -240,12 +246,31 @@
     ...jumps.filter((j) => !j.surveyed).map((j) => j.id)
   ]);
   const projected = $derived(vessel ? projectedPlace(vessel) : undefined);
+  const surveyEntries = $derived.by(() => {
+    const grouper = bodyGrouper(game),
+      jumpIds = new Set(jumps.map((j) => j.id));
+    return surveyable.map((id) => ({
+      id,
+      ...(jumpIds.has(id) ? { group: 'Jump points', rank: 1 } : grouper(id))
+    }));
+  });
+  const surveyGroups = $derived(orderedGroups(surveyEntries));
+  let surveyGroupPick = $state('');
+  const surveyHere = $derived(
+    projected?.kind === 'orbit' ? surveyEntries.find((e) => e.id === projected.body) : undefined
+  );
+  const surveyGroup = $derived(
+    surveyGroups.includes(surveyGroupPick)
+      ? surveyGroupPick
+      : (surveyEntries.find((e) => e.id === surveyBody)?.group ?? surveyHere?.group ?? surveyGroups[0] ?? '')
+  );
+  const surveyShown = $derived(surveyEntries.filter((e) => e.group === surveyGroup).map((e) => e.id));
   const surveyTarget = $derived(
-    surveyBody && surveyable.includes(surveyBody)
+    surveyBody && surveyShown.includes(surveyBody)
       ? surveyBody
-      : projected?.kind === 'orbit' && surveyable.includes(projected.body)
+      : projected?.kind === 'orbit' && surveyShown.includes(projected.body)
         ? projected.body
-        : (surveyable[0] ?? '')
+        : (surveyShown[0] ?? '')
   );
   let foundRegion = $state('');
   const regions = $derived(vessel ? foundRegions(vessel) : []);
@@ -445,11 +470,21 @@
             <label class="pick"
               >Body
               <select
+                id="orderSurveyGroup"
+                value={surveyGroup}
+                onchange={(e) => {
+                  surveyGroupPick = e.currentTarget.value;
+                  surveyBody = '';
+                }}
+              >
+                {#each surveyGroups as g (g)}<option value={g}>{g}</option>{/each}
+              </select>
+              <select
                 id="orderSurvey"
                 value={surveyTarget}
                 onchange={(e) => (surveyBody = e.currentTarget.value)}
               >
-                {#each surveyable as b (b)}<option value={b}>{bodyName(b)}</option>{/each}
+                {#each surveyShown as b (b)}<option value={b}>{bodyName(b)}</option>{/each}
               </select></label
             >
           {:else if orderType === 'dock'}
@@ -470,14 +505,18 @@
         <div class="row">
           <label class="pick"
             >To
+            <select
+              id="tripGroup"
+              value={activeGroup}
+              onchange={(e) => {
+                destGroup = e.currentTarget.value;
+                destKey = '';
+              }}
+            >
+              {#each groups as g (g)}<option value={g}>{g}</option>{/each}
+            </select>
             <select id="tripTo" value={dest?.key ?? ''} onchange={(e) => (destKey = e.currentTarget.value)}>
-              {#each groups as g (g)}
-                <optgroup label={g}>
-                  {#each dests.filter((d) => d.group === g) as d (d.key)}<option value={d.key}
-                      >{d.label}</option
-                    >{/each}
-                </optgroup>
-              {/each}
+              {#each inGroup as d (d.key)}<option value={d.key}>{d.label}</option>{/each}
             </select></label
           >
         </div>

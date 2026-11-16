@@ -1,4 +1,4 @@
-import { asteroidRecord, atmosphereOf, depositGrade, region, type Deposit } from '#lib/game/data/index.ts';
+import { atmosphereOf, depletableRecord, depositGrade, region, type Deposit } from '#lib/game/data/index.ts';
 import type { Economy, Site } from './types.ts';
 
 export const DEPLETED_EPS = 1;
@@ -22,7 +22,7 @@ export function siteDeposits(site: Site): { ground: Deposit[]; air: Deposit[] } 
 export const minedOf = (eco: Economy, worldBody: string): number => eco.mined[worldBody] ?? 0;
 
 export function remainingMass(eco: Economy, worldBody: string): number {
-  const a = asteroidRecord(worldBody);
+  const a = depletableRecord(worldBody);
   return a ? Math.max(0, a.mass - minedOf(eco, worldBody)) : Infinity;
 }
 
