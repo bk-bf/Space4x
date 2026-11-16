@@ -30,6 +30,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
     name: data.name,
     body: data.body as Where,
     worldBody,
+    region: null,
     place: 'surface',
     angle: 0,
     berths: null,
@@ -59,6 +60,8 @@ export function startEconomy(): Economy {
     elapsed: 0,
     nextId: 1,
     delivered: [],
+    mined: {},
+    exhausted: [],
     ledger: { extracted: 0, eaten: 0, built: 0, spent: 0, lost: 0, burned: 0 }
   };
   eco.sites.push(startSite(eco, 'earth', 'earth', earthStart));

@@ -13,6 +13,7 @@ export { advanceShips, spawnDeliveries } from './advance.ts';
 export * from './build.ts';
 export * from './cargo.ts';
 export * from './colonise.ts';
+export * from './hop.ts';
 export * from './launch.ts';
 export * from './model.ts';
 export * from './orders.ts';

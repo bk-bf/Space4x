@@ -289,12 +289,15 @@ describe('a lunar outpost', () => {
     g.advance(10 * DAY);
     expect(v.trip).toBeNull();
     expect(v.at).toEqual({ kind: 'surface', body: 'luna' });
-    const options = foundOptions(v).map((o) => o.building.id);
+    expect(foundOptions(v)).toEqual([]);
+    expect(foundSite(g, v, 'chemical_plant')).toBe('Choose a region to found the site in.');
+    const options = foundOptions(v, 'luna-maria').map((o) => o.building.id);
     expect(options).toContain('chemical_plant');
-    const open = foundOptions(v).find((o) => o.missing.length === 0);
+    const open = foundOptions(v, 'luna-maria').find((o) => o.missing.length === 0);
     expect(open).toBeDefined();
-    const site = foundSite(g, v, open!.building.id) as Site;
+    const site = foundSite(g, v, open!.building.id, 'luna-maria') as Site;
     expect(site.id).toBe('luna');
+    expect(site.region).toBe('luna-maria');
     expect(site.place).toBe('surface');
     expect(site.body).toBe('moon');
     expect(g.body('luna')?.colony).toBe(true);

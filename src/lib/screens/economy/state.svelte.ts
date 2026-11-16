@@ -8,6 +8,7 @@ import {
 } from '#lib/game/economy/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
 import { game } from '#lib/game/index.ts';
+import { resetSurvey } from '#lib/game/survey.svelte.ts';
 import { resetShips, seedTravel, ships } from '#lib/game/ships/index.ts';
 
 export type TabId =
@@ -85,6 +86,7 @@ export function selectedSite(): Site {
 export function resetEconomyScreen(): void {
   resetEconomy();
   resetShips();
+  resetSurvey();
   Object.assign(ui, {
     site: 'earth',
     tab: 'summary',

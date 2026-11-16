@@ -41,6 +41,10 @@ export function landingRating(design: ShipDesign): number {
   return design.parts.reduce((a, p) => a + (component(p.component)?.design.landing ?? 0) * p.count, 0);
 }
 
+export function canSurvey(design: ShipDesign | undefined): boolean {
+  return !!design && design.parts.some((p) => p.count > 0 && component(p.component)?.design.surveys);
+}
+
 export function canAerobrake(v: Vessel): boolean {
   const d = designOf(v);
   return !!d && reentryRating(d) >= wetMass(v);

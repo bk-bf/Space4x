@@ -48,6 +48,7 @@ export interface Site {
   name: string;
   body: Where;
   worldBody: string;
+  region: string | null;
   place: SitePlace;
   angle: number;
   berths: number | null;
@@ -86,6 +87,8 @@ export interface Economy {
   elapsed: number;
   nextId: number;
   delivered: Delivery[];
+  mined: Record<string, number>;
+  exhausted: string[];
   ledger: Ledger;
 }
 

@@ -1,7 +1,8 @@
 import { building, milestone } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
-import { foodIds, isMass, isStockless, POWER, process } from './processes.ts';
+import { gradeAt, isDepleted } from './deposits.ts';
+import { foodIds, isExtraction, isMass, isStockless, POWER, process } from './processes.ts';
 import { programmeCompute, standing } from './programmes.ts';
 import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
 
@@ -16,6 +17,8 @@ export type Limit =
   | { kind: 'power' }
   | { kind: 'compute' }
   | { kind: 'material'; id: string }
+  | { kind: 'deposit'; id: string }
+  | { kind: 'depleted' }
   | { kind: 'slot' }
   | { kind: 'paused' };
 
@@ -32,6 +35,7 @@ interface ActorBase {
 export interface GroupActor extends ActorBase {
   kind: 'group';
   group: Group;
+  grade: number;
 }
 
 export interface BuildActor extends ActorBase {
@@ -83,19 +87,43 @@ const scaled = (amounts: Amounts, k: number): Amounts =>
 const massOf = (amounts: Amounts): number =>
   Object.entries(amounts).reduce((a, [m, v]) => a + (isMass(m) ? v : 0), 0);
 
-function groupActor(site: Site, g: Group, workerShare: number): GroupActor {
-  const base = { kind: 'group' as const, group: g, share: 0, worst: 1 };
+function deposit(site: Site, p: ReturnType<typeof process>): { grade: number; missing: string | null } {
+  let grade = Infinity;
+  for (const m of Object.keys(p.extracts)) {
+    const g = gradeAt(site, m);
+    if (g === undefined) return { grade: 0, missing: m };
+    grade = Math.min(grade, g);
+  }
+  return { grade: Number.isFinite(grade) ? grade : 1, missing: null };
+}
+
+function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): GroupActor {
+  const base = { kind: 'group' as const, group: g, share: 0, worst: 1, grade: 1 };
   if (!g.on) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'off' } };
   if (!g.process) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'idle' } };
   const p = process(g.process, site.body);
+  const { grade, missing } = deposit(site, p);
+  const none = { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {} };
+  if (missing) return { ...none, grade: 0, limit: { kind: 'deposit', id: missing } };
+  if (Object.keys(p.extracts).length && site.place === 'surface' && isDepleted(eco, site.worldBody))
+    return { ...none, grade: 0, limit: { kind: 'depleted' } };
+  const mined = isExtraction(g.process);
+  const rich = mined ? grade : 1;
+  const cap = workerShare * (mined ? 1 : Math.min(1, grade));
+  const gradeLimited = !mined && grade < 1 - 1e-9;
   return {
     ...base,
-    cap: workerShare,
+    grade: mined ? grade : Math.min(1, grade),
+    cap,
     inputs: scaled(p.inputs, g.count),
-    outputs: scaled(p.outputs, g.count),
-    extracts: scaled(p.extracts, g.count),
-    limit: workerShare < 1 ? { kind: 'workers' } : null,
-    worst: workerShare
+    outputs: scaled(p.outputs, g.count * rich),
+    extracts: scaled(p.extracts, g.count * rich),
+    limit: gradeLimited
+      ? { kind: 'deposit', id: Object.keys(p.extracts)[0] ?? '' }
+      : workerShare < 1
+        ? { kind: 'workers' }
+        : null,
+    worst: cap
   };
 }
 
@@ -235,7 +263,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * building(g.building).workers : 0), 0);
   const workerShare = needed > available ? available / needed : 1;
   const actors: Actor[] = [
-    ...site.groups.map((g) => groupActor(site, g, workerShare)),
+    ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
     ...activeOrders(site).map(buildActor),
     ...activeYardOrders(site).map(yardActor),
     ...eco.running.filter((p) => p.site === site.id).map(programmeActor)

@@ -42,7 +42,6 @@ export const mockBodies = (): Body[] => [
     system: 'sol',
     id: 'earth',
     colony: true,
-    surveyed: true,
     name: 'Earth',
     type: 'terran',
     radius: 6.371e6,
@@ -61,7 +60,6 @@ export const mockBodies = (): Body[] => [
   {
     system: 'sol',
     id: 'mars',
-    surveyed: true,
     name: 'Mars',
     type: 'mars',
     radius: 3.3895e6,
@@ -75,25 +73,6 @@ export const mockBodies = (): Body[] => [
       surface: '-63 °C',
       air: 'Thin CO2',
       size: '6,779 km'
-    }
-  },
-  {
-    system: 'sol',
-    id: 'ceres',
-    name: 'Ceres',
-    type: 'rock',
-    radius: 4.697e5,
-    orbit: au(2.767),
-    angle: 3.6,
-    angularSpeed: orbitRate(1680),
-    tilt: 0.1,
-    surveyed: true,
-    facts: {
-      kind: 'Dwarf planet',
-      gravity: '0.03 g',
-      surface: '-105 °C',
-      air: 'None',
-      size: '939 km'
     }
   },
   {
@@ -178,7 +157,6 @@ export const mockBodies = (): Body[] => [
     orbit: 3.844e8,
     angle: 1,
     angularSpeed: orbitRate(27.32),
-    surveyed: true,
     facts: {
       kind: 'Moon',
       gravity: '0.16 g',
@@ -197,13 +175,102 @@ export const mockBodies = (): Body[] => [
     orbit: 6.709e8,
     angle: 2.2,
     angularSpeed: orbitRate(3.551),
-    surveyed: true,
     facts: {
       kind: 'Icy moon',
       gravity: '0.13 g',
       surface: '-160 °C',
       air: 'None',
       size: '3,122 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'io',
+    parent: 'jupiter',
+    name: 'Io',
+    type: 'rock',
+    radius: 1821600.0,
+    orbit: 421700000.0,
+    angle: 0.5,
+    angularSpeed: orbitRate(1.769),
+    facts: {
+      kind: 'Moon',
+      gravity: '0.18 g',
+      surface: '-143 °C',
+      air: 'Sulfur dioxide, traces',
+      size: '3,643 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'ganymede',
+    parent: 'jupiter',
+    name: 'Ganymede',
+    type: 'rock',
+    radius: 2634100.0,
+    orbit: 1070400000.0,
+    angle: 4.1,
+    angularSpeed: orbitRate(7.155),
+    facts: {
+      kind: 'Icy moon',
+      gravity: '0.15 g',
+      surface: '-163 °C',
+      air: 'None',
+      size: '5,268 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'callisto',
+    parent: 'jupiter',
+    name: 'Callisto',
+    type: 'rock',
+    radius: 2410300.0,
+    orbit: 1882700000.0,
+    angle: 5.6,
+    angularSpeed: orbitRate(16.689),
+    facts: {
+      kind: 'Icy moon',
+      gravity: '0.13 g',
+      surface: '-139 °C',
+      air: 'Carbon dioxide, traces',
+      size: '4,821 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'titan',
+    parent: 'saturn',
+    name: 'Titan',
+    type: 'venus',
+    radius: 2574700.0,
+    orbit: 1221870000.0,
+    angle: 2.9,
+    angularSpeed: orbitRate(15.945),
+    facts: {
+      kind: 'Moon',
+      gravity: '0.14 g',
+      surface: '-179 °C',
+      air: 'Dense nitrogen',
+      size: '5,149 km'
+    }
+  },
+  {
+    system: 'sol',
+    id: 'enceladus',
+    parent: 'saturn',
+    name: 'Enceladus',
+    type: 'rock',
+    radius: 252000.0,
+    orbit: 238020000.0,
+    angle: 0.3,
+    angularSpeed: orbitRate(1.37),
+    facts: {
+      kind: 'Icy moon',
+      gravity: '0.01 g',
+      surface: '-198 °C',
+      air: 'Water vapour plumes',
+      size: '504 km'
     }
   }
 ];

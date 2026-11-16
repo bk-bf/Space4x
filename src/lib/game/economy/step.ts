@@ -1,4 +1,5 @@
-import { building, material, milestone } from '#lib/game/data/index.ts';
+import { asteroidRecord, building, material, milestone } from '#lib/game/data/index.ts';
+import { DEPLETED_EPS, remainingMass } from './deposits.ts';
 import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
@@ -48,6 +49,15 @@ function applySegment(
     site.stock[m] = Math.abs(next) <= STOCK_EPS * Math.max(1, Math.abs(rate)) ? 0 : next;
   }
   eco.ledger.extracted += flows.extractedMass * hours;
+  const body = asteroidRecord(site.worldBody);
+  if (body && site.place === 'surface' && flows.extractedMass > 0) {
+    const total = Math.min(body.mass, (eco.mined[site.worldBody] ?? 0) + flows.extractedMass * hours);
+    eco.mined[site.worldBody] = body.mass - total <= DEPLETED_EPS ? body.mass : total;
+    if (body.mass - total <= DEPLETED_EPS && !eco.exhausted.includes(site.worldBody)) {
+      eco.exhausted.push(site.worldBody);
+      log(`${body.name} has been mined out; ${site.name} has nothing left to extract.`, true, at, site.id);
+    }
+  }
   eco.ledger.lost += flows.lostMass * hours;
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
@@ -119,6 +129,16 @@ function applySegment(
   site.alerts.power = dark;
 }
 
+function depletionEvent(eco: Economy, all: { site: Site; flows: SiteFlows }[]): number {
+  let t = Infinity;
+  const rate: Record<string, number> = {};
+  for (const { site, flows } of all)
+    if (site.place === 'surface' && asteroidRecord(site.worldBody) && flows.extractedMass > 0)
+      rate[site.worldBody] = (rate[site.worldBody] ?? 0) + flows.extractedMass;
+  for (const [id, r] of Object.entries(rate)) t = Math.min(t, remainingMass(eco, id) / r);
+  return t;
+}
+
 export function advanceEconomy(eco: Economy, seconds: number, log: LogFn = noLog): void {
   let left = seconds / 3600;
   let segments = 0;
@@ -128,6 +148,7 @@ export function advanceEconomy(eco: Economy, seconds: number, log: LogFn = noLog
     let hours = Math.min(left, boundary);
     const all = eco.sites.map((site) => ({ site, flows: siteFlows(eco, site) }));
     for (const { site, flows } of all) hours = Math.min(hours, nextEvent(eco, site, flows));
+    hours = Math.min(hours, depletionEvent(eco, all));
     hours = Math.max(hours, 0);
     const at = eco.elapsed + hours * 3600;
     for (const { site, flows } of all) applySegment(eco, site, flows, hours, at, log);

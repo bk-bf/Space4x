@@ -4,14 +4,15 @@ import type { PropellantKind } from '#lib/game/shipdesign/index.ts';
 export type Whereabouts =
   | { kind: 'site'; site: string }
   | { kind: 'orbit'; body: string; angle: number }
-  | { kind: 'surface'; body: string };
+  | { kind: 'surface'; body: string; region?: string };
 
 export type Item =
   { kind: 'cargo'; id: string } | { kind: 'propellant'; id: PropellantKind } | { kind: 'crew' };
 
 export type Order =
   | { id: number; type: 'fly'; body: string; angle: number; profile: Profile }
-  | { id: number; type: 'land'; body: string; profile: Profile }
+  | { id: number; type: 'land'; body: string; profile: Profile; region?: string }
+  | { id: number; type: 'survey'; body: string }
   | { id: number; type: 'dock'; site: string }
   | { id: number; type: 'load'; item: Item; amount: number | null }
   | { id: number; type: 'unload'; item: Item; amount: number | null }

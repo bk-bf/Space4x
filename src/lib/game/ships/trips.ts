@@ -3,6 +3,7 @@ import { economy, standing } from '#lib/game/economy/index.ts';
 import { planTrip, type Place, type Profile, type Reason, type TripOption } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { canAerobrake, mainKind, vesselShip } from './model.ts';
+import { surfaceSite } from './orders.ts';
 import type { Order, Vessel, Whereabouts } from './types.ts';
 import {
   bodyOfWhereabouts,
@@ -18,6 +19,7 @@ export interface Destination {
   kind: 'orbit' | 'surface';
   body: string;
   angle: number;
+  region?: string;
 }
 
 export const clockAt = (t: number): number => START_TIME + t * 1000;
@@ -86,8 +88,10 @@ export function pickOption(options: readonly TripOption[], profile: Profile): Tr
 
 export function arrivalPlace(game: Game, d: Destination): Whereabouts {
   if (d.kind === 'orbit') return { kind: 'orbit', body: d.body, angle: d.angle };
-  const site = economy.sites.find((s) => s.worldBody === d.body && s.place === 'surface');
-  return site ? { kind: 'site', site: site.id } : { kind: 'surface', body: d.body };
+  const site = surfaceSite(d.body, d.region);
+  return site
+    ? { kind: 'site', site: site.id }
+    : { kind: 'surface', body: d.body, ...(d.region ? { region: d.region } : {}) };
 }
 
 export function commitTrip(game: Game, v: Vessel, to: Destination, option: TripOption): void {
@@ -127,6 +131,7 @@ export const tripOf = (v: Vessel): TripOption | undefined => tripOptionOf(v.id);
 
 export const destinationOf = (order: Order): Destination | undefined => {
   if (order.type === 'fly') return { kind: 'orbit', body: order.body, angle: order.angle };
-  if (order.type === 'land') return { kind: 'surface', body: order.body, angle: 0 };
+  if (order.type === 'land')
+    return { kind: 'surface', body: order.body, angle: 0, ...(order.region ? { region: order.region } : {}) };
   return undefined;
 };
