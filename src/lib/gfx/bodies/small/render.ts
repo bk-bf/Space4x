@@ -44,7 +44,7 @@ const LOOKS: Record<SmallType, Look> = {
 export const SPIN_FRAMES = 48;
 export const SPIN_TICKS = 5;
 export const SPIN_MAX_RADIUS = 170;
-const DIRECT_ABOVE = 110;
+const SETTLE_FROM = 6;
 const SPRITE_BUDGET = 96 * 1024 * 1024;
 const FIELD_LIMIT = 14;
 const MIN_STEP_PX = 0.45;
@@ -401,6 +401,49 @@ function drawTail(f: Pixels, cx: number, cy: number, radius: number): void {
     }
 }
 
+const LEVELS = [3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 29, 35, 42, 50, 60, 72, 86, 104, 125, 150, 170];
+const SEEN_LIMIT = 4000;
+const seen = new Set<string>();
+
+function levelFor(radius: number): number {
+  let best = LEVELS[0]!,
+    gap = Infinity;
+  for (const l of LEVELS) {
+    const g = Math.abs(Math.log(radius / l));
+    if (g < gap) {
+      gap = g;
+      best = l;
+    }
+  }
+  return best;
+}
+
+function blitScaled(f: Pixels, s: Sprite, cx: number, cy: number, ratio: number): void {
+  const hx = Math.ceil(s.ox * ratio),
+    hy = Math.ceil(s.oy * ratio),
+    D = f.d,
+    S = s.d,
+    j0 = Math.max(-hy, -cy),
+    j1 = Math.min(hy, f.h - 1 - cy),
+    i0 = Math.max(-hx, -cx),
+    i1 = Math.min(hx, f.w - 1 - cx);
+  for (let j = j0; j <= j1; j++) {
+    const sy = s.oy + Math.round(j / ratio);
+    if (sy < 0 || sy >= s.h) continue;
+    for (let i = i0; i <= i1; i++) {
+      const sx = s.ox + Math.round(i / ratio);
+      if (sx < 0 || sx >= s.w) continue;
+      const a = (sy * s.w + sx) * 4;
+      if (!S[a + 3]) continue;
+      const b = ((cy + j) * f.w + cx + i) * 4;
+      D[b] = S[a]!;
+      D[b + 1] = S[a + 1]!;
+      D[b + 2] = S[a + 2]!;
+      D[b + 3] = 255;
+    }
+  }
+}
+
 export function drawSmallBody(
   f: Pixels,
   body: SmallBody,
@@ -416,10 +459,22 @@ export function drawSmallBody(
     reach = Math.ceil(smallReach(body) * (r + 0.5) * 1.1) + 2;
   if (x + reach < 0 || y + reach < 0 || x - reach > f.w || y - reach > f.h) return;
   if (body.type === 'comet' && r >= 5) drawTail(f, x, y, r);
-  if (r > DIRECT_ABOVE) {
-    const field = fieldOf(body, r);
-    paintBody(f.d, f.w, f.h, x, y, body, field, r + 0.5, (frame * Math.PI * 2) / SPIN_FRAMES);
-  } else blit(f, spriteOf(body, r, frame), x, y);
+  if (r > SPIN_MAX_RADIUS) {
+    paintBody(f.d, f.w, f.h, x, y, body, fieldOf(body, r), r + 0.5, (frame * Math.PI * 2) / SPIN_FRAMES);
+    return;
+  }
+  const exact = `${body.key}|${r}|${frame}`;
+  if (r >= SETTLE_FROM && !sprites.has(exact)) {
+    const mark = `${body.key}|${r}`;
+    if (!seen.has(mark)) {
+      if (seen.size > SEEN_LIMIT) seen.clear();
+      seen.add(mark);
+      const level = levelFor(r);
+      blitScaled(f, spriteOf(body, level, spinFrame(body, step, level)), x, y, r / level);
+      return;
+    }
+  }
+  blit(f, spriteOf(body, r, frame), x, y);
 }
 
 export function renderSprite(body: SmallBody, radius: number, step: number): Uint8ClampedArray {

@@ -26,9 +26,17 @@ const asRecord = (id: string) => asteroids.find((a) => a.id === id);
 
 describe('small bodies', () => {
   it('draws the same pixels for the same body', () => {
-    const a = paint('bennu', 'carbonaceous', 0.5, 24),
-      b = paint('bennu', 'carbonaceous', 0.5, 24);
+    paint('bennu', 'carbonaceous', 0.5, 21);
+    const a = paint('bennu', 'carbonaceous', 0.5, 21),
+      b = paint('bennu', 'carbonaceous', 0.5, 21);
     expect(Array.from(a.d)).toEqual(Array.from(b.d));
+  });
+
+  it('draws a scaled stand-in the first time a radius is asked for and the exact picture after', () => {
+    const first = paint('ryugu', 'carbonaceous', 0.9, 21),
+      second = paint('ryugu', 'carbonaceous', 0.9, 21);
+    expect(lit(first)).toBeGreaterThan(0);
+    expect(Array.from(first.d)).not.toEqual(Array.from(second.d));
   });
 
   it('draws a different shape for another seed', () => {
