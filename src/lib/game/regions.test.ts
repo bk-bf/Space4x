@@ -24,7 +24,7 @@ import { ships } from '#lib/game/ships/state.svelte.ts';
 import { foundOptions, foundRegions, foundSite } from '#lib/game/ships/colonise.ts';
 import { addOrder } from '#lib/game/ships/orders.ts';
 import { planHop } from '#lib/game/ships/hop.ts';
-import { planVessel } from '#lib/game/ships/trips.ts';
+import { arrivalPlace, planVessel } from '#lib/game/ships/trips.ts';
 import { flightBody } from '#lib/game/ships/world.ts';
 import { orbitToSurface, surfaceToOrbit } from '#lib/game/flight/index.ts';
 import {
@@ -354,6 +354,26 @@ describe('founding in a region', () => {
     expect(second.id).not.toBe(first.id);
     expect(second.region).toBe('luna-maria');
     expect(economy.sites.filter((s) => s.worldBody === 'luna').length).toBe(2);
+  });
+});
+
+describe('landing in a region', () => {
+  it('arrives at the surface of the body, in the region asked for, or at the site that stands there', () => {
+    const g = freshGame();
+    const here = { kind: 'surface', body: 'luna', angle: 0, region: 'luna-maria' } as const;
+    expect(arrivalPlace(g, here)).toEqual({ kind: 'surface', body: 'luna', region: 'luna-maria' });
+    expect(arrivalPlace(g, { kind: 'surface', body: 'luna', angle: 0 })).toEqual({
+      kind: 'surface',
+      body: 'luna'
+    });
+    unlockTo(14);
+    const site = outpost('luna', 'luna-highlands', 'Luna');
+    expect(arrivalPlace(g, here)).toEqual({ kind: 'surface', body: 'luna', region: 'luna-maria' });
+    expect(arrivalPlace(g, { ...here, region: 'luna-highlands' })).toEqual({ kind: 'site', site: site.id });
+    expect(arrivalPlace(g, { kind: 'surface', body: 'luna', angle: 0 })).toEqual({
+      kind: 'site',
+      site: site.id
+    });
   });
 });
 

@@ -230,7 +230,13 @@
   );
   let foundRegion = $state('');
   const regions = $derived(vessel ? foundRegions(vessel) : []);
-  const chosenRegion = $derived(regions.find((r) => r.id === foundRegion)?.id ?? regions[0]?.id ?? null);
+  const landedIn = $derived(vessel?.at.kind === 'surface' ? vessel.at.region : undefined);
+  const chosenRegion = $derived(
+    regions.find((r) => r.id === foundRegion)?.id ??
+      regions.find((r) => r.id === landedIn)?.id ??
+      regions[0]?.id ??
+      null
+  );
   const found = $derived(vessel ? foundOptions(vessel, chosenRegion) : []);
   let foundChoice = $state('');
   const foundPick = $derived(
