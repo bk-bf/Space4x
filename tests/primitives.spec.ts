@@ -1,4 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const DATA = 'src/lib/game/data';
+const records = (file: string) => (JSON.parse(readFileSync(file, 'utf8')) as unknown[]).length;
+const recordCount = (entry: string) =>
+  entry.endsWith('.json')
+    ? records(join(DATA, entry))
+    : readdirSync(join(DATA, entry)).reduce((n, f) => n + records(join(DATA, entry, f)), 0);
 
 test('the shared primitives lay out without gaps and canvases fill their frames', async ({ page }) => {
   const errors: string[] = [];
@@ -50,11 +59,11 @@ test('every icon of the set is drawn and pixelated', async ({ page }) => {
   await page.goto('/dev/tiles');
   await expect(page.locator('[data-screen="tiles"]')).toBeAttached();
   const count = async () => page.locator('section.pan').first().locator('.ui-art img.ui-px').count();
-  await expect.poll(count).toBe(163);
+  await expect.poll(count).toBe(recordCount('materials'));
   await page.locator('[data-tab="buildings"]').click();
-  await expect.poll(count).toBe(47);
+  await expect.poll(count).toBe(recordCount('buildings'));
   await page.locator('[data-tab="components"]').click();
-  await expect.poll(count).toBe(28);
+  await expect.poll(count).toBe(recordCount('components.json'));
   const broken = await page.evaluate(
     () =>
       [...document.querySelectorAll<HTMLImageElement>('img.ui-px')].filter(

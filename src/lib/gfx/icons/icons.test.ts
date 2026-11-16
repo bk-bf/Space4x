@@ -49,7 +49,9 @@ describe('icon coverage', () => {
     expect(fallback.sort()).toEqual([
       'component:cargo_bay',
       'component:crew_capsule',
+      'component:fuel_cell',
       'component:landing_legs',
+      'component:survey_suite',
       'material:u_mo_fuel',
       'material:uzrh_fuel',
       'material:w_cermet'
