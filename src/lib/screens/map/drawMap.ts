@@ -11,7 +11,9 @@ import {
 import { asteroidRecord } from '#lib/game/data/index.ts';
 import { economy } from '#lib/game/economy/index.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
+import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
+import { drawSmallBody, smallReach, spinStep, spins, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
 import { drawStar, starReach } from '#lib/gfx/bodies/star.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
@@ -97,6 +99,7 @@ interface MapBody {
   type: PlanetType | 'star';
   tint?: SunTint;
   look?: { type: PlanetType; rot: number; tilt?: number; rings?: boolean; lights?: boolean };
+  small?: SmallBody;
   col: RGB;
   p: Point;
   R: number;
@@ -149,6 +152,7 @@ function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
       rings: b.rings,
       lights: b.colony && b.type === 'terran'
     },
+    ...(smallBodyOf(b) ? { small: smallBodyOf(b)! } : {}),
     ...(asteroidRecord(b.id) ? { asteroid: asteroidRecord(b.id)!.diameter } : {}),
     col: asteroidRecord(b.id) ? ASTEROID_COLOUR[asteroidRecord(b.id)!.type] : BODY_COLOUR[b.type]
   }));
@@ -233,6 +237,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
   }
   const shown = bodies.filter((b) => !b.hide);
   const liveStar = shown.some((b) => b.star && !b.mk && vis(b.p, starReach(b.R)));
+  const spin = shown.some((b) => b.small && !b.mk && spins(b.R) && vis(b.p, smallReach(b.small) * b.R)),
+    step = spinStep(t);
   const key = [
     ccx,
     ccy,
@@ -246,7 +252,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     layers.Orbits,
     layers.Asteroids,
     sel.kind === 'body' ? sel.id : '',
-    aim ?? ''
+    aim ?? '',
+    spin ? step : ''
   ].join('|');
   if (useCache && !liveStar && key === cacheKey && cache) f.d.set(cache);
   else {
@@ -269,7 +276,9 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
         else if (b.asteroid !== undefined) asteroidMark(f, b.p[0], b.p[1], b.col, s < ASTEROID_PLUS_BELOW);
         else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
-      else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
+      else if (b.small) {
+        if (vis(b.p, smallReach(b.small) * b.R + 4)) drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, step);
+      } else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
     }
     if (useCache && !liveStar && key === lastKey) {
       cache = cache && cache.length === f.d.length ? cache : new Uint8ClampedArray(f.d.length);
@@ -599,7 +608,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
             ? MARK_R + 1
             : b.star
               ? b.R * 1.3 + 4
-              : b.R * (b.look?.rings ? 2.3 : 1);
+              : b.R * (b.look?.rings ? 2.3 : b.small ? smallReach(b.small) : 1);
       if (chosen && b.mk && b.asteroid !== undefined) brackets(f, b.p[0], b.p[1], 5, 4);
       an.push({
         ...base,
