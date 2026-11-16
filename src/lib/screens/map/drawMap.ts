@@ -119,6 +119,7 @@ interface MapBody {
   capped: boolean;
   hide: boolean;
   cull: boolean;
+  named: boolean;
   list: LabelLine[];
 }
 
@@ -152,7 +153,7 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
     id = game.world.system;
   if (statics && statics.source === source && statics.length === source.length && statics.system === id)
     return statics.value;
-  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, cull: false };
+  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, cull: false, named: true };
   const stars: MapBody[] = (system?.stars ?? []).map((s, i) => ({
     ...blank,
     list: [],
@@ -303,7 +304,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     aim = cam.aim,
     cap = fw * CAP_WIDTHS,
     E = fh * CAP_EASE;
-  const bodies = mapBodies(game, system),
+  const nameKm = s * NAME_KM_PER_M_PER_PX,
+    bodies = mapBodies(game, system),
     { byId } = staticBodies(game, system);
   for (const b of bodies) {
     const Rt = b.r / s;
@@ -325,6 +327,13 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     b.mk = Rt < MARKER_BELOW;
     if (b.mk) R = MARK_R;
     b.hide = b.cull = false;
+    b.named =
+      !b.minor ||
+      aim === b.key ||
+      (sel.kind === 'body' && sel.id === b.id) ||
+      Rt >= MARKER_BELOW ||
+      b.diameter >= nameKm ||
+      (b.near && s < NEAR_NAMES_BELOW);
     if (Rt > cap) {
       const dx = p[0] - ox,
         dy = p[1] - oy,
@@ -403,7 +412,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     let best: MapBody | undefined,
       bd = Infinity;
     for (const b of shown) {
-      if (b.capped) continue;
+      if (b.capped || !b.named) continue;
       const d = Math.hypot(P[0] - b.p[0], P[1] - b.p[1]);
       if (d < b.R + (b.mk ? UNDER_MARK : UNDER_DISC) && d < bd) {
         bd = d;
@@ -667,17 +676,10 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     if (chosen) brackets(f, P[0], P[1], half + 3, half + 1);
   }
 
-  const nameKm = s * NAME_KM_PER_M_PER_PX;
   for (const b of shown) {
     const chosen = b.selectable && sel.kind === 'body' && sel.id === b.id;
     const drawn = b.capped || !b.mk,
-      named =
-        !b.minor ||
-        chosen ||
-        aim === b.key ||
-        !b.mk ||
-        b.diameter >= nameKm ||
-        (b.near && s < NEAR_NAMES_BELOW);
+      named = b.named;
     const picks = bodyPicks(b, pickOf),
       pri =
         aim === b.key

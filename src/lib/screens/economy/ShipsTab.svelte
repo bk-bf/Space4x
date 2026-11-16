@@ -468,7 +468,7 @@
             />
           {:else if orderType === 'survey'}
             <label class="pick"
-              >Body
+              >Group
               <select
                 id="orderSurveyGroup"
                 value={surveyGroup}
@@ -478,7 +478,10 @@
                 }}
               >
                 {#each surveyGroups as g (g)}<option value={g}>{g}</option>{/each}
-              </select>
+              </select></label
+            >
+            <label class="pick"
+              >Body
               <select
                 id="orderSurvey"
                 value={surveyTarget}
@@ -504,7 +507,7 @@
       <CardSection label="Trip">
         <div class="row">
           <label class="pick"
-            >To
+            >Group
             <select
               id="tripGroup"
               value={activeGroup}
@@ -514,7 +517,12 @@
               }}
             >
               {#each groups as g (g)}<option value={g}>{g}</option>{/each}
-            </select>
+            </select></label
+          >
+        </div>
+        <div class="row">
+          <label class="pick"
+            >To
             <select id="tripTo" value={dest?.key ?? ''} onchange={(e) => (destKey = e.currentTarget.value)}>
               {#each inGroup as d (d.key)}<option value={d.key}>{d.label}</option>{/each}
             </select></label
