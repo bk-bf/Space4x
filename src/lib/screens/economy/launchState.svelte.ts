@@ -7,15 +7,13 @@ export const launchUi: {
   amount: number;
   cargo: Record<string, number>;
   ship: string;
-  pick: string;
 } = $state({
   stages: [],
   payload: 'none',
   material: 'stainless_steel',
   amount: 1000,
   cargo: {},
-  ship: '',
-  pick: ''
+  ship: ''
 });
 
 export function stackOf(): Stack {
