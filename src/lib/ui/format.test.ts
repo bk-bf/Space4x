@@ -8,6 +8,7 @@ import {
   mass,
   num,
   people,
+  population,
   pct,
   perHour,
   power,
@@ -61,6 +62,12 @@ describe('units', () => {
     expect(thrust(845_000)).toBe('845 kN');
     expect(thrust(0.1)).toBe('0 kN');
     expect(thrust(2_500)).toBe('2.5 kN');
+  });
+
+  it('shows a small population as a count', () => {
+    expect(population(4)).toBe('4');
+    expect(population(120_000)).toBe('120,000');
+    expect(population(8_100_000_000)).toBe('8,100 M');
   });
 
   it('shows people in millions', () => {

@@ -82,3 +82,5 @@ export function trend(net: number, scale = 0): Trend {
 export const toneOf = (change: number): Tone => (change === 0 ? 'dim' : change > 0 ? 'cool' : 'hot');
 
 export const trendTone = (t: Trend): Tone => (t === 'up' ? 'cool' : t === 'down' ? 'hot' : 'dim');
+
+export const population = (n: number): string => (n >= 500_000 ? people(n) : group(n));
