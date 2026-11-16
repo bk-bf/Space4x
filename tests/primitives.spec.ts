@@ -138,3 +138,39 @@ test('a tooltip stays inside the window at the right and bottom edges', async ({
   await first.hover();
   await insideWindow(page);
 });
+
+test('the portrait catalogue lays out cleanly, draws every option and switches style', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/dev/portraits');
+  await expect(page.locator('[data-screen="portraits"]')).toBeAttached({ timeout: 20_000 });
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
+  const sections = page.locator('h3[data-section]');
+  await expect(sections).toHaveText([
+    'Hair, men 15',
+    'Hair, women 13',
+    'Beards 12',
+    'Eyes 12',
+    'Brows 10',
+    'Mouths 16',
+    'Gear 6'
+  ]);
+  const faces = page.locator('img.ui-px.portrait.bust');
+  await expect(faces).toHaveCount(84);
+  const broken = await faces.evaluateAll(
+    (imgs) =>
+      imgs.filter((i) => !(i as HTMLImageElement).complete || (i as HTMLImageElement).naturalWidth !== 64)
+        .length
+  );
+  expect(broken).toBe(0);
+  expect(await faces.first().evaluate((i) => getComputedStyle(i).imageRendering)).toBe('pixelated');
+  await expect(page.locator('[data-filter="gritty"]')).toHaveClass(/on/);
+  const gritty = await faces.first().getAttribute('src');
+  await page.locator('[data-filter="clean"]').click();
+  await expect(page.locator('[data-filter="clean"]')).toHaveClass(/on/);
+  await expect.poll(() => faces.first().getAttribute('src')).not.toBe(gritty);
+  await page.locator('[data-filter="gritty"]').click();
+  await expect.poll(() => faces.first().getAttribute('src')).toBe(gritty);
+  expect(errors).toEqual([]);
+});
