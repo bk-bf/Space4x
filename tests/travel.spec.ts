@@ -15,7 +15,7 @@ async function expectCleanLayout(page: Page) {
 
 const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
 const tab = (page: Page, id: string) => page.locator(`[data-tab="${id}"]`).click();
-const add = (page: Page, id: string) => page.locator(`[data-add="${id}"]`).click();
+const add = (page: Page, id: string) => page.locator(`[data-part="${id}"] button`).click();
 
 async function setCount(page: Page, id: string, n: number) {
   const input = page.locator(`[data-count="${id}"]`);
@@ -27,8 +27,7 @@ async function design(page: Page, name: string, role: string, parts: [string, st
   await page.locator('[data-act="new"]').click();
   await page.locator('#clsName').fill(name);
   await page.locator('#clsRole').selectOption(role);
-  for (const [kind, id, n] of parts) {
-    await tab(page, kind);
+  for (const [, id, n] of parts) {
     await add(page, id);
     await setCount(page, id, n);
   }

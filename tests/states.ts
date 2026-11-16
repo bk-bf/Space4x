@@ -75,7 +75,10 @@ const SHORT_WINDOW: readonly [number, number] = [1280, 720];
 const SHORT_WINDOW_QUERIES = [
   'screen=research&milestone=17',
   'screen=research&rtab=programmes&milestone=6',
-  'screen=research&rtab=unlocks&milestone=3'
+  'screen=research&rtab=unlocks&milestone=3',
+  'screen=classes',
+  'screen=classes&new=stage',
+  'screen=classes&reached=6&new=crewed'
 ];
 
 const SITE_QUERIES = new Set([

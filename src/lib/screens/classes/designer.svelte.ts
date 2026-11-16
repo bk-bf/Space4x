@@ -1,6 +1,7 @@
 import { classes, classInUse, game, specFor, statsFor, type ClassRegistry } from '#lib/game/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
 import { economy, touch, unlockedUpTo } from '#lib/game/economy/index.ts';
+import { payloadFor, loadedWith, type Loaded } from './figures.ts';
 import {
   addPart,
   canLock,
@@ -53,10 +54,9 @@ export const PRESETS: Readonly<
   }
 };
 
-export const view = $state({ kind: 'propulsion' });
-
 export class Designer {
   pickedId = $state<string | null>(null);
+  payloadAsked = $state<{ id: string; kg: number } | null>(null);
 
   constructor(private readonly registry: ClassRegistry = classes) {}
 
@@ -75,6 +75,19 @@ export class Designer {
   get stats(): DesignStats | undefined {
     const d = this.design;
     return d ? statsFor(d) : undefined;
+  }
+
+  get payload(): number {
+    const s = this.stats;
+    if (!s) return 0;
+    const asked = this.payloadAsked;
+    return payloadFor(s, asked && asked.id === this.pickedId ? asked.kg : undefined);
+  }
+
+  get loaded(): Loaded | undefined {
+    const d = this.design;
+    const s = this.stats;
+    return d && s ? loadedWith(d, s, this.payload) : undefined;
   }
 
   get inService(): boolean {
@@ -111,6 +124,15 @@ export class Designer {
     for (const [id, n] of p.parts) d = setCount(d, id, n);
     this.registry.add(d);
     this.pickedId = d.id;
+  }
+
+  addOrStart(id: string): void {
+    if (!this.design) this.start();
+    this.add(id);
+  }
+
+  setPayload(kg: number): void {
+    if (this.pickedId) this.payloadAsked = { id: this.pickedId, kg };
   }
 
   copy(): void {
