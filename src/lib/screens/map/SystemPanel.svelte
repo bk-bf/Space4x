@@ -5,6 +5,8 @@
   import { ships } from '#lib/game/ships/index.ts';
   import { vesselWhere } from '#lib/screens/economy/shipsView.ts';
   import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
+  import { asteroids } from '#lib/game/data/index.ts';
+  import { TYPE_NAMES, formatSize, isNearEarth } from '#lib/game/asteroids.ts';
   import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
   import type { Preset } from './targets';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
@@ -21,7 +23,31 @@
   const openAtStart = untrack(() => [game.world.system, game.selection.id]);
   const world = $derived(game.world);
   const sel = $derived(game.selection);
-  const bodies = $derived(world.bodies.filter((b) => b.system === world.system));
+  const asteroidIds = new Set(asteroids.map((a) => a.id));
+  const bodies = $derived(world.bodies.filter((b) => b.system === world.system && !asteroidIds.has(b.id)));
+  const FILTERS = [
+    { id: 'all', label: 'All' },
+    { id: 'near', label: 'Near-Earth' },
+    { id: 'belt', label: 'Main belt' },
+    { id: 'carbonaceous', label: 'Carbonaceous' },
+    { id: 'stony', label: 'Stony' },
+    { id: 'metallic', label: 'Metallic' }
+  ];
+  let rockFilter = $state('all');
+  const rocks = $derived(
+    asteroids
+      .filter((a) => world.bodies.some((b) => b.id === a.id && b.system === world.system))
+      .filter(
+        (a) =>
+          rockFilter === 'all' ||
+          (rockFilter === 'near'
+            ? isNearEarth(a)
+            : rockFilter === 'belt'
+              ? !isNearEarth(a)
+              : a.type === rockFilter)
+      )
+  );
+  const rockRows = $derived(rocks.map((a) => [a.name, TYPE_NAMES[a.type], formatSize(a.diameter)]));
   const contacts = $derived(world.contacts.filter((c) => c.system === world.system));
   const groups = $derived(
     world.systems.map((s) => ({ system: s, fleets: world.fleets.filter((f) => f.system === s.id) }))
@@ -137,6 +163,24 @@
       )}
       onpick={(i) => select('body', bodies[i]!.id)}
     />
+    <h3>
+      Asteroids <small>{rocks.length}</small>
+      <select class="tools" id="rockFilter" bind:value={rockFilter}>
+        {#each FILTERS as f (f.id)}<option value={f.id}>{f.label}</option>{/each}
+      </select>
+    </h3>
+    <div id="rockList">
+      <Table
+        head={['Asteroid', 'Class', '>Size']}
+        rows={rockRows}
+        keys={rocks.map((a) => 'body:' + a.id)}
+        selected={pickedRow(
+          'body',
+          rocks.map((a) => a.id)
+        )}
+        onpick={(i) => select('body', rocks[i]!.id)}
+      />
+    </div>
   {:else if tab === 'contacts'}
     {#if contacts.length}
       <Table

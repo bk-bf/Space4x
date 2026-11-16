@@ -4,6 +4,7 @@ import { economy, homeSite, newSite, queueBuilding, standFirst, touch } from '#l
 import { lock, newDesign, setCount, type ShipDesign } from '#lib/game/shipdesign/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { orderShips } from './build.ts';
+import { foundSite } from './colonise.ts';
 import { launch } from './launch.ts';
 import { addOrder, goTo } from './orders.ts';
 import { ships } from './state.svelte.ts';
@@ -94,6 +95,47 @@ export function seedTravel(game: Game): void {
   vessel(tug, { kind: 'site', site: station.id }, { propellant: { methalox: 90_000 } });
   const idle = vessel(tug, { kind: 'orbit', body: 'earth', angle: 0 }, { propellant: { methalox: 20_000 } });
   addOrder(idle, { type: 'dock', site: station.id });
+  game.advance(86400);
+  touch();
+}
+
+export function seedBelt(game: Game, outpost = false): void {
+  if (ships.vessels.length > 0 || classes.saved.length > 0) return;
+  economy.done = milestones.filter((m) => !m.optional && m.number <= 14).map((m) => m.number);
+  const probe = design('belt-probe', 'Survey probe', 'probe', [
+    ['chemical_engine_methalox', 1],
+    ['propellant_tank', 2],
+    ['structure_truss', 1],
+    ['solar_array', 1],
+    ['avionics', 1],
+    ['survey_suite', 1]
+  ]);
+  const lander = design('belt-lander', 'Lander', 'lander', [
+    ['chemical_engine_hydrolox', 1],
+    ['propellant_tank', 1],
+    ['structure_truss', 1],
+    ['landing_legs', 1],
+    ['cargo_bay', 1]
+  ]);
+  vessel(probe, { kind: 'orbit', body: 'mars', angle: 0 }, { propellant: { methalox: 3000 } });
+  vessel(probe, { kind: 'orbit', body: 'bennu', angle: 0 }, { propellant: { methalox: 3000 } });
+  if (outpost) {
+    const founder = vessel(
+      lander,
+      { kind: 'surface', body: 'luna' },
+      { crew: 4, cargo: { stainless_steel: 2500, copper: 400, ai_models: 3 } }
+    );
+    const site = foundSite(game, founder, 'ice_mine', 'luna-south-pole');
+    if (typeof site !== 'string') site.gridKw = 2000;
+  }
+  vessel(
+    lander,
+    { kind: 'surface', body: 'luna' },
+    {
+      propellant: { hydrolox: 2000 },
+      cargo: { stainless_steel: 2500, copper: 400, li_ion_cell: 300, ai_models: 3, ndfeb_magnet: 100 }
+    }
+  );
   game.advance(86400);
   touch();
 }

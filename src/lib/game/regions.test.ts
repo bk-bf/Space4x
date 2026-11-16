@@ -17,7 +17,10 @@ import {
   type Site
 } from '#lib/game/economy/index.ts';
 import { DAY } from '#lib/game/clock.ts';
+import { classes } from '#lib/game/classes.svelte.ts';
 import { addDesign, freshGame, spawn } from '#lib/game/ships/fixtures.ts';
+import { seedBelt } from '#lib/game/ships/scenario.ts';
+import { ships } from '#lib/game/ships/state.svelte.ts';
 import { foundOptions, foundRegions, foundSite } from '#lib/game/ships/colonise.ts';
 import { addOrder } from '#lib/game/ships/orders.ts';
 import { planHop } from '#lib/game/ships/hop.ts';
@@ -410,5 +413,18 @@ describe('flying to and landing on an asteroid', () => {
     for (let i = 0; i < 200 && (v.orders.length || v.trip); i++) g.advance(30 * DAY);
     expect(v.blocked).toBeNull();
     expect(v.at).toEqual({ kind: 'surface', body: 'bennu' });
+  });
+});
+
+describe('the belt scenario', () => {
+  it('seeds locked designs, a probe at Mars and at Bennu and a lander on the Moon', () => {
+    const g = freshGame();
+    seedBelt(g);
+    expect(classes.find('belt-probe')?.locked).toBe(true);
+    expect(classes.find('belt-lander')?.locked).toBe(true);
+    const at = ships.vessels.map((v) => JSON.stringify(v.at));
+    expect(at).toContain(JSON.stringify({ kind: 'orbit', body: 'mars', angle: 0 }));
+    expect(at).toContain(JSON.stringify({ kind: 'orbit', body: 'bennu', angle: 0 }));
+    expect(at).toContain(JSON.stringify({ kind: 'surface', body: 'luna' }));
   });
 });

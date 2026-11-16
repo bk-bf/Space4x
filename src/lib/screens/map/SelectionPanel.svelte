@@ -12,6 +12,7 @@
     type Contact,
     type Fleet
   } from '#lib/game/index.ts';
+  import { bodyTypeOf } from '#lib/game/data/index.ts';
   import { economy } from '#lib/game/economy/index.ts';
   import { vesselById } from '#lib/game/ships/index.ts';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
@@ -21,6 +22,8 @@
   import BaseSelection from './BaseSelection.svelte';
   import { flyTo } from './camera.svelte';
   import ShipSelection from './ShipSelection.svelte';
+  import { asteroidRows, surveyText } from './bodyFacts';
+  import RegionsPanel from './RegionsPanel.svelte';
   import { resourcesOf } from './resources';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
@@ -66,9 +69,6 @@
   }
 
   function bodyFacts(b: Body): [string, string][] {
-    const surveying = game.world.fleets.find(
-      (f) => f.orders[0]?.type === 'survey' && f.orders[0].target === b.id
-    );
     return [
       ['Kind', b.facts.kind],
       ['Gravity', b.facts.gravity],
@@ -76,7 +76,7 @@
       ['Air', b.facts.air],
       ['Size', b.facts.size],
       ['People', peopleAt(b.id)],
-      ['Survey', b.surveyed ? 'Done' : surveying ? 'Under way' : 'None'],
+      ['Survey', surveyText(b)],
       ['System', systemName(b.system)]
     ];
   }
@@ -132,6 +132,7 @@
     ]);
   });
   const resources = $derived(body ? resourcesOf(body.id) : '');
+  const regional = $derived(!!body && !!bodyTypeOf(body.id) && bodyTypeOf(body.id) !== 'earth');
 </script>
 
 <Window
@@ -175,16 +176,22 @@
       <BaseSelection site={base} />
     {:else if body}
       <DefList two rows={bodyFacts(body)} />
-      <h3>Resources</h3>
-      <p class="res" id="resources">{resources}</p>
-      {#if isColony(body)}
-        <div class="add">
+      {#if asteroidRows(body).length}<div id="asteroidFacts"><DefList rows={asteroidRows(body)} /></div>{/if}
+      {#if regional}
+        <RegionsPanel world={body.id} />
+      {:else}
+        <h3>Resources</h3>
+        <p class="res" id="resources">{resources}</p>
+      {/if}
+      <div class="add">
+        <button data-go="show" onclick={() => flyTo(body.id)}>Show</button>
+        {#if isColony(body)}
           <button data-go="colony" onclick={() => openColony(body, 'colony')}>Colony</button><button
             data-go="economy"
             onclick={() => openColony(body, 'economy')}>Economy</button
           >
-        </div>
-      {/if}
+        {/if}
+      </div>
     {:else if site}
       <p class="mock" id="siteMock"><span class="tag">mock scene</span></p>
       <DefList rows={site.facts} />

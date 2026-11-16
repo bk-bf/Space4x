@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { building, milestone } from '#lib/game/data/index.ts';
+  import {
+    asteroidRecord,
+    building,
+    material,
+    milestone,
+    region as regionRecord
+  } from '#lib/game/data/index.ts';
   import type { BuildingKind } from '#lib/game/data/index.ts';
   import {
     activeOrders,
@@ -7,6 +13,8 @@
     flowsOf,
     isFood,
     programmeDays,
+    remainingMass,
+    siteDeposits,
     type Site
   } from '#lib/game/economy/index.ts';
   import { DefList, Table, type Cell } from '#lib/ui/index.ts';
@@ -51,6 +59,13 @@
     kinds.map(([k, r]) => [kindName(k), formatCount(r.count), formatCount(r.workers), formatPower(r.power)])
   );
 
+  const place = $derived(regionRecord(site.region ?? ''));
+  const deposits = $derived(siteDeposits(site));
+  const depositRows = $derived<Cell[][]>([
+    ...deposits.ground.map((d): Cell[] => [material(d.material).name, 'Ground', d.grade.toFixed(2)]),
+    ...deposits.air.map((d): Cell[] => [material(d.material).name, 'Atmosphere', d.grade.toFixed(2)])
+  ]);
+  const rock = $derived(asteroidRecord(site.worldBody));
   const programmeRows = $derived<Cell[][]>(
     economy.running
       .filter((p) => p.site === site.id)
@@ -123,6 +138,25 @@
     />
   </div>
   <div>
+    {#if place || deposits.air.length}
+      <h3>Region</h3>
+      <div id="siteRegion">
+        <DefList
+          rows={[
+            ['Region', place?.name ?? 'Atmosphere only'],
+            ...(rock
+              ? [
+                  [
+                    'Left',
+                    `${formatPercent(remainingMass(economy, site.worldBody) / rock.mass)} of the body`
+                  ] as [string, string]
+                ]
+              : [])
+          ]}
+        />
+        <Table head={['Deposit', 'Where', '>Grade']} rows={depositRows} />
+      </div>
+    {/if}
     <h3>Industry by kind</h3>
     <Table head={['Kind', '>Buildings', '>Workers', '>Power']} rows={kindRows} />
     <h3>Programmes</h3>

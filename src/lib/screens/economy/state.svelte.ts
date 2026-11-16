@@ -8,8 +8,8 @@ import {
 } from '#lib/game/economy/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
 import { game } from '#lib/game/index.ts';
-import { resetSurvey } from '#lib/game/survey.svelte.ts';
-import { resetShips, seedTravel, ships } from '#lib/game/ships/index.ts';
+import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
+import { resetShips, seedBelt, seedTravel, ships } from '#lib/game/ships/index.ts';
 
 export type TabId =
   | 'summary'
@@ -68,6 +68,11 @@ export function applyEconomyParams(params: URLSearchParams): void {
     seedTravel(game);
     ui.vessel ??= ships.vessels.find((v) => v.trip)?.id ?? null;
   }
+  if (scenario === 'belt') {
+    seedBelt(game, params.has('outpost'));
+    ui.vessel ??= ships.vessels[0]?.id ?? null;
+  }
+  for (const id of params.get('surveyed')?.split(',') ?? []) completeSurvey(id);
   const tab = params.get('tab');
   const colony = params.get('colony');
   if (isTabId(tab)) ui.tab = tab;

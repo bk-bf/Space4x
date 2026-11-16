@@ -25,7 +25,8 @@ export const asteroidGm = (a: AsteroidRecord): number => G * a.mass;
 export const asteroidRadius = (a: AsteroidRecord): number => (a.diameter * 1000) / 2;
 
 export function formatSize(km: number): string {
-  if (km >= 1) return `${Math.round(km).toLocaleString('en-US')} km`;
+  if (km >= 10) return `${Math.round(km).toLocaleString('en-US')} km`;
+  if (km >= 1) return `${km.toFixed(1)} km`;
   return `${Math.round(km * 1000)} m`;
 }
 
@@ -47,7 +48,7 @@ export function asteroidBody(a: AsteroidRecord): Body {
     angularSpeed: orbitRate(periodDays(a)),
     tilt: hash(a.number, 4, 11) * 0.4,
     facts: {
-      kind: `${isNearEarth(a) ? 'Near-Earth' : a.id === 'ceres' ? 'Dwarf planet' : 'Main-belt'}, ${TYPE_NAMES[a.type].toLowerCase()}`,
+      kind: a.id === 'ceres' ? 'Dwarf planet' : 'Asteroid',
       gravity: formatGravity(asteroidGm(a), radius),
       surface: `${Math.round(EQUILIBRIUM_K / Math.sqrt(a.a) - KELVIN)} °C`,
       air: 'None',
