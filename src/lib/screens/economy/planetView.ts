@@ -1,3 +1,4 @@
+import { drawSmallBody, smallReach, spinStep, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL } from '#lib/gfx/palette.ts';
 import { planet, type PlanetType } from '#lib/gfx/planets.ts';
@@ -5,10 +6,22 @@ import { planet, type PlanetType } from '#lib/gfx/planets.ts';
 const TILT = 0.43;
 const MOON_REACH = 1.17;
 
-export function drawColonyPlanet(fb: FB, t: number, type: PlanetType, moon: boolean): void {
+export function drawColonyPlanet(
+  fb: FB,
+  t: number,
+  type: PlanetType,
+  moon: boolean,
+  small?: SmallBody
+): void {
   fb.start();
   const cx = Math.floor(fb.w / 2);
   const cy = Math.floor(fb.h / 2);
+  if (small) {
+    const fit = Math.floor(Math.min(fb.w / 2, fb.h / 2) / smallReach(small)) - 6;
+    drawSmallBody(fb, small, cx, cy, Math.max(10, fit), spinStep(t));
+    fb.present();
+    return;
+  }
   const reach = moon ? MOON_REACH + 0.08 : 1;
   const radius = Math.max(10, Math.floor(Math.min(fb.w / 2 / reach, fb.h / 2)) - 6);
   planet(fb, cx, cy, radius, type, t * 0.012, { lights: true, tilt: TILT });

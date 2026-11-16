@@ -1,7 +1,8 @@
 import { classes } from '#lib/game/classes.svelte.ts';
-import { milestones } from '#lib/game/data/index.ts';
+import { milestones, regionsOf } from '#lib/game/data/index.ts';
 import { economy, homeSite, newSite, queueBuilding, standFirst, touch } from '#lib/game/economy/index.ts';
 import { lock, newDesign, setCount, type ShipDesign } from '#lib/game/shipdesign/index.ts';
+import { completeSurvey } from '#lib/game/survey.svelte.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { orderShips } from './build.ts';
 import { foundSite } from './colonise.ts';
@@ -99,9 +100,10 @@ export function seedTravel(game: Game): void {
   touch();
 }
 
-export function seedBelt(game: Game, outpost = false): void {
+export function seedBelt(game: Game, outpost = false, asteroid?: string): void {
   if (ships.vessels.length > 0 || classes.saved.length > 0) return;
-  economy.done = milestones.filter((m) => !m.optional && m.number <= 14).map((m) => m.number);
+  const reached = asteroid ? 16 : 14;
+  economy.done = milestones.filter((m) => !m.optional && m.number <= reached).map((m) => m.number);
   const probe = design('belt-probe', 'Survey probe', 'probe', [
     ['chemical_engine_methalox', 1],
     ['propellant_tank', 2],
@@ -130,6 +132,16 @@ export function seedBelt(game: Game, outpost = false): void {
       site.gridKw = 2000;
       site.stock.food_ration = 5000;
     }
+  }
+  const region = asteroid ? regionsOf(asteroid)[0]?.id : undefined;
+  if (asteroid && region) {
+    completeSurvey(asteroid);
+    const miner = vessel(
+      lander,
+      { kind: 'surface', body: asteroid },
+      { crew: 2, cargo: { stainless_steel: 7000, nickel_superalloy: 300, ai_models: 4 } }
+    );
+    foundSite(game, miner, 'asteroid_miner', region);
   }
   vessel(
     lander,

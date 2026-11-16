@@ -1,4 +1,6 @@
 import { fleetClassId, shipClass, type Game, type Selection } from '#lib/game/index.ts';
+import { smallBodyOf } from '#lib/game/smallBodies.ts';
+import { drawSmallBody, smallReach, spinStep } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { planet } from '#lib/gfx/planets.ts';
@@ -13,6 +15,12 @@ import { drawStation } from '#lib/gfx/topdown/index.ts';
 export const PICTURE_W = 140;
 export const PICTURE_H = 72;
 const FRAMES_PER_TICK = 3;
+const HALF_WIDTH = 62;
+const HALF_HEIGHT = 34;
+const LONG_AXIS_TURN = 0.55;
+
+const fitSmall = (reach: number): number =>
+  Math.floor(Math.min(HALF_HEIGHT / (1 + (reach - 1) * LONG_AXIS_TURN), HALF_WIDTH / reach));
 
 function unknownMark(f: FB, col: RGB): void {
   f.start();
@@ -55,7 +63,9 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
   } else if (sel.kind === 'body') {
     const b = game.body(sel.id);
     f.start();
-    if (b) planet(f, 70, 36, b.rings ? 19 : 30, b.type, t * 0.02, b);
+    const small = b ? smallBodyOf(b) : undefined;
+    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), spinStep(t));
+    else if (b) planet(f, 70, 36, b.rings ? 19 : 30, b.type, t * 0.02, b);
   } else if (sel.kind === 'site') {
     const site = game.site(sel.id);
     stars(f, t, 26);
