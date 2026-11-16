@@ -1,6 +1,7 @@
 import { DAY, formatClock } from './clock.ts';
 import { classes } from './classes.svelte.ts';
 import { building, material, milestone, milestones, recipesProducing } from './data/index.ts';
+import type { Milestone } from './data/index.ts';
 import {
   assign,
   buildingsAt,
@@ -10,6 +11,7 @@ import {
   homeSite,
   isUnlocked,
   missingFor,
+  programmeCompute,
   programmeDays,
   programmeStatus,
   queueBuilding,
@@ -40,6 +42,8 @@ export interface PlayReport {
   tonnes: number;
   log: string[];
 }
+
+const floor = (materialId: string): number => (material(materialId).unit ? 1 : 1000);
 
 const BOOSTER = 'play-booster';
 const ORBITER = 'play-orbiter';
@@ -74,13 +78,13 @@ export function launchDesigns(): { booster: ShipDesign; orbiter: ShipDesign } {
 export class Player {
   readonly report: PlayReport = { reached: [], launches: [], tonnes: 0, log: [] };
 
-  constructor(private readonly game: Game) {}
+  constructor(protected readonly game: Game) {}
 
-  private say(text: string): void {
+  protected say(text: string): void {
     this.report.log.push(`${formatClock(this.game.time)}  ${text}`);
   }
 
-  private get earth(): Site {
+  protected get earth(): Site {
     return homeSite();
   }
 
@@ -94,14 +98,14 @@ export class Player {
     touch();
   }
 
-  private groupFor(buildingId: string, process: string) {
+  protected groupFor(buildingId: string, process: string) {
     const site = this.earth;
     return site.groups.find((g) => g.building === buildingId && g.process === process);
   }
 
-  private readonly chosen = new Map<string, string>();
+  protected readonly chosen = new Map<string, string>();
 
-  private produce(materialId: string, kgPerHour: number, depth = 0): boolean {
+  protected produce(materialId: string, kgPerHour: number, depth = 0): boolean {
     const site = this.earth;
     if (depth > 5) return false;
     const m = material(materialId);
@@ -152,19 +156,19 @@ export class Player {
     return true;
   }
 
-  private fixShortages(): void {
+  protected fixShortages(): void {
     const site = this.earth;
     const f = flowsOf(site);
     for (const a of f.actors) {
       if (a.limit?.kind === 'material' && a.worst < 0.999) {
         const id = (a.limit as { id: string }).id;
-        const needRate = Math.max(1000, (a.inputs[id] ?? 0) * a.cap * 2);
+        const needRate = Math.max(floor(id), (a.inputs[id] ?? 0) * a.cap * (id === 'compute' ? 1 : 2));
         this.produce(id, needRate, 1);
       }
     }
   }
 
-  private ensureBuilding(id: string): void {
+  protected ensureBuilding(id: string): void {
     const site = this.earth;
     const b = building(id);
     if (!b.where.includes('earth')) return;
@@ -174,7 +178,7 @@ export class Player {
     this.say(`queued a ${b.name}`);
   }
 
-  private orbital(): Site | undefined {
+  protected orbital(): Site | undefined {
     return siteAt(economy, 'earth', 'orbit');
   }
 
@@ -225,7 +229,9 @@ export class Player {
     }
   }
 
-  private missingNote(site: Site, n: number): string {
+  protected provideSite(_n: number): void {}
+
+  protected missingNote(site: Site, n: number): string {
     const m = milestone(n);
     return missingFor(economy, site, m)
       .map((x) =>
@@ -247,6 +253,7 @@ export class Player {
       const missing = missingFor(economy, site, m);
       if (!missing.length && programmeStatus(economy, site, m) === 'ready') {
         this.computeForProgramme();
+        this.ensureCompute(m);
         startProgramme(economy, site, n);
         this.say(`started milestone ${n}`);
         this.days(programmeDays(m) + 1);
@@ -258,8 +265,9 @@ export class Player {
           const f = milestones.find((q) => !q.optional && !economy.done.includes(q.number));
           if (f && f.number < n) this.reach(f.number);
         } else if (x.kind === 'building') this.provideBuilding(x.id);
+        else if (x.kind === 'site') this.provideSite(n);
         else if (x.kind === 'builder') this.ensureBuilding(x.id);
-        else if (x.kind === 'material') this.produce(x.id, Math.max(1000, x.need / 48));
+        else if (x.kind === 'material') this.produce(x.id, Math.max(floor(x.id), x.need / 48));
       }
       this.fixShortages();
       this.days(3);
@@ -333,7 +341,24 @@ export class Player {
     return result === undefined;
   }
 
-  private computeForProgramme(): void {
+  protected ensureCompute(m: Milestone): void {
+    const site = this.earth;
+    const need = programmeCompute(m) * 1.1;
+    if (need <= 0) return;
+    const have = () =>
+      site.groups
+        .filter((g) => g.building === 'data_centre' && g.process === 'compute_generation')
+        .reduce((a, g) => a + g.count, 0) * 1000;
+    let guard = 0;
+    while (have() < need && guard++ < 100) {
+      this.produce('compute', need);
+      this.fixShortages();
+      this.days(3);
+      this.computeForProgramme();
+    }
+  }
+
+  protected computeForProgramme(): void {
     const site = this.earth;
     for (const g of [...site.groups])
       if (g.building === 'data_centre' && g.process === 'ai_model_training')
@@ -341,7 +366,7 @@ export class Player {
     touch();
   }
 
-  private provideBuilding(id: string): void {
+  protected provideBuilding(id: string): void {
     const b = building(id);
     if (b.where.includes('earth')) return this.ensureBuilding(id);
     if (!b.where.includes('orbit')) return;
