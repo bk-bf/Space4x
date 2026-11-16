@@ -262,6 +262,11 @@ export function launch(game: Game, site: Site, stack: Stack): StackPlan {
   const plan = planStack(game, site, stack);
   if (!plan.ok) return plan;
   const stageVessels = stack.stages.map((id) => vesselOf(id)!);
+  const ceiling = payloadCeiling(game, site, stack);
+  const atCeiling =
+    ceiling > 0
+      ? planStack(game, site, { ...stack, payload: { kind: 'none' } }, { extraMass: ceiling })
+      : plan;
   const top = stageVessels[stageVessels.length - 1]!;
   for (const [m, kg] of Object.entries(plan.draw)) site.stock[m] = Math.max(0, (site.stock[m] ?? 0) - kg);
   for (const v of stageVessels) {
@@ -309,7 +314,8 @@ export function launch(game: Game, site: Site, stack: Stack): StackPlan {
     returned,
     lost: lost.length,
     payload: plan.payloadMass,
-    propellant: plan.burned
+    propellant: plan.burned,
+    perTonne: ceiling > 0 ? (atCeiling.burned / ceiling) * 1000 : 0
   });
   game.log(
     'ship',

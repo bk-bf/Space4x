@@ -6,6 +6,9 @@ import { stars } from '#lib/gfx/scenes.ts';
 import { ALIEN_SPECS } from '#lib/gfx/ships/specs.ts';
 import { drawShip, fitShip, silhouette } from '#lib/gfx/topdown/index.ts';
 import { drawSitePicture } from './sites/index';
+import { economy } from '#lib/game/economy/index.ts';
+import { vesselById } from '#lib/game/ships/index.ts';
+import { drawStation } from '#lib/gfx/topdown/index.ts';
 
 export const PICTURE_W = 140;
 export const PICTURE_H = 72;
@@ -33,6 +36,22 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
         frame: t * FRAMES_PER_TICK,
         thrust: fleet?.orders.length ? 0.7 : 0
       });
+  } else if (sel.kind === 'ship') {
+    const v = vesselById(sel.id);
+    stars(f, t, 26);
+    const cls = v ? shipClass(v.design) : undefined;
+    if (cls)
+      drawShip(f, cls, {
+        ...fitShip(cls, f.w, f.h, 3, true),
+        angle: 0,
+        frame: t * FRAMES_PER_TICK,
+        thrust: v?.trip ? 0.7 : 0
+      });
+  } else if (sel.kind === 'base') {
+    const base = economy.sites.find((s) => s.id === sel.id);
+    stars(f, t, 26);
+    if (base)
+      drawStation(f, 'core', { x: 70, y: 36, angle: t * 0.004, pxPerMetre: 0.9, frame: t * FRAMES_PER_TICK });
   } else if (sel.kind === 'body') {
     const b = game.body(sel.id);
     f.start();

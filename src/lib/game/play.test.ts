@@ -17,7 +17,11 @@ describe('the scripted player from the start state', () => {
     expect(crewed.stock.food_ration).toBeGreaterThan(2000);
     for (const n of [5, 6]) expect(player.reach(n), `milestone ${n}`).toBe(true);
     expect(economy.done).toEqual([1, 2, 3, 4, 5, 6]);
-    const dates = player.report.reached.map((r) => [r.number, formatDay(r.at), new Date(r.at).getUTCFullYear()]);
+    const dates = player.report.reached.map((r) => [
+      r.number,
+      formatDay(r.at),
+      new Date(r.at).getUTCFullYear()
+    ]);
     console.info(
       'milestones',
       JSON.stringify(dates),

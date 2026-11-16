@@ -17,6 +17,8 @@ export * from './launch.ts';
 export * from './model.ts';
 export * from './orders.ts';
 export * from './run.ts';
+export * from './scenario.ts';
+export * from './supply.ts';
 export * from './trips.ts';
 export * from './world.ts';
 export type * from './types.ts';

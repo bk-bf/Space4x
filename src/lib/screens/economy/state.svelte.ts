@@ -7,15 +7,30 @@ import {
   type Site
 } from '#lib/game/economy/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
+import { game } from '#lib/game/index.ts';
+import { resetShips, seedTravel, ships } from '#lib/game/ships/index.ts';
 
-export type TabId = 'summary' | 'production' | 'construction' | 'stockpiles' | 'milestones';
+export type TabId =
+  | 'summary'
+  | 'production'
+  | 'construction'
+  | 'stockpiles'
+  | 'milestones'
+  | 'yard'
+  | 'launch'
+  | 'ships'
+  | 'supply';
 
 export const TABS: readonly { id: TabId; label: string }[] = [
   { id: 'summary', label: 'Summary' },
   { id: 'production', label: 'Production' },
   { id: 'construction', label: 'Construction' },
   { id: 'stockpiles', label: 'Stockpiles' },
-  { id: 'milestones', label: 'Milestones' }
+  { id: 'milestones', label: 'Milestones' },
+  { id: 'yard', label: 'Shipyard' },
+  { id: 'launch', label: 'Launch' },
+  { id: 'ships', label: 'Ships' },
+  { id: 'supply', label: 'Supply' }
 ];
 
 export const isTabId = (id: string | null | undefined): id is TabId => TABS.some((t) => t.id === id);
@@ -27,7 +42,18 @@ export const ui: {
   order: number | null;
   pick: string;
   milestone: number;
-} = $state({ site: 'earth', tab: 'summary', group: null, order: null, pick: 'farmland', milestone: 1 });
+  vessel: string | null;
+  yardOrder: number | null;
+} = $state({
+  site: 'earth',
+  tab: 'summary',
+  group: null,
+  order: null,
+  pick: 'farmland',
+  milestone: 1,
+  vessel: null,
+  yardOrder: null
+});
 
 export function showColony(id: string): void {
   const site = siteById(id);
@@ -35,6 +61,12 @@ export function showColony(id: string): void {
 }
 
 export function applyEconomyParams(params: URLSearchParams): void {
+  const scenario = params.get('scenario');
+  applyScenario(scenario);
+  if (scenario === 'travel') {
+    seedTravel(game);
+    ui.vessel ??= ships.vessels.find((v) => v.trip)?.id ?? null;
+  }
   const tab = params.get('tab');
   const colony = params.get('colony');
   if (isTabId(tab)) ui.tab = tab;
@@ -42,7 +74,8 @@ export function applyEconomyParams(params: URLSearchParams): void {
   const milestone = Number(params.get('milestone'));
   if (Number.isInteger(milestone) && milestone >= 1 && milestone <= milestones.length)
     ui.milestone = milestone;
-  applyScenario(params.get('scenario'));
+  const vessel = params.get('vessel');
+  if (vessel) ui.vessel = vessel;
 }
 
 export function selectedSite(): Site {
@@ -51,12 +84,15 @@ export function selectedSite(): Site {
 
 export function resetEconomyScreen(): void {
   resetEconomy();
+  resetShips();
   Object.assign(ui, {
     site: 'earth',
     tab: 'summary',
     group: null,
     order: null,
     pick: 'farmland',
-    milestone: 1
+    milestone: 1,
+    vessel: null,
+    yardOrder: null
   });
 }

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { economy } from '#lib/game/economy/index.ts';
   import { className, game, type Selection } from '#lib/game/index.ts';
+  import { ships } from '#lib/game/ships/index.ts';
+  import { vesselWhere } from '#lib/screens/economy/shipsView.ts';
   import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
   import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
   import type { Preset } from './targets';
@@ -23,6 +26,10 @@
   const groups = $derived(
     world.systems.map((s) => ({ system: s, fleets: world.fleets.filter((f) => f.system === s.id) }))
   );
+  const vessels = $derived(ships.vessels);
+  const bases = $derived(economy.sites.filter((x) => x.place === 'orbit'));
+  const vesselRows = $derived(vessels.map((v) => [v.name, vesselWhere(v)]));
+  const baseRows = $derived(bases.map((b) => [b.name, Math.round(b.population)]));
   const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
   const contactRows = $derived(contacts.map((c) => [{ text: c.id, warn: !!c.hostile }, c.kind, c.range]));
 
@@ -86,7 +93,36 @@
           {/each}
         </details>
       {/each}
-      {#if !world.fleets.length}<p class="none" id="noFleets">
+      {#if vessels.length}
+        <h3>Ships <small>{vessels.length}</small></h3>
+        <div id="shipList">
+          <Table
+            rows={vesselRows}
+            keys={vessels.map((v) => 'ship:' + v.id)}
+            selected={pickedRow(
+              'ship',
+              vessels.map((v) => v.id)
+            )}
+            onpick={(i) => focus({ kind: 'ship', id: vessels[i]!.id })}
+          />
+        </div>
+      {/if}
+      {#if bases.length}
+        <h3>Sites <small>{bases.length}</small></h3>
+        <div id="baseList">
+          <Table
+            head={['Site', '>People']}
+            rows={baseRows}
+            keys={bases.map((b) => 'base:' + b.id)}
+            selected={pickedRow(
+              'base',
+              bases.map((b) => b.id)
+            )}
+            onpick={(i) => focus({ kind: 'base', id: bases[i]!.id })}
+          />
+        </div>
+      {/if}
+      {#if !world.fleets.length && !vessels.length}<p class="none" id="noFleets">
           No fleets. Nothing of ours flies beyond Earth yet.
         </p>{/if}
     </div>

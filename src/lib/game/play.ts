@@ -10,7 +10,6 @@ import {
   homeSite,
   isUnlocked,
   missingFor,
-  processesAt,
   programmeDays,
   programmeStatus,
   queueBuilding,
@@ -129,7 +128,9 @@ export class Player {
     if (!proc) return false;
     const per = proc.outputs[materialId] ?? 0;
     if (per <= 0) return false;
-    const have = site.groups.filter((g) => g.building === b && g.process === id).reduce((a, g) => a + g.count, 0);
+    const have = site.groups
+      .filter((g) => g.building === b && g.process === id)
+      .reduce((a, g) => a + g.count, 0);
     const want = Math.ceil(kgPerHour / per);
     if (have >= want) return true;
     const donors = site.groups
@@ -180,7 +181,10 @@ export class Player {
   deliver(cargo: Record<string, number>, found?: string): void {
     const { booster, orbiter } = launchDesigns();
     const site = this.earth;
-    const own = (id: string) => ships.vessels.filter((v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip);
+    const own = (id: string) =>
+      ships.vessels.filter(
+        (v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip
+      );
     const need = (d: ShipDesign, n: number) => {
       const have = own(d.id).length + site.yard.filter((o) => o.design === d.id).length;
       if (have < n) orderShips(site, d.id, n - have);
@@ -214,7 +218,8 @@ export class Player {
       const st = this.orbital();
       if (st) {
         addOrder(v, { type: 'dock', site: st.id });
-        for (const m of Object.keys(cargo)) addOrder(v, { type: 'unload', item: { kind: 'cargo', id: m }, amount: null });
+        for (const m of Object.keys(cargo))
+          addOrder(v, { type: 'unload', item: { kind: 'cargo', id: m }, amount: null });
         this.days(1);
       }
     }
@@ -223,7 +228,9 @@ export class Player {
   private missingNote(site: Site, n: number): string {
     const m = milestone(n);
     return missingFor(economy, site, m)
-      .map((x) => (x.kind === 'material' ? `${material(x.id).name} ${Math.round(x.have)}/${Math.round(x.need)}` : x.kind))
+      .map((x) =>
+        x.kind === 'material' ? `${material(x.id).name} ${Math.round(x.have)}/${Math.round(x.need)}` : x.kind
+      )
       .join(', ');
   }
 
@@ -272,7 +279,11 @@ export class Player {
     const { booster, orbiter } = launchDesigns();
     let habitat = classes.find(HABITAT);
     if (!habitat) {
-      let d: ShipDesign = { ...newDesign(HABITAT, 'Habitat module'), role: 'freighter', yard: 'rocket_factory' };
+      let d: ShipDesign = {
+        ...newDesign(HABITAT, 'Habitat module'),
+        role: 'freighter',
+        yard: 'rocket_factory'
+      };
       for (const [c, n] of [
         ['habitat_module', 1],
         ['life_support_unit', 1],
@@ -287,7 +298,9 @@ export class Player {
       classes.add(habitat);
     }
     const here = (id: string) =>
-      ships.vessels.filter((v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip);
+      ships.vessels.filter(
+        (v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip
+      );
     for (const d of [booster, orbiter, habitat]) {
       const have = here(d.id).length + site.yard.filter((o) => o.design === d.id).length;
       if (have < 1) orderShips(site, d.id, 1);
@@ -346,7 +359,12 @@ export class Player {
       this.deliver(cargo);
       return;
     }
-    queueBuilding(economy, st, id, buildingsAt('orbit').length ? (unlockedProcesses(economy, st, id)[0]?.id ?? null) : null);
+    queueBuilding(
+      economy,
+      st,
+      id,
+      buildingsAt('orbit').length ? (unlockedProcesses(economy, st, id)[0]?.id ?? null) : null
+    );
     this.say(`queued a ${b.name} at ${st.name}`);
   }
 }

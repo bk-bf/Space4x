@@ -5,8 +5,10 @@ import { setZoom } from '#lib/screens/map/camera.svelte.ts';
 import { showSystem } from '#lib/screens/map/focus.ts';
 import { applyScreenParams } from '#lib/screens/params.ts';
 import type { QueryState } from './query';
+import { installTestApi } from './testApi.ts';
 
 export function applyQuery(q: QueryState, params: URLSearchParams): void {
+  installTestApi(params);
   applyScreenParams(params);
   wm.arrange(q.arrangement);
   const system = q.system ?? game.systemOf(q.selection);

@@ -12,11 +12,15 @@
     type Contact,
     type Fleet
   } from '#lib/game/index.ts';
+  import { economy } from '#lib/game/economy/index.ts';
+  import { vesselById } from '#lib/game/ships/index.ts';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { showColony } from '#lib/screens/economy/state.svelte.ts';
   import { intel } from '#lib/screens/intel/intel.svelte.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
+  import BaseSelection from './BaseSelection.svelte';
   import { flyTo } from './camera.svelte';
+  import ShipSelection from './ShipSelection.svelte';
   import { resourcesOf } from './resources';
   import { drawSelection, PICTURE_H, PICTURE_W } from './selectionPicture';
 
@@ -27,8 +31,15 @@
   const body = $derived(sel.kind === 'body' ? game.body(sel.id) : undefined);
   const contact = $derived(sel.kind === 'contact' ? game.contact(sel.id) : undefined);
   const site = $derived(sel.kind === 'site' ? game.site(sel.id) : undefined);
+  const vessel = $derived(sel.kind === 'ship' ? vesselById(sel.id) : undefined);
+  const base = $derived(sel.kind === 'base' ? economy.sites.find((s) => s.id === sel.id) : undefined);
   const heading = $derived(
-    fleet?.name ?? body?.name ?? site?.name ?? (contact ? 'Contact ' + contact.id : 'Selection')
+    fleet?.name ??
+      vessel?.name ??
+      base?.name ??
+      body?.name ??
+      site?.name ??
+      (contact ? 'Contact ' + contact.id : 'Selection')
   );
 
   const km = (n: number) => `${n.toLocaleString('en')} km/s`;
@@ -158,6 +169,10 @@
       {:else}
         <Table rows={[['-', 'No orders', '']]} numeric={[false, false, true]} />
       {/if}
+    {:else if vessel}
+      <ShipSelection {vessel} />
+    {:else if base}
+      <BaseSelection site={base} />
     {:else if body}
       <DefList two rows={bodyFacts(body)} />
       <h3>Resources</h3>

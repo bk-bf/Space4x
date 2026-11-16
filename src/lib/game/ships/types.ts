@@ -58,6 +58,7 @@ export interface LaunchRecord {
   lost: number;
   payload: number;
   propellant: number;
+  perTonne: number;
 }
 
 export interface ShipsState {

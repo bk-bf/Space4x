@@ -8,6 +8,9 @@ import {
   type SelectionKind,
   type StarSystem
 } from '#lib/game/index.ts';
+import { economy } from '#lib/game/economy/index.ts';
+import { positionAt } from '#lib/game/flight/index.ts';
+import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
 import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
 import { drawStar, starReach } from '#lib/gfx/bodies/star.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
@@ -20,11 +23,23 @@ import { select } from '#lib/ui/index.ts';
 import { cam, flyToTarget, hopTo, layers, MAP_SCALE } from './camera.svelte';
 import { LABEL_H, type Anchor, type LabelLine } from './labels';
 import { type Point, type Target } from './mapCamera';
-import { bodyMark, BODY_COLOUR, brackets, clipLine, jumpMark, MARK_R, orbitArc, starMark } from './markers';
+import {
+  baseMark,
+  bodyMark,
+  BODY_COLOUR,
+  brackets,
+  clipLine,
+  jumpMark,
+  MARK_R,
+  orbitArc,
+  SIDE_COLOUR,
+  starMark
+} from './markers';
 import {
   contactGroup,
   drawShipGroup,
   fleetGroup,
+  vesselGroup,
   type ShipGroup,
   type ShipTally,
   type ShipView
@@ -279,6 +294,19 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     }
   }
 
+  const selShip = sel.kind === 'ship' ? vesselById(sel.id) : undefined;
+  const tripOption = selShip?.trip ? tripOptionOf(selShip.id) : undefined;
+  if (selShip?.trip && tripOption && layers.Course) {
+    const t0 = game.elapsed,
+      t1 = selShip.trip.arrival,
+      pts = Array.from({ length: 49 }, (_, i) => {
+        const p = positionAt(tripOption, t0 + ((t1 - t0) * i) / 48).pos;
+        return S(p[0], p[1]);
+      });
+    for (let i = 1; i < pts.length; i++)
+      clipLine(f, pts[i - 1]![0], pts[i - 1]![1], pts[i]![0], pts[i]![1], PAL.course, 3, t >> 1);
+  }
+
   const contacts = game.world.contacts.filter((c) => c.system === game.world.system);
   for (const c of contacts)
     if (c.hostile && c.route.length && c.speedKmS > 0) {
@@ -375,13 +403,27 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     ...game.world.fleets
       .filter((x) => x.system === game.world.system)
       .map((x) => fleetGroup(x, sel.kind === 'fleet' && sel.id === x.id)),
-    ...contacts.map((c) => contactGroup(c, sel.kind === 'contact' && sel.id === c.id))
+    ...contacts.map((c) => contactGroup(c, sel.kind === 'contact' && sel.id === c.id)),
+    ...ships.vessels.flatMap((v) => {
+      const st = vesselState(game, v);
+      return st
+        ? [
+            vesselGroup(
+              v,
+              st.pos[0],
+              st.pos[1],
+              Math.atan2(st.vel[1], st.vel[0]),
+              sel.kind === 'ship' && sel.id === v.id,
+              v.trip ? 0.7 : 0
+            )
+          ]
+        : [];
+    })
   ];
   for (const g of groups) {
     if (hidden.has(g.key)) continue;
     const P = S(g.x, g.y),
-      [kind, id] = g.contact ? (['contact', g.name] as const) : (['fleet', g.key.slice(6)] as const),
-      picks = pickOf(g.key, true, kind, id),
+      picks = pickOf(g.key, true, g.kind, g.id),
       b = under(P);
     if (b) {
       b.list.push({
@@ -408,6 +450,36 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
         target: g.key,
         ...picks
       });
+  }
+
+  for (const base of economy.sites.filter((x) => x.place === 'orbit')) {
+    const st = stateOf(game, { kind: 'site', site: base.id });
+    if (!st) continue;
+    const P = S(st.pos[0], st.pos[1]),
+      key = target('base', base.id),
+      picks = pickOf(key, true, 'base', base.id),
+      chosen = sel.kind === 'base' && sel.id === base.id,
+      host = under(P);
+    if (host) {
+      host.list.push({ id: key, text: base.name, cls: 'fl', target: key, ...picks });
+      continue;
+    }
+    if (!vis(P, 20)) continue;
+    baseMark(f, P[0], P[1], SIDE_COLOUR.civ);
+    an.push({
+      id: key,
+      text: base.name,
+      cls: 'fl',
+      x: P[0],
+      y: P[1],
+      rx: 5,
+      ry: 5,
+      sel: chosen,
+      pri: aim === key ? FOCUS_PRI : SITE_PRI,
+      target: key,
+      ...picks
+    });
+    if (chosen) brackets(f, P[0], P[1], 8, 6);
   }
 
   for (const { site, P, key } of sites) {

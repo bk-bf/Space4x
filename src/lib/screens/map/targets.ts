@@ -1,4 +1,6 @@
+import { economy } from '#lib/game/economy/index.ts';
 import { bodyPosition, game, parkingRadius, sitePosition, type Game } from '#lib/game/index.ts';
+import { ships, stateOf, vesselById, vesselState } from '#lib/game/ships/index.ts';
 import type { SiteKind } from '#lib/game/index.ts';
 import type { PlanetType } from '#lib/gfx/planets.ts';
 import type { Located, Point, Target } from './mapCamera';
@@ -35,6 +37,15 @@ export function locate(t: Target, g: Game = game): Located | undefined {
     const j = sys?.jumps.find((p) => p.id === id);
     return j ? { x: j.x, y: j.y } : undefined;
   }
+  if (kind === 'ship') {
+    const v = vesselById(id),
+      st = v ? vesselState(g, v) : undefined;
+    return st ? { x: st.pos[0], y: st.pos[1] } : undefined;
+  }
+  if (kind === 'base') {
+    const st = stateOf(g, { kind: 'site', site: id });
+    return st ? { x: st.pos[0], y: st.pos[1] } : undefined;
+  }
   if (kind === 'site') {
     const site = g.site(id),
       p = site && site.system === g.world.system ? sitePosition(g, site) : undefined;
@@ -52,6 +63,8 @@ export function nameOf(t: Target | null, g: Game = game): string {
   if (kind === 'contact') return id;
   if (kind === 'jump') return g.starSystem(g.world.system)?.jumps.find((j) => j.id === id)?.name ?? 'free';
   if (kind === 'site') return g.site(id)?.name ?? 'free';
+  if (kind === 'ship') return vesselById(id)?.name ?? 'free';
+  if (kind === 'base') return economy.sites.find((s) => s.id === id)?.name ?? 'free';
   return 'free';
 }
 
@@ -68,6 +81,7 @@ const STAR_FILL = 0.3;
 const BODY_FILL = 0.25;
 const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
+const SHIP_VIEW_M = 4e6;
 const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
 export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
   yard: 0.4,
@@ -126,6 +140,20 @@ export function presets(g: Game, fw: number, fh: number): Preset[] {
         aim: target('fleet', f.id)
       });
     }
+  for (const v of ships.vessels)
+    list.push({
+      id: v.id,
+      label: v.name,
+      L: v.trip ? FLEET_ROAMING_L : fit(SHIP_VIEW_M, fh * FLEET_PARKED_FILL),
+      aim: target('ship', v.id)
+    });
+  for (const base of economy.sites.filter((x) => x.place === 'orbit'))
+    list.push({
+      id: base.id,
+      label: base.name,
+      L: fit(SHIP_VIEW_M, fh * FLEET_PARKED_FILL),
+      aim: target('base', base.id)
+    });
   for (const site of g.world.sites)
     if (site.system === system)
       list.push({
