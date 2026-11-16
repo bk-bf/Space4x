@@ -259,6 +259,49 @@ describe('sites off Earth', () => {
   });
 });
 
+describe('a lunar outpost', () => {
+  it('is founded by a lander that flies from low Earth orbit and sets down with the first building', () => {
+    const g = freshGame();
+    addDesign({
+      id: 'lander',
+      role: 'lander',
+      parts: [
+        ['chemical_engine_hydrolox', 4],
+        ['propellant_tank', 4],
+        ['structure_truss', 1],
+        ['landing_legs', 1],
+        ['cargo_bay', 1]
+      ],
+      load: [['hydrolox', 1e9]]
+    });
+    const v = spawn(
+      'lander',
+      { kind: 'orbit', body: 'earth', angle: 0 },
+      {
+        propellant: { hydrolox: 27_000 },
+        cargo: { stainless_steel: 2500, copper: 250 }
+      }
+    );
+    addOrder(v, { type: 'land', body: 'luna' });
+    g.advance(DAY);
+    expect(v.blocked).toBeNull();
+    expect(v.trip).not.toBeNull();
+    g.advance(10 * DAY);
+    expect(v.trip).toBeNull();
+    expect(v.at).toEqual({ kind: 'surface', body: 'luna' });
+    const options = foundOptions(v).map((o) => o.building.id);
+    expect(options).toContain('chemical_plant');
+    const open = foundOptions(v).find((o) => o.missing.length === 0);
+    expect(open).toBeDefined();
+    const site = foundSite(g, v, open!.building.id) as Site;
+    expect(site.id).toBe('luna');
+    expect(site.place).toBe('surface');
+    expect(site.body).toBe('moon');
+    expect(g.body('luna')?.colony).toBe(true);
+    expect(economy.sites.map((s) => s.id)).toEqual(['earth', 'luna']);
+  });
+});
+
 describe('supply runs', () => {
   it('cycle load, fly, unload and return, and deliver a tonne figure each cycle', () => {
     const g = freshGame();
