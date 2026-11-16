@@ -548,6 +548,29 @@
     }
   },
   {
+    "id": "survey_suite",
+    "name": "Survey instruments",
+    "kind": "electronics",
+    "milestone": 5,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "rad_hard_ic": 60,
+      "fused_silica": 20,
+      "aluminium": 40,
+      "copper": 20
+    },
+    "design": {
+      "mass": 90,
+      "power": 0.15,
+      "basis": "A mapping camera, laser altimeter, neutron detector and infrared spectrometer, about the mass and power of the six instruments of the Lunar Reconnaissance Orbiter; flown in orbit it reveals a body's regions and their grades.",
+      "source": "https://en.wikipedia.org/wiki/Lunar_Reconnaissance_Orbiter",
+      "estimated": true,
+      "surveys": true
+    }
+  },
+  {
     "id": "docking_adapter",
     "name": "Docking adapter",
     "kind": "structure",

@@ -11,7 +11,8 @@
       { "body": "mars", "how": "ice", "building": "ice_mine" },
       { "body": "asteroid-c", "how": "ice", "building": "asteroid_miner" },
       { "body": "comet", "how": "ice", "building": "asteroid_miner" },
-      { "body": "icy-moon", "how": "ice", "building": "ice_mine" }
+      { "body": "icy-moon", "how": "ice", "building": "ice_mine" },
+      { "body": "mercury", "how": "ice", "building": "ice_mine" }
     ],
     "why": "Drinking, oxygen and hydrogen by electrolysis, propellant feedstock and radiation shielding",
     "source": "https://en.wikipedia.org/wiki/Lunar_water"
@@ -143,7 +144,8 @@
       { "body": "earth", "how": "mined", "building": "mine_earth" },
       { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" },
       { "body": "io", "how": "mined", "building": "regolith_excavator" },
-      { "body": "moon", "how": "regolith", "building": "regolith_excavator" }
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mercury", "how": "regolith", "building": "regolith_excavator" }
     ],
     "why": "Binder for waterless sulfur concrete; sulfuric acid for metal leaching",
     "source": "https://en.wikipedia.org/wiki/Sulfur_concrete"

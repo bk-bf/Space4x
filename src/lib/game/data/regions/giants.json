@@ -1,0 +1,70 @@
+[
+  {
+    "id": "jupiter-atmosphere",
+    "world": "jupiter",
+    "body": "gas-giant",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "hydrogen", "grade": 3 },
+      { "material": "helium4", "grade": 1 },
+      { "material": "deuterium", "grade": 0.05 },
+      { "material": "helium3", "grade": 0.05 }
+    ],
+    "basis": "About 90 percent hydrogen and 10 percent helium by volume, with deuterium at 2.6 parts in 100,000 of the hydrogen and helium-3 at under 2 in 10,000 of the helium (Galileo probe); the last two sit at the lowest grade. Known from the Galileo probe.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Jupiter",
+    "estimated": true
+  },
+  {
+    "id": "saturn-atmosphere",
+    "world": "saturn",
+    "body": "gas-giant",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "hydrogen", "grade": 3 },
+      { "material": "helium4", "grade": 0.8 },
+      { "material": "deuterium", "grade": 0.05 },
+      { "material": "helium3", "grade": 0.05 }
+    ],
+    "basis": "About 96 percent hydrogen and 3 percent helium by volume in the upper atmosphere (Cassini), helium being depleted against Jupiter; deuterium and helium-3 are traces at the lowest grade. Known from Cassini.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Saturn",
+    "estimated": true
+  },
+  {
+    "id": "uranus-atmosphere",
+    "world": "uranus",
+    "body": "ice-giant",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "hydrogen", "grade": 3 },
+      { "material": "helium4", "grade": 1 },
+      { "material": "deuterium", "grade": 0.1 },
+      { "material": "helium3", "grade": 0.05 }
+    ],
+    "basis": "83 percent hydrogen, 15 percent helium and 2 percent methane by volume, with deuterium at about twice the Jovian share. Known from Voyager 2.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Uranus",
+    "estimated": true
+  },
+  {
+    "id": "neptune-atmosphere",
+    "world": "neptune",
+    "body": "ice-giant",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "hydrogen", "grade": 3 },
+      { "material": "helium4", "grade": 1 },
+      { "material": "deuterium", "grade": 0.1 },
+      { "material": "helium3", "grade": 0.05 }
+    ],
+    "basis": "80 percent hydrogen, 19 percent helium and 1.5 percent methane by volume, with deuterium at about twice the Jovian share. Known from Voyager 2.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Neptune",
+    "estimated": true
+  }
+]

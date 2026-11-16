@@ -234,7 +234,11 @@
     "tier": "P",
     "unlocks": "survey of asteroid composition; picks mining targets.",
     "requires": [1],
-    "needs": { "materials": [], "buildings": [], "components": ["sampling_arm", "heat_shield"] },
+    "needs": {
+      "materials": [],
+      "buildings": [],
+      "components": ["survey_suite", "sampling_arm", "heat_shield"]
+    },
     "sources": ["https://en.wikipedia.org/wiki/OSIRIS-REx"]
   },
   {
