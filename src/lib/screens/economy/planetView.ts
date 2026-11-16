@@ -1,7 +1,11 @@
 import { drawSmallBody, smallReach, spinStep, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
+import { RAD } from '#lib/gfx/bodies/looks/math.ts';
 import { PAL } from '#lib/gfx/palette.ts';
-import { planet, type PlanetType } from '#lib/gfx/planets.ts';
+import { familyId, lookById } from '#lib/gfx/bodies/looks/index.ts';
+import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
+import { lookOf, sphereState } from '#lib/game/looks.ts';
+import type { Body } from '#lib/game/types.ts';
 
 const TILT = 0.43;
 const MOON_REACH = 1.17;
@@ -9,7 +13,7 @@ const MOON_REACH = 1.17;
 export function drawColonyPlanet(
   fb: FB,
   t: number,
-  type: PlanetType,
+  body: Body | undefined,
   moon: boolean,
   small?: SmallBody
 ): void {
@@ -22,18 +26,24 @@ export function drawColonyPlanet(
     fb.present();
     return;
   }
-  const reach = moon ? MOON_REACH + 0.08 : 1;
-  const radius = Math.max(10, Math.floor(Math.min(fb.w / 2 / reach, fb.h / 2)) - 6);
-  planet(fb, cx, cy, radius, type, t * 0.012, { lights: true, tilt: TILT });
+  const look = (body ? lookOf(body) : lookById('earth'))!,
+    ratio = Math.max(moon ? MOON_REACH + 0.08 : 1, sphereReach(look, 100) / 100),
+    radius = Math.max(10, Math.floor(Math.min(fb.w / 2 / ratio, fb.h / 2 / ratio)) - 6),
+    spin = t * 0.012 + (look.facing ?? 0) * RAD,
+    state = {
+      ...(body ? sphereState(body, look, spin, true) : { rot: spin, lights: true }),
+      tilt: look.tilt ?? TILT
+    };
+  drawSphere(fb, look, state, cx, cy, radius);
   const a = t * 0.004;
   if (moon && (Math.sin(a) > -0.2 || Math.abs(Math.cos(a)) > 0.9))
-    planet(
+    drawSphere(
       fb,
+      lookById(familyId('rock', 1))!,
+      { rot: 0 },
       Math.round(cx + Math.cos(a) * radius * MOON_REACH),
       Math.round(cy + Math.sin(a) * radius * 0.15),
-      Math.max(2, Math.round(radius / 30)),
-      'rock',
-      0
+      Math.max(2, Math.round(radius / 30))
     );
   fb.present();
 }

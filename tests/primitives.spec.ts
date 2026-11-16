@@ -212,3 +212,29 @@ test('the small body catalogue draws every shape without errors and switches siz
   expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
   expect(errors).toEqual([]);
 });
+
+test('the planet and moon gallery draws every look and family without errors', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/dev/planets');
+  await expect(page.locator('[data-screen="planets"]')).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('h2[data-section]')).toHaveCount(11);
+  await expect(page.locator('[data-look]')).toHaveCount(35 + 24);
+  await expect(page.locator('[data-family]')).toHaveCount(3);
+  await expect(page.locator('[data-look="mercury"]')).toHaveAttribute('data-baked', '1', { timeout: 60_000 });
+  const cells = page.locator('[data-look="mercury"] canvas, [data-look="venus"] canvas');
+  const blank = await cells.evaluateAll(
+    (all) =>
+      all.filter((c) => {
+        const cv = c as HTMLCanvasElement,
+          d = cv.getContext('2d')!.getImageData(0, 0, cv.width, cv.height).data;
+        let lit = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i]! > 55) lit++;
+        return lit < 800;
+      }).length
+  );
+  expect(blank).toBe(0);
+  expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
+  expect(errors).toEqual([]);
+});

@@ -93,13 +93,13 @@ describe('small bodies', () => {
     }
   });
 
-  it('keeps the spheres for planets: only records and comets are small bodies', async () => {
+  it('keeps the spheres for planets and dwarf planets: only other records and comets are small bodies', async () => {
     const { smallBodyOf } = await import('#lib/game/smallBodies.ts');
     const { Game } = await import('#lib/game/index.ts');
     const game = new Game();
     for (const b of game.world.bodies) {
       const small = smallBodyOf(b);
-      expect(!!small).toBe(!!asRecord(b.id) || !!cometRecord(b.id));
+      expect(!!small).toBe((!!asRecord(b.id) && !asRecord(b.id)!.dwarf) || !!cometRecord(b.id));
     }
     expect(game.world.bodies.some((b) => b.id === 'luna' && b.type === 'rock')).toBe(true);
     expect(smallBodyOf(game.world.bodies.find((b) => b.id === 'luna')!)).toBeUndefined();

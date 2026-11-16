@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { planet } from '#lib/gfx/planets.ts';
+  import { lookById } from '#lib/gfx/bodies/looks/index.ts';
+  import { drawSphere } from '#lib/gfx/bodies/sphere.ts';
   import { CanvasView, DefList, Panel, Pct, ScreenGrid, Split, Stack, Table, Tabs } from '#lib/ui/index.ts';
   import { requestRender, startRendering } from '#lib/ui/frame.ts';
   import { layoutCheck } from '#lib/ui/layoutCheck.ts';
@@ -57,17 +58,13 @@
           bg="stars"
           draw={(f, t) => {
             f.start();
-            planet(
+            drawSphere(
               f,
+              lookById('mars')!,
+              { rot: t * 0.01 + 0.6, tilt: 0.43, lights: true },
               Math.floor(f.w / 2),
               Math.floor(f.h / 2),
-              Math.floor(Math.min(f.w, f.h) / 3),
-              'mars',
-              t * 0.01,
-              {
-                tilt: 0.43,
-                lights: true
-              }
+              Math.floor(Math.min(f.w, f.h) / 3)
             );
             f.present();
           }}

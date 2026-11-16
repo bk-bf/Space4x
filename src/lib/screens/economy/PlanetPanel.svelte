@@ -8,7 +8,6 @@
 
   let { site }: { site: Site } = $props();
   const body = $derived(siteBody(site.worldBody));
-  const planet = $derived(body?.type ?? 'terran');
   const small = $derived(body ? smallBodyOf(body) : undefined);
   const jump = $derived(site.place === 'point' ? game.jump(site.worldBody)?.point : undefined);
 </script>
@@ -21,7 +20,7 @@
     draw={(fb, t) =>
       jump
         ? drawJumpPoint(fb, t, !!jump.stable)
-        : drawColonyPlanet(fb, t, planet, site.body === 'earth', small)}
+        : drawColonyPlanet(fb, t, body, site.body === 'earth', small)}
   />
   {#if jump}
     <div class="facts" id="siteFacts">

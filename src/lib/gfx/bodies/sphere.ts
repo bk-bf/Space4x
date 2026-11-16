@@ -1,16 +1,16 @@
-import type { FB } from '../framebuffer';
-import { clamp, hash, mix } from '../math';
-import { dith } from '../noise';
-import type { RGB } from '../palette';
-import type { PlanetType } from '../planets';
-import { sampleCube } from './cube';
-import { fieldCube } from './fields';
+import { clamp, hash, mix } from '#lib/gfx/math.ts';
+import { dith } from '#lib/gfx/noise.ts';
+import type { RGB } from '#lib/gfx/palette.ts';
+import { sampleChannel, sampleCube } from './cube.ts';
+import type { Pixels } from './small/render.ts';
+import { want } from './looks/bake.ts';
+import { h3, mulMat, rotX, rotY, rotZ } from './looks/math.ts';
+import { ADD, LAND, SEA, type Colour, type Look, type Texels } from './looks/types.ts';
 
-export interface SphereLook {
-  type: PlanetType;
+export interface SphereState {
   rot: number;
   tilt?: number;
-  rings?: boolean;
+  pitch?: number;
   lights?: boolean;
 }
 
@@ -21,200 +21,18 @@ export const LIGHT = (() => {
 })();
 const LXY = Math.hypot(LIGHT[0], LIGHT[1]);
 const SHADES = [0.2, 0.5, 0.76, 1] as const;
-
-const TERR: readonly RGB[] = [
-  [18, 40, 100],
-  [28, 64, 134],
-  [52, 112, 160],
-  [196, 180, 130],
-  [64, 120, 66],
-  [44, 96, 58],
-  [170, 150, 96],
-  [128, 116, 108],
-  [226, 232, 238]
-];
-const JUP: readonly RGB[] = [
-  [196, 160, 118],
-  [226, 198, 158],
-  [164, 112, 76],
-  [238, 222, 192],
-  [142, 92, 66],
-  [210, 176, 130]
-];
-const SATC: readonly RGB[] = [
-  [214, 190, 136],
-  [234, 214, 166],
-  [190, 164, 112],
-  [224, 202, 150]
-];
-const ICE: readonly RGB[] = [
-  [150, 210, 220],
-  [176, 226, 232],
-  [126, 190, 204]
-];
-const ICE2: readonly RGB[] = [
-  [64, 100, 210],
-  [90, 130, 230],
-  [48, 76, 170]
-];
-const ATMO: Partial<Record<PlanetType, RGB>> = {
-  terran: [80, 150, 235],
-  venus: [240, 214, 150],
-  mars: [214, 150, 110],
-  gas: [226, 200, 160],
-  saturn: [230, 210, 160],
-  ice: [170, 230, 240],
-  ice2: [110, 150, 250]
-};
 const CITY: RGB = [255, 214, 120];
+const GLINT_FROM = 0.975;
+const GLINT_COVER = 0.7;
+const RING_REACH = 2.35;
+const TRACE_STEPS = 40;
+const TRACE_MIN_STEP = 0.025;
+const TRACE_RELAX = 0.55;
 
-const G = new Float64Array(8);
-const O = new Float64Array(6);
-const ADD = 3;
-const LAND = 4;
-const SEA = 5;
-
-const set = (c: RGB) => {
-  O[0] = c[0];
-  O[1] = c[1];
-  O[2] = c[2];
-};
-
-const GLINT_FROM = 0.975,
-  GLINT_COVER = 0.7;
-const CLOUD_THIN = 0.575,
-  CLOUD_DENSE = 0.61;
-
-type Shader = (x: number, y: number, z: number, R: number, dv: number) => void;
-
-const terran: Shader = (_x, y, _z, R, dv) => {
-  const dt = R > 80 ? (G[4]! - 0.5) * (R > 350 ? 0.05 : 0.03) : 0,
-    h = G[0]! + dt,
-    cl = G[1]! + dt * 0.8;
-  if (cl > CLOUD_DENSE || dv < (cl - CLOUD_THIN) / (CLOUD_DENSE - CLOUD_THIN))
-    return set(cl > CLOUD_DENSE ? [240, 244, 248] : [206, 216, 230]);
-  if (Math.abs(y) > 0.88 - (h - 0.5) * 0.5) return set(TERR[8]!);
-  if (h < 0.53) {
-    O[SEA] = 1;
-    set(h < 0.44 ? TERR[0]! : h < 0.5 ? TERR[1]! : TERR[2]!);
-  } else {
-    O[LAND] = 1;
-    const m = G[2]! + dt;
-    set(
-      h < 0.54
-        ? TERR[3]!
-        : h > 0.74
-          ? TERR[8]!
-          : h > 0.68
-            ? TERR[7]!
-            : m > 0.58 || (Math.abs(y) < 0.12 && m > 0.5)
-              ? TERR[6]!
-              : m > 0.47
-                ? TERR[4]!
-                : TERR[5]!
-    );
-    O[ADD] = (h - 0.6) * 0.9;
-  }
-  if (G[3]! > 0.61) {
-    O[0] = O[0]! * 0.6;
-    O[1] = O[1]! * 0.6;
-    O[2] = O[2]! * 0.72;
-  }
-};
-
-const mars: Shader = (x, y, _z, R) => {
-  const h = G[0]!,
-    e = G[1]!,
-    cap = (y < 0 ? 0.88 : 0.94) - (e - 0.5) * 0.5,
-    a = Math.abs(y);
-  if (a > cap) return set([232, 220, 210]);
-  if (a > cap - 0.04) return set([206, 156, 122]);
-  O[LAND] = 1;
-  O[ADD] = (e - 0.5) * 0.7;
-  const c1 = G[3]!,
-    c2 = R > 40 ? G[4]! : 0;
-  if (Math.abs(y + 0.08 - (G[2]! - 0.5) * 0.3) < 0.014 && x > -0.5 && x < 0.6) {
-    O[ADD] = -0.5;
-    return set([98, 44, 34]);
-  }
-  if (c1 > 0.75 || c2 > 0.8) {
-    O[ADD] = -0.35;
-    return set([124, 58, 40]);
-  }
-  if (c1 > 0.71 || c2 > 0.765) {
-    O[ADD] = 0.45;
-    return set([214, 140, 92]);
-  }
-  set(h < 0.42 ? [112, 52, 36] : h < 0.52 ? [156, 78, 44] : h < 0.62 ? [190, 108, 62] : [214, 148, 96]);
-};
-
-const venus: Shader = () => {
-  const w = G[0]! + (G[1]! - 0.5) * 0.18;
-  set(w < 0.42 ? [168, 130, 64] : w < 0.5 ? [204, 166, 88] : w < 0.58 ? [232, 204, 132] : [244, 228, 176]);
-};
-
-const bands =
-  (jupiter: boolean): Shader =>
-  (x, y, z, R, dv) => {
-    const P = jupiter ? JUP : SATC;
-    if (jupiter) {
-      const sx = x - 0.45,
-        sy = y - 0.28,
-        sd = sx * sx * 0.5 + sy * sy * 2.2;
-      if (z > 0 && sd < 0.012) return set(sd < 0.006 ? [176, 70, 52] : [200, 96, 66]);
-      if (z > 0 && sd < 0.016) return set([238, 222, 192]);
-    }
-    const fine = G[1]! - 0.5,
-      band =
-        y * (jupiter ? 6.2 : 4.6) +
-        (G[0]! - 0.5) * (jupiter ? 1.5 : 0.9) +
-        fine * (jupiter ? 0.7 : 0.4) +
-        (R > 150 ? (G[2]! - 0.5) * 0.45 : 0) +
-        20,
-      bi = Math.floor(band),
-      fr = band - bi;
-    set(P[(bi + (fr > 0.8 && dv > (1 - fr) * 5 ? 1 : 0)) % P.length]!);
-    if (jupiter && R > 30 && Math.abs(y) > 0.3 && G[3]! > 0.8) set([240, 228, 204]);
-    O[ADD] = fine * 0.5;
-  };
-
-const iceGiant =
-  (deep: boolean): Shader =>
-  (x, y, z, R) => {
-    if (deep && z > 0 && (x + 0.3) ** 2 * 0.6 + (y - 0.3) ** 2 * 2.4 < 0.012) return set([32, 50, 130]);
-    if (deep && R > 30 && G[1]! > 0.82) return set([200, 214, 250]);
-    const P = deep ? ICE2 : ICE;
-    set(P[Math.floor(y * 3 + (G[0]! - 0.5) * 1.2 + 20) % 3]!);
-  };
-
-const rock: Shader = (_x, _y, _z, R) => {
-  const h = G[0]!,
-    c1 = G[1]!,
-    c2 = R > 30 ? G[2]! : 0,
-    c3 = R > 150 ? G[3]! : 0;
-  O[LAND] = 1;
-  O[ADD] = (h - 0.5) * 0.8;
-  if (c1 > 0.76 || c2 > 0.8 || c3 > 0.83) {
-    O[ADD] = -0.4;
-    return set([78, 76, 84]);
-  }
-  if (c1 > 0.72 || c2 > 0.765 || c3 > 0.8) {
-    O[ADD] = 0.5;
-    return set([188, 184, 184]);
-  }
-  set(h < 0.45 ? [96, 94, 100] : h < 0.58 ? [128, 124, 128] : [164, 160, 160]);
-};
-
-const SHADERS: Record<PlanetType, Shader> = {
-  terran,
-  mars,
-  venus,
-  gas: bands(true),
-  saturn: bands(false),
-  ice: iceGiant(false),
-  ice2: iceGiant(true),
-  rock
-};
+const Gf = new Float64Array(24);
+const Of = new Float64Array(8);
+const G = Gf as unknown as Texels;
+const O = Of as unknown as Colour;
 
 const ringDensity = (rr: number) =>
   rr < 1.24 || rr > 2.28
@@ -229,7 +47,7 @@ const ringDensity = (rr: number) =>
             ? 0.1
             : 0.72;
 
-export function drawRings(f: FB, cx: number, cy: number, R: number, front: boolean): void {
+function drawRings(f: Pixels, cx: number, cy: number, R: number, front: boolean): void {
   const rx = R * 2.3,
     ry = rx * 0.3,
     x0 = Math.max(0, Math.floor(cx - rx)),
@@ -266,43 +84,144 @@ export function drawRings(f: FB, cx: number, cy: number, R: number, front: boole
       D[q] = c[0] * k;
       D[q + 1] = c[1] * k;
       D[q + 2] = c[2] * k + (k < 1 ? 14 : 0);
+      D[q + 3] = 255;
     }
 }
 
-export const sphereReach = (look: SphereLook, R: number): number =>
-  R * (look.rings ? 2.35 : 1) + (ATMO[look.type] && R >= 6 ? Math.max(1.5, R * 0.03) : 0) + 1;
+const atmoThick = (look: Look, R: number) =>
+  look.atmo && R >= 6 ? Math.max(1.5, R * 0.03 * (look.atmo.k ?? 1)) : 0;
+const haloThick = (look: Look, R: number) =>
+  look.halo && R >= 8 ? Math.max(1, R * 0.02 * (look.halo.k ?? 1)) : 0;
 
-export function drawSphere(f: FB, look: SphereLook, cx: number, cy: number, R: number): void {
-  const type = look.type,
-    atmo = ATMO[type],
-    th = atmo && R >= 6 ? Math.max(1.5, R * 0.03) : 0,
-    RR = sphereReach(look, R);
-  if (cx + RR < 0 || cy + RR < 0 || cx - RR > f.w || cy - RR > f.h) return;
-  const rings = !!look.rings && R >= 2.5;
-  if (rings) drawRings(f, cx, cy, R, false);
-  const cube = fieldCube(type),
-    shade = SHADERS[type],
-    crot = Math.cos(look.rot),
-    srot = Math.sin(look.rot),
-    tl = look.tilt ?? 0,
-    ct = Math.cos(tl),
-    st = Math.sin(tl);
+export const sphereReach = (look: Look, R: number): number =>
+  R * (look.rings ? RING_REACH : 1) * (look.shapeCube ? (1 + look.lumpyAmp) / (1 + 0.6 * look.lumpyAmp) : 1) +
+  atmoThick(look, R) +
+  haloThick(look, R) +
+  1;
+
+export function orientation(st: SphereState) {
+  return mulMat(mulMat(rotY(st.rot), rotX(st.pitch ?? 0)), rotZ(-(st.tilt ?? 0)));
+}
+
+function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number): void {
   const D = f.d,
     W = f.w,
-    E = R + th,
+    X0 = Math.floor(cx),
+    Y0 = Math.floor(cy),
+    fx = cx - X0,
+    fy = cy - Y0,
+    small = R < 20,
+    lim = small ? R * R + R * 0.8 : R * R,
+    inv = 1 / (R + 0.5),
+    reach = Math.ceil(sphereReach(look, R)),
+    j0 = Math.max(-reach, -Y0),
+    j1 = Math.min(reach, f.h - 1 - Y0),
+    i0 = Math.max(-reach, -X0),
+    i1 = Math.min(reach, W - 1 - X0);
+  for (let j = j0; j <= j1; j++) {
+    const dy = small ? j : j + 0.5 - fy;
+    for (let i = i0; i <= i1; i++) {
+      const dx = small ? i : i + 0.5 - fx,
+        d2 = dx * dx + dy * dy;
+      if (d2 > lim) continue;
+      const nx = dx * inv,
+        ny = dy * inv,
+        n2 = 1 - nx * nx - ny * ny,
+        nz = n2 > 0 ? Math.sqrt(n2) : 0,
+        L = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2],
+        x = X0 + i,
+        y = Y0 + j,
+        s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dith(x, y)), 0, 3),
+        c = SHADES[s]!,
+        q = (y * W + x) * 4;
+      D[q] = look.tint[0] * c;
+      D[q + 1] = look.tint[1] * c;
+      D[q + 2] = look.tint[2] * c;
+      D[q + 3] = 255;
+    }
+  }
+}
+
+export function drawSphere(f: Pixels, look: Look, st: SphereState, cx: number, cy: number, R: number): void {
+  const atmo = look.atmo,
+    halo = look.halo,
+    th = atmoThick(look, R),
+    th2 = haloThick(look, R),
+    RR = sphereReach(look, R);
+  if (cx + RR < 0 || cy + RR < 0 || cx - RR > f.w || cy - RR > f.h) return;
+  if (!look.ready) {
+    want(look);
+    drawStandIn(f, look, cx, cy, R);
+    return;
+  }
+  const rings = look.rings && R >= 2.5;
+  if (rings) drawRings(f, cx, cy, R, false);
+  const cube = look.cube,
+    shade = look.shade,
+    P = orientation(st),
+    P0 = P[0],
+    P1 = P[1],
+    P2 = P[2],
+    P3 = P[3],
+    P4 = P[4],
+    P5 = P[5],
+    P6 = P[6],
+    P7 = P[7],
+    P8 = P[8],
+    shape = look.shape,
+    lumpy = look.shapeCube ? look.lumpyAmp : 0,
+    sc3 = look.shapeCube,
+    D = f.d,
+    W = f.w,
+    E = R + th + th2,
     small = R < 20,
     lim = small ? R * R + R * 0.8 : R * R,
     X0 = Math.floor(cx),
     Y0 = Math.floor(cy),
     fx = cx - X0,
     fy = cy - Y0,
-    lights = !!look.lights,
+    lights = !!st.lights,
     cityNoise = R > 60 && cube.channels > 5,
-    bump = R > 14,
+    bumpK = look.bump && R > 8 ? look.bump : 0,
+    gi = look.gradAt,
+    gr = look.gradRange * 2,
     inv = 1 / (R + 0.5),
     L0 = LIGHT[0],
     L1 = LIGHT[1],
-    L2 = LIGHT[2];
+    L2 = LIGHT[2],
+    rimW = look.rimW;
+  let sa = 0,
+    sb = 0,
+    sc = 0,
+    qa = 0,
+    qb = 0,
+    qc = 0,
+    ia = 0,
+    ib = 0,
+    ic = 0;
+  const disp = (hx: number, hy: number, hz: number) => {
+    const l = 1 / Math.sqrt(hx * hx + hy * hy + hz * hz);
+    return (sampleChannel(sc3!, hx * l, hy * l, hz * l, 0) - 0.5) * 2 * lumpy;
+  };
+  const gfun = (hx: number, hy: number, hz: number) => {
+    const u = hx * ia,
+      v = hy * ib,
+      w = hz * ic;
+    return Math.sqrt(u * u + v * v + w * w) - 1 - disp(hx, hy, hz);
+  };
+  if (shape) {
+    const nrm = 1 + 0.6 * lumpy;
+    ia = nrm / shape[0];
+    ib = nrm / shape[1];
+    ic = nrm / shape[2];
+    const kb = 1 + lumpy;
+    sa = ia / kb;
+    sb = ib / kb;
+    sc = ic / kb;
+    qa = sa * sa;
+    qb = sb * sb;
+    qc = sc * sc;
+  }
   const j0 = Math.max(Math.ceil(-E), -Y0),
     j1 = Math.min(Math.floor(E), f.h - 1 - Y0),
     i0 = Math.max(Math.ceil(-E), -X0),
@@ -311,39 +230,125 @@ export function drawSphere(f: FB, look: SphereLook, cx: number, cy: number, R: n
     const dy = small ? j : j + 0.5 - fy,
       y = Y0 + j,
       dy2 = dy * dy,
-      ny = dy * inv;
+      ny0 = dy * inv;
     for (let i = i0; i <= i1; i++) {
       const dx = small ? i : i + 0.5 - fx,
         d2 = dx * dx + dy2,
         x = X0 + i,
-        q = (y * W + x) * 4;
-      if (d2 > lim) {
-        if (!th) continue;
-        const d = Math.sqrt(d2);
-        if (d > E) continue;
-        const g = (1 - (d - R) / th) * clamp(((dx * L0 + dy * L1) / d) * 2 + 0.9, 0, 1);
-        if (dith(x, y) < g * 0.9) {
-          D[q] = atmo![0] * 0.8;
-          D[q + 1] = atmo![1] * 0.8;
-          D[q + 2] = atmo![2] * 0.95;
+        q = (y * W + x) * 4,
+        nx0 = dx * inv;
+      let nx: number, ny: number, nz: number, px: number, py: number, pz: number;
+      if (shape) {
+        const ox = P0 * nx0 + P1 * ny0,
+          oy = P3 * nx0 + P4 * ny0,
+          oz = P6 * nx0 + P7 * ny0,
+          sox = ox * sa,
+          soy = oy * sb,
+          soz = oz * sc,
+          sdx = P2 * sa,
+          sdy = P5 * sb,
+          sdz = P8 * sc,
+          A = sdx * sdx + sdy * sdy + sdz * sdz,
+          B = sox * sdx + soy * sdy + soz * sdz,
+          C = sox * sox + soy * soy + soz * soz - 1,
+          disc = B * B - A * C;
+        if (disc < 0) continue;
+        const sq = Math.sqrt(disc);
+        let z = (-B + sq) / A,
+          hx = ox + z * P2,
+          hy = oy + z * P5,
+          hz = oz + z * P8,
+          bx = hx * qa,
+          by = hy * qb,
+          bz = hz * qc;
+        if (lumpy) {
+          const z0 = (-B - sq) / A;
+          let hit = false,
+            zz = z,
+            prev = z + 0.05;
+          for (let k = 0; k < TRACE_STEPS && zz >= z0; k++) {
+            const g = gfun(ox + zz * P2, oy + zz * P5, oz + zz * P8);
+            if (g < 0) {
+              hit = true;
+              break;
+            }
+            prev = zz;
+            zz -= Math.max(TRACE_MIN_STEP, g * TRACE_RELAX);
+          }
+          if (!hit) continue;
+          let lo = zz,
+            hi = prev;
+          for (let k = 0; k < 5; k++) {
+            const mid = (lo + hi) / 2;
+            if (gfun(ox + mid * P2, oy + mid * P5, oz + mid * P8) < 0) lo = mid;
+            else hi = mid;
+          }
+          z = lo;
+          hx = ox + z * P2;
+          hy = oy + z * P5;
+          hz = oz + z * P8;
+          const e = 0.03,
+            g0 = gfun(hx, hy, hz);
+          bx = gfun(hx + e, hy, hz) - g0;
+          by = gfun(hx, hy + e, hz) - g0;
+          bz = gfun(hx, hy, hz + e) - g0;
         }
-        continue;
+        const bl = 1 / h3(bx, by, bz),
+          dl = 1 / h3(hx, hy, hz);
+        nx = (P0 * bx + P3 * by + P6 * bz) * bl;
+        ny = (P1 * bx + P4 * by + P7 * bz) * bl;
+        nz = (P2 * bx + P5 * by + P8 * bz) * bl;
+        px = hx * dl;
+        py = hy * dl;
+        pz = hz * dl;
+      } else {
+        if (d2 > lim) {
+          if (!th) continue;
+          const d = Math.sqrt(d2);
+          if (d > E) continue;
+          if (d <= R + th) {
+            const g = (1 - (d - R) / th) * clamp(((dx * L0 + dy * L1) / d) * 2 + 0.9, 0, 1);
+            if (dith(x, y) < g * 0.9) {
+              D[q] = atmo!.c[0] * 0.8;
+              D[q + 1] = atmo!.c[1] * 0.8;
+              D[q + 2] = atmo!.c[2] * 0.95;
+              D[q + 3] = 255;
+            }
+          } else if (th2) {
+            const g = (1 - (d - R - th) / th2) * clamp(((dx * L0 + dy * L1) / d) * 2 + 0.9, 0, 1);
+            if (dith(x, y) < g * 0.55) {
+              D[q] = halo!.c[0] * 0.8;
+              D[q + 1] = halo!.c[1] * 0.8;
+              D[q + 2] = halo!.c[2] * 0.95;
+              D[q + 3] = 255;
+            }
+          }
+          continue;
+        }
+        const n2 = 1 - nx0 * nx0 - ny0 * ny0;
+        nx = nx0;
+        ny = ny0;
+        nz = n2 > 0 ? Math.sqrt(n2) : 0;
+        px = P0 * nx + P1 * ny + P2 * nz;
+        py = P3 * nx + P4 * ny + P5 * nz;
+        pz = P6 * nx + P7 * ny + P8 * nz;
       }
-      const nx = dx * inv,
-        n2 = 1 - nx * nx - ny * ny,
-        nz = n2 > 0 ? Math.sqrt(n2) : 0,
-        tx = nx * ct + ny * st,
-        ty = ny * ct - nx * st,
-        px = tx * crot + nz * srot,
-        pz = nz * crot - tx * srot,
-        dv = dith(x, y);
-      sampleCube(cube, px, ty, pz, G);
-      O[ADD] = 0;
-      O[LAND] = 0;
-      O[SEA] = 0;
-      shade(px, ty, pz, R, dv);
+      const dv = dith(x, y);
+      sampleCube(cube, px, py, pz, Gf);
+      Of[ADD] = 0;
+      Of[LAND] = 0;
+      Of[SEA] = 0;
+      shade(px, py, pz, R, dv, G, O);
       let L = nx * L0 + ny * L1 + nz * L2;
-      if (bump) L += O[ADD]! * 0.22 * nz;
+      if (bumpK) {
+        const gx = (Gf[gi]! - 0.5) * gr,
+          gy = (Gf[gi + 1]! - 0.5) * gr,
+          gz = (Gf[gi + 2]! - 0.5) * gr,
+          vx = P0 * gx + P3 * gy + P6 * gz,
+          vy = P1 * gx + P4 * gy + P7 * gz,
+          vz = P2 * gx + P5 * gy + P8 * gz;
+        L -= (vx * L0 + vy * L1 + vz * L2) * bumpK;
+      } else if (R > 14) L += Of[ADD]! * 0.22 * nz;
       if (
         rings &&
         L > 0 &&
@@ -352,40 +357,41 @@ export function drawSphere(f: FB, look: SphereLook, cx: number, cy: number, R: n
         L -= 0.5;
       const s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dv), 0, 3),
         k = SHADES[s]!;
-      let r = O[0]! * k,
-        g = O[1]! * k,
-        b = O[2]! * k;
+      let r = Of[0]! * k,
+        g = Of[1]! * k,
+        b = Of[2]! * k;
       if (s === 0) {
         r += 3;
         g += 4;
         b += 12;
         if (
           lights &&
-          O[LAND] &&
+          Of[LAND] &&
           (cityNoise
-            ? G[5]! > 0.55 && hash(px * 900, ty * 900, pz * 900) > 0.62
-            : hash(px * 34, ty * 34, pz * 34) > 0.94)
+            ? Gf[5]! > 0.55 && hash(px * 900, py * 900, pz * 900) > 0.62
+            : hash(px * 34, py * 34, pz * 34) > 0.94)
         ) {
           r = CITY[0];
           g = CITY[1];
           b = CITY[2];
         }
-      } else if (O[SEA] && dv < ((L - GLINT_FROM) / (1 - GLINT_FROM)) * GLINT_COVER) {
+      } else if (Of[SEA] && dv < ((L - GLINT_FROM) / (1 - GLINT_FROM)) * GLINT_COVER) {
         r = mix(r, 255, 0.5);
         g = mix(g, 255, 0.5);
         b = mix(b, 255, 0.5);
       }
-      if (atmo && R > 10) {
-        const rim = clamp((0.3 - nz) / 0.3, 0, 1) * clamp(L * 2 + 0.8, 0, 1);
-        if (dv < rim * 0.8) {
-          r = mix(r, atmo[0], 0.55);
-          g = mix(g, atmo[1], 0.55);
-          b = mix(b, atmo[2], 0.55);
+      if (atmo && R > 10 && !shape) {
+        const rim = clamp((rimW - nz) / rimW, 0, 1) * clamp(L * 2 + 0.8, 0, 1);
+        if (dv < rim * (atmo.rim ?? 0.8)) {
+          r = mix(r, atmo.c[0], 0.55);
+          g = mix(g, atmo.c[1], 0.55);
+          b = mix(b, atmo.c[2], 0.55);
         }
       }
       D[q] = r;
       D[q + 1] = g;
       D[q + 2] = b;
+      D[q + 3] = 255;
     }
   }
   if (rings) drawRings(f, cx, cy, R, true);

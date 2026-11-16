@@ -1,6 +1,7 @@
 <script lang="ts">
   import { game } from '#lib/game/index.ts';
-  import { bakeStep } from '#lib/gfx/bodies/fields.ts';
+  import { onBaked, want } from '#lib/gfx/bodies/looks/bake.ts';
+  import { lookById } from '#lib/gfx/bodies/looks/index.ts';
   import { prebakeStar } from '#lib/gfx/bodies/star.ts';
   import { FB } from '#lib/gfx/framebuffer.ts';
   import { onFrame, requestRender, shell, wm } from '#lib/ui/index.ts';
@@ -157,18 +158,21 @@
     else if (e.key === '0') flyTo('system');
   }
 
+  const HOME_LOOKS = ['earth', 'mars', 'venus', 'jupiter', 'saturn', 'uranus', 'neptune', 'mercury', 'luna'];
+
   function bakeWhenIdle() {
     let stopped = false;
     const idle = (fn: () => void) =>
       typeof requestIdleCallback === 'function' ? requestIdleCallback(fn) : setTimeout(fn, 50);
-    const next = () => {
+    const stopBaked = onBaked(requestRender);
+    idle(() => {
       if (stopped) return;
-      if (bakeStep()) idle(next);
-      else prebakeStar();
-    };
-    idle(next);
+      for (const id of HOME_LOOKS) want(lookById(id)!);
+      prebakeStar();
+    });
     return () => {
       stopped = true;
+      stopBaked();
     };
   }
 

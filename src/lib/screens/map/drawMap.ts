@@ -15,7 +15,10 @@ import { positionAt } from '#lib/game/flight/index.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
 import { drawSmallBody, smallReach, spinStep, spins, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
-import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
+import { drawSphere, sphereReach, type SphereState } from '#lib/gfx/bodies/sphere.ts';
+import type { Look } from '#lib/gfx/bodies/looks/types.ts';
+import { bakedCount } from '#lib/gfx/bodies/looks/bake.ts';
+import { lookOf, sphereState, staticRot } from '#lib/game/looks.ts';
 import { drawStar, starReach } from '#lib/gfx/bodies/star.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { clamp, hash, mix } from '#lib/gfx/math.ts';
@@ -113,7 +116,8 @@ interface MapBody {
   omega: number;
   type: PlanetType | 'star';
   tint?: SunTint;
-  look?: { type: PlanetType; rot: number; tilt?: number; rings?: boolean; lights?: boolean };
+  look?: Look;
+  state?: SphereState;
   small?: SmallBody;
   col: RGB;
   p: Point;
@@ -182,7 +186,9 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
     ordered = [...here.filter((b) => !b.parent), ...here.filter((b) => b.parent)],
     index = new Map(ordered.map((b, i) => [b.id, i + stars.length]));
   const planets: MapBody[] = ordered.map((b) => {
-    const kind = minorOf(b.id);
+    const kind = minorOf(b.id),
+      small = smallBodyOf(b),
+      look = small ? undefined : lookOf(b);
     return {
       ...blank,
       list: [],
@@ -200,15 +206,19 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
       phase: b.angle - b.angularSpeed * game.elapsed,
       omega: b.angularSpeed,
       type: b.type,
-      look: {
-        type: b.type,
-        rot: (b.orbit % 1e11) * 1e-11 + 0.6,
-        tilt: b.tilt,
-        rings: b.rings,
-        lights: b.colony && b.type === 'terran'
-      },
+      ...(look
+        ? {
+            look,
+            state: sphereState(
+              b,
+              look,
+              staticRot(look, (b.orbit % 1e11) * 1e-11 + 0.6),
+              b.colony && b.type === 'terran'
+            )
+          }
+        : {}),
       ...(kind.minor ? { minor: kind.minor } : {}),
-      ...(smallBodyOf(b) ? { small: smallBodyOf(b)! } : {}),
+      ...(small ? { small } : {}),
       diameter: kind.diameter,
       near: kind.near,
       col: kind.col ?? BODY_COLOUR[b.type]
@@ -235,7 +245,7 @@ function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
     m.wx = at.wx + Math.cos(a) * m.orbit;
     m.wy = at.wy + Math.sin(a) * m.orbit;
     m.list.length = 0;
-    if (m.look?.type === 'terran') m.look.lights = !!moving[i]!.colony;
+    if (m.state && m.type === 'terran') m.state.lights = !!moving[i]!.colony;
   }
   return bodies;
 }
@@ -378,7 +388,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     layers.Asteroids,
     sel.kind === 'body' ? sel.id : '',
     aim ?? '',
-    spin ? step : ''
+    spin ? step : '',
+    bakedCount()
   ].join('|');
   if (useCache && !liveStar && key === cacheKey && cache) f.d.set(cache);
   else {
@@ -407,7 +418,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.small) {
         if (vis(b.p, smallReach(b.small) * b.R + 4)) drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, step);
-      } else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
+      } else if (b.look && b.state && vis(b.p, sphereReach(b.look, b.R)))
+        drawSphere(f, b.look, b.state, b.p[0], b.p[1], b.R);
     }
     if (useCache && !liveStar && key === lastKey) {
       cache = cache && cache.length === f.d.length ? cache : new Uint8ClampedArray(f.d.length);

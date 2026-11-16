@@ -1,4 +1,4 @@
-import { bakeAll } from '#lib/gfx/bodies/fields.ts';
+import { bakeWanted } from '#lib/gfx/bodies/looks/bake.ts';
 import { prebakeStar } from '#lib/gfx/bodies/star.ts';
 import { cam } from './camera.svelte';
 import { setFrameCache } from './drawMap';
@@ -14,7 +14,8 @@ export function runBench(params: URLSearchParams, draw: (dt: number) => number):
   const n = Number(params.get('bench')) || DEFAULT_FRAMES,
     moving = params.has('move'),
     t0 = performance.now();
-  bakeAll();
+  draw(0);
+  bakeWanted();
   prebakeStar();
   const bake = performance.now() - t0;
   setFrameCache(!params.has('nc'));

@@ -3,7 +3,9 @@ import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { drawSmallBody, smallReach, spinStep } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
-import { planet } from '#lib/gfx/planets.ts';
+import { drawSphere } from '#lib/gfx/bodies/sphere.ts';
+import { lookOf, sphereState } from '#lib/game/looks.ts';
+import { RAD } from '#lib/gfx/bodies/looks/math.ts';
 import { stars } from '#lib/gfx/scenes.ts';
 import { ALIEN_SPECS } from '#lib/gfx/ships/specs.ts';
 import { drawShip, fitShip, silhouette } from '#lib/gfx/topdown/index.ts';
@@ -65,7 +67,17 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
     f.start();
     const small = b ? smallBodyOf(b) : undefined;
     if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), spinStep(t));
-    else if (b) planet(f, 70, 36, b.rings ? 19 : 30, b.type, t * 0.02, b);
+    else if (b) {
+      const look = lookOf(b);
+      drawSphere(
+        f,
+        look,
+        sphereState(b, look, t * 0.02 + (look.facing ?? 0) * RAD),
+        70,
+        36,
+        look.rings ? 19 : 30
+      );
+    }
   } else if (sel.kind === 'site') {
     const site = game.site(sel.id);
     stars(f, t, 26);
