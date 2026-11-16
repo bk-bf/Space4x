@@ -62,8 +62,15 @@ function applySegment(
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
   site.population *= Math.exp(flows.growthPerHour * hours);
+  for (const [m, rate] of Object.entries(flows.produced))
+    if (!isStockless(m)) site.made[m] = (site.made[m] ?? 0) + rate * hours;
 
   for (const a of flows.actors) {
+    if (a.kind === 'group' && a.share > 0) {
+      const worked = a.group.count * a.share * hours;
+      for (const key of [a.group.building, a.group.process])
+        if (key) site.ran[key] = (site.ran[key] ?? 0) + worked;
+    }
     if (a.kind === 'build') {
       const o = a.order;
       o.done = Math.min(1, o.done + (a.share * hours) / a.hours);
@@ -92,6 +99,7 @@ function applySegment(
       if (o.done >= 1 - 1e-9) {
         site.yard.splice(site.yard.indexOf(o), 1);
         eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
+        site.built++;
         log(`${site.name} finished a ${o.name}.`, false, at, site.id);
       }
     }

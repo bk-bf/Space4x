@@ -172,6 +172,7 @@
           <div class="site" class:short={!s.ok} data-site-need={s.ok ? 'met' : 'missing'}>
             <Icon name={s.ok ? 'check' : 'cross'} class="sm" />
             <span class="label">{s.label}</span>
+            {#if s.progress !== undefined && !s.ok}<span data-progress>{fmt.pct(s.progress)}</span>{/if}
           </div>
         {/each}
       </div>

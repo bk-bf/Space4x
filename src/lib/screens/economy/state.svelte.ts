@@ -9,7 +9,7 @@ import {
 import { milestones } from '#lib/game/data/index.ts';
 import { game } from '#lib/game/index.ts';
 import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
-import { resetShips, seedBelt, seedTravel, ships } from '#lib/game/ships/index.ts';
+import { resetShips, seedBelt, seedJump, seedTravel, ships } from '#lib/game/ships/index.ts';
 import type { Tab } from '#lib/ui/index.ts';
 import type { Period } from '#lib/ui/format.ts';
 
@@ -98,6 +98,10 @@ export function applyEconomyParams(params: URLSearchParams): void {
   }
   if (scenario === 'belt') {
     seedBelt(game, params.has('outpost'));
+    ui.vessel ??= ships.vessels[0]?.id ?? null;
+  }
+  if (scenario === 'jump') {
+    seedJump(game, params.has('outpost'));
     ui.vessel ??= ships.vessels[0]?.id ?? null;
   }
   for (const id of params.get('surveyed')?.split(',') ?? []) completeSurvey(id);

@@ -1,4 +1,5 @@
 import type { FB } from '#lib/gfx/framebuffer.ts';
+import { PAL } from '#lib/gfx/palette.ts';
 import { planet, type PlanetType } from '#lib/gfx/planets.ts';
 
 const TILT = 0.43;
@@ -21,5 +22,20 @@ export function drawColonyPlanet(fb: FB, t: number, type: PlanetType, moon: bool
       'rock',
       0
     );
+  fb.present();
+}
+
+const JUMP_RINGS = [1, 0.62, 0.3];
+
+export function drawJumpPoint(fb: FB, t: number, stable: boolean): void {
+  fb.start();
+  const cx = Math.floor(fb.w / 2);
+  const cy = Math.floor(fb.h / 2);
+  const radius = Math.max(10, Math.floor(Math.min(fb.w, fb.h) / 2) - 12);
+  JUMP_RINGS.forEach((share, i) => {
+    const turn = stable ? 0 : (t >> 1) * (i % 2 ? -1 : 1);
+    fb.ring(cx, cy, Math.round(radius * share), PAL.jump, stable ? 1 : 3, turn);
+  });
+  fb.px(cx, cy, PAL.jump);
   fb.present();
 }

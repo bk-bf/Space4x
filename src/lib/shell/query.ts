@@ -11,7 +11,7 @@ export interface QueryState {
   check: boolean;
 }
 
-const KINDS: readonly SelectionKind[] = ['fleet', 'body', 'contact', 'site', 'ship', 'base'];
+const KINDS: readonly SelectionKind[] = ['fleet', 'body', 'contact', 'site', 'ship', 'base', 'jump'];
 const SLOTS: readonly Dock[] = ['', 'left', 'right', 'bottom'];
 const DEFAULT_SELECTION: Selection = { kind: 'body', id: 'earth' };
 

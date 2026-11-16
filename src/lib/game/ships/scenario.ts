@@ -142,3 +142,32 @@ export function seedBelt(game: Game, outpost = false): void {
   game.advance(86400);
   touch();
 }
+
+export function seedJump(game: Game, outpost = false): void {
+  if (ships.vessels.length > 0 || classes.saved.length > 0) return;
+  economy.done = milestones.filter((m) => !m.optional && m.number < milestones.length).map((m) => m.number);
+  const jump = game.world.systems[0]?.jumps[0];
+  if (!jump) return;
+  const probe = design('jump-probe', 'Survey probe', 'probe', [
+    ['chemical_engine_methalox', 1],
+    ['propellant_tank', 2],
+    ['structure_truss', 1],
+    ['solar_array', 1],
+    ['avionics', 1],
+    ['survey_suite', 1]
+  ]);
+  if (outpost) {
+    jump.surveyed = true;
+    const site = newSite(economy, { worldBody: jump.id, bodyName: jump.name, place: 'point', angle: 0 })!;
+    standFirst(economy, site, 'data_centre');
+    site.population = 6;
+    site.berths = 6;
+    site.gridKw = 8000;
+    site.stock.food_ration = 5000;
+    site.stock.stainless_steel = 200_000;
+  }
+  vessel(probe, { kind: 'orbit', body: jump.id, angle: 0 }, { propellant: { methalox: 3000 } });
+  vessel(probe, { kind: 'orbit', body: 'earth', angle: 0 }, { propellant: { methalox: 3000 } });
+  game.advance(86400);
+  touch();
+}

@@ -37,7 +37,7 @@ export function programmeBill(m: Milestone): Amounts {
   for (const id of m.needs.materials) {
     if (!earthMakes(id)) continue;
     const unit = material(id).unit;
-    if (!unit) bill[id] = (bill[id] ?? 0) + PROGRAMME_MATERIAL_KG * m.number;
+    if (!unit) bill[id] = (bill[id] ?? 0) + (m.needs.bill?.[id] ?? PROGRAMME_MATERIAL_KG * m.number);
     else if (unit === 'model') bill[id] = (bill[id] ?? 0) + 1;
   }
   for (const id of m.needs.components) add(bill, shipComponent(id).cost);
@@ -70,7 +70,7 @@ export function missingFor(eco: Economy, site: Site, m: Milestone): Missing[] {
   }
   for (const id of m.needs.components) {
     const c = shipComponent(id);
-    if (!c.builtAt.some((b) => standing(site, b) > 0)) out.push({ kind: 'builder', id: c.builtAt[0] ?? id });
+    if (!c.builtAt.some((b) => standsAnywhere(eco, b))) out.push({ kind: 'builder', id: c.builtAt[0] ?? id });
   }
   for (const [id, need] of Object.entries(programmeBill(m))) {
     const have = site.stock[id] ?? 0;

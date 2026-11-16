@@ -272,6 +272,15 @@ test('a site plays its scene close in and is a labelled marker far out', async (
   await expectCleanLayout(page);
 });
 
+test('a jump point is selected by its label and says whether it is surveyed and stable', async ({ page }) => {
+  await open(page);
+  await label(page, 'Jump point A, unsurveyed').click();
+  await expect(heading(page)).toHaveText('Jump point A');
+  await expect(win(page, 'sel')).toContainText('Unsurveyed, unstable');
+  await expect(win(page, 'sel')).toContainText('Jump point');
+  await expectCleanLayout(page);
+});
+
 for (const scale of [8000, 3000])
   test(`a moon stays drawn at ${scale} m a pixel, where its planet would be a backdrop`, async ({ page }) => {
     await open(page, `zoom=luna:${scale}`);

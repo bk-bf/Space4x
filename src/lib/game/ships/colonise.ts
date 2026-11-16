@@ -16,16 +16,23 @@ import { returnPropellant } from './cargo.ts';
 import { statsOf } from './model.ts';
 import { ships } from './state.svelte.ts';
 import type { Vessel } from './types.ts';
-import { clearTripOption } from './world.ts';
+import { clearTripOption, isJump, NO_SURFACE } from './world.ts';
 
 export interface FoundOption {
   building: Building;
   missing: { id: string; need: number; have: number }[];
 }
 
-function placeFor(v: Vessel): { worldBody: string; place: 'surface' | 'orbit'; angle: number } | undefined {
+function placeFor(
+  v: Vessel
+): { worldBody: string; place: 'surface' | 'orbit' | 'point'; angle: number } | undefined {
   if (v.trip) return undefined;
-  if (v.at.kind === 'orbit') return { worldBody: v.at.body, place: 'orbit', angle: v.at.angle };
+  if (v.at.kind === 'orbit')
+    return {
+      worldBody: v.at.body,
+      place: isJump(v.at.body) ? 'point' : NO_SURFACE.includes(v.at.body) ? 'surface' : 'orbit',
+      angle: v.at.angle
+    };
   if (v.at.kind === 'surface') return { worldBody: v.at.body, place: 'surface', angle: 0 };
   return undefined;
 }
@@ -73,7 +80,9 @@ export function foundSite(
 ): Site | string {
   const p = placeFor(v);
   if (!p) return `${v.name} must be in orbit or on the ground, not docked or flying.`;
-  const bodyLabel = game.body(p.worldBody)?.name ?? p.worldBody;
+  const bodyLabel = game.body(p.worldBody)?.name ?? game.jump(p.worldBody)?.point.name ?? p.worldBody;
+  if (p.place === 'point' && !game.jump(p.worldBody)?.point.surveyed)
+    return `${bodyLabel} has not been surveyed.`;
   if (needsRegion(v)) {
     if (!region) return 'Choose a region to found the site in.';
     const r = regionRecord(region);

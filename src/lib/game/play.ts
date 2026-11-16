@@ -156,13 +156,24 @@ export class Player {
     return true;
   }
 
+  protected floorRate(id: string): number {
+    return floor(id);
+  }
+
+  protected billRate(id: string, need: number): number {
+    return Math.max(this.floorRate(id), need / 48);
+  }
+
   protected fixShortages(): void {
     const site = this.earth;
     const f = flowsOf(site);
     for (const a of f.actors) {
       if (a.limit?.kind === 'material' && a.worst < 0.999) {
         const id = (a.limit as { id: string }).id;
-        const needRate = Math.max(floor(id), (a.inputs[id] ?? 0) * a.cap * (id === 'compute' ? 1 : 2));
+        const needRate = Math.max(
+          this.floorRate(id),
+          (a.inputs[id] ?? 0) * a.cap * (id === 'compute' ? 1 : 2)
+        );
         this.produce(id, needRate, 1);
       }
     }
@@ -267,7 +278,7 @@ export class Player {
         } else if (x.kind === 'building') this.provideBuilding(x.id);
         else if (x.kind === 'site') this.provideSite(n);
         else if (x.kind === 'builder') this.ensureBuilding(x.id);
-        else if (x.kind === 'material') this.produce(x.id, Math.max(floor(x.id), x.need / 48));
+        else if (x.kind === 'material') this.produce(x.id, this.billRate(x.id, x.need));
       }
       this.fixShortages();
       this.days(3);

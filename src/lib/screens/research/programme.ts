@@ -16,7 +16,7 @@ import {
   programmeBill,
   programmeStatus,
   siteNeedMissing,
-  standing,
+  siteNeedProgress,
   standsAnywhere,
   unlockedUpTo,
   type Economy,
@@ -42,6 +42,7 @@ export interface StandRow {
 export interface SiteRow {
   label: string;
   ok: boolean;
+  progress?: number;
 }
 
 export interface RequireRow {
@@ -72,15 +73,19 @@ export function checkFor(eco: Economy, site: Site, m: Milestone): Check {
       return {
         kind: 'component',
         id,
-        ok: c.builtAt.some((b) => standing(site, b) > 0),
+        ok: c.builtAt.some((b) => standsAnywhere(eco, b)),
         builder: c.builtAt[0]
       };
     })
   ];
-  const sites = (m.needs.sites ?? []).map((need) => ({
-    label: need.label.replace(/^No /, '').replace(/^./, (c) => c.toUpperCase()),
-    ok: siteNeedMissing(eco, need) === undefined
-  }));
+  const sites = (m.needs.sites ?? []).map((need): SiteRow => {
+    const progress = siteNeedProgress(eco, need);
+    return {
+      label: need.label.replace(/^No /, '').replace(/^./, (c) => c.toUpperCase()),
+      ok: siteNeedMissing(eco, need) === undefined,
+      ...(progress === undefined ? {} : { progress })
+    };
+  });
   const requires = m.requires.map((number) => ({ number, ok: eco.done.includes(number) }));
   const earlierDone = m.number <= frontier;
   const blockers =

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { game } from '#lib/game/index.ts';
   import { Panel, ScreenGrid, Stack, Tabs } from '#lib/ui/index.ts';
   import ConstructionTab from './ConstructionTab.svelte';
   import LaunchTab from './LaunchTab.svelte';
@@ -12,7 +13,7 @@
   import StockpilesTab from './StockpilesTab.svelte';
   import SummaryTab from './SummaryTab.svelte';
   import SupplyTab from './SupplyTab.svelte';
-  import { siteBody, systemName } from './lookup.ts';
+  import { systemName } from './lookup.ts';
   import { TABS, selectedSite, ui } from './state.svelte.ts';
 
   const site = $derived(selectedSite());
@@ -26,7 +27,7 @@
   <Stack>
     <Panel grow>
       {#snippet head()}{site.name}
-        <small>{systemName(siteBody(site.worldBody)?.system ?? '')}</small>{/snippet}
+        <small>{systemName(game.placeSystem(site.worldBody) ?? '')}</small>{/snippet}
       {#snippet tools()}<RateSwitch />{/snippet}
       <div class="page">
         <Tabs tabs={TABS} bind:active={ui.tab} />

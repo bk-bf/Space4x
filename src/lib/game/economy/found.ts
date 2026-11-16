@@ -18,7 +18,7 @@ export interface Foundation {
 }
 
 export const whereOf = (worldBody: string, place: SitePlace): Where | undefined =>
-  place === 'orbit' ? 'orbit' : bodyTypeOf(worldBody);
+  place === 'orbit' ? 'orbit' : place === 'point' ? 'jump-point' : bodyTypeOf(worldBody);
 
 export const siteAt = (eco: Economy, worldBody: string, place: SitePlace): Site | undefined =>
   eco.sites.find((s) => s.worldBody === worldBody && s.place === place);
@@ -57,15 +57,17 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
   const taken = eco.sites.filter((s) => s.worldBody === f.worldBody && s.place === f.place).length;
   const regionName = region ? regionRecord(region)?.name : undefined;
   const id =
-    f.place === 'surface'
-      ? taken
-        ? (region ?? `${f.worldBody}-${taken + 1}`)
-        : f.worldBody
-      : `orbit-${f.worldBody}${taken ? `-${taken + 1}` : ''}`;
+    f.place === 'point'
+      ? f.worldBody
+      : f.place === 'surface'
+        ? taken
+          ? (region ?? `${f.worldBody}-${taken + 1}`)
+          : f.worldBody
+        : `orbit-${f.worldBody}${taken ? `-${taken + 1}` : ''}`;
   const site: Site = {
     id,
     name:
-      f.place === 'surface'
+      f.place === 'surface' || f.place === 'point'
         ? taken && regionName
           ? `${f.bodyName} outpost, ${regionName.toLowerCase()}`
           : `${f.bodyName} outpost`
@@ -86,7 +88,10 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
     queue: [],
     yard: [],
     launches: [],
-    alerts: { food: false, power: false }
+    alerts: { food: false, power: false },
+    made: {},
+    ran: {},
+    built: 0
   };
   eco.sites.push(site);
   return site;

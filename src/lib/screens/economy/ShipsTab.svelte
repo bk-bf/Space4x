@@ -11,6 +11,7 @@
     foundOptions,
     foundRegions,
     foundSite,
+    isPlatform,
     LANDABLE,
     needsRegion,
     projectedPlace,
@@ -88,6 +89,7 @@
 
   type Dest = { key: string; label: string; to: Destination; siteId?: string; group: string };
   const rockIds = new Set(asteroids.map((a) => a.id));
+  const jumps = $derived(game.world.systems.flatMap((s) => s.jumps));
   const dests = $derived.by<Dest[]>(() => {
     const out: Dest[] = [];
     for (const s of economy.sites.slice(1)) {
@@ -95,13 +97,20 @@
         key: `site:${s.id}`,
         label: s.name,
         to:
-          s.place === 'orbit'
-            ? { kind: 'orbit', body: s.worldBody, angle: s.angle }
-            : { kind: 'surface', body: s.worldBody, angle: 0 },
+          s.place === 'surface' && !isPlatform(s)
+            ? { kind: 'surface', body: s.worldBody, angle: 0 }
+            : { kind: 'orbit', body: s.worldBody, angle: s.angle },
         siteId: s.id,
         group: 'Sites'
       });
     }
+    for (const j of jumps)
+      out.push({
+        key: `jump:${j.id}`,
+        label: j.name,
+        to: { kind: 'orbit', body: j.id, angle: 0 },
+        group: 'Jump points'
+      });
     const groupOf = (b: string, what: string) =>
       rockIds.has(b) ? `${what}, asteroids` : `${what}, planets and moons`;
     for (const b of FLYABLE)
@@ -216,7 +225,7 @@
       const id = surveyTarget;
       if (id) o = { type: 'survey', body: id };
     } else if (orderType === 'dock') {
-      const id = dockSite || economy.sites.find((s) => s.place === 'orbit')?.id;
+      const id = dockSite || dockSites[0]?.id;
       if (id) o = { type: 'dock', site: id };
     } else if (item) o = { type: orderType, item: item.item, amount: all ? null : amount };
     if (!o) return;
@@ -226,7 +235,10 @@
     touch();
   }
 
-  const surveyable = $derived(FLYABLE.filter((b) => isSurveyable(b) && !isSurveyed(b)));
+  const surveyable = $derived([
+    ...FLYABLE.filter((b) => isSurveyable(b) && !isSurveyed(b)),
+    ...jumps.filter((j) => !j.surveyed).map((j) => j.id)
+  ]);
   const projected = $derived(vessel ? projectedPlace(vessel) : undefined);
   const surveyTarget = $derived(
     surveyBody && surveyable.includes(surveyBody)
@@ -263,7 +275,7 @@
   }
 
   const installable = $derived(!vessel?.trip && !!here && here.berths !== null);
-  const orbitSites = $derived(economy.sites.filter((s) => s.place === 'orbit'));
+  const dockSites = $derived(economy.sites.filter((s) => s.place !== 'surface' || isPlatform(s)));
 
   function install() {
     if (!vessel) return;
@@ -444,7 +456,7 @@
             <label class="pick"
               >At
               <select id="orderDock" value={dockSite} onchange={(e) => (dockSite = e.currentTarget.value)}>
-                {#each orbitSites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
+                {#each dockSites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
               </select></label
             >
           {:else if orderType === 'wait'}

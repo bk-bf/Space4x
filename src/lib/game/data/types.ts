@@ -180,12 +180,16 @@ export interface SiteNeed {
   label: string;
   world?: string;
   body?: Body;
-  place?: 'surface' | 'orbit';
+  place?: 'surface' | 'orbit' | 'point';
   region?: string;
   buildings?: string[];
   people?: number;
   fed?: boolean;
   stock?: { material: string; amount: number };
+  made?: { material: string; amount: number };
+  ran?: Record<string, number>;
+  built?: number;
+  flown?: string;
 }
 
 export interface Milestone {
@@ -196,6 +200,12 @@ export interface Milestone {
   optional?: boolean;
   unlocks: string;
   requires: number[];
-  needs: { materials: string[]; buildings: string[]; components: string[]; sites?: SiteNeed[] };
+  needs: {
+    materials: string[];
+    buildings: string[];
+    components: string[];
+    sites?: SiteNeed[];
+    bill?: Record<string, number>;
+  };
   sources: string[];
 }

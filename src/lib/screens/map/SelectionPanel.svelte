@@ -20,6 +20,7 @@
   import { intel } from '#lib/screens/intel/intel.svelte.ts';
   import { DefList, Meter, PixelCanvas, shell, Table, Window, type Cell } from '#lib/ui/index.ts';
   import BaseSelection from './BaseSelection.svelte';
+  import JumpSelection from './JumpSelection.svelte';
   import { flyTo } from './camera.svelte';
   import ShipSelection from './ShipSelection.svelte';
   import { asteroidRows, surveyText } from './bodyFacts';
@@ -36,10 +37,12 @@
   const site = $derived(sel.kind === 'site' ? game.site(sel.id) : undefined);
   const vessel = $derived(sel.kind === 'ship' ? vesselById(sel.id) : undefined);
   const base = $derived(sel.kind === 'base' ? economy.sites.find((s) => s.id === sel.id) : undefined);
+  const jump = $derived(sel.kind === 'jump' ? game.jump(sel.id)?.point : undefined);
   const heading = $derived(
     fleet?.name ??
       vessel?.name ??
       base?.name ??
+      jump?.name ??
       body?.name ??
       site?.name ??
       (contact ? 'Contact ' + contact.id : 'Selection')
@@ -174,6 +177,8 @@
       <ShipSelection {vessel} />
     {:else if base}
       <BaseSelection site={base} />
+    {:else if jump}
+      <JumpSelection {jump} />
     {:else if body}
       <DefList two rows={bodyFacts(body)} />
       {#if asteroidRows(body).length}<div id="asteroidFacts"><DefList rows={asteroidRows(body)} /></div>{/if}

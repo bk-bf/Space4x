@@ -36,7 +36,7 @@ export interface Delivery {
   at: number;
 }
 
-export type SitePlace = 'surface' | 'orbit';
+export type SitePlace = 'surface' | 'orbit' | 'point';
 
 export interface Alerts {
   food: boolean;
@@ -63,6 +63,9 @@ export interface Site {
   yard: YardOrder[];
   launches: number[];
   alerts: Alerts;
+  made: Record<string, number>;
+  ran: Record<string, number>;
+  built: number;
 }
 
 export interface Programme {
@@ -89,6 +92,7 @@ export interface Economy {
   delivered: Delivery[];
   mined: Record<string, number>;
   exhausted: string[];
+  flown: Record<string, number>;
   ledger: Ledger;
 }
 

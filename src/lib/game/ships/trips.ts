@@ -2,7 +2,7 @@ import { START_TIME } from '#lib/game/clock.ts';
 import { economy, standing } from '#lib/game/economy/index.ts';
 import { planTrip, type Place, type Profile, type Reason, type TripOption } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { canAerobrake, mainKind, vesselShip } from './model.ts';
+import { canAerobrake, mainKind, statsOf, vesselShip } from './model.ts';
 import { surfaceSite } from './orders.ts';
 import type { Order, Vessel, Whereabouts } from './types.ts';
 import {
@@ -10,6 +10,8 @@ import {
   clearTripOption,
   flightBody,
   flightSystem,
+  isJump,
+  jumpPlace,
   placeOf,
   setTripOption,
   tripOptionOf
@@ -44,7 +46,8 @@ export const needsLaunchStack = (game: Game, w: Whereabouts): boolean => {
   return !!flightBody(game, site.worldBody)?.atmosphere;
 };
 
-export function toPlace(d: Destination): Place {
+export function toPlace(game: Game, d: Destination): Place | undefined {
+  if (isJump(d.body)) return jumpPlace(game, d.body);
   return d.kind === 'orbit'
     ? { kind: 'orbit', body: d.body, angle: d.angle }
     : { kind: 'surface', body: d.body };
@@ -62,14 +65,15 @@ export function planVessel(
   departAfter = game.elapsed,
   only?: Profile
 ): VesselPlan {
-  const from = placeOf(v.at);
+  const from = placeOf(game, v.at);
   const ship = vesselShip(v);
-  if (!from || !ship) return { options: [], reasons: ['The ship has no drive.'] };
+  const target = toPlace(game, to);
+  if (!from || !ship || !target) return { options: [], reasons: ['The ship has no drive.'] };
   if (needsLaunchStack(game, v.at))
     return { options: [], reasons: ['A ship on Earth leaves by launch stack, not by trip.'] };
   const plan = planTrip({
     from,
-    to: toPlace(to),
+    to: target,
     departAfter,
     ship,
     system: flightSystem(game),
@@ -120,7 +124,9 @@ export function finishTrip(game: Game, v: Vessel, t: number): void {
   v.trip = null;
   clearTripOption(v.id);
   const body = bodyOfWhereabouts(v.at);
-  const name = body ? (game.body(body)?.name ?? body) : 'its destination';
+  const main = statsOf(v)?.main;
+  for (const e of main?.engines ?? []) economy.flown[e.component] = (economy.flown[e.component] ?? 0) + 1;
+  const name = body ? (game.body(body)?.name ?? game.jump(body)?.point.name ?? body) : 'its destination';
   game.log('ship', `${v.name} arrived at ${name}.`, false, {
     at: clockAt(t),
     subject: { kind: 'ship', id: v.id }

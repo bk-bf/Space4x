@@ -204,3 +204,48 @@ test.describe('founding in a region', () => {
     await expectCleanLayout(page);
   });
 });
+
+test.describe('the jump point through the UI', () => {
+  test('a probe at the jump point is named by it, surveys it and the map says so', async ({ page }) => {
+    test.setTimeout(90_000);
+    await open(page, 'screen=economy&tab=ships&scenario=jump');
+    await ship(page, 'Survey probe 1').click();
+    await expect(page.locator('[data-screen="economy"] .ui-card').first()).toContainText('Jump point A');
+    await expect(page.locator('[data-screen="economy"]')).not.toContainText('sol-a');
+    await page.locator('#orderType [data-filter="survey"]').click();
+    await page.locator('#orderSurvey').selectOption({ label: 'Jump point A' });
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders')).toContainText('Survey Jump point A');
+    await expectCleanLayout(page);
+    await page.locator(MONTH).click();
+    await page.locator(MONTH).click();
+    await expect(page.locator('#noOrders')).toBeVisible();
+    await page.locator('[data-nav="map"]').click();
+    await expect(labelOf(page, 'jump:sol-a')).toContainText('unstable');
+    await expect(labelOf(page, 'jump:sol-a')).not.toContainText('unsurveyed');
+  });
+
+  test('the jump point is a trip destination and its outpost a place to dock and to build', async ({
+    page
+  }) => {
+    await open(page, 'screen=economy&tab=ships&scenario=jump&outpost=1');
+    await ship(page, 'Survey probe 2').click();
+    await page.locator('#tripTo').selectOption({ label: 'Jump point A' });
+    await page.locator('#tripPlan').click();
+    await expect(page.locator('#tripOptions, #tripReasons')).toBeVisible();
+    await ship(page, 'Survey probe 1').click();
+    await page.locator('#orderType [data-filter="dock"]').click();
+    await page.locator('#orderDock').selectOption({ label: 'Jump point A outpost' });
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders, #noOrders')).toBeVisible();
+    await page.locator('[data-step="86400"]').click();
+    await expect(page.locator('[data-screen="economy"] .ui-card').first()).toContainText(
+      'Jump point A outpost'
+    );
+    await page.locator('#siteList [data-site="sol-a"]').click();
+    await expect(page.locator('#siteFacts')).toContainText('Unstable');
+    await page.locator('[data-screen="economy"] [data-tab="construction"]').click();
+    await expect(page.locator('#items')).toContainText('stabiliser');
+    await expectCleanLayout(page);
+  });
+});

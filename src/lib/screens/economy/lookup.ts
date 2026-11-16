@@ -1,4 +1,5 @@
-import { siteById } from '#lib/game/economy/index.ts';
+import { siteById, type Site } from '#lib/game/economy/index.ts';
+import { isPlatform } from '#lib/game/ships/index.ts';
 import { game } from '#lib/game/index.ts';
 import type { Body } from '#lib/game/types.ts';
 import { formatPeople } from './format.ts';
@@ -11,3 +12,12 @@ export const peopleAt = (bodyId: string): string => {
 };
 
 export const siteBody = (worldBody: string): Body | undefined => game.body(worldBody);
+
+export const siteKind = (site: Site): string =>
+  site.place === 'orbit'
+    ? 'Orbital station'
+    : site.place === 'point'
+      ? 'Jump point outpost'
+      : isPlatform(site)
+        ? 'Atmosphere platform'
+        : 'Surface outpost';

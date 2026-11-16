@@ -56,6 +56,8 @@ const MOON_KIT: Record<string, number> = {
   food_ration: 6000
 };
 
+const BYPRODUCTS = new Set(['xenon']);
+
 const MINED: Record<string, string> = {
   bennu: 'carbonaceous_chondrite',
   hertha: 'fe_ni_metal'
@@ -96,11 +98,12 @@ export class PathPlayer extends Player {
     name: string,
     role: ShipDesign['role'],
     parts: Parts,
-    load?: readonly (readonly [Parameters<typeof setLoad>[1], number])[]
+    load?: readonly (readonly [Parameters<typeof setLoad>[1], number])[],
+    yard: ShipDesign['yard'] = 'rocket_factory'
   ): ShipDesign {
     const found = classes.find(id);
     if (found) return found;
-    let d: ShipDesign = { ...newDesign(id, name), role, yard: 'rocket_factory' };
+    let d: ShipDesign = { ...newDesign(id, name), role, yard };
     for (const [c, n] of parts) d = setCount(d, c, n);
     for (const [k, kg] of load ?? []) d = setLoad(d, k, kg);
     d = lock(d, unlockedUpTo(economy));
@@ -142,13 +145,17 @@ export class PathPlayer extends Player {
     this.waitFor(() => this.owned(designId).length >= n, designId);
   }
 
+  protected supplyRate(id: string, short: number): number {
+    return Math.max(material(id).unit ? 1 : 1000, short / 24);
+  }
+
   protected supply(cargo: Record<string, number>): void {
     const site = this.earth;
     const short = () => Object.entries(cargo).filter(([m, kg]) => (site.stock[m] ?? 0) < kg);
     let guard = 0;
     while (short().length && guard++ < 150) {
       for (const [m, kg] of short())
-        this.produce(m, Math.max(material(m).unit ? 1 : 1000, (kg - (site.stock[m] ?? 0)) / 24));
+        if (!BYPRODUCTS.has(m)) this.produce(m, this.supplyRate(m, kg - (site.stock[m] ?? 0)));
       this.fixShortages();
       this.days(3);
     }
@@ -381,14 +388,22 @@ export class PathPlayer extends Player {
     return out;
   }
 
+  protected upkeepDays(): number {
+    return UPKEEP_DAYS;
+  }
+
+  protected foodItem(): string {
+    return 'food_ration';
+  }
+
   protected upkeep(): Record<string, number> {
     const moon = this.lunarSite();
     if (!moon) return {};
     const reactors = standing(moon, 'fission_reactor');
-    const food = Math.max(0, moon.population * UPKEEP_DAYS - this.moonStock('food_ration'));
-    const fuel = Math.max(0, reactors * 0.0104 * (UPKEEP_DAYS / 365) * 1000 - this.moonStock('haleu'));
+    const food = Math.max(0, moon.population * this.upkeepDays() - this.moonStock(this.foodItem()));
+    const fuel = Math.max(0, reactors * 0.0104 * (this.upkeepDays() / 365) * 1000 - this.moonStock('haleu'));
     return {
-      ...(food > 100 ? { food_ration: Math.round(food) } : {}),
+      ...(food > 100 ? { [this.foodItem()]: Math.round(food) } : {}),
       ...(fuel > 5 ? { haleu: Math.round(fuel) } : {})
     };
   }
@@ -618,8 +633,8 @@ export class PathPlayer extends Player {
 
   protected launchNepTug(): void {
     if (this.nepTug || this.asteroidSite('hertha')) return;
-    const kit = { stainless_steel: 7000, nickel_superalloy: 500, ai_models: 4 };
-    this.supply({ ai_models: 4 });
+    const kit = { stainless_steel: 7000, nickel_superalloy: 500, ai_models: 4, carbon: 300 };
+    this.supply({ ai_models: 4, carbon: 300 });
     const tug = this.nepDesign();
     this.cargoToStation({ xenon: 17_000, lox: 1_700, lch4: 500 });
     const v = this.launchedShip(tug, kit);

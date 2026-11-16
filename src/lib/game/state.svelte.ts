@@ -105,11 +105,19 @@ export class Game {
     return undefined;
   }
 
+  placeName(id: string): string | undefined {
+    return this.body(id)?.name ?? this.jump(id)?.point.name;
+  }
+
+  placeSystem(id: string): string | undefined {
+    return this.body(id)?.system ?? this.jump(id)?.system.id;
+  }
+
   systemOf(sel: Selection): string | undefined {
     if (sel.kind === 'fleet') return this.fleet(sel.id)?.system;
     if (sel.kind === 'body') return this.body(sel.id)?.system;
     if (sel.kind === 'site') return this.site(sel.id)?.system;
-    if (sel.kind === 'ship' || sel.kind === 'base') return this.world.systems[0]?.id;
+    if (sel.kind === 'ship' || sel.kind === 'base' || sel.kind === 'jump') return this.world.systems[0]?.id;
     return this.contact(sel.id)?.system;
   }
 }

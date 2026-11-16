@@ -13,11 +13,11 @@ import {
 } from '#lib/game/ships/index.ts';
 import { formatAmount, formatMass } from './format.ts';
 
-export const bodyName = (id: string): string => game.body(id)?.name ?? id;
+export const bodyName = (id: string): string => game.placeName(id) ?? id;
 
 export function whereabouts(w: Whereabouts): string {
   if (w.kind === 'site') return siteOf(w.site)?.name ?? 'a lost site';
-  if (w.kind === 'orbit') return `${bodyName(w.body)} orbit`;
+  if (w.kind === 'orbit') return game.jump(w.body) ? bodyName(w.body) : `${bodyName(w.body)} orbit`;
   return `${bodyName(w.body)} surface`;
 }
 

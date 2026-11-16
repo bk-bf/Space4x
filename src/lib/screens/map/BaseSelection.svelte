@@ -4,6 +4,7 @@
   import { game } from '#lib/game/index.ts';
   import { ships } from '#lib/game/ships/index.ts';
   import { formatPower } from '#lib/screens/economy/format.ts';
+  import { siteKind } from '#lib/screens/economy/lookup.ts';
   import { ui } from '#lib/screens/economy/state.svelte.ts';
   import { DefList, shell } from '#lib/ui/index.ts';
 
@@ -17,8 +18,8 @@
     site.groups.map((g) => `${g.count} ${building(g.building).name.toLowerCase()}`).join(', ')
   );
   const facts = $derived<[string, string][]>([
-    ['Kind', site.place === 'orbit' ? 'Orbital station' : 'Surface outpost'],
-    ['Around', game.body(site.worldBody)?.name ?? site.worldBody],
+    ['Kind', siteKind(site)],
+    ['Around', game.placeName(site.worldBody) ?? site.worldBody],
     ...(site.region ? [['Region', region(site.region)?.name ?? ''] as [string, string]] : []),
     ['People', `${Math.round(site.population)} of ${site.berths ?? 0} berths`],
     ['Fed', `${Math.round(flows.food.cover * 100)}%`],

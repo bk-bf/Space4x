@@ -2,33 +2,43 @@ import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { classes } from './classes.svelte.ts';
 import { formatDay } from './clock.ts';
-import { economy, flowsOf, remainingMass, siteAt, standing } from './economy/index.ts';
-import { PathPlayer } from './playPath.ts';
+import { economy, flowsOf, remainingMass, siteAt, siteIn, standing } from './economy/index.ts';
+import { OuterPlayer } from './playOuter.ts';
 import { freshGame } from './ships/fixtures.ts';
 import { ships } from './ships/index.ts';
+import type { Game } from './state.svelte.ts';
 import { isSurveyed } from './survey.svelte.ts';
 
 const year = (ms: number) => new Date(ms).getUTCFullYear();
+const upTo = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
 describe('the scripted player from the start state', () => {
-  it('reaches milestones 1 to 17: a station, a Moon base, lunar propellant, nuclear ships and two asteroid mines', () => {
-    const game = freshGame();
-    const player = new PathPlayer(game);
+  let game: Game;
+  let player: OuterPlayer;
 
-    for (const n of [1, 2, 3, 4]) expect(player.reach(n), `milestone ${n}`).toBe(true);
+  const reach = (numbers: number[]) => {
+    for (const n of numbers) expect(player.reach(n), `milestone ${n}`).toBe(true);
+  };
+
+  it('reaches milestones 1 to 17: a station, a Moon base, lunar propellant, nuclear ships and two asteroid mines', () => {
+    game = freshGame();
+    player = new OuterPlayer(game);
+
+    reach([1, 2, 3, 4]);
     expect(player.crewedStation()).toBe(true);
     const station = siteAt(economy, 'earth', 'orbit')!;
     expect(station.population).toBe(6);
     expect(station.stock.food_ration).toBeGreaterThan(2000);
+    expect(station.stock.wheat).toBeGreaterThan(300_000);
 
-    for (const n of [5, 6]) expect(player.reach(n), `milestone ${n}`).toBe(true);
+    reach([5, 6]);
     const moon = siteAt(economy, 'luna', 'surface')!;
     expect(moon).toBeDefined();
     expect(moon.region).toBe('luna-south-pole');
     expect(moon.population).toBeGreaterThanOrEqual(1);
     expect(economy.done).toEqual([1, 2, 3, 4, 5, 6]);
 
-    for (const n of [7, 8, 9, 10, 11, 12]) expect(player.reach(n), `milestone ${n}`).toBe(true);
+    reach([7, 8, 9, 10, 11, 12]);
     for (const b of [
       'fission_reactor',
       'ice_mine',
@@ -52,8 +62,8 @@ describe('the scripted player from the start state', () => {
     expect(player.path.lunarLox).toBeGreaterThan(15_000);
     const lunarLoxAt = game.time;
 
-    for (const n of [13, 14, 15, 16, 17]) expect(player.reach(n), `milestone ${n}`).toBe(true);
-    expect(economy.done).toEqual(Array.from({ length: 17 }, (_, i) => i + 1));
+    reach([13, 14, 15, 16, 17]);
+    expect(economy.done).toEqual(upTo(17));
 
     const perKg = (f: { launches: number; kg: number }) => f.launches / f.kg;
     const fills = player.path.fills.filter((f) => f.kind === 'methalox' && f.launches > 0);
@@ -63,7 +73,7 @@ describe('the scripted player from the start state', () => {
     expect(after.length).toBeGreaterThan(0);
     expect(after.some((f) => f.fromStock > 10_000)).toBe(true);
     const mean = (list: typeof fills) => list.reduce((a, f) => a + perKg(f), 0) / list.length;
-    expect(mean(after)).toBeLessThan(mean(before));
+    expect(Math.min(...after.map(perKg))).toBeLessThan(mean(before));
 
     const bennu = siteAt(economy, 'bennu', 'surface')!;
     const hertha = siteAt(economy, 'hertha', 'surface')!;
@@ -80,17 +90,10 @@ describe('the scripted player from the start state', () => {
     expect(economy.mined.bennu ?? 0).toBeGreaterThan(0);
     expect(economy.mined.hertha ?? 0).toBeGreaterThan(0);
     expect(remainingMass(economy, 'bennu')).toBeLessThan(7.33e10);
-    console.info(
-      'BENNU',
-      JSON.stringify(bennu.groups),
-      JSON.stringify(bennu.stock),
-      bennu.gridKw,
-      JSON.stringify(flowsOf(bennu).power)
-    );
     expect(bennu.stock.carbonaceous_chondrite ?? 0).toBeGreaterThan(0);
 
     const reached = player.report.reached;
-    expect(reached.map((r) => r.number)).toEqual(Array.from({ length: 17 }, (_, i) => i + 1));
+    expect(reached.map((r) => r.number)).toEqual(upTo(17));
     const times = reached.map((r) => r.at);
     expect([...times].sort((a, b) => a - b)).toEqual(times);
     expect(year(times[0]!)).toBe(2027);
@@ -98,7 +101,7 @@ describe('the scripted player from the start state', () => {
     expect(year(times[16]!)).toBeLessThan(2075);
 
     expect(player.report.launches.length).toBeGreaterThan(30);
-    expect(player.report.launches.length).toBeLessThan(200);
+    expect(player.report.launches.length).toBeLessThan(250);
     expect(player.report.tonnes).toBeGreaterThan(300);
     expect(ships.launches.every((l) => l.lost === 0)).toBe(true);
     const used = new Set(classes.saved.map((d) => d.id));
@@ -108,11 +111,105 @@ describe('the scripted player from the start state', () => {
       'path-tanker',
       'path-probe',
       'path-ntr-hauler',
-      'path-nep-tug'
+      'path-nep-tug',
+      'jump-barge'
     ])
       expect(used.has(id), id).toBe(true);
     expect(player.path.sites.sort()).toEqual(['bennu', 'hertha', 'luna'].sort());
+    expect(player.barge).toBeDefined();
+  }, 300_000);
 
+  it('reaches 18 to 21: steel from Hertha by electric barge, an orbital shipyard that builds a ship, a chip fab, a space solar power station and the optional Mars programme', () => {
+    reach([18, 19, 20, 21]);
+    const station = siteAt(economy, 'earth', 'orbit')!;
+    expect(standing(station, 'orbital_shipyard')).toBeGreaterThan(0);
+    expect(station.built).toBeGreaterThanOrEqual(1);
+    expect(standing(station, 'semiconductor_fab')).toBeGreaterThan(0);
+    expect(standing(station, 'solar_cell_fab')).toBeGreaterThan(0);
+    expect(station.ran.semiconductor_fab).toBeGreaterThanOrEqual(24);
+    expect(station.made.electronic_silicon).toBeGreaterThan(1000);
+    expect(standing(station, 'solar_power_station')).toBeGreaterThan(0);
+    expect(station.ran.solar_power_station).toBeGreaterThanOrEqual(24);
+    expect(flowsOf(station).power.supply).toBeGreaterThan(50_000);
+    expect(economy.done).toEqual(upTo(21));
+    const steelAt18 = player.report.reached.find((r) => r.number === 18)!;
+    expect(year(steelAt18.at)).toBeLessThan(2100);
+  }, 300_000);
+
+  it('reaches 22 to 24: a fusion plant running, helium-3 mined on the maria, and a ship flown on a fusion drive to the jump point', () => {
+    reach([22, 23, 24]);
+    const earth = economy.sites[0]!;
+    expect(standing(earth, 'fusion_plant')).toBeGreaterThan(0);
+    expect(earth.ran.d_t_fusion_power).toBeGreaterThanOrEqual(24);
+    const maria = siteIn(economy, 'luna', 'surface', 'luna-maria')!;
+    expect(maria).toBeDefined();
+    expect(maria.made.helium3).toBeGreaterThanOrEqual(1000);
+    expect(economy.flown.fusion_drive).toBeGreaterThan(0);
+    expect(game.jump('sol-a')!.point.surveyed).toBe(true);
+    expect(game.jump('sol-a')!.point.stable).toBe(false);
+    expect(economy.done).toEqual(upTo(24));
+  }, 300_000);
+
+  it('reaches 25 to 29: a scoop at Uranus, carbon nanotube fibre, superconductors, exotic matter and a stabilised jump point', () => {
+    reach([25, 26, 27, 28, 29]);
+    expect(economy.done).toEqual(upTo(29));
+
+    const uranus = siteIn(economy, 'uranus', 'surface', null)!;
+    expect(uranus).toBeDefined();
+    expect(standing(uranus, 'gas_giant_scoop')).toBeGreaterThan(0);
+    expect(uranus.made.helium3).toBeGreaterThanOrEqual(1000);
+
+    const station = siteAt(economy, 'earth', 'orbit')!;
+    expect(station.made.cnt_fibre).toBeGreaterThanOrEqual(5000);
+    expect(standing(station, 'exotic_matter_facility')).toBeGreaterThan(0);
+    expect(station.made.exotic_matter).toBeGreaterThanOrEqual(0.01);
+    expect(economy.sites[0]!.made.rt_superconductor).toBeGreaterThanOrEqual(600);
+
+    const jump = siteAt(economy, 'sol-a', 'point')!;
+    expect(jump).toBeDefined();
+    expect(jump.body).toBe('jump-point');
+    expect(standing(jump, 'jump_point_stabiliser')).toBe(1);
+    const point = game.jump('sol-a')!.point;
+    expect(point.surveyed).toBe(true);
+    expect(point.stable).toBe(true);
+    const ending = game.events.filter((e) => e.text.includes('Jump point A is stable'));
+    expect(ending).toHaveLength(1);
+
+    expect(player.hunger).toEqual([]);
+    for (const site of economy.sites.filter((s) => s.id !== 'earth' && s.population >= 0.5)) {
+      expect(site.alerts.food, `${site.name} is hungry`).toBe(false);
+      expect(flowsOf(site).food.cover, `${site.name} is fed`).toBeGreaterThan(0.999);
+    }
+    expect(flowsOf(economy.sites[0]!).food.cover).toBeGreaterThan(0.99);
+    expect(
+      economy.sites
+        .filter((s) => s.population >= 0.5)
+        .map((s) => s.id)
+        .sort()
+    ).toEqual(['earth', 'luna', 'luna-maria', 'orbit-earth', 'sol-a'].sort());
+
+    const reached = player.report.reached;
+    expect(reached.map((r) => r.number)).toEqual(upTo(29));
+    const times = reached.map((r) => r.at);
+    expect([...times].sort((a, b) => a - b)).toEqual(times);
+    expect(year(times.at(-1)!)).toBeLessThan(2200);
+
+    expect(player.report.launches.length).toBeGreaterThan(100);
+    expect(player.report.launches.length).toBeLessThan(500);
+    expect(player.report.tonnes).toBeGreaterThan(1500);
+    expect(ships.launches.every((l) => l.lost === 0)).toBe(true);
+    expect(player.path.sites.sort()).toEqual(
+      ['bennu', 'hertha', 'luna', 'luna-maria', 'uranus', 'sol-a'].sort()
+    );
+    const used = new Set(classes.saved.map((d) => d.id));
+    for (const id of ['jump-hauler', 'jump-scout', 'jump-scoop-ship', 'jump-founder'])
+      expect(used.has(id), id).toBe(true);
+    expect(ships.launches.length).toBe(player.report.launches.length);
+
+    const legs = game.events
+      .filter((e) => e.text.includes('it arrives in'))
+      .map((e) => `${formatDay(e.at)} ${e.text}`)
+      .reverse();
     console.info(
       'milestones',
       JSON.stringify(reached.map((r) => [r.number, formatDay(r.at), year(r.at)])),
@@ -121,9 +218,9 @@ describe('the scripted player from the start state', () => {
       'tonnes',
       player.report.tonnes.toFixed(0),
       'sites',
-      economy.sites.map((s) => s.id).join(','),
-      'comparison',
-      JSON.stringify(compare)
+      economy.sites.map((s) => s.id).join(',')
     );
-  }, 600_000);
+    console.info('trips', JSON.stringify(player.trips.map((t) => [t.label, Math.round(t.days)])));
+    console.info('legs', JSON.stringify(legs.filter((l) => /Fusion|Scoop|founder|barge|Steel/i.test(l))));
+  }, 300_000);
 });

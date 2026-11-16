@@ -1,18 +1,29 @@
 <script lang="ts">
   import { type Site } from '#lib/game/economy/index.ts';
+  import { game } from '#lib/game/index.ts';
   import { CanvasView, Panel, Pill } from '#lib/ui/index.ts';
   import { siteBody } from './lookup.ts';
-  import { drawColonyPlanet } from './planetView.ts';
+  import { drawColonyPlanet, drawJumpPoint } from './planetView.ts';
 
   let { site }: { site: Site } = $props();
   const body = $derived(siteBody(site.worldBody));
   const planet = $derived(body?.type ?? 'terran');
+  const jump = $derived(site.place === 'point' ? game.jump(site.worldBody)?.point : undefined);
 </script>
 
 <Panel grow body="col">
   {#snippet head()}{site.name}{/snippet}
-  <CanvasView scale={2} bg="stars" draw={(fb, t) => drawColonyPlanet(fb, t, planet, site.body === 'earth')} />
-  {#if body}
+  <CanvasView
+    scale={2}
+    bg="stars"
+    draw={(fb, t) =>
+      jump ? drawJumpPoint(fb, t, !!jump.stable) : drawColonyPlanet(fb, t, planet, site.body === 'earth')}
+  />
+  {#if jump}
+    <div class="facts" id="siteFacts">
+      <Pill icon="flask" text={jump.stable ? 'Stable' : 'Unstable'} tip="Jump point" />
+    </div>
+  {:else if body}
     <div class="facts" id="siteFacts">
       <Pill icon="down" text={body.facts.gravity} tip="Surface gravity" />
       <Pill icon="drop" text={body.facts.air} tip="Atmosphere" />
