@@ -3,7 +3,14 @@ import { drainDeliveries, economy, touch } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, unloadItem } from './cargo.ts';
 import { classes } from '#lib/game/classes.svelte.ts';
-import { completeSurvey, isSurveyable, isSurveyed, surveyDays } from '#lib/game/survey.svelte.ts';
+import { settleJumps } from '#lib/game/jump.ts';
+import {
+  completeSurvey,
+  isSurveyable,
+  isSurveyed,
+  JUMP_SURVEY_DAYS,
+  surveyDays
+} from '#lib/game/survey.svelte.ts';
 import { burnHop, planHop, surfaceBodyOf, type HopKind } from './hop.ts';
 import { canSample, canSurvey, cargoRoom, designOf, mainKind } from './model.ts';
 import { SAMPLE_DAYS, SAMPLE_KG, sampleMaterial } from './sample.ts';
@@ -21,7 +28,7 @@ import {
   type Destination
 } from './trips.ts';
 import type { Order, Vessel } from './types.ts';
-import { bodyOfWhereabouts, tripOptionOf } from './world.ts';
+import { bodyOfWhereabouts, hangsInOrbit, isJump, tripOptionOf } from './world.ts';
 import { siteOf } from './orders.ts';
 
 const MAX_STEPS = 256;
@@ -75,7 +82,7 @@ function sameOrbit(v: Vessel, d: Destination): boolean {
   if (v.at.kind === 'orbit') return v.at.body === d.body;
   if (v.at.kind !== 'site') return false;
   const s = siteOf(v.at.site);
-  return !!s && s.place === 'orbit' && s.worldBody === d.body;
+  return !!s && (hangsInOrbit(s) || s.place === 'point') && s.worldBody === d.body;
 }
 
 function block(v: Vessel, reason: string): void {
@@ -132,7 +139,10 @@ function fly(game: Game, v: Vessel, o: Order & { type: 'fly' | 'land' }, t: numb
   }
   commitTrip(game, v, dest, option);
   const to = arrivalPlace(game, dest);
-  const name = to.kind === 'site' ? (siteOf(to.site)?.name ?? '') : (game.body(dest.body)?.name ?? '');
+  const name =
+    to.kind === 'site'
+      ? (siteOf(to.site)?.name ?? '')
+      : (game.body(dest.body)?.name ?? game.jump(dest.body)?.point.name ?? '');
   say(game, v, `${v.name} left for ${name}; it arrives in ${(option.duration / DAY).toFixed(1)} days.`, t);
   return true;
 }
@@ -158,6 +168,29 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     if (local) {
       if (!hop(game, v, local, order, cursor, end)) return 'stop';
     } else if (!fly(game, v, order, cursor.t)) return 'stop';
+    v.orders.shift();
+    return 'next';
+  }
+  if (order.type === 'survey' && isJump(order.body)) {
+    const jump = game.jump(order.body)!;
+    if (jump.point.surveyed) {
+      v.orders.shift();
+      v.progress = 0;
+      v.blocked = null;
+      return 'next';
+    }
+    if (!canSurvey(designOf(v))) {
+      block(v, `${v.name} carries no survey instruments.`);
+      return 'stop';
+    }
+    if (!sameOrbit(v, { kind: 'orbit', body: jump.point.id, angle: 0 })) {
+      block(v, `${v.name} must be at ${jump.point.name} to survey it.`);
+      return 'stop';
+    }
+    v.blocked = null;
+    if (!work(v, JUMP_SURVEY_DAYS * DAY, cursor, end)) return 'stop';
+    jump.point.surveyed = true;
+    say(game, v, `${v.name} surveyed ${jump.point.name}: it is mapped and unstable.`, cursor.t);
     v.orders.shift();
     return 'next';
   }
@@ -220,9 +253,10 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
       return 'next';
     }
     const sameSite = v.at.kind === 'site' && v.at.site === site.id;
-    const inOrbit = v.at.kind === 'orbit' && site.place === 'orbit' && v.at.body === site.worldBody;
+    const inOrbit =
+      v.at.kind === 'orbit' && (hangsInOrbit(site) || site.place === 'point') && v.at.body === site.worldBody;
     if (!sameSite && !inOrbit) {
-      block(v, `${v.name} is not in orbit at ${site.name}.`);
+      block(v, `${v.name} is not at ${site.name}.`);
       return 'stop';
     }
     if (!work(v, DOCK_SECONDS, cursor, end)) return 'stop';
@@ -267,4 +301,5 @@ export function advanceShips(game: Game, dt: number): void {
   spawnDeliveries(game);
   const end = game.elapsed;
   for (const v of [...ships.vessels]) run(game, v, end - dt, end);
+  settleJumps(game);
 }

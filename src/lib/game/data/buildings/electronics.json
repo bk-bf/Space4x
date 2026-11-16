@@ -47,7 +47,7 @@
     "id": "data_centre",
     "name": "Data centre",
     "kind": "electronics",
-    "where": ["earth", "moon", "orbit"],
+    "where": ["earth", "moon", "orbit", "jump-point"],
     "milestone": 5,
     "thin": true,
     "estimated": true,

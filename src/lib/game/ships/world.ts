@@ -1,4 +1,4 @@
-import { economy } from '#lib/game/economy/index.ts';
+import { economy, type Site } from '#lib/game/economy/index.ts';
 import { asteroidGm, asteroidRadius } from '#lib/game/asteroids.ts';
 import { asteroidRecord, asteroids } from '#lib/game/data/index.ts';
 import {
@@ -22,6 +22,7 @@ import {
 import { placeState, resolvePlace, type State } from '#lib/game/flight/system.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import type { FlightBody, FlightSystem, Place, TripOption } from '#lib/game/flight/index.ts';
+import { mockSystems } from '#lib/game/mock/starSystems.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import type { Vessel, Whereabouts } from './types.ts';
 
@@ -43,7 +44,7 @@ const REFERENCE: Readonly<Record<string, FlightBody>> = {
   enceladus
 };
 
-const NO_SURFACE: readonly string[] = ['venus', 'jupiter', 'saturn', 'uranus', 'neptune'];
+export const NO_SURFACE: readonly string[] = ['venus', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SMALL_BODY_ORBIT_M = 100e3;
 
 function asteroidFlightBody(id: string): FlightBody | undefined {
@@ -92,23 +93,46 @@ export function flightSystem(game: Game): FlightSystem {
 export const flightBody = (game: Game, id: string): FlightBody | undefined =>
   flightSystem(game).bodies.find((b) => b.id === id);
 
-export function placeOf(w: Whereabouts): Place | undefined {
-  if (w.kind === 'orbit') return { kind: 'orbit', body: w.body, angle: w.angle };
+export const isPlatform = (s: Site): boolean => s.place === 'surface' && NO_SURFACE.includes(s.worldBody);
+
+export const hangsInOrbit = (s: Site): boolean => s.place === 'orbit' || isPlatform(s);
+
+export function jumpPlace(game: Game, id: string): Place | undefined {
+  const point = game.jump(id)?.point;
+  if (!point) return undefined;
+  return {
+    kind: 'point',
+    id,
+    orbit: Math.hypot(point.x, point.y),
+    angle: Math.atan2(point.y, point.x),
+    angularSpeed: 0
+  };
+}
+
+const JUMP_IDS = new Set(mockSystems().flatMap((s) => s.jumps.map((j) => j.id)));
+
+export const isJump = (id: string): boolean => JUMP_IDS.has(id);
+
+export function placeOf(game: Game, w: Whereabouts): Place | undefined {
+  if (w.kind === 'orbit')
+    return isJump(w.body) ? jumpPlace(game, w.body) : { kind: 'orbit', body: w.body, angle: w.angle };
   if (w.kind === 'surface') return { kind: 'surface', body: w.body };
   const site = economy.sites.find((s) => s.id === w.site);
   if (!site) return undefined;
-  return site.place === 'orbit'
+  if (site.place === 'point') return jumpPlace(game, site.worldBody);
+  return hangsInOrbit(site)
     ? { kind: 'orbit', body: site.worldBody, angle: site.angle }
     : { kind: 'surface', body: site.worldBody };
 }
 
 export function bodyOfWhereabouts(w: Whereabouts): string | undefined {
-  const p = placeOf(w);
-  return p && p.kind !== 'point' ? p.body : undefined;
+  if (w.kind === 'orbit' || w.kind === 'surface') return w.body;
+  const site = economy.sites.find((s) => s.id === w.site);
+  return site && site.place !== 'point' ? site.worldBody : undefined;
 }
 
 export function stateOf(game: Game, w: Whereabouts, t = game.elapsed): State | undefined {
-  const place = placeOf(w);
+  const place = placeOf(game, w);
   if (!place) return undefined;
   const system = flightSystem(game);
   const e = resolvePlace(system, place);

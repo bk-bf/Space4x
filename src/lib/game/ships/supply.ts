@@ -5,7 +5,7 @@ import { planTrip } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { ships } from './state.svelte.ts';
-import { flightSystem } from './world.ts';
+import { flightSystem, hangsInOrbit } from './world.ts';
 import { needsLaunchStack } from './trips.ts';
 import { reentryRating } from './model.ts';
 import type { Vessel } from './types.ts';
@@ -33,7 +33,7 @@ const cache = new Map<string, Omit<ImportOption, 'from' | 'fromName' | 'stock'>>
 const EPOCH = 30 * DAY;
 
 function placeFor(site: Site) {
-  return site.place === 'orbit'
+  return hangsInOrbit(site)
     ? ({ kind: 'orbit', body: site.worldBody, angle: site.angle } as const)
     : ({ kind: 'surface', body: site.worldBody } as const);
 }

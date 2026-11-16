@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { milestone, milestones } from '#lib/game/data/index.ts';
 import {
+  advanceEconomy,
   earthMakes,
   missingFor,
+  siteNeedMissing,
   newSite,
   programmeBill,
   siteNeedMet,
@@ -116,5 +118,91 @@ describe('what a programme pays in', () => {
       for (const id of m.needs.materials)
         if (!(id === 'compute' || id === 'ai_models' || id === 'neon'))
           expect(programmeBill(m)[id], `${m.number} ${id}`).toBeGreaterThan(0);
+  });
+});
+
+describe('what a site has done', () => {
+  it('counts the helium-3 a lunar excavator makes and the hours it runs, and asks for both', () => {
+    const eco = startEconomy();
+    eco.done = Array.from({ length: 22 }, (_, i) => i + 1);
+    const maria = moonSite(eco, 'luna-maria');
+    standFirst(eco, maria, 'regolith_excavator');
+    const group = maria.groups[0]!;
+    group.process = 'extract:helium3';
+    maria.population = 10;
+    maria.gridKw = 1000;
+    const need = milestone(23).needs.sites![0]!;
+    expect(siteNeedMet(maria, need)).toBe(false);
+    advanceEconomy(eco, 86_400);
+    expect(maria.made.helium3).toBeGreaterThan(1000);
+    expect(maria.ran.regolith_excavator).toBeGreaterThan(20);
+    expect(siteNeedMet(maria, need)).toBe(true);
+    const south = moonSite(eco, 'luna-south-pole');
+    expect(siteNeedMet(south, need)).toBe(false);
+  });
+
+  it('counts the ships a yard has finished', () => {
+    const eco = startEconomy();
+    const station = newSite(eco, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0 })!;
+    expect(station.built).toBe(0);
+    station.yard.push({
+      id: 99,
+      design: 'x',
+      name: 'x',
+      yard: 'orbital_shipyard',
+      cost: {},
+      hours: 1,
+      done: 0,
+      paused: false,
+      stalled: null
+    });
+    standFirst(eco, station, 'propellant_depot');
+    station.groups.push({ id: 100, building: 'orbital_shipyard', process: null, count: 1, on: true });
+    const need = milestone(18).needs.sites![0]!;
+    expect(siteNeedMet(station, need)).toBe(false);
+    advanceEconomy(eco, 7200);
+    expect(station.built).toBe(1);
+    expect(eco.delivered).toHaveLength(1);
+    expect(siteNeedMet(station, need)).toBe(true);
+  });
+
+  it('asks for a drive to have flown, wherever it flew from', () => {
+    const eco = startEconomy();
+    const need = milestone(24).needs.sites![0]!;
+    expect(siteNeedMissing(eco, need)).toBe(need.label);
+    eco.flown.fusion_drive = 1;
+    expect(siteNeedMissing(eco, need)).toBeUndefined();
+  });
+
+  it('lets a builder that stands in orbit satisfy a component that only an orbital yard can build', () => {
+    const eco = startEconomy();
+    eco.done = Array.from({ length: 23 }, (_, i) => i + 1);
+    expect(missingFor(eco, eco.sites[0]!, milestone(24)).some((x) => x.kind === 'builder')).toBe(true);
+    const station = newSite(eco, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0 })!;
+    station.groups.push({ id: 100, building: 'orbital_shipyard', process: null, count: 1, on: true });
+    expect(missingFor(eco, eco.sites[0]!, milestone(24)).some((x) => x.kind === 'builder')).toBe(false);
+  });
+
+  it('asks for the stabiliser at the jump point and nowhere else', () => {
+    const eco = startEconomy();
+    eco.done = Array.from({ length: 28 }, (_, i) => i + 1);
+    const orbit = newSite(eco, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0 })!;
+    orbit.groups.push({ id: 100, building: 'jump_point_stabiliser', process: null, count: 1, on: true });
+    expect(gaps(eco, 29)).toHaveLength(1);
+    const point = newSite(eco, { worldBody: 'sol-a', bodyName: 'Jump point A', place: 'point', angle: 0 })!;
+    expect(point.id).toBe('sol-a');
+    expect(point.body).toBe('jump-point');
+    expect(gaps(eco, 29)).toHaveLength(1);
+    point.groups.push({ id: 101, building: 'jump_point_stabiliser', process: null, count: 1, on: true });
+    expect(gaps(eco, 29)).toEqual([]);
+  });
+
+  it('overrides the programme bill for the isotopes that no plant makes by the tonne', () => {
+    const bill = programmeBill(milestone(22));
+    expect(bill.tritium).toBe(20);
+    expect(bill.deuterium).toBe(200);
+    expect(bill.lithium6).toBe(200);
+    expect(bill.rebco).toBe(1_100_000);
+    expect(programmeBill(milestone(25)).deuterium).toBe(200);
   });
 });

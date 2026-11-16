@@ -3,6 +3,7 @@ import { isAsteroid, regionsOf, regions, type Region } from '#lib/game/data/inde
 export const SURVEY_ERROR = 0.3;
 export const SURVEY_DAYS_SMALL_BODY = 14;
 export const SURVEY_DAYS_PLANET = 60;
+export const JUMP_SURVEY_DAYS = 30;
 
 function startLevels(): Record<string, number> {
   const levels: Record<string, number> = {};

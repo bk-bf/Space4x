@@ -2,6 +2,7 @@ import { economy, type Site } from '#lib/game/economy/index.ts';
 import { material } from '#lib/game/data/index.ts';
 import type { Profile } from '#lib/game/flight/index.ts';
 import { PROPELLANTS } from '#lib/game/shipdesign/index.ts';
+import { hangsInOrbit, isPlatform } from './world.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { ships } from './state.svelte.ts';
 import type { Item, Order, Vessel, Whereabouts } from './types.ts';
@@ -72,15 +73,14 @@ export function projectedPlace(v: Vessel): Whereabouts {
 
 export function legOrders(from: Whereabouts, to: Site, profile: Profile = 'cheapest'): NewOrder[] {
   if (from.kind === 'site' && from.site === to.id) return [];
-  if (to.place === 'surface')
+  if (to.place === 'surface' && !isPlatform(to))
     return [{ type: 'land', body: to.worldBody, profile, ...(to.region ? { region: to.region } : {}) }];
+  const here = from.kind === 'site' ? siteOf(from.site) : undefined;
   const fromBody =
     from.kind === 'orbit'
       ? from.body
-      : from.kind === 'site'
-        ? siteOf(from.site)?.place === 'orbit'
-          ? siteOf(from.site)?.worldBody
-          : undefined
+      : here && (hangsInOrbit(here) || here.place === 'point')
+        ? here.worldBody
         : undefined;
   const orders: NewOrder[] = [];
   if (fromBody !== to.worldBody) orders.push({ type: 'fly', body: to.worldBody, angle: to.angle, profile });

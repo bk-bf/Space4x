@@ -363,7 +363,15 @@
     "needs": {
       "materials": [],
       "buildings": ["orbital_shipyard"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No orbital shipyard has built a ship",
+          "place": "orbit",
+          "buildings": ["orbital_shipyard"],
+          "built": 1
+        }
+      ]
     },
     "sources": ["https://www.nasa.gov/mission/on-orbit-servicing-assembly-and-manufacturing-2-osam-2/"]
   },
@@ -377,7 +385,17 @@
     "needs": {
       "materials": ["sulfuric_acid"],
       "buildings": ["semiconductor_fab", "solar_cell_fab"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No chip fab has run in orbit",
+          "place": "orbit",
+          "buildings": ["semiconductor_fab", "solar_cell_fab"],
+          "ran": {
+            "semiconductor_fab": 24
+          }
+        }
+      ]
     },
     "sources": ["https://arxiv.org/abs/2408.05823"]
   },
@@ -391,7 +409,17 @@
     "needs": {
       "materials": [],
       "buildings": ["solar_power_station"],
-      "components": ["solar_array", "radiator"]
+      "components": ["solar_array", "radiator"],
+      "sites": [
+        {
+          "label": "No space solar power station has delivered power",
+          "place": "orbit",
+          "buildings": ["solar_power_station"],
+          "ran": {
+            "solar_power_station": 24
+          }
+        }
+      ]
     },
     "sources": ["https://www.powermag.com/space-solar-power-prototype-beams-first-power-to-earth/"]
   },
@@ -420,7 +448,21 @@
     "needs": {
       "materials": ["rebco", "lithium6", "deuterium", "tritium"],
       "buildings": ["isotope_separator", "fusion_plant", "magnet_works"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No fusion plant has run",
+          "buildings": ["fusion_plant"],
+          "ran": {
+            "fusion_plant": 24
+          }
+        }
+      ],
+      "bill": {
+        "lithium6": 200,
+        "deuterium": 200,
+        "tritium": 20
+      }
     },
     "sources": [
       "https://www.eurekalert.org/news-releases/1036447",
@@ -437,7 +479,19 @@
     "needs": {
       "materials": ["helium3"],
       "buildings": ["regolith_excavator"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No helium-3 mined on the lunar maria",
+          "world": "luna",
+          "place": "surface",
+          "region": "luna-maria",
+          "made": {
+            "material": "helium3",
+            "amount": 1000
+          }
+        }
+      ]
     },
     "sources": ["https://www.nasa.gov/feature/harnessing-power-from-the-moon"]
   },
@@ -451,7 +505,13 @@
     "needs": {
       "materials": ["uhtc"],
       "buildings": ["orbital_shipyard"],
-      "components": ["fusion_drive"]
+      "components": ["fusion_drive"],
+      "sites": [
+        {
+          "label": "No ship has flown on a fusion drive",
+          "flown": "fusion_drive"
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Direct_Fusion_Drive"]
   },
@@ -465,7 +525,22 @@
     "needs": {
       "materials": ["helium3", "deuterium", "hydrogen"],
       "buildings": ["gas_giant_scoop"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No scoop at a gas giant has made helium-3",
+          "body": "gas-giant",
+          "place": "surface",
+          "buildings": ["gas_giant_scoop"],
+          "made": {
+            "material": "helium3",
+            "amount": 1000
+          }
+        }
+      ],
+      "bill": {
+        "deuterium": 200
+      }
     },
     "sources": ["https://ntrs.nasa.gov/api/citations/20170005215/downloads/20170005215.pdf"]
   },
@@ -479,7 +554,18 @@
     "needs": {
       "materials": ["cnt_fibre"],
       "buildings": ["orbital_shipyard", "metal_refinery"],
-      "components": ["structure_truss"]
+      "components": ["structure_truss"],
+      "sites": [
+        {
+          "label": "No carbon nanotube fibre made beside an orbital shipyard",
+          "place": "orbit",
+          "buildings": ["orbital_shipyard"],
+          "made": {
+            "material": "cnt_fibre",
+            "amount": 5000
+          }
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Solar_power_satellite"]
   },
@@ -493,7 +579,16 @@
     "needs": {
       "materials": ["rt_superconductor"],
       "buildings": ["magnet_works"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No room-temperature superconductor has been made",
+          "made": {
+            "material": "rt_superconductor",
+            "amount": 600
+          }
+        }
+      ]
     },
     "sources": [
       "https://www.qmul.ac.uk/news/latest-news/2025/science-and-engineering/se/the-quest-for-room-temperature-superconductors.html"
@@ -509,7 +604,18 @@
     "needs": {
       "materials": ["exotic_matter"],
       "buildings": ["exotic_matter_facility"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No exotic matter facility has made exotic matter",
+          "place": "orbit",
+          "buildings": ["exotic_matter_facility"],
+          "made": {
+            "material": "exotic_matter",
+            "amount": 0.01
+          }
+        }
+      ]
     },
     "sources": ["https://arxiv.org/abs/2107.00605"]
   },
@@ -530,7 +636,15 @@
         "ai_models"
       ],
       "buildings": ["jump_point_stabiliser"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No jump point stabiliser stands at the jump point",
+          "world": "sol-a",
+          "place": "point",
+          "buildings": ["jump_point_stabiliser"]
+        }
+      ]
     },
     "sources": ["https://arxiv.org/abs/2405.05476"]
   }

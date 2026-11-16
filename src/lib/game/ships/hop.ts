@@ -15,7 +15,7 @@ import type { PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { siteOf } from './orders.ts';
 import { reasonText } from './trips.ts';
 import type { Vessel } from './types.ts';
-import { flightBody } from './world.ts';
+import { flightBody, isPlatform } from './world.ts';
 
 export const HOP_SECONDS = 3600;
 
@@ -32,7 +32,7 @@ export interface Hop {
 export function surfaceBodyOf(v: Vessel): string | undefined {
   if (v.at.kind === 'surface') return v.at.body;
   const site = v.at.kind === 'site' ? siteOf(v.at.site) : undefined;
-  return site?.place === 'surface' ? site.worldBody : undefined;
+  return site?.place === 'surface' && !isPlatform(site) ? site.worldBody : undefined;
 }
 
 const surfaceG = (gm: number, radius: number): number => gm / (radius * radius);
