@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { building } from '#lib/game/data/index.ts';
   import {
     activeOrders,
+    BUILD_SLOTS,
     buildable,
     buildHours,
     economy,
@@ -15,83 +17,104 @@
     touch,
     unlockedAfter,
     unlockedProcesses,
+    type BuildOrder,
     type Site
   } from '#lib/game/economy/index.ts';
-  import { Table, type Cell } from '#lib/ui/index.ts';
-  import Bar from './Bar.svelte';
-  import Field from './Field.svelte';
-  import { formatAmount, formatCount, formatDays, shortName } from './format.ts';
+  import { BUILDING_KIND_NAMES } from '#lib/gfx/icons/index.ts';
+  import {
+    Bar,
+    Card,
+    CardSection,
+    FilterChips,
+    Icon,
+    IconList,
+    Tile,
+    TileGrid,
+    buildingTip,
+    dim,
+    fmt,
+    materialName,
+    materialTip,
+    tipText,
+    warn,
+    type FilterItem,
+    type IconItem
+  } from '#lib/ui/index.ts';
+  import NumberField from './NumberField.svelte';
+  import TabBody from './TabBody.svelte';
+  import { KIND_ORDER, kindIcon } from './model.ts';
+  import { bld, mat } from './refs.ts';
   import { ui } from './state.svelte.ts';
-  import { buildingName, kindName, limitText } from './view.ts';
+  import { stockAmount } from './tips.ts';
+  import { limitText } from './view.ts';
 
   let { site }: { site: Site } = $props();
 
   const flows = $derived(flowsOf(site));
   const active = $derived(new Set(activeOrders(site).map((o) => o.id)));
-  const selIndex = $derived(site.queue.findIndex((o) => o.id === ui.order));
-  const selOrder = $derived(selIndex >= 0 ? site.queue[selIndex] : undefined);
   const open = $derived(buildable(economy, site));
   const locked = $derived(lockedBuildings(economy, site));
-  const catalogue = $derived([...open, ...locked]);
-  const picked = $derived(open.find((b) => b.id === ui.pick) ?? open[0]);
-  const recipes = $derived(picked ? unlockedProcesses(economy, site, picked.id) : []);
-  let recipeChoice = $state('');
-  const recipe = $derived(recipes.some((r) => r.id === recipeChoice) ? recipeChoice : (recipes[0]?.id ?? ''));
-  let quantity = $state(1);
+  const catalogue = $derived(
+    [...open, ...locked].sort(
+      (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.milestone - b.milestone
+    )
+  );
+  const kinds = $derived(KIND_ORDER.filter((k) => catalogue.some((b) => b.kind === k)));
+  const shown = $derived(catalogue.filter((b) => ui.buildKind === 'all' || b.kind === ui.buildKind));
+  const chips = $derived<FilterItem[]>([
+    { id: 'all', label: 'All', count: catalogue.length },
+    ...kinds.map((k) => ({
+      id: k,
+      icon: kindIcon(k),
+      count: catalogue.filter((b) => b.kind === k).length,
+      tip: BUILDING_KIND_NAMES[k] ?? k
+    }))
+  ]);
+  const picked = $derived(catalogue.find((b) => b.id === ui.pick) ?? open[0]);
+  const isOpen = $derived(!!picked && open.some((b) => b.id === picked.id));
+  const recipes = $derived(picked && isOpen ? unlockedProcesses(economy, site, picked.id) : []);
+  const recipe = $derived(recipes.find((r) => r.id === ui.recipe)?.id ?? recipes[0]?.id ?? '');
+  const selOrder = $derived(site.queue.find((o) => o.id === ui.order));
+  const selIndex = $derived(selOrder ? site.queue.indexOf(selOrder) : -1);
+  const showOrder = $derived(ui.side === 'order' && !!selOrder);
 
-  const costText = (cost: Record<string, number>) => {
-    const items = Object.entries(cost).sort((a, b) => b[1] - a[1]);
-    const shown = items.slice(0, 2).map(([m, v]) => `${shortName(m)} ${formatAmount(m, v)}`);
-    return items.length > 2 ? `${shown.join(', ')}, +${items.length - 2}` : shown.join(', ');
+  const orderActor = (o: BuildOrder) => flows.actors.find((x) => x.kind === 'build' && x.order.id === o.id);
+  const leftDays = (o: BuildOrder): string | undefined => {
+    const a = orderActor(o);
+    if (!a || a.kind !== 'build' || a.share <= 1e-9) return undefined;
+    return fmt.days(((1 - o.done) * a.hours) / a.share / 24);
   };
+  const slowOf = (o: BuildOrder): string => {
+    const a = orderActor(o);
+    return a && a.share < 1 - 1e-9 && active.has(o.id) ? limitText(a.limit) : '';
+  };
+  const noteOf = (o: BuildOrder): string =>
+    o.paused ? 'paused' : !active.has(o.id) ? 'waiting' : slowOf(o) || `${leftDays(o) ?? 'never'} left`;
 
-  function orderStatus(id: number): Cell {
-    const o = site.queue.find((x) => x.id === id);
-    if (!o) return '';
-    if (o.paused) return { icon: 'pause', text: 'Paused' };
-    if (!active.has(o.id)) return 'Waiting for a crew';
-    const a = flows.actors.find((x) => x.kind === 'build' && x.order.id === id);
-    if (a && a.share < 1 - 1e-9) return { icon: 'warn', text: limitText(a.limit), warn: true };
-    return { icon: 'gear', text: 'Building' };
+  function costItems(cost: Record<string, number>, quantity: number): IconItem[] {
+    return Object.entries(cost)
+      .sort((a, b) => b[1] - a[1])
+      .map(([m, v]) => {
+        const have = site.stock[m] ?? 0;
+        const need = v * quantity;
+        return {
+          icon: mat(m),
+          amount: stockAmount(m, have),
+          need: stockAmount(m, need),
+          ok: have >= need,
+          tip: materialTip(m, `Need ${stockAmount(m, need)}, have ${stockAmount(m, have)}`)
+        };
+      });
   }
 
-  const left = (id: number): string => {
-    const a = flows.actors.find((x) => x.kind === 'build' && x.order.id === id);
-    if (!a || a.kind !== 'build' || a.share <= 1e-9) return '-';
-    return formatDays(((1 - a.order.done) * a.hours) / a.share / 24);
-  };
-
-  const queueRows = $derived<Cell[][]>(
-    site.queue.map((o, i) => [
-      i + 1,
-      buildingName(o.building),
-      o.process ? process(o.process, site.body).name : 'None',
-      { pct: Math.floor(o.done * 100) },
-      left(o.id),
-      orderStatus(o.id)
-    ])
-  );
-
-  const catalogueRows = $derived<Cell[][]>(
-    catalogue.map((b) => {
-      const isOpen = open.includes(b);
-      return [
-        b.name,
-        kindName(b.kind),
-        costText(b.cost),
-        formatCount(b.workers),
-        formatDays(buildHours(b.id) / 24),
-        formatCount(standing(site, b.id)),
-        isOpen ? 'Open' : `Needs milestone ${unlockedAfter(b.milestone)}`
-      ];
-    })
-  );
-
-  function add() {
-    if (!picked) return;
-    const chosen = recipe || null;
-    const made = queueBuilding(economy, site, picked.id, chosen, quantity);
-    ui.order = made[made.length - 1]?.id ?? ui.order;
+  function addToQueue() {
+    if (!picked || !isOpen) return;
+    const made = queueBuilding(economy, site, picked.id, recipe || null, ui.quantity);
+    const last = made[made.length - 1];
+    if (last) {
+      ui.order = last.id;
+      ui.side = 'order';
+    }
     touch();
   }
 
@@ -104,89 +127,243 @@
   function remove() {
     act(removeOrder);
     ui.order = null;
+    ui.side = 'pick';
   }
+
+  const pickBuilding = (id: string) => {
+    ui.pick = id;
+    ui.side = 'pick';
+    ui.recipe = '';
+  };
+  const pickOrder = (id: number) => {
+    ui.order = id;
+    ui.side = 'order';
+  };
 </script>
 
-<h3>
-  Construction queue <small>{activeOrders(site).length} of 3 crews busy</small>
-  {#if !queueRows.length}<small id="queueEmpty">queue empty</small>{/if}
-</h3>
-{#if queueRows.length}
-  <div id="queue">
-    <Table
-      head={['>#', 'Building', 'Recipe', 'Done', '>Left', 'Status']}
-      rows={queueRows}
-      selected={selIndex}
-      keys={site.queue.map((o) => String(o.id))}
-      onpick={(row) => (ui.order = site.queue[row]?.id ?? null)}
-    />
-  </div>
-{/if}
-<Bar>
-  <button id="orderUp" disabled={selIndex <= 0} onclick={() => act((s, id) => moveOrder(s, id, -1))}
-    >Move up</button
-  >
-  <button
-    id="orderDown"
-    disabled={selIndex < 0 || selIndex >= site.queue.length - 1}
-    onclick={() => act((s, id) => moveOrder(s, id, 1))}>Move down</button
-  >
-  <button id="orderPause" disabled={!selOrder} onclick={() => act(pauseOrder)}
-    >{selOrder?.paused ? 'Resume' : 'Pause'}</button
-  >
-  <button id="orderRemove" disabled={!selOrder} onclick={remove}>Remove</button>
-  <span class="gap"></span>
-  <span class="chosen" id="chosen">{picked?.name ?? ''}</span>
-  <label class="pick"
-    >Recipe
-    <select
-      id="buildRecipe"
-      value={recipe}
-      onchange={(e) => (recipeChoice = e.currentTarget.value)}
-      disabled={recipes.length < 2}
-    >
-      {#each recipes as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
-    </select></label
-  >
-  <Field label="Quantity" bind:value={quantity} width={5} name="quantity" />
-  <button id="orderAdd" disabled={!picked} onclick={add}>Add to queue</button>
-</Bar>
-<h3>Buildings <small>{open.length} open, {locked.length} locked</small></h3>
-<div id="items">
-  <Table
-    head={['Building', 'Kind', 'Cost', '>Workers', '>Build time', '>Standing', 'Available']}
-    rows={catalogueRows}
-    selected={catalogue.findIndex((b) => b.id === picked?.id)}
-    keys={catalogue.map((b) => b.id)}
-    onpick={(row) => {
-      const b = catalogue[row];
-      if (b && open.includes(b)) {
-        ui.pick = b.id;
-        recipeChoice = '';
-      }
-    }}
-  />
-</div>
+<TabBody>
+  {#snippet main()}
+    <h3>
+      <Icon name="hammer" class="sm" />Construction queue
+      <small class="dim" id="queueCrews">{active.size} of {BUILD_SLOTS} crews busy</small>
+    </h3>
+    <div id="queue">
+      {#if site.queue.length}
+        <TileGrid min={120} gap={5}>
+          {#each site.queue as o, i (o.id)}
+            {@const slow = slowOf(o)}
+            <Tile
+              variant="q"
+              icons={[bld(o.building)]}
+              name={building(o.building).name}
+              corner={String(i + 1)}
+              mark={o.paused ? 'pause' : active.has(o.id) ? 'hammer' : 'clock'}
+              markTone={active.has(o.id) && !o.paused ? 'accent' : 'dim'}
+              meter={o.done}
+              meterTone={active.has(o.id) ? 'accent' : 'cool'}
+              note={noteOf(o)}
+              noteTone={slow ? 'hot' : 'dim'}
+              warn={!!slow}
+              idle={o.paused}
+              selected={showOrder && o.id === ui.order}
+              tip={buildingTip(
+                o.building,
+                o.paused ? dim('Paused') : active.has(o.id) ? 'Building' : dim('Waiting for a crew'),
+                `${fmt.pct(o.done)} done`,
+                o.process ? process(o.process, site.body).name : false,
+                slow && warn(slow)
+              )}
+              onselect={() => pickOrder(o.id)}
+            />
+          {/each}
+        </TileGrid>
+      {:else}
+        <p class="none" id="queueEmpty">The queue is empty. Pick a building below and add it.</p>
+      {/if}
+    </div>
+
+    <h3>
+      <Icon name="factory" class="sm" />Buildings
+      <small class="dim">{open.length} open, {locked.length} locked</small>
+    </h3>
+    <FilterChips items={chips} bind:value={ui.buildKind} />
+    <div id="items">
+      <TileGrid min={104} gap={6}>
+        {#each shown as b (b.id)}
+          {@const isOpenB = open.some((x) => x.id === b.id)}
+          {@const standingN = standing(site, b.id)}
+          {@const costs = Object.entries(b.cost).sort((x, y) => y[1] - x[1])}
+          <Tile
+            variant="bld"
+            icons={[bld(b.id)]}
+            name={b.name}
+            kind={b.kind}
+            corner={standingN ? `×${fmt.count(standingN)}` : undefined}
+            mark={isOpenB ? undefined : 'lock'}
+            cornerRight={isOpenB ? undefined : String(unlockedAfter(b.milestone))}
+            minis={costs.slice(0, 3).map(([m]) => mat(m))}
+            minisMore={Math.max(0, costs.length - 3)}
+            dimmed={!isOpenB}
+            selected={ui.side === 'pick' && picked?.id === b.id}
+            tip={buildingTip(
+              b.id,
+              isOpenB ? 'Open' : warn(`Needs milestone ${unlockedAfter(b.milestone)}`),
+              standingN ? `${fmt.count(standingN)} standing` : dim('None standing'),
+              `Build time ${fmt.days(buildHours(b.id) / 24)}`
+            )}
+            onselect={() => pickBuilding(b.id)}
+          />
+        {/each}
+      </TileGrid>
+    </div>
+  {/snippet}
+  {#snippet side()}
+    {#if showOrder && selOrder}
+      {@const b = building(selOrder.building)}
+      <Card
+        title={b.name}
+        subtitle="order {selIndex + 1}, {selOrder.paused
+          ? 'paused'
+          : active.has(selOrder.id)
+            ? 'building'
+            : 'waiting for a crew'}"
+        icon={bld(b.id)}
+      >
+        <CardSection label="Progress">
+          <div class="row">
+            <Bar value={selOrder.done} thick full />
+            <span class="share">{fmt.pct(selOrder.done)}</span>
+          </div>
+          {#if active.has(selOrder.id)}
+            <div class="dim">{leftDays(selOrder) ?? 'never'} left</div>
+          {/if}
+          {#if slowOf(selOrder)}<div class="hot" id="orderLimit">
+              <Icon name="warn" class="xs" />
+              {slowOf(selOrder)}
+            </div>{/if}
+        </CardSection>
+        <CardSection label="Cost, spent evenly while building">
+          <IconList variant="have" items={costItems(b.cost, 1)} />
+        </CardSection>
+        <div class="btns">
+          <button id="orderUp" disabled={selIndex <= 0} onclick={() => act((s, id) => moveOrder(s, id, -1))}
+            ><Icon name="up" />Up</button
+          >
+          <button
+            id="orderDown"
+            disabled={selIndex < 0 || selIndex >= site.queue.length - 1}
+            onclick={() => act((s, id) => moveOrder(s, id, 1))}><Icon name="down" />Down</button
+          >
+          <button id="orderPause" onclick={() => act(pauseOrder)}
+            ><Icon name={selOrder.paused ? 'play' : 'pause'} />{selOrder.paused ? 'Resume' : 'Pause'}</button
+          >
+          <button id="orderRemove" onclick={remove}><Icon name="trash" />Remove</button>
+        </div>
+      </Card>
+    {:else if picked}
+      <Card
+        title={picked.name}
+        subtitle={BUILDING_KIND_NAMES[picked.kind] ?? picked.kind}
+        icon={bld(picked.id)}
+        chips={[
+          { icon: 'people', text: picked.workers, tip: 'Workers' },
+          { icon: 'clock', text: fmt.days(buildHours(picked.id) / 24), tip: 'Build time' },
+          { icon: 'factory', text: fmt.count(standing(site, picked.id)), tip: 'Standing' },
+          ...(picked.start
+            ? [
+                {
+                  icon: 'check' as const,
+                  text: 'start',
+                  tone: 'cool' as const,
+                  tip: 'Exists on Earth at the start'
+                }
+              ]
+            : [])
+        ]}
+      >
+        <CardSection label="Cost for one, have / need">
+          <IconList variant="have" items={costItems(picked.cost, ui.quantity)} />
+        </CardSection>
+        {#if isOpen}
+          {#if recipes.length}
+            <CardSection label="Recipe">
+              <div class="recipes" id="buildRecipes">
+                {#each recipes.slice(0, 30) as r (r.id)}
+                  {@const o = Object.keys(r.outputs).filter((m) => m !== '@power')[0]}
+                  <Tile
+                    icons={o ? [mat(o)] : [bld(picked.id)]}
+                    iconSize={32}
+                    selected={recipe === r.id}
+                    tip={tipText(
+                      r.name,
+                      Object.keys(r.outputs)
+                        .filter((m) => m !== '@power')
+                        .map((m) => `→ ${materialName(m)}`)
+                    )}
+                    onselect={() => (ui.recipe = r.id)}
+                  />
+                {/each}
+              </div>
+            </CardSection>
+          {/if}
+          <div class="row">
+            <NumberField label="Quantity" bind:value={ui.quantity} width={6} name="quantity" />
+            <button id="orderAdd" onclick={addToQueue}><Icon name="plus" />Add to queue</button>
+          </div>
+        {:else}
+          <div class="hot" id="lockedNote">
+            <Icon name="lock" class="sm" /> Needs milestone {unlockedAfter(picked.milestone)}
+          </div>
+        {/if}
+      </Card>
+    {/if}
+  {/snippet}
+</TabBody>
 
 <style>
-  .chosen {
-    color: var(--accent);
-    margin: 0 8px;
+  .none {
+    color: var(--dim);
+    margin: 0 0 6px;
   }
-  .pick {
-    display: inline-flex;
+  .row {
+    display: flex;
     align-items: center;
     gap: 6px;
-    margin: 2px 4px;
-    color: var(--dim);
+    flex-wrap: wrap;
   }
-  .pick select {
-    color: var(--text);
-    max-width: 26ch;
+  .row :global(.ui-bar) {
+    flex: 1;
   }
-  button:disabled,
-  select:disabled {
+  .share {
+    min-width: 34px;
+    text-align: right;
+  }
+  .btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  button:disabled {
     opacity: 0.4;
     cursor: default;
+  }
+  .recipes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .hot {
+    color: var(--hot);
+  }
+  .dim {
+    color: var(--dim);
+  }
+  #queue {
+    margin-bottom: 6px;
   }
 </style>

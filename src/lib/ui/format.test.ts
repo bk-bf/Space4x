@@ -7,6 +7,7 @@ import {
   group,
   mass,
   num,
+  kcal,
   people,
   population,
   pct,
@@ -62,6 +63,13 @@ describe('units', () => {
     expect(thrust(845_000)).toBe('845 kN');
     expect(thrust(0.1)).toBe('0 kN');
     expect(thrust(2_500)).toBe('2.5 kN');
+  });
+
+  it('shows food energy in the unit that keeps three digits', () => {
+    expect(kcal(0)).toBe('0 kcal');
+    expect(kcal(2800)).toBe('2,800 kcal');
+    expect(kcal(2.5e6)).toBe('2.5 M kcal');
+    expect(kcal(2.3e13)).toBe('23 T kcal');
   });
 
   it('shows a small population as a count', () => {

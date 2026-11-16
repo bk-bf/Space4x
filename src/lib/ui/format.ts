@@ -84,3 +84,12 @@ export const toneOf = (change: number): Tone => (change === 0 ? 'dim' : change >
 export const trendTone = (t: Trend): Tone => (t === 'up' ? 'cool' : t === 'down' ? 'hot' : 'dim');
 
 export const population = (n: number): string => (n >= 500_000 ? people(n) : group(n));
+
+export function kcal(n: number): string {
+  const a = Math.abs(n);
+  if (a < 0.5) return '0 kcal';
+  if (a >= 1e12) return `${num(n / 1e12)} T kcal`;
+  if (a >= 1e9) return `${num(n / 1e9)} G kcal`;
+  if (a >= 1e6) return `${num(n / 1e6)} M kcal`;
+  return `${group(n)} kcal`;
+}

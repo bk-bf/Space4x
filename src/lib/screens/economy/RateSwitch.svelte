@@ -3,7 +3,7 @@
   import { dim, tipText, tooltip } from '#lib/ui/index.ts';
   import { ui } from './state.svelte.ts';
 
-  const periods = Object.keys(PERIODS) as Period[];
+  const periods = (Object.keys(PERIODS) as Period[]).reverse();
   const tip = tipText('Rates', dim('Every rate on the economy screens is shown over this period.'));
 </script>
 
