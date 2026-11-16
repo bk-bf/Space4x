@@ -4,6 +4,7 @@
     assign,
     economy,
     flowsOf,
+    isExtraction,
     POWER,
     process,
     setOn,
@@ -48,6 +49,7 @@
       buildingName(a.group.building),
       a.group.process ? process(a.group.process, site.body).name : 'None',
       formatCount(a.group.count),
+      ...(site.region ? [a.group.process && isExtraction(a.group.process) ? a.grade.toFixed(2) : '-'] : []),
       a.group.process ? { pct: Math.round(a.share * 100) } : '-',
       makes(a),
       status(a)
@@ -94,6 +96,7 @@
               `Makes ${material(m).name}`,
               `${formatAmount(m, v * sel.share * 24)} a day`
             ]),
+          ...(isExtraction(sel.group.process) ? [['Grade', sel.grade.toFixed(2)] as [string, string]] : []),
           ['Power', formatPower((sel.inputs[POWER] ?? 0) * sel.share)],
           ['Running', formatPercent(sel.share)]
         ]
@@ -133,7 +136,9 @@
 <h3>Buildings <small>{actors.length} groups</small></h3>
 <div id="groups">
   <Table
-    head={['Building', 'Recipe', '>Count', 'Running', 'Makes a day', 'Status']}
+    head={site.region
+      ? ['Building', 'Recipe', '>Count', '>Grade', 'Running', 'Makes a day', 'Status']
+      : ['Building', 'Recipe', '>Count', 'Running', 'Makes a day', 'Status']}
     {rows}
     selected={selIndex}
     keys={actors.map((a) => String(a.group.id))}

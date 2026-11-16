@@ -1,5 +1,24 @@
 import { economy } from '#lib/game/economy/index.ts';
-import { earth, jupiter, mars, moon, solar } from '#lib/game/flight/reference.ts';
+import { asteroidGm, asteroidRadius } from '#lib/game/asteroids.ts';
+import { asteroidRecord, asteroids } from '#lib/game/data/index.ts';
+import {
+  callisto,
+  earth,
+  enceladus,
+  europa,
+  ganymede,
+  io,
+  jupiter,
+  mars,
+  mercury,
+  moon,
+  neptune,
+  saturn,
+  solar,
+  titan,
+  uranus,
+  venus
+} from '#lib/game/flight/reference.ts';
 import { placeState, resolvePlace, type State } from '#lib/game/flight/system.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import type { FlightBody, FlightSystem, Place, TripOption } from '#lib/game/flight/index.ts';
@@ -9,18 +28,51 @@ import type { Vessel, Whereabouts } from './types.ts';
 const REFERENCE: Readonly<Record<string, FlightBody>> = {
   earth,
   luna: { ...moon, id: 'luna' },
+  mercury,
+  venus,
   mars,
-  jupiter
+  jupiter,
+  saturn,
+  uranus,
+  neptune,
+  io,
+  europa,
+  ganymede,
+  callisto,
+  titan,
+  enceladus
 };
+
+const NO_SURFACE: readonly string[] = ['venus', 'jupiter', 'saturn', 'uranus', 'neptune'];
+const SMALL_BODY_ORBIT_M = 100e3;
+
+function asteroidFlightBody(id: string): FlightBody | undefined {
+  const a = asteroidRecord(id);
+  if (!a) return undefined;
+  const radius = asteroidRadius(a);
+  return {
+    id,
+    gm: asteroidGm(a),
+    radius,
+    orbit: 0,
+    angle: 0,
+    angularSpeed: 0,
+    lowOrbitAltitude: Math.min(SMALL_BODY_ORBIT_M, radius)
+  };
+}
+
+const referenceOf = (id: string): FlightBody | undefined => REFERENCE[id] ?? asteroidFlightBody(id);
 
 const TWO_PI = Math.PI * 2;
 const wrap = (a: number): number => ((a % TWO_PI) + TWO_PI) % TWO_PI;
 
-export const FLYABLE: readonly string[] = Object.keys(REFERENCE);
+export const FLYABLE: readonly string[] = [...Object.keys(REFERENCE), ...asteroids.map((a) => a.id)];
+
+export const LANDABLE: readonly string[] = FLYABLE.filter((id) => !NO_SURFACE.includes(id));
 
 export function flightSystem(game: Game): FlightSystem {
   const bodies = game.world.bodies.flatMap((b): FlightBody[] => {
-    const r = REFERENCE[b.id];
+    const r = referenceOf(b.id);
     if (!r) return [];
     const base: FlightBody = { ...r };
     delete base.parent;

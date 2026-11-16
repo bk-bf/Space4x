@@ -1,0 +1,126 @@
+[
+  {
+    "id": "io-sulfur-plains",
+    "world": "io",
+    "body": "io",
+    "name": "Sulfur plains",
+    "kind": "ground",
+    "deposits": [{ "material": "sulfur", "grade": 3 }],
+    "basis": "Io's bright plains are frost and deposits of sulfur and sulfur dioxide from its volcanoes, the richest sulfur surface known. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Io_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "io-paterae",
+    "world": "io",
+    "body": "io",
+    "name": "Volcanic paterae",
+    "kind": "ground",
+    "deposits": [{ "material": "sulfur", "grade": 1.5 }],
+    "basis": "Around the lava lakes the surface is silicate lava with sulfur flows on its flanks, less pure than the plains. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Io_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "europa-ridged-plains",
+    "world": "europa",
+    "body": "icy-moon",
+    "name": "Ridged plains",
+    "kind": "ground",
+    "deposits": [{ "material": "water", "grade": 3 }],
+    "basis": "The bulk of Europa's surface is nearly pure water ice, young and ridged, on an ice shell tens of kilometres thick over an ocean. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Europa_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "europa-chaos",
+    "world": "europa",
+    "body": "icy-moon",
+    "name": "Chaos terrain",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 2 },
+      { "material": "comet_ice", "grade": 0.5 }
+    ],
+    "basis": "In Tara Regio the ice carries carbon dioxide drawn from the ocean below, with salts, so mixed volatile ice is here and not on the plains. Grades are relative.",
+    "source": "https://doi.org/10.1126/science.adg4155",
+    "estimated": true
+  },
+  {
+    "id": "ganymede-bright-terrain",
+    "world": "ganymede",
+    "body": "icy-moon",
+    "name": "Bright grooved terrain",
+    "kind": "ground",
+    "deposits": [{ "material": "water", "grade": 2.5 }],
+    "basis": "Young, clean water ice cut by grooves over about two thirds of Ganymede. Grade is relative.",
+    "source": "https://en.wikipedia.org/wiki/Ganymede_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "ganymede-dark-terrain",
+    "world": "ganymede",
+    "body": "icy-moon",
+    "name": "Dark cratered terrain",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 1 },
+      { "material": "comet_ice", "grade": 1 }
+    ],
+    "basis": "Old terrain where ice is mixed with dark material and with carbon dioxide and other volatiles. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Ganymede_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "callisto-cratered-plains",
+    "world": "callisto",
+    "body": "icy-moon",
+    "name": "Cratered plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 1.5 },
+      { "material": "comet_ice", "grade": 0.8 }
+    ],
+    "basis": "Callisto's ancient surface is ice and rock with carbon dioxide ice detected on it. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Callisto_(moon)",
+    "estimated": true
+  },
+  {
+    "id": "enceladus-south-polar-terrain",
+    "world": "enceladus",
+    "body": "icy-moon",
+    "name": "South polar terrain",
+    "kind": "ground",
+    "deposits": [
+      { "material": "water", "grade": 3 },
+      { "material": "ammonia", "grade": 1.5 },
+      { "material": "comet_ice", "grade": 1.5 }
+    ],
+    "basis": "Plumes from the tiger stripes carry ammonia at close to 1 percent, carbon dioxide and organics with the water vapour, frozen onto the surface around them. Grades are relative.",
+    "source": "https://doi.org/10.1038/nature08153",
+    "estimated": true
+  },
+  {
+    "id": "titan-atmosphere",
+    "world": "titan",
+    "body": "titan",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [{ "material": "nitrogen", "grade": 3 }],
+    "basis": "A 1.45 bar atmosphere of 95 percent nitrogen. Known from Cassini and Huygens.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Titan",
+    "estimated": true
+  },
+  {
+    "id": "titan-northern-seas",
+    "world": "titan",
+    "body": "titan",
+    "name": "Northern hydrocarbon seas",
+    "kind": "ground",
+    "deposits": [{ "material": "methane", "grade": 3 }],
+    "basis": "Kraken Mare, Ligeia Mare and Punga Mare near the north pole are liquid methane, ethane and nitrogen; radar showed Ligeia to be methane-rich. Grade is relative.",
+    "source": "https://doi.org/10.1002/2013gl058618",
+    "estimated": true
+  }
+]

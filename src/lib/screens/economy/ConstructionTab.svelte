@@ -107,7 +107,10 @@
   }
 </script>
 
-<h3>Construction queue <small>{activeOrders(site).length} of 3 crews busy</small></h3>
+<h3>
+  Construction queue <small>{activeOrders(site).length} of 3 crews busy</small>
+  {#if !queueRows.length}<small id="queueEmpty">queue empty</small>{/if}
+</h3>
 {#if queueRows.length}
   <div id="queue">
     <Table
@@ -118,8 +121,6 @@
       onpick={(row) => (ui.order = site.queue[row]?.id ?? null)}
     />
   </div>
-{:else}
-  <p class="none" id="queueEmpty">The queue is empty. Pick a building below and add it.</p>
 {/if}
 <Bar>
   <button id="orderUp" disabled={selIndex <= 0} onclick={() => act((s, id) => moveOrder(s, id, -1))}
@@ -168,10 +169,6 @@
 </div>
 
 <style>
-  .none {
-    margin: 0;
-    color: var(--dim);
-  }
   .chosen {
     color: var(--accent);
     margin: 0 8px;

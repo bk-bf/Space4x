@@ -1,12 +1,21 @@
 <script lang="ts">
-  import { building, milestone } from '#lib/game/data/index.ts';
+  import {
+    asteroidRecord,
+    building,
+    material,
+    milestone,
+    region as regionRecord
+  } from '#lib/game/data/index.ts';
   import type { BuildingKind } from '#lib/game/data/index.ts';
   import {
     activeOrders,
     economy,
     flowsOf,
     isFood,
+    kcalOf,
     programmeDays,
+    remainingMass,
+    siteDeposits,
     type Site
   } from '#lib/game/economy/index.ts';
   import { DefList, Table, type Cell } from '#lib/ui/index.ts';
@@ -14,6 +23,7 @@
   import {
     formatCount,
     formatDays,
+    formatKcal,
     formatMass,
     formatPeople,
     formatPercent,
@@ -31,8 +41,21 @@
       .filter(([m]) => isFood(m))
       .reduce((a, [, v]) => a + v, 0)
   );
+  const foodStockKcal = $derived(
+    Object.entries(site.stock)
+      .filter(([m]) => isFood(m))
+      .reduce((a, [m, v]) => a + v * kcalOf(m), 0)
+  );
   const foodDays = $derived(
-    food.made >= food.demand ? Infinity : foodStock / Math.max(1e-9, food.demand - food.made) / 24
+    food.made >= food.demand ? Infinity : foodStockKcal / Math.max(1e-9, food.demand - food.made) / 24
+  );
+
+  const foodShares = $derived(
+    Object.entries(food.eatenBy)
+      .filter(([, kcal]) => food.eaten > 0 && kcal / food.eaten >= 0.005)
+      .sort((x, y) => y[1] - x[1])
+      .map(([m, kcal]) => `${material(m).name.replace(/ \(.*\)$/, '')} ${formatPercent(kcal / food.eaten)}`)
+      .join(', ')
   );
 
   const kinds = $derived.by(() => {
@@ -51,6 +74,13 @@
     kinds.map(([k, r]) => [kindName(k), formatCount(r.count), formatCount(r.workers), formatPower(r.power)])
   );
 
+  const place = $derived(regionRecord(site.region ?? ''));
+  const deposits = $derived(siteDeposits(site));
+  const depositRows = $derived<Cell[][]>([
+    ...deposits.ground.map((d): Cell[] => [material(d.material).name, 'Ground', d.grade.toFixed(2)]),
+    ...deposits.air.map((d): Cell[] => [material(d.material).name, 'Atmosphere', d.grade.toFixed(2)])
+  ]);
+  const rock = $derived(asteroidRecord(site.worldBody));
   const programmeRows = $derived<Cell[][]>(
     economy.running
       .filter((p) => p.site === site.id)
@@ -86,12 +116,15 @@
       rows={[
         ['People', formatPeople(site.population)],
         ['Growth', `${formatRate(flows.growthPerHour * 8766)} a year`],
-        ['Food needed', `${formatMass(food.demand * 24)} a day`],
-        ['Food grown', `${formatMass(food.made * 24)} a day`],
+        [
+          'Calories made',
+          `${formatKcal(food.made * 24)} a day against ${formatKcal(food.demand * 24)} needed`
+        ],
         [
           'Food balance',
           `${food.made >= food.demand ? '+' : ''}${formatPercent(food.made / food.demand - 1)}`
         ],
+        ['Calorie shares', foodShares || 'None eaten'],
         ['People fed', formatPercent(food.cover)],
         [
           'Food in store',
@@ -123,6 +156,25 @@
     />
   </div>
   <div>
+    {#if place || deposits.air.length}
+      <h3>Region</h3>
+      <div id="siteRegion">
+        <DefList
+          rows={[
+            ['Region', place?.name ?? 'Atmosphere only'],
+            ...(rock
+              ? [
+                  [
+                    'Left',
+                    `${formatPercent(remainingMass(economy, site.worldBody) / rock.mass)} of the body`
+                  ] as [string, string]
+                ]
+              : [])
+          ]}
+        />
+        <Table head={['Deposit', 'Where', '>Grade']} rows={depositRows} />
+      </div>
+    {/if}
     <h3>Industry by kind</h3>
     <Table head={['Kind', '>Buildings', '>Workers', '>Power']} rows={kindRows} />
     <h3>Programmes</h3>

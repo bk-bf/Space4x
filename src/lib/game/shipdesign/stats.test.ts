@@ -245,6 +245,26 @@ describe('design errors', () => {
     expect(warnings(d)).toContain('power-deficit');
   });
 
+  it('lets a capsule fly on fuel cells before any solar array or battery exists, for a limited time', () => {
+    const d = build([
+      ['crew_capsule', 1],
+      ['fuel_cell', 1],
+      ['chemical_engine_methalox', 1],
+      ['propellant_tank', 1],
+      ['structure_truss', 1]
+    ]);
+    expect(codes(d, 3, 'error')).toEqual([]);
+    expect(codes(d, 3, 'warning')).toContain('power-deficit');
+    expect(codes(d, 3)).not.toContain('locked-part');
+    const without = build([
+      ['crew_capsule', 1],
+      ['chemical_engine_methalox', 1],
+      ['propellant_tank', 1],
+      ['structure_truss', 1]
+    ]);
+    expect(codes(without, 3, 'error')).toContain('power-deficit');
+  });
+
   it('warns when a solar ship has no battery for the eclipse', () => {
     const d = build([
       ['hall_thruster', 1],

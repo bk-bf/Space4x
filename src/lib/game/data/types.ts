@@ -3,6 +3,7 @@ export type Tier = 'P' | 'E' | 'S';
 export type Body =
   | 'earth'
   | 'moon'
+  | 'mercury'
   | 'mars'
   | 'venus'
   | 'io'
@@ -14,6 +15,43 @@ export type Body =
   | 'asteroid-m'
   | 'gas-giant'
   | 'ice-giant';
+
+export type AsteroidType = 'carbonaceous' | 'stony' | 'metallic';
+
+export type RegionKind = 'ground' | 'atmosphere';
+
+export interface Deposit {
+  material: string;
+  grade: number;
+}
+
+export interface Region {
+  id: string;
+  world: string;
+  body: Body;
+  name: string;
+  kind: RegionKind;
+  known?: boolean;
+  template?: boolean;
+  deposits: Deposit[];
+  basis: string;
+  source: string;
+  estimated: boolean;
+}
+
+export interface AsteroidRecord {
+  id: string;
+  number: number;
+  name: string;
+  type: AsteroidType;
+  spectral?: string;
+  a: number;
+  e: number;
+  diameter: number;
+  mass: number;
+  massEstimated?: boolean;
+  source: string;
+}
 
 export type Site = Body | 'orbit' | 'jump-point';
 
@@ -38,6 +76,10 @@ export interface Material {
   thin?: boolean;
   unit?: Unit;
   sources?: Source[];
+  kcalPerKg?: number;
+  kcalSource?: string;
+  kcalBasis?: string;
+  kcalEstimated?: boolean;
   why: string;
   source: string;
 }
@@ -114,6 +156,8 @@ export interface ComponentDesign {
   reentry?: number;
   insulates?: boolean;
   automates?: boolean;
+  surveys?: boolean;
+  samples?: boolean;
   basis: string;
   source?: string;
   estimated: boolean;
@@ -132,6 +176,18 @@ export interface Component {
   design: ComponentDesign;
 }
 
+export interface SiteNeed {
+  label: string;
+  world?: string;
+  body?: Body;
+  place?: 'surface' | 'orbit';
+  region?: string;
+  buildings?: string[];
+  people?: number;
+  fed?: boolean;
+  stock?: { material: string; amount: number };
+}
+
 export interface Milestone {
   id: string;
   number: number;
@@ -140,6 +196,6 @@ export interface Milestone {
   optional?: boolean;
   unlocks: string;
   requires: number[];
-  needs: { materials: string[]; buildings: string[]; components: string[] };
+  needs: { materials: string[]; buildings: string[]; components: string[]; sites?: SiteNeed[] };
   sources: string[];
 }

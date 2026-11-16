@@ -82,6 +82,7 @@ const BODY_FILL = 0.25;
 const FLEET_PARKED_FILL = 0.3;
 const FLEET_ROAMING_L = 6;
 const SHIP_VIEW_M = 4e6;
+const BELT_VIEW_M = 2e11;
 const GIANTS: readonly PlanetType[] = ['gas', 'saturn', 'ice', 'ice2'];
 export const SITE_VIEW_L: Readonly<Record<SiteKind, number>> = {
   yard: 0.4,
@@ -119,6 +120,8 @@ export function presets(g: Game, fw: number, fh: number): Preset[] {
     { id: 'system', label: 'System', L: fit(systemExtent(g, system), half * SYSTEM_MARGIN), aim: [0, 0] },
     { id: 'inner', label: 'Inner system', L: fit(innerExtent(g, system), half), aim: [0, 0] }
   ];
+  if (g.body('ceres'))
+    list.push({ id: 'belt', label: 'Belt', L: fit(BELT_VIEW_M, half), aim: target('body', 'ceres') });
   (sys?.stars ?? []).forEach((s, i) =>
     list.push({
       id: i ? `star${i}` : 'star',

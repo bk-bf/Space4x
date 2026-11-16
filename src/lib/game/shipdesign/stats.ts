@@ -319,7 +319,7 @@ function issuesOf(
     if (s.power.storage > 0)
       warn(
         'power-deficit',
-        `Systems draw ${kw(s.power.used)} against ${kw(s.power.made)} made: the batteries last ${(s.power.storage / -s.power.balance).toFixed(1)} hours.`
+        `Systems draw ${kw(s.power.used)} against ${kw(s.power.made)} made: the stored energy lasts ${(s.power.storage / -s.power.balance).toFixed(1)} hours.`
       );
     else error('power-deficit', `Systems draw ${kw(s.power.used)} but power makes ${kw(s.power.made)}.`);
   } else if (s.power.engines > 0 && s.main && s.main.throttle < 1)

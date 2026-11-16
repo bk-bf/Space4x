@@ -25,7 +25,7 @@ describe('map presets', () => {
 
   it('offers the star, every colony and every fleet of the shown system', () => {
     const ids = presets(g, W, H).map((p) => p.label);
-    expect(ids.slice(0, 3)).toEqual(['System', 'Inner system', 'Sun']);
+    expect(ids.slice(0, 4)).toEqual(['System', 'Inner system', 'Belt', 'Sun']);
     expect(ids).toEqual(
       expect.arrayContaining(['Earth', 'Mars', 'Luna', 'Freight convoy', 'Jupiter picket'])
     );

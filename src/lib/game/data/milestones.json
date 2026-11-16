@@ -122,7 +122,15 @@
     "needs": {
       "materials": ["lh2", "uhmwpe"],
       "buildings": [],
-      "components": ["chemical_engine_hydrolox", "heat_shield", "radiation_shield"]
+      "components": ["chemical_engine_hydrolox", "heat_shield", "radiation_shield"],
+      "sites": [
+        {
+          "label": "No crewed outpost on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "people": 1
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Artemis_Base_Camp"]
   },
@@ -136,7 +144,15 @@
     "needs": {
       "materials": ["uranium", "haleu", "boron_carbide", "haynes_230"],
       "buildings": ["enrichment_plant", "fuel_fabrication_plant", "fission_reactor"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No fission reactor on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["fission_reactor"]
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Kilopower"]
   },
@@ -150,7 +166,15 @@
     "needs": {
       "materials": ["lunar_regolith", "ndfeb_magnet"],
       "buildings": ["ice_mine", "regolith_excavator", "magnet_works"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No ice mine at the lunar south pole",
+          "world": "luna",
+          "region": "luna-south-pole",
+          "buildings": ["ice_mine"]
+        }
+      ]
     },
     "sources": ["https://www.sciencenews.org/article/moon-crash-reveals-crater-held-water"]
   },
@@ -161,7 +185,11 @@
     "tier": "E",
     "unlocks": "oxygen from dry regolith anywhere on the Moon; iron and silicon as by-products.",
     "requires": [8],
-    "needs": { "materials": ["iron"], "buildings": ["regolith_oxygen_plant"], "components": [] },
+    "needs": {
+      "materials": ["iron"],
+      "buildings": ["regolith_oxygen_plant"],
+      "components": []
+    },
     "sources": ["https://ntrs.nasa.gov/citations/20110008535"]
   },
   {
@@ -171,7 +199,11 @@
     "tier": "E",
     "unlocks": "shielded habitats, landing pads and berms without lift from Earth.",
     "requires": [9],
-    "needs": { "materials": ["sintered_regolith"], "buildings": ["sinter_printer"], "components": [] },
+    "needs": {
+      "materials": ["sintered_regolith"],
+      "buildings": ["sinter_printer"],
+      "components": []
+    },
     "sources": [
       "https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Shaping_the_Future/3D_printing_of_a_model_building_block_for_a_lunar_base_outer_shell"
     ]
@@ -183,7 +215,21 @@
     "tier": "E",
     "unlocks": "closed food loop and a self-sustaining crew; game pacing after this point.",
     "requires": [3, 10],
-    "needs": { "materials": ["plant_biomass"], "buildings": ["greenhouse"], "components": [] },
+    "needs": {
+      "materials": ["plant_biomass"],
+      "buildings": ["greenhouse"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No fed crew with a greenhouse on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["greenhouse"],
+          "people": 4,
+          "fed": true
+        }
+      ]
+    },
     "sources": ["https://en.wikipedia.org/wiki/Moon_Village"]
   },
   {
@@ -196,7 +242,15 @@
     "needs": {
       "materials": ["lox", "lh2"],
       "buildings": ["propellant_depot", "cryogenic_liquefaction_plant", "ice_mine", "electrolysis_plant"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No lunar propellant plant on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["ice_mine", "electrolysis_plant", "cryogenic_liquefaction_plant"]
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Lunar_water"]
   },
@@ -221,7 +275,11 @@
     "tier": "E",
     "unlocks": "roughly double chemical Isp at high thrust; faster crewed transfers.",
     "requires": [7],
-    "needs": { "materials": ["triso"], "buildings": [], "components": ["ntr_engine"] },
+    "needs": {
+      "materials": ["triso"],
+      "buildings": [],
+      "components": ["ntr_engine"]
+    },
     "sources": [
       "https://en.wikipedia.org/wiki/NERVA",
       "https://breakingdefense.com/2025/06/darpas-draco-nuclear-propulsion-project-roars-no-more/"
@@ -234,7 +292,21 @@
     "tier": "P",
     "unlocks": "survey of asteroid composition; picks mining targets.",
     "requires": [1],
-    "needs": { "materials": [], "buildings": [], "components": ["sampling_arm", "heat_shield"] },
+    "needs": {
+      "materials": [],
+      "buildings": [],
+      "components": ["survey_suite", "sampling_arm", "heat_shield"],
+      "sites": [
+        {
+          "label": "No asteroid sample on Earth",
+          "world": "earth",
+          "stock": {
+            "material": "carbonaceous_chondrite",
+            "amount": 0.1
+          }
+        }
+      ]
+    },
     "sources": ["https://en.wikipedia.org/wiki/OSIRIS-REx"]
   },
   {
@@ -247,7 +319,15 @@
     "needs": {
       "materials": ["carbonaceous_chondrite"],
       "buildings": ["asteroid_miner", "asteroid_processor"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No miner on a carbonaceous asteroid",
+          "body": "asteroid-c",
+          "place": "surface",
+          "buildings": ["asteroid_miner"]
+        }
+      ]
     },
     "sources": ["https://en.wikipedia.org/wiki/Asteroid_mining"]
   },
@@ -261,7 +341,15 @@
     "needs": {
       "materials": ["fe_ni_metal", "asteroidal_steel"],
       "buildings": ["metal_refinery"],
-      "components": []
+      "components": [],
+      "sites": [
+        {
+          "label": "No miner on a metallic asteroid",
+          "body": "asteroid-m",
+          "place": "surface",
+          "buildings": ["asteroid_miner"]
+        }
+      ]
     },
     "sources": ["https://planetary.org/space-missions/psyche"]
   },
@@ -272,7 +360,11 @@
     "tier": "E",
     "unlocks": "ships too large to launch, built from asteroidal metal and volatiles.",
     "requires": [12, 17],
-    "needs": { "materials": [], "buildings": ["orbital_shipyard"], "components": [] },
+    "needs": {
+      "materials": [],
+      "buildings": ["orbital_shipyard"],
+      "components": []
+    },
     "sources": ["https://www.nasa.gov/mission/on-orbit-servicing-assembly-and-manufacturing-2-osam-2/"]
   },
   {
@@ -342,7 +434,11 @@
     "tier": "E",
     "unlocks": "first He-3 stock for D-He3 fusion.",
     "requires": [8, 22],
-    "needs": { "materials": ["helium3"], "buildings": ["regolith_excavator"], "components": [] },
+    "needs": {
+      "materials": ["helium3"],
+      "buildings": ["regolith_excavator"],
+      "components": []
+    },
     "sources": ["https://www.nasa.gov/feature/harnessing-power-from-the-moon"]
   },
   {
@@ -352,7 +448,11 @@
     "tier": "E",
     "unlocks": "high Isp with useful thrust; practical travel to the outer planets.",
     "requires": [18, 22, 23],
-    "needs": { "materials": ["uhtc"], "buildings": ["orbital_shipyard"], "components": ["fusion_drive"] },
+    "needs": {
+      "materials": ["uhtc"],
+      "buildings": ["orbital_shipyard"],
+      "components": ["fusion_drive"]
+    },
     "sources": ["https://en.wikipedia.org/wiki/Direct_Fusion_Drive"]
   },
   {
@@ -390,7 +490,11 @@
     "tier": "S",
     "unlocks": "high-field magnets with no cryogenics.",
     "requires": [22],
-    "needs": { "materials": ["rt_superconductor"], "buildings": ["magnet_works"], "components": [] },
+    "needs": {
+      "materials": ["rt_superconductor"],
+      "buildings": ["magnet_works"],
+      "components": []
+    },
     "sources": [
       "https://www.qmul.ac.uk/news/latest-news/2025/science-and-engineering/se/the-quest-for-room-temperature-superconductors.html"
     ]
@@ -402,7 +506,11 @@
     "tier": "S",
     "unlocks": "material that can hold a wormhole throat open.",
     "requires": [22, 27],
-    "needs": { "materials": ["exotic_matter"], "buildings": ["exotic_matter_facility"], "components": [] },
+    "needs": {
+      "materials": ["exotic_matter"],
+      "buildings": ["exotic_matter_facility"],
+      "components": []
+    },
     "sources": ["https://arxiv.org/abs/2107.00605"]
   },
   {

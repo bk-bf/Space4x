@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ASTEROID_BODY,
+  GRADE_MAX,
+  GRADE_MIN,
+  WORLD_BODIES,
+  asteroids,
+  atmosphereOf,
+  bodyTypeOf,
   buildings,
   dataFiles,
+  depositGrade,
+  regions,
+  regionsOf,
   material,
   materials,
   materialSites,
@@ -21,6 +31,7 @@ const TIERS = ['P', 'E', 'S'];
 const BODIES: Body[] = [
   'earth',
   'moon',
+  'mercury',
   'mars',
   'venus',
   'io',
@@ -56,6 +67,68 @@ const massOnly = (r: { inputs: Amounts; outputs: Amounts }) =>
   [...Object.keys(r.inputs), ...Object.keys(r.outputs)].every((id) => unitOf(id) === 'kg');
 const OPEN_AIR = new Set(['farmland']);
 const unknown = (ids: string[], known: Set<string>) => ids.filter((id) => !known.has(id));
+
+describe('what milestones need to stand somewhere', () => {
+  const needs = milestones.flatMap((m) => (m.needs.sites ?? []).map((n) => ({ m, n })));
+
+  it('names a body, a place, a region and buildings that exist', () => {
+    expect(needs.map(({ m }) => m.number)).toEqual([6, 7, 8, 11, 12, 15, 16, 17]);
+    for (const { m, n } of needs) {
+      expect(n.label.length, `${m.number}`).toBeGreaterThan(8);
+      expect(n.world !== undefined || n.body !== undefined, `${m.number}`).toBe(true);
+      if (n.world) expect(WORLD_BODIES[n.world] ?? n.world, `${m.number}`).toBeTruthy();
+      if (n.region) {
+        const found = regions.find((r) => r.id === n.region);
+        expect(found?.world, `${m.number} region`).toBe(n.world);
+      }
+      for (const b of n.buildings ?? []) {
+        expect(buildingIds.has(b), `${m.number} ${b}`).toBe(true);
+        if (n.world && n.place === 'surface' && n.world !== 'earth')
+          expect(buildings.find((x) => x.id === b)?.where, `${m.number} ${b} on ${n.world}`).toContain(
+            bodyTypeOf(n.world)
+          );
+      }
+      if (n.stock) expect(materialIds.has(n.stock.material), `${m.number}`).toBe(true);
+    }
+  });
+
+  it('keeps the reachability of every milestone from Earth alone: a site need adds no material or building', () => {
+    for (const m of milestones) {
+      const got = reach({ upTo: m.number, thinOnly: true });
+      expect(
+        m.needs.buildings.filter((id) => !got.buildings.has(id)),
+        `${m.number}`
+      ).toEqual([]);
+    }
+  });
+});
+
+describe('food', () => {
+  const foods = materials.filter((m) => m.category === 'food');
+
+  it('gives every food an energy content with a source, or marks it estimated', () => {
+    expect(foods.map((m) => m.id)).toEqual(expect.arrayContaining(['wheat', 'meat', 'food_ration']));
+    for (const m of foods) {
+      expect(m.kcalPerKg, m.id).toBeGreaterThan(50);
+      expect(m.kcalPerKg, m.id).toBeLessThan(9000);
+      expect(m.kcalSource, m.id).toMatch(/^https?:\/\//);
+      expect(m.kcalBasis?.length, m.id).toBeGreaterThan(20);
+    }
+  });
+
+  it('makes meat in a ranch from feed crops and water, at the published feed ratio, without creating mass', () => {
+    const r = recipes.find((x) => x.id === 'ranch_meat')!;
+    expect(r.building).toBe('ranch');
+    expect(r.estimated).toBe(true);
+    expect(r.source).toMatch(/^https?:\/\//);
+    expect(Object.keys(r.outputs)).toEqual(['meat']);
+    const feed = (r.inputs.wheat ?? 0) + (r.inputs.soybean ?? 0);
+    expect(feed / (r.outputs.meat ?? 1)).toBeGreaterThanOrEqual(2.8);
+    expect(feed / (r.outputs.meat ?? 1)).toBeLessThanOrEqual(3.2);
+    expect(mass(r.outputs)).toBeLessThan(mass(r.inputs));
+    expect(buildings.find((b) => b.id === 'ranch')?.where).toEqual(['earth']);
+  });
+});
 
 describe('ids', () => {
   const duplicates = (ids: string[]) => ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -427,5 +500,171 @@ describe('propulsion performance', () => {
 
   it('marks the fusion drive as a design study', () => {
     expect(shipComponents.find((c) => c.id === 'fusion_drive')?.performance?.basis).toBe('design-study');
+  });
+});
+
+describe('regions', () => {
+  const ground = regions.filter((r) => r.kind === 'ground');
+  const sourceOf = (id: string, type: string) => material(id).sources?.find((s) => s.body === type);
+
+  it('are unique, sourced, marked estimated and in a known body type', () => {
+    expect(new Set(regions.map((r) => r.id)).size).toBe(regions.length);
+    for (const r of regions) {
+      expect(BODIES, r.id).toContain(r.body);
+      expect(bodyTypeOf(r.world), `${r.id} world ${r.world}`).toBe(r.body);
+      expect(r.source, r.id).toMatch(/^https:\/\//);
+      expect(r.basis.length, r.id).toBeGreaterThan(40);
+      expect(r.estimated, r.id).toBe(true);
+    }
+  });
+
+  it('hold deposits of known materials with a grade between the stated bounds', () => {
+    expect(GRADE_MIN).toBe(0.05);
+    expect(GRADE_MAX).toBe(4);
+    for (const r of regions) {
+      expect(r.deposits.length, r.id).toBeGreaterThan(0);
+      expect(new Set(r.deposits.map((d) => d.material)).size, `${r.id} duplicates`).toBe(r.deposits.length);
+      for (const d of r.deposits) {
+        expect(materialIds.has(d.material), `${r.id} ${d.material}`).toBe(true);
+        expect(d.grade, `${r.id} ${d.material}`).toBeGreaterThanOrEqual(GRADE_MIN);
+        expect(d.grade, `${r.id} ${d.material}`).toBeLessThanOrEqual(GRADE_MAX);
+      }
+    }
+  });
+
+  it('hold only what some building can extract on that body type, in the right way for the kind', () => {
+    for (const r of regions)
+      for (const d of r.deposits) {
+        const s = sourceOf(d.material, r.body);
+        expect(s, `${r.id} ${d.material} on ${r.body}`).toBeDefined();
+        expect(s?.how === 'atmosphere', `${r.id} ${d.material} atmospheric`).toBe(r.kind === 'atmosphere');
+      }
+  });
+
+  it('cover every extraction source of the body types they map, so none is stranded', () => {
+    const mapped = new Set(regions.map((r) => r.body));
+    for (const m of materials)
+      for (const s of m.sources ?? []) {
+        if (!mapped.has(s.body) || s.body === 'earth') continue;
+        const held = regions.some(
+          (r) =>
+            r.body === s.body &&
+            (r.kind === 'atmosphere') === (s.how === 'atmosphere') &&
+            r.deposits.some((d) => d.material === m.id)
+        );
+        expect(held, `${m.id} on ${s.body}`).toBe(true);
+      }
+  });
+
+  it('give Earth none and keep comets out until they are bodies', () => {
+    expect(regions.filter((r) => r.body === 'earth')).toEqual([]);
+    expect(regions.filter((r) => r.body === 'comet')).toEqual([]);
+    expect(depositGrade('earth', null, 'iron')).toBe(1);
+  });
+
+  it('put lunar ice at the south pole, helium-3 in the maria and aluminium rock in the highlands', () => {
+    const holders = (m: string) => regionsOf('luna').filter((r) => r.deposits.some((d) => d.material === m));
+    expect(holders('water').map((r) => r.id)).toEqual(['luna-south-pole']);
+    expect(holders('ilmenite').map((r) => r.id)).toEqual(['luna-maria']);
+    expect(holders('anorthite').map((r) => r.id)).toEqual(['luna-highlands']);
+    expect(depositGrade('luna', 'luna-maria', 'helium3')!).toBeGreaterThan(
+      depositGrade('luna', 'luna-highlands', 'helium3')!
+    );
+    expect(depositGrade('luna', 'luna-maria', 'water')).toBeUndefined();
+  });
+
+  it('make atmospheres available whatever the region', () => {
+    expect(depositGrade('mars', null, 'carbon_dioxide')).toBe(atmosphereOf('mars')?.deposits[0]?.grade);
+    expect(depositGrade('mars', 'mars-basaltic-plains', 'carbon_dioxide')).toBeGreaterThan(0);
+    expect(depositGrade('mars', null, 'water')).toBeUndefined();
+    expect(depositGrade('mars', 'mars-polar-layered-deposits', 'water')).toBe(3);
+    expect(depositGrade('luna', 'mars-polar-layered-deposits', 'water')).toBeUndefined();
+  });
+
+  it('start with the Moon and every atmosphere known and every other ground region unknown', () => {
+    const known = ground.filter((r) => r.known).map((r) => r.world);
+    expect(new Set(known)).toEqual(new Set(['luna']));
+    expect(regionsOf('luna').every((r) => r.known)).toBe(true);
+    expect(regions.filter((r) => r.kind === 'atmosphere').every((r) => r.known)).toBe(true);
+  });
+
+  it('map every body to a type that exists', () => {
+    for (const [world, type] of Object.entries(WORLD_BODIES)) expect(BODIES, world).toContain(type);
+  });
+
+  it('keep the thin path closed through regions: ice only from the south pole still reaches milestone 12', () => {
+    const moon = reach({ upTo: 12, thinOnly: true, site: 'moon' });
+    expect(moon.materials.has('water')).toBe(true);
+    expect(moon.materials.has('lox')).toBe(true);
+  });
+});
+
+describe('asteroids', () => {
+  const near = asteroids.filter((a) => a.a * (1 - a.e) < 1.3);
+
+  it('are real bodies with unique ids and numbers, an orbit, a size, a mass and a source', () => {
+    expect(new Set(asteroids.map((a) => a.id)).size).toBe(asteroids.length);
+    expect(new Set(asteroids.map((a) => a.number)).size).toBe(asteroids.length);
+    for (const a of asteroids) {
+      expect(Object.keys(WORLD_BODIES), a.id).not.toContain(a.id);
+      expect(Object.keys(ASTEROID_BODY), a.id).toContain(a.type);
+      expect(a.a, a.id).toBeGreaterThan(0.8);
+      expect(a.a, a.id).toBeLessThan(4);
+      expect(a.e, a.id).toBeGreaterThanOrEqual(0);
+      expect(a.e, a.id).toBeLessThan(0.7);
+      expect(a.diameter, a.id).toBeGreaterThan(0.1);
+      expect(a.mass, a.id).toBeGreaterThan(1e9);
+      expect(a.source, a.id).toMatch(/^https:\/\//);
+    }
+  });
+
+  it('hold near-Earth asteroids and a main belt of named bodies, all three types', () => {
+    const names = (list: typeof asteroids) => list.map((a) => a.name);
+    expect(names(near)).toEqual(expect.arrayContaining(['Bennu', 'Ryugu', 'Eros', 'Itokawa', 'Apophis']));
+    expect(asteroids.length - near.length).toBeGreaterThanOrEqual(40);
+    expect(names(asteroids)).toEqual(
+      expect.arrayContaining(['Ceres', 'Vesta', 'Pallas', 'Hygiea', 'Psyche', 'Kalliope'])
+    );
+    for (const type of Object.keys(ASTEROID_BODY))
+      expect(asteroids.filter((a) => a.type === type).length, type).toBeGreaterThanOrEqual(5);
+  });
+
+  it('resolve to the data asteroid types and have exactly one ground region unless they have their own', () => {
+    for (const a of asteroids) {
+      expect(bodyTypeOf(a.id), a.id).toBe(ASTEROID_BODY[a.type]);
+      expect(regionsOf(a.id).length, a.id).toBeGreaterThanOrEqual(1);
+      if (a.id !== 'ceres') expect(regionsOf(a.id).map((r) => r.id)).toEqual([`${a.id}-body`]);
+    }
+  });
+
+  it('give each type the materials its extraction sources name', () => {
+    const metal = asteroids.find((a) => a.type === 'metallic')!;
+    const stone = asteroids.find((a) => a.type === 'stony')!;
+    expect(depositGrade(metal.id, `${metal.id}-body`, 'fe_ni_metal')!).toBeGreaterThan(
+      depositGrade(stone.id, `${stone.id}-body`, 'fe_ni_metal')!
+    );
+    const carbon = asteroids.find((a) => a.type === 'carbonaceous' && a.id !== 'ceres')!;
+    expect(depositGrade(carbon.id, `${carbon.id}-body`, 'water')).toBeGreaterThan(0);
+    expect(depositGrade(carbon.id, `${carbon.id}-body`, 'iron')).toBeUndefined();
+  });
+
+  it('mark an estimated mass as such and keep real masses near the density of the type', () => {
+    for (const a of asteroids) {
+      const rho = a.mass / ((Math.PI / 6) * Math.pow(a.diameter * 1000, 3));
+      expect(rho, a.id).toBeGreaterThan(500);
+      expect(rho, a.id).toBeLessThan(8000);
+    }
+    expect(asteroids.find((a) => a.id === 'bennu')?.massEstimated).toBeUndefined();
+    expect(asteroids.find((a) => a.id === 'apophis')?.massEstimated).toBe(true);
+  });
+});
+
+describe('the survey instrument', () => {
+  it('is one real component, unlocked early and needed by asteroid prospecting', () => {
+    const suites = shipComponents.filter((c) => c.design.surveys);
+    expect(suites.map((c) => c.id)).toEqual(['survey_suite']);
+    expect(suites[0]?.design.source).toMatch(/^https:\/\//);
+    expect(suites[0]?.milestone).toBeLessThan(15);
+    expect(milestone(15).needs.components).toContain('survey_suite');
   });
 });

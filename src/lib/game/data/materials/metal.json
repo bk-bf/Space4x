@@ -273,7 +273,8 @@
     "sources": [
       { "body": "earth", "how": "mined", "building": "mine_earth" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
-      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mercury", "how": "regolith", "building": "regolith_excavator" }
     ],
     "why": "Plant nutrient for food crops; NaK liquid-metal coolant",
     "source": "https://en.wikipedia.org/wiki/Potash"

@@ -1,10 +1,14 @@
 import { building } from '#lib/game/data/index.ts';
-import { buildingsAt, processesAt } from './processes.ts';
+import { gradeAt } from './deposits.ts';
+import { buildingsAt, processesAt, type Process } from './processes.ts';
 import type { BuildOrder, Economy, Group, Site } from './types.ts';
 import { isUnlocked } from './unlocks.ts';
 
+export const holdsDeposits = (site: Site, p: Process): boolean =>
+  Object.keys(p.extracts).every((m) => gradeAt(site, m) !== undefined);
+
 export const unlockedProcesses = (eco: Economy, site: Site, buildingId: string) =>
-  processesAt(buildingId, site.body).filter((p) => isUnlocked(eco, p));
+  processesAt(buildingId, site.body).filter((p) => isUnlocked(eco, p) && holdsDeposits(site, p));
 
 export const buildable = (eco: Economy, site: Site) =>
   buildingsAt(site.body).filter((b) => isUnlocked(eco, b));

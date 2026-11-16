@@ -1,24 +1,11 @@
-import { materials, type Body as DataBody } from '#lib/game/data/index.ts';
-
-const DATA_BODY: Record<string, DataBody> = {
-  earth: 'earth',
-  luna: 'moon',
-  mars: 'mars',
-  venus: 'venus',
-  ceres: 'asteroid-c',
-  europa: 'icy-moon',
-  jupiter: 'gas-giant',
-  saturn: 'gas-giant',
-  uranus: 'ice-giant',
-  neptune: 'ice-giant'
-};
+import { bodyTypeOf, materials } from '#lib/game/data/index.ts';
 
 const SHOWN = 8;
 
 export function resourcesOf(bodyId: string): string {
-  const body = DATA_BODY[bodyId];
-  const names = body
-    ? materials.filter((m) => m.sources?.some((s) => s.body === body)).map((m) => m.name)
+  const type = bodyTypeOf(bodyId);
+  const names = type
+    ? materials.filter((m) => m.sources?.some((s) => s.body === type)).map((m) => m.name)
     : [];
   if (!names.length) return 'None known';
   const more = names.length - SHOWN;

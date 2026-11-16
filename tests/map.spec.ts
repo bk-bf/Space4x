@@ -75,8 +75,8 @@ test('the system panel lists the bodies of Sol and shows no fleets or contacts',
   await expect(page.locator('#noFleets')).toBeVisible();
   await expect(label(page, 'Jump point A, unsurveyed')).toBeVisible();
   await win(page, 'side').locator('[data-tab="bodies"]').click();
-  await expect(win(page, 'side').locator('table')).toContainText('Jupiter');
-  await expect(win(page, 'side').locator('table')).toContainText('Earth');
+  await expect(win(page, 'side').locator('table').first()).toContainText('Jupiter');
+  await expect(win(page, 'side').locator('table').first()).toContainText('Earth');
   await win(page, 'side').locator('[data-tab="contacts"]').click();
   await expect(page.locator('#noContacts')).toBeVisible();
   await expectCleanLayout(page);

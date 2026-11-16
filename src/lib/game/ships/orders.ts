@@ -8,7 +8,9 @@ import type { Item, Order, Vessel, Whereabouts } from './types.ts';
 
 export type NewOrder =
   | { type: 'fly'; body: string; angle: number; profile?: Profile }
-  | { type: 'land'; body: string; profile?: Profile }
+  | { type: 'land'; body: string; profile?: Profile; region?: string }
+  | { type: 'survey'; body: string }
+  | { type: 'sample' }
   | { type: 'dock'; site: string }
   | { type: 'load'; item: Item; amount: number | null }
   | { type: 'unload'; item: Item; amount: number | null }
@@ -49,13 +51,20 @@ export function clearOrders(v: Vessel): void {
 
 export const siteOf = (id: string): Site | undefined => economy.sites.find((s) => s.id === id);
 
+export function surfaceSite(body: string, region?: string): Site | undefined {
+  const here = economy.sites.filter((s) => s.worldBody === body && s.place === 'surface');
+  return region ? here.find((s) => s.region === region) : here[0];
+}
+
 export function projectedPlace(v: Vessel): Whereabouts {
   let at: Whereabouts = v.trip ? v.trip.to : v.at;
   for (const o of v.orders) {
     if (o.type === 'fly') at = { kind: 'orbit', body: o.body, angle: o.angle };
     else if (o.type === 'land') {
-      const s = economy.sites.find((x) => x.worldBody === o.body && x.place === 'surface');
-      at = s ? { kind: 'site', site: s.id } : { kind: 'surface', body: o.body };
+      const s = surfaceSite(o.body, o.region);
+      at = s
+        ? { kind: 'site', site: s.id }
+        : { kind: 'surface', body: o.body, ...(o.region ? { region: o.region } : {}) };
     } else if (o.type === 'dock') at = { kind: 'site', site: o.site };
   }
   return at;
@@ -63,7 +72,8 @@ export function projectedPlace(v: Vessel): Whereabouts {
 
 export function legOrders(from: Whereabouts, to: Site, profile: Profile = 'cheapest'): NewOrder[] {
   if (from.kind === 'site' && from.site === to.id) return [];
-  if (to.place === 'surface') return [{ type: 'land', body: to.worldBody, profile }];
+  if (to.place === 'surface')
+    return [{ type: 'land', body: to.worldBody, profile, ...(to.region ? { region: to.region } : {}) }];
   const fromBody =
     from.kind === 'orbit'
       ? from.body
@@ -102,6 +112,10 @@ export function orderLabel(game: Game, o: Order): string {
       return `Load ${o.amount === null ? 'all' : `${Math.round(o.amount).toLocaleString('en-US')} kg`} ${itemName(o.item)}`;
     case 'unload':
       return `Unload ${o.amount === null ? 'all' : `${Math.round(o.amount).toLocaleString('en-US')} kg`} ${itemName(o.item)}`;
+    case 'survey':
+      return `Survey ${body(o.body)}`;
+    case 'sample':
+      return 'Take a sample';
     case 'wait':
       return `Wait ${Math.round((o.seconds / 3600) * 10) / 10} h`;
   }

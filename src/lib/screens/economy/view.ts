@@ -38,6 +38,8 @@ export function limitText(limit: Limit | null): string {
   if (limit.kind === 'power') return 'Short of power';
   if (limit.kind === 'compute') return 'Short of compute';
   if (limit.kind === 'material') return `Short of ${materialName(limit.id)}`;
+  if (limit.kind === 'deposit') return `No ${materialName(limit.id).toLowerCase()} in this region`;
+  if (limit.kind === 'depleted') return 'Mined out';
   if (limit.kind === 'slot') return 'Waiting for a crew';
   return 'Paused';
 }

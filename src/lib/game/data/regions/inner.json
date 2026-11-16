@@ -1,0 +1,59 @@
+[
+  {
+    "id": "mercury-polar-cold-traps",
+    "world": "mercury",
+    "body": "mercury",
+    "name": "Polar cold traps",
+    "kind": "ground",
+    "deposits": [{ "material": "water", "grade": 2.5 }],
+    "basis": "Radar-bright craters at the poles that never see the Sun hold water ice; MESSENGER neutron measurements found it in a layer tens of centimetres under a dark cover, in quantity far above the planet's dry surface. Grade is relative.",
+    "source": "https://doi.org/10.1126/science.1229953",
+    "estimated": true
+  },
+  {
+    "id": "mercury-smooth-plains",
+    "world": "mercury",
+    "body": "mercury",
+    "name": "Northern smooth plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "basalt", "grade": 1.5 },
+      { "material": "sulfur", "grade": 2 },
+      { "material": "potassium", "grade": 1.5 }
+    ],
+    "basis": "Volcanic plains of magnesium-rich basalt. MESSENGER measured sulfur up to about 4 percent by mass, ten times Earth's crust, and potassium high enough that the planet is volatile-rich rather than depleted. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Geology_of_Mercury",
+    "estimated": true
+  },
+  {
+    "id": "mercury-intercrater-plains",
+    "world": "mercury",
+    "body": "mercury",
+    "name": "Intercrater plains",
+    "kind": "ground",
+    "deposits": [
+      { "material": "basalt", "grade": 1 },
+      { "material": "sulfur", "grade": 1.5 }
+    ],
+    "basis": "The old cratered terrain between the large basins, the same magnesium-rich rock with somewhat less sulfur. Grades are relative.",
+    "source": "https://en.wikipedia.org/wiki/Geology_of_Mercury",
+    "estimated": true
+  },
+  {
+    "id": "venus-atmosphere",
+    "world": "venus",
+    "body": "venus",
+    "name": "Atmosphere",
+    "kind": "atmosphere",
+    "known": true,
+    "deposits": [
+      { "material": "carbon_dioxide", "grade": 3 },
+      { "material": "nitrogen", "grade": 0.11 },
+      { "material": "sulfuric_acid", "grade": 0.5 },
+      { "material": "sulfur", "grade": 0.05 }
+    ],
+    "basis": "A 92 bar atmosphere of 96.5 percent carbon dioxide and 3.5 percent nitrogen, with a cloud deck of sulfuric acid droplets at 48 to 60 km and sulfur dioxide at trace level. Carbon dioxide and nitrogen keep their proportions; the acid and sulfur grades are estimates. Known from probes and spectroscopy.",
+    "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Venus",
+    "estimated": true
+  }
+]

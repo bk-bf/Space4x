@@ -1,5 +1,6 @@
 import { DAY, game } from '#lib/game/index.ts';
-import { Player, type PlayReport } from '#lib/game/play.ts';
+import type { PlayReport } from '#lib/game/play.ts';
+import { PathPlayer } from '#lib/game/playPath.ts';
 import { economy } from '#lib/game/economy/index.ts';
 import { ships } from '#lib/game/ships/index.ts';
 
@@ -18,7 +19,7 @@ declare global {
 
 export function installTestApi(params: URLSearchParams): void {
   if (!import.meta.env.DEV || !params.has('test')) return;
-  const player = new Player(game);
+  const player = new PathPlayer(game);
   window.space4xTest = {
     advanceDays: (days) => game.advance(days * DAY),
     play: (milestone) => {

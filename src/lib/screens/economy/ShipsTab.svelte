@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { material } from '#lib/game/data/index.ts';
+  import { asteroids, material } from '#lib/game/data/index.ts';
   import { economy, isMass, touch } from '#lib/game/economy/index.ts';
   import { className, game } from '#lib/game/index.ts';
   import { PROPELLANTS, PROPELLANT_KINDS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
@@ -9,7 +9,11 @@
     clearOrders,
     FLYABLE,
     foundOptions,
+    foundRegions,
     foundSite,
+    LANDABLE,
+    needsRegion,
+    projectedPlace,
     goTo,
     installModule,
     moveOrder,
@@ -24,6 +28,7 @@
     type NewOrder,
     type VesselPlan
   } from '#lib/game/ships/index.ts';
+  import { isSurveyable, isSurveyed, knownRegions } from '#lib/game/survey.svelte.ts';
   import { DefList, Table, type Cell } from '#lib/ui/index.ts';
   import Bar from './Bar.svelte';
   import Field from './Field.svelte';
@@ -61,7 +66,8 @@
   let profile = $state<'cheapest' | 'balanced' | 'fastest'>('cheapest');
   let planned = $state<{ vessel: string; key: string; plan: VesselPlan } | null>(null);
 
-  type Dest = { key: string; label: string; to: Destination; siteId?: string };
+  type Dest = { key: string; label: string; to: Destination; siteId?: string; group: string };
+  const rockIds = new Set(asteroids.map((a) => a.id));
   const dests = $derived.by<Dest[]>(() => {
     const out: Dest[] = [];
     for (const s of economy.sites.slice(1)) {
@@ -72,23 +78,37 @@
           s.place === 'orbit'
             ? { kind: 'orbit', body: s.worldBody, angle: s.angle }
             : { kind: 'surface', body: s.worldBody, angle: 0 },
-        siteId: s.id
+        siteId: s.id,
+        group: 'Sites'
       });
     }
+    const groupOf = (b: string, what: string) =>
+      rockIds.has(b) ? `${what}, asteroids` : `${what}, planets and moons`;
     for (const b of FLYABLE)
       out.push({
         key: `orbit:${b}`,
         label: `${bodyName(b)} orbit`,
-        to: { kind: 'orbit', body: b, angle: 0 }
+        to: { kind: 'orbit', body: b, angle: 0 },
+        group: groupOf(b, 'Orbit')
       });
-    for (const b of FLYABLE.filter((x) => x !== 'jupiter'))
+    for (const b of LANDABLE) {
       out.push({
         key: `surface:${b}`,
         label: `${bodyName(b)} surface`,
-        to: { kind: 'surface', body: b, angle: 0 }
+        to: { kind: 'surface', body: b, angle: 0 },
+        group: groupOf(b, 'Surface')
       });
+      for (const r of knownRegions(b))
+        out.push({
+          key: `surface:${b}:${r.id}`,
+          label: `${bodyName(b)} surface, ${r.name.toLowerCase()}`,
+          to: { kind: 'surface', body: b, angle: 0, region: r.id },
+          group: groupOf(b, 'Surface')
+        });
+    }
     return out;
   });
+  const groups = $derived([...new Set(dests.map((d) => d.group))]);
   const dest = $derived(dests.find((d) => d.key === destKey) ?? dests[0]);
 
   function plan() {
@@ -125,14 +145,20 @@
         vessel,
         dest.to.kind === 'orbit'
           ? { type: 'fly', body: dest.to.body, angle: dest.to.angle, profile: p }
-          : { type: 'land', body: dest.to.body, profile: p }
+          : {
+              type: 'land',
+              body: dest.to.body,
+              profile: p,
+              ...(dest.to.region ? { region: dest.to.region } : {})
+            }
       );
     advanceShips(game, 0);
     planned = null;
     touch();
   }
 
-  let orderType = $state<'load' | 'unload' | 'dock' | 'wait'>('load');
+  let orderType = $state<'load' | 'unload' | 'dock' | 'wait' | 'survey' | 'sample'>('load');
+  let surveyBody = $state('');
   let itemKey = $state('propellant:methalox');
   let amount = $state(1000);
   let all = $state(true);
@@ -179,7 +205,11 @@
     if (!vessel) return;
     let o: NewOrder | undefined;
     if (orderType === 'wait') o = { type: 'wait', seconds: waitHours * 3600 };
-    else if (orderType === 'dock') {
+    else if (orderType === 'sample') o = { type: 'sample' };
+    else if (orderType === 'survey') {
+      const id = surveyTarget;
+      if (id) o = { type: 'survey', body: id };
+    } else if (orderType === 'dock') {
       const id = dockSite || economy.sites.find((s) => s.place === 'orbit')?.id;
       if (id) o = { type: 'dock', site: id };
     } else if (item) o = { type: orderType, item: item.item, amount: all ? null : amount };
@@ -190,14 +220,34 @@
     touch();
   }
 
-  const found = $derived(vessel ? foundOptions(vessel) : []);
+  const surveyable = $derived(FLYABLE.filter((b) => isSurveyable(b) && !isSurveyed(b)));
+  const projected = $derived(vessel ? projectedPlace(vessel) : undefined);
+  const surveyTarget = $derived(
+    surveyBody && surveyable.includes(surveyBody)
+      ? surveyBody
+      : projected?.kind === 'orbit' && surveyable.includes(projected.body)
+        ? projected.body
+        : (surveyable[0] ?? '')
+  );
+  let foundRegion = $state('');
+  const regions = $derived(vessel ? foundRegions(vessel) : []);
+  const landedIn = $derived(vessel?.at.kind === 'surface' ? vessel.at.region : undefined);
+  const chosenRegion = $derived(
+    regions.find((r) => r.id === foundRegion)?.id ??
+      regions.find((r) => r.id === landedIn)?.id ??
+      regions[0]?.id ??
+      null
+  );
+  const found = $derived(vessel ? foundOptions(vessel, chosenRegion) : []);
   let foundChoice = $state('');
-  const foundPick = $derived(found.find((f) => f.building.id === foundChoice) ?? found[0]);
+  const foundPick = $derived(
+    found.find((f) => f.building.id === foundChoice) ?? found.find((f) => !f.missing.length) ?? found[0]
+  );
   let foundMessage = $state('');
 
   function found_() {
     if (!vessel || !foundPick) return;
-    const r = foundSite(game, vessel, foundPick.building.id);
+    const r = foundSite(game, vessel, foundPick.building.id, chosenRegion);
     foundMessage = typeof r === 'string' ? r : '';
     if (typeof r !== 'string') {
       ui.site = r.id;
@@ -292,6 +342,8 @@
         <option value="load">Load</option>
         <option value="unload">Unload</option>
         <option value="dock">Dock</option>
+        <option value="survey">Survey</option>
+        <option value="sample">Sample</option>
         <option value="wait">Wait</option>
       </select></label
     >
@@ -304,6 +356,13 @@
       >
       <label class="pick"><input id="orderAll" type="checkbox" bind:checked={all} /> All</label>
       <Field label="Kilograms" bind:value={amount} width={8} name="orderAmount" disabled={all} max={1e9} />
+    {:else if orderType === 'survey'}
+      <label class="pick"
+        >Body
+        <select id="orderSurvey" value={surveyTarget} onchange={(e) => (surveyBody = e.currentTarget.value)}>
+          {#each surveyable as b (b)}<option value={b}>{bodyName(b)}</option>{/each}
+        </select></label
+      >
     {:else if orderType === 'dock'}
       <label class="pick"
         >At
@@ -321,7 +380,12 @@
     <label class="pick"
       >Destination
       <select id="tripTo" value={dest?.key ?? ''} onchange={(e) => (destKey = e.currentTarget.value)}>
-        {#each dests as d (d.key)}<option value={d.key}>{d.label}</option>{/each}
+        {#each groups as g (g)}
+          <optgroup label={g}>
+            {#each dests.filter((d) => d.group === g) as d (d.key)}<option value={d.key}>{d.label}</option
+              >{/each}
+          </optgroup>
+        {/each}
       </select></label
     >
     <label class="pick"
@@ -362,8 +426,26 @@
       </ul>
     {/if}
   {/if}
-  {#if found.length || installable}
+  {#if found.length || installable || (vessel && needsRegion(vessel))}
     <h3>Found or join a site</h3>
+    {#if vessel && needsRegion(vessel)}
+      <Bar>
+        <label class="pick"
+          >Region
+          <select
+            id="foundRegion"
+            value={chosenRegion ?? ''}
+            onchange={(e) => (foundRegion = e.currentTarget.value)}
+            disabled={!regions.length}
+          >
+            {#each regions as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
+          </select></label
+        >
+        {#if !regions.length}<span class="none" id="noRegions"
+            >Survey this body first, or every known region has a site.</span
+          >{/if}
+      </Bar>
+    {/if}
     {#if found.length}
       <Bar>
         <label class="pick"
@@ -420,7 +502,7 @@
   }
   .pick select {
     color: var(--text);
-    max-width: 26ch;
+    max-width: 36ch;
   }
   button:disabled,
   select:disabled {

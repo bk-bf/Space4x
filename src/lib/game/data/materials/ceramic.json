@@ -56,7 +56,8 @@
     "sources": [
       { "body": "earth", "how": "mined", "building": "mine_earth" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
-      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mercury", "how": "regolith", "building": "regolith_excavator" }
     ],
     "why": "Melt-spun into basalt fibre for shielding and composites",
     "source": "https://en.wikipedia.org/wiki/Basalt_fiber"
