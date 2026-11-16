@@ -19,7 +19,7 @@ pnpm dev
 
 `pnpm build` writes a single-page static site to `build/`; `pnpm preview` serves it.
 
-The URL query selects a state, the same as in the mockup: `?screen=economy`, `?screen=economy&tab=milestones&milestone=5`, `?screen=research&milestone=12`, `?sel=body:mars`, `?scenario=famine` (Earth short of food), `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&new=stage`. Adding `check` runs the layout check and prints its result in the bottom left corner.
+The URL query selects a state, the same as in the mockup: `?screen=economy`, `?screen=economy&tab=stockpiles&per=year`, `?screen=research&milestone=12`, `?sel=body:mars`, `?scenario=famine` (Earth short of food), `?zoom=3`, `?arr=float`, `?dock=events:left`, `?screen=classes&new=stage`. Adding `check` runs the layout check and prints its result in the bottom left corner.
 
 `/dev/primitives` shows the shared panel, table, meter, tab and canvas primitives on one page.
 
@@ -27,7 +27,7 @@ The URL query selects a state, the same as in the mockup: `?screen=economy`, `?s
 
 One codebase, two builds, switched by `VITE_SPACE4X_GALLERY` (read only in `src/lib/shell/mode.ts`).
 
-- **game** (the default, https://space4x.callmedaddy.dedyn.io/): the top bar lists only real screens, the map has no sites, the colony screen has no surface scene, and a URL naming a mock screen opens the map.
+- **game** (the default, https://space4x.callmedaddy.dedyn.io/): the top bar lists only real screens, the map has no sites, and a URL naming a mock screen opens the map.
 - **gallery** (`VITE_SPACE4X_GALLERY=1`): every screen and mock scene, with a hot-coloured underline on the top bar and the page title "Space4x gallery" (a tag beside the name does not fit at 1440 px once the chips grow). Served by the mockups server (see the `mockups` skill) at `/space4x-gallery/`, from `~/mockups/space4x-gallery/`.
 
 `deploy/build` makes both: the game into `build/`, then the gallery with `SPACE4X_BASE=/space4x-gallery` copied to `~/mockups/space4x-gallery/` when `~/mockups` exists (`GALLERY_DIR` overrides the path). `deploy/update` runs it whenever `dev` moves. `SPACE4X_OUT` overrides the output directory of a single `pnpm build`.
