@@ -5,7 +5,7 @@
   const nm2 = (a, b) => `<span class="nm two"><b>${esc(a)}</b><em>${esc(b)}</em></span>`;
   const nm = t => `<span class="nm"><b>${esc(t)}</b></span>`;
   const ES = { tab: 'summary', group: 12, kind: 'all', order: null, pick: 'sabatier_plant', side: 'pick', cat: 'all', mat: 'iron', ms: 3, qty: 1, target: null, bkind: 'all', num: 1 };
-  const TABS = [['summary', 'Summary', 'list'], ['production', 'Production', 'factory'], ['construction', 'Construction', 'hammer'], ['stockpiles', 'Stockpiles', 'box']];
+  const TABS = [['summary', 'Summary', 'list'], ['production', 'Production', 'factory'], ['construction', 'Construction', 'hammer'], ['stockpiles', 'Stockpiles', 'box'], ['people', 'People', 'people']];
   const kc = k => { const c = S4.KIND[k] || [150, 150, 180]; return `rgb(${c.join(',')})`; };
   const kindGl = { extraction: 'drop', processing: 'flask', power: 'bolt', electronics: 'chip', habitat: 'leaf', infrastructure: 'rocket', nuclear: 'atom', special: 'star' };
 
@@ -306,6 +306,24 @@
     </div></div>`;
   }
 
+  function people(f) {
+    const byKind = {}; for (const a of f.actors) { if (a.g.on && a.p) byKind[a.b.kind] = (byKind[a.b.kind] || 0) + a.g.count * a.b.workers; }
+    const total = Object.values(byKind).reduce((x, y) => x + y, 0), spare = Math.max(0, f.workers.avail - f.workers.need);
+    const coh = [['Children', .26, 'leaf', 'Under 15, not yet working.'], ['Workers', E.workShare, 'gear', 'Of working age and available for jobs.'], ['Others', 1 - .26 - E.workShare, 'clock', 'Students, carers and retired.']];
+    const gov = S4.commanders ? S4.commanders.officer('gov') : null, gar = S4.ground ? S4.ground.total() : 0, forms = S4.ground ? S4.ground.count() : 0;
+    const line = (ic, l, v) => `<div class="fr">${gl(ic, 'sm')}<span class="nm">${l}</span><span class="v">${esc(v)}</span></div>`;
+    const bar = (l, v, c) => `<div class="fr"><span class="nm">${l}</span><span class="v" style="min-width:130px;display:flex;gap:6px;align-items:center">${meter(v, c, '')}<span style="min-width:34px;text-align:right">${fmt.pct(v)}</span></span></div>`;
+    const tile = (n, d, ic, s, v) => `<div class="tile" style="cursor:default;width:120px;height:104px" data-tip="${esc(T(n, dl(d), v))}"><span class="art" style="height:40px;display:flex;align-items:center;color:var(--accent)">${ic}</span>${nm(n)}<span class="n">${v}</span>${meter(s, '', 'full')}</div>`;
+    return `<div class="main"><h3>${gl('people', 'sm')}Who lives here <small class="dim">${fmt.people(E.pop)}</small></h3><div class="grid m">${coh.map(([n, s, ic, d]) => tile(n, d, gl(ic, 'lg'), s, fmt.people(E.pop * s))).join('')}</div>
+      <h3>${gl('gear', 'sm')}Jobs by industry <small class="dim">${fmt.people(total)} workers needed, ${fmt.people(spare)} not needed</small></h3><div class="grid m">${Object.entries(byKind).sort((a, b) => b[1] - a[1]).map(([k, w]) => `<div class="tile" style="cursor:default;width:120px;height:104px" data-tip="${esc(T(S4.KIND_NAMES[k], dl(S4.KIND_DESC[k]), `${fmt.people(w)} workers`))}"><i class="kstripe" style="background:${kc(k)}"></i><span class="art" style="height:40px;display:flex;align-items:center">${bi(S4.KIND_EX[k], 2)}</span>${nm(S4.KIND_NAMES[k])}<span class="n">${fmt.people(w)}</span>${meter(w / total, '', 'full')}</div>`).join('')}</div></div>
+      <div class="side"><div class="card"><header>${gl('people')}<div><div class="t">Population</div><div class="s">Earth, ${fmt.people(E.pop)}</div></div></header><div class="cb">
+        <div class="flow">${bar('Jobs filled', f.workers.share, f.workers.share < 1 ? 'hot' : 'cool')}${bar('Fed', Math.min(1, f.food.made / f.food.need), 'cool')}${bar('Housed', 1, 'cool')}${bar('Content', .82, 'cool')}</div>
+        <div class="flow">${line('grain', 'Food a person', fmt.group(S4.KCAL_PERSON) + ' kcal a day')}${line('up', 'Growth', '+' + (E.growth * 100).toFixed(2) + '% a year')}${line('gear', 'Workers not needed', fmt.people(spare))}</div></div></div>
+        ${gov ? `<div class="card"><header>${S4.miniFace(gov.face, 2)}<div><div class="t">${esc(gov.name)}</div><div class="s">Governor of Earth, ${esc(gov.rankName)}</div></div></header><div class="cb"><div class="btns"><button data-nav="#commanders">${gl('star')}Commanders</button></div></div></div>` : ''}
+        <div class="card"><header>${gl('tank')}<div><div class="t">Garrison</div><div class="s">${gar} units in ${forms} formations</div></div></header><div class="cb"><div class="btns"><button data-nav="#ground">${gl('tank')}Ground forces</button></div></div></div>
+        <span class="tag">mock figures except the total</span></div>`;
+  }
+
   function perToggle() {
     return `<span class="per" data-tip="${esc(T('Rates', dl('Every rate on the economy screens is shown over this period. Aurora 4X shows production a year, which is too coarse here.')))}"><small>rates a</small>${Object.values(S4.PER).map(p => `<button class="${S4.per.key === p.name ? 'on' : ''}" data-act="per" data-id="${p.name}">${p.name}</button>`).join('')}</span>`;
   }
@@ -314,7 +332,7 @@
     const root = document.getElementById('view');
     const f = S4.flows(); S4.lastFlows = f;
     const sc = [...root.querySelectorAll('.main, .side')].map(e => e.scrollTop);
-    const body = ES.tab === 'summary' ? summary(f) : ES.tab === 'production' ? production(f) : ES.tab === 'construction' ? construction(f) : stockpiles(f);
+    const body = ES.tab === 'summary' ? summary(f) : ES.tab === 'production' ? production(f) : ES.tab === 'construction' ? construction(f) : ES.tab === 'stockpiles' ? stockpiles(f) : people(f);
     root.style.gridTemplateColumns = '300px minmax(0,1fr)';
     root.innerHTML = `<div class="stack">${sitesPanel()}</div><div class="pan grow"><h2>Earth <small>Sol</small>${perToggle()}</h2><div class="pb tb"><div class="tabs">${TABS.map(([id, n, ic]) => `<button class="${ES.tab === id ? 'on' : ''}" data-act="tab" data-id="${id}">${gl(ic)}${n}</button>`).join('')}</div><div class="split tabbody">${body}</div></div></div>`;
     [...root.querySelectorAll('.main, .side')].forEach((e, i) => { if (sc[i]) e.scrollTop = sc[i]; });
@@ -374,10 +392,11 @@
     for (const o of activeOrders()) { o.done = Math.min(1, o.done + dt / 3600 / S4.buildHours(o.building)); }
     for (const o of E.queue.filter(o => o.done >= 1)) { const g = E.groups.find(g => g.building === o.building && g.process === o.process); if (g) g.count++; else E.groups.push({ id: E.uid++, building: o.building, process: o.process, count: 1, on: true }); }
     E.queue = E.queue.filter(o => o.done < 1);
+    if (S4.groundAdvance) S4.groundAdvance(dt);
     for (const p of E.programmes) p.progress = Math.min(1, p.progress + dt / 86400 / S4.programmeDays(p.number));
     for (const p of E.programmes.filter(p => p.progress >= 1)) E.done.push(p.number);
     E.programmes = E.programmes.filter(p => p.progress < 1);
-    if (Date.now() - lastRender > 900) { lastRender = Date.now(); if (S4.screen === 'economy') render(); else if (S4.screen === 'research') S4.research.render(); }
+    if (Date.now() - lastRender > 900) { lastRender = Date.now(); if (S4.screen === 'economy') render(); else if (S4.screen === 'research') S4.research.render(); else if (S4.screen === 'ground' && !(document.activeElement && document.activeElement.tagName === 'INPUT')) S4.ground.render(); }
   };
 
   S4.economy = { render, ES, TABS, msTile, msCard, msIcon, unlocksOf, COMPUTE };

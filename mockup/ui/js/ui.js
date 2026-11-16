@@ -53,11 +53,10 @@
     { id: 'economy', title: 'Economy', icon: 'factory', key: 'F2', hash: '#economy' },
     { id: 'research', title: 'Research', icon: 'flask', key: 'F3', hash: '#research' },
     { id: 'designer', title: 'Ship classes', icon: 'ship', key: 'F4', hash: '#designer' },
-    { id: 'colony', title: 'Colony', icon: 'dome', key: 'F5' },
-    { id: 'ground', title: 'Ground forces', icon: 'tank', key: 'F6' },
-    { id: 'commanders', title: 'Commanders', icon: 'star', key: 'F7' },
-    { id: 'intel', title: 'Intelligence', icon: 'eye', key: 'F8' },
-    { id: 'galaxy', title: 'Galaxy', icon: 'net', key: 'F9' }
+    { id: 'ground', title: 'Ground forces', icon: 'tank', key: 'F6', hash: '#ground' },
+    { id: 'commanders', title: 'Commanders', icon: 'star', key: 'F7', hash: '#commanders' },
+    { id: 'intel', title: 'Intelligence', icon: 'eye', key: 'F8', hash: '#intel' },
+    { id: 'galaxy', title: 'Galaxy', icon: 'net', key: 'F9', hash: '#galaxy' }
   ];
 
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

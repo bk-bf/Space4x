@@ -3,9 +3,16 @@
   S4.screen = '';
   S4.refreshTop = () => S4.topbar(S4.screen);
 
+  const MODS = {
+    ground: () => [S4.ground, S4.ground.GS, ['formations', 'designer', 'templates', 'training']],
+    commanders: () => [S4.commanders, S4.commanders.CM, ['officers', 'posts', 'styles']],
+    intel: () => [S4.intel, S4.intel.IS, ['groups', 'sightings']],
+    galaxy: () => [S4.galaxy, S4.galaxy.GA, ['map', 'systems']]
+  };
+
   function route() {
     const [scr, sub] = (location.hash || '#economy').slice(1).split('/');
-    S4.screen = ['economy', 'research', 'designer', 'icons', 'map'].includes(scr) ? scr : 'economy';
+    S4.screen = ['economy', 'research', 'ground', 'commanders', 'intel', 'galaxy', 'designer', 'icons', 'map'].includes(scr) ? scr : 'economy';
     const root = document.getElementById('view');
     root.style.gridTemplateColumns = '';
     if (S4.screen === 'economy') {
@@ -14,6 +21,10 @@
     } else if (S4.screen === 'research') {
       if (sub && S4.research.TABS.some(t => t[0] === sub)) S4.research.RS.tab = sub;
       S4.research.render();
+    } else if (MODS[S4.screen]) {
+      const [mod, st, tabs] = MODS[S4.screen]();
+      if (sub && tabs.includes(sub)) st.tab = sub;
+      mod.render();
     } else if (S4.screen === 'designer') S4.designer.render();
     else if (S4.screen === 'icons') {
       if (sub && ['materials', 'buildings', 'components', 'glyphs'].includes(sub)) {

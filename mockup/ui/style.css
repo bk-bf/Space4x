@@ -302,3 +302,51 @@ img.px { flex: none; }
 .tkey i.l { opacity: .55; }
 .tkey u { width: 22px; height: 0; border-top: 2px dashed var(--line); display: inline-block; }
 .tkey u.done { border-top: 2px solid var(--accent); }
+
+.stack3 { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 20px; }
+.stack3 .mt { height: 4px; min-width: 10px; }
+.tile.off { width: 112px; height: 138px; padding-top: 5px; }
+.tile.ship { width: 120px; height: 104px; padding-top: 6px; }
+.tile.sight { width: 100%; height: auto; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; padding: 6px 8px; text-align: left; }
+.tile.sight .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile.sight .txt b { font-weight: 400; font-size: 17px; }
+.tile.sight .txt em { font-style: normal; font-size: 15px; color: var(--dim); }
+.tile.sight .txt em:first-of-type { color: var(--text); }
+.sights { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 5px; }
+.card header .portrait img { box-shadow: 0 0 0 2px var(--line); }
+.surface { position: relative; height: 230px; overflow: hidden; margin-bottom: 8px; box-shadow: var(--edge); --ec: var(--line); background: linear-gradient(#1c1f4e 0, #3a3478 55%, #6a5090 100%); }
+.surface .row { position: absolute; left: 0; right: 0; bottom: 34px; display: flex; align-items: flex-end; justify-content: space-evenly; padding: 0 10px; }
+.surface .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: repeating-linear-gradient(90deg, #3c3a2c 0 6px, #34322a 6px 12px); border-top: 4px solid #5a5238; }
+.galmain { padding: 0 !important; display: flex; flex-direction: column; overflow: hidden !important; }
+.gmap { flex: 1; min-height: 0; display: flex; flex-direction: column; box-shadow: var(--edge); --ec: var(--line); background: var(--bg); }
+.gtools { display: flex; align-items: center; gap: 8px; padding: 3px 6px; background: var(--panel2); }
+.gtools button { padding: 0 4px; }
+.gscroll { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; background-image: radial-gradient(#2d2860 1px, transparent 1.5px); background-size: 24px 24px; }
+.gin { position: relative; }
+.glinks { position: absolute; inset: 0; pointer-events: none; }
+.glinks line { stroke: var(--line); stroke-width: 2; stroke-dasharray: 5 4; }
+.gstar { position: absolute; transform: translate(-50%, -50%); background: none; box-shadow: none; margin: 0; padding: 2px; display: flex; flex-direction: column; align-items: center; gap: 0; color: var(--text); font-size: 16px; }
+.gstar:hover:not(:disabled) { background: #342d6c66; }
+.gstar span { white-space: nowrap; margin-top: -4px; }
+.gstar.sel { box-shadow: var(--edge); --ec: var(--accent); background: #38306e88; }
+.gstar.unk { opacity: .7; }
+
+.bars3 { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 20px; }
+.bars3 i { display: block; height: 3px; background: var(--accent); }
+.bars3 i.c { background: var(--cool); }
+.bars3 i.h { background: var(--hot); }
+
+.bigpic { display: flex; justify-content: center; background: var(--bg); padding: 6px; box-shadow: var(--edge); --ec: var(--line); }
+
+.prow { background: var(--panel); box-shadow: var(--edge); --ec: var(--line); padding: 6px 8px 8px; margin-bottom: 8px; }
+.prow.sel { --ec: var(--accent); }
+.prow .ph2 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.prow .ph2 b { font: 600 15px 'Pixelify'; color: var(--accent); }
+.prow .ph2 button { margin-left: auto; }
+.pfaces { display: flex; flex-wrap: wrap; gap: 6px; }
+.pfaces span { cursor: pointer; box-shadow: 0 0 0 2px var(--line); display: block; }
+.pfaces span:hover { box-shadow: 0 0 0 2px var(--dim); }
+
+.pcell { display: inline-flex !important; flex-direction: column; align-items: center; box-shadow: none !important; cursor: default !important; }
+.pcell img { box-shadow: 0 0 0 2px var(--line); }
+.pcell em { font-style: normal; font-size: 15px; color: var(--dim); margin-top: 3px; max-width: 128px; text-align: center; line-height: 1; }
