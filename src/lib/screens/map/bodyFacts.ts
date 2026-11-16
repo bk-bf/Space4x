@@ -13,7 +13,7 @@ export function surveyText(b: Body): string {
   if (!isSurveyable(b.id)) return 'Atmosphere only';
   if (isSurveyed(b.id)) return 'Done';
   const doing = ships.vessels.some((v) => v.orders[0]?.type === 'survey' && v.orders[0].body === b.id);
-  return doing ? 'Under way' : 'Not surveyed';
+  return doing ? 'Under way' : 'None';
 }
 
 export function asteroidRows(b: Body): [string, string][] {
