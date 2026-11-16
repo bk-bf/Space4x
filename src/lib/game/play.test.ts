@@ -11,7 +11,6 @@ import { isSurveyed } from './survey.svelte.ts';
 
 const year = (ms: number) => new Date(ms).getUTCFullYear();
 const upTo = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
-const without = (list: number[], skipped: number[]) => list.filter((n) => !skipped.includes(n));
 
 describe('the scripted player from the start state', () => {
   let game: Game;
@@ -120,8 +119,8 @@ describe('the scripted player from the start state', () => {
     expect(player.barge).toBeDefined();
   }, 300_000);
 
-  it('reaches 18 to 20: steel from Hertha by electric barge, an orbital shipyard that builds a ship, a chip fab and a space solar power station', () => {
-    reach([18, 19, 20]);
+  it('reaches 18 to 21: steel from Hertha by electric barge, an orbital shipyard that builds a ship, a chip fab, a space solar power station and the optional Mars programme', () => {
+    reach([18, 19, 20, 21]);
     const station = siteAt(economy, 'earth', 'orbit')!;
     expect(standing(station, 'orbital_shipyard')).toBeGreaterThan(0);
     expect(station.built).toBeGreaterThanOrEqual(1);
@@ -132,7 +131,7 @@ describe('the scripted player from the start state', () => {
     expect(standing(station, 'solar_power_station')).toBeGreaterThan(0);
     expect(station.ran.solar_power_station).toBeGreaterThanOrEqual(24);
     expect(flowsOf(station).power.supply).toBeGreaterThan(50_000);
-    expect(economy.done).toEqual(without(upTo(20), [21]));
+    expect(economy.done).toEqual(upTo(21));
     const steelAt18 = player.report.reached.find((r) => r.number === 18)!;
     expect(year(steelAt18.at)).toBeLessThan(2100);
   }, 300_000);
@@ -148,12 +147,12 @@ describe('the scripted player from the start state', () => {
     expect(economy.flown.fusion_drive).toBeGreaterThan(0);
     expect(game.jump('sol-a')!.point.surveyed).toBe(true);
     expect(game.jump('sol-a')!.point.stable).toBe(false);
-    expect(economy.done).toEqual(without(upTo(24), [21]));
+    expect(economy.done).toEqual(upTo(24));
   }, 300_000);
 
   it('reaches 25 to 29: a scoop at Uranus, carbon nanotube fibre, superconductors, exotic matter and a stabilised jump point', () => {
     reach([25, 26, 27, 28, 29]);
-    expect(economy.done).toEqual(without(upTo(29), [21]));
+    expect(economy.done).toEqual(upTo(29));
 
     const uranus = siteIn(economy, 'uranus', 'surface', null)!;
     expect(uranus).toBeDefined();
@@ -175,7 +174,6 @@ describe('the scripted player from the start state', () => {
     expect(point.stable).toBe(true);
     const ending = game.events.filter((e) => e.text.includes('Jump point A is stable'));
     expect(ending).toHaveLength(1);
-    expect(economy.done.includes(21)).toBe(false);
 
     expect(player.hunger).toEqual([]);
     for (const site of economy.sites.filter((s) => s.id !== 'earth' && s.population >= 0.5)) {
@@ -191,7 +189,7 @@ describe('the scripted player from the start state', () => {
     ).toEqual(['earth', 'luna', 'luna-maria', 'orbit-earth', 'sol-a'].sort());
 
     const reached = player.report.reached;
-    expect(reached.map((r) => r.number)).toEqual(without(upTo(29), [21]));
+    expect(reached.map((r) => r.number)).toEqual(upTo(29));
     const times = reached.map((r) => r.at);
     expect([...times].sort((a, b) => a - b)).toEqual(times);
     expect(year(times.at(-1)!)).toBeLessThan(2200);
