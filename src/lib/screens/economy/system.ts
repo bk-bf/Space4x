@@ -2,7 +2,8 @@ import { advanceEconomy, economy, flowsOf, homeSite, siteById, touch } from '#li
 import { registerStatus, registerSystem, START_TIME } from '#lib/game/index.ts';
 import { advanceShips } from '#lib/game/ships/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
-import { formatDays, formatPeople, formatPercent, formatPower, formatCount, shortName } from './format.ts';
+import { fmt } from '#lib/ui/index.ts';
+import { shortName } from './format.ts';
 import { scarcest } from './view.ts';
 
 registerSystem('economy', (game, dt) => {
@@ -21,7 +22,7 @@ const flows = () => flowsOf(homeSite());
 
 registerStatus('people', () => ({
   icon: 'people',
-  value: formatPeople(homeSite().population),
+  value: fmt.population(homeSite().population),
   title: 'People'
 }));
 
@@ -31,13 +32,13 @@ registerStatus('food', () => {
   return f.cover < 1 - 1e-9
     ? {
         icon: 'grain',
-        value: `${formatPercent(f.cover)} fed`,
+        value: `${fmt.pct(f.cover)} fed`,
         title: 'Food: share of the calorie need met',
         warn: true
       }
     : {
         icon: 'grain',
-        value: `${spare >= 0 ? '+' : ''}${formatPercent(spare)}`,
+        value: `${spare >= 0 ? '+' : ''}${fmt.pct(spare)}`,
         title: 'Food: calories made against calories needed',
         warn: spare < 0
       };
@@ -48,7 +49,7 @@ registerStatus('power', () => {
   const spare = p.supply - p.demand;
   return {
     icon: 'bolt',
-    value: `${spare >= 0 ? '+' : '-'}${formatPower(Math.abs(spare))}`,
+    value: `${spare >= 0 ? '+' : '-'}${fmt.power(Math.abs(spare))}`,
     title: 'Power: generation less demand',
     warn: spare < 0
   };
@@ -58,7 +59,7 @@ registerStatus('compute', () => {
   const c = flows().compute;
   return {
     icon: 'chip',
-    value: c.supply > 0 || c.demand > 0 ? `${formatCount(c.supply)} cu/h` : 'None',
+    value: c.supply > 0 || c.demand > 0 ? `${fmt.group(c.supply)} cu/h` : 'None',
     title: 'Compute produced an hour',
     warn: c.demand > c.supply
   };
@@ -70,7 +71,7 @@ registerStatus('scarce', () => {
     ? {
         icon: 'warn',
         value: shortName(s.id),
-        title: s.days === 0 ? 'Scarcest material: run out' : `Scarcest material: ${formatDays(s.days)} left`,
+        title: s.days === 0 ? 'Scarcest material: run out' : `Scarcest material: ${fmt.days(s.days)} left`,
         warn: true
       }
     : { icon: 'warn', value: 'None', title: 'Scarcest material', warn: false };

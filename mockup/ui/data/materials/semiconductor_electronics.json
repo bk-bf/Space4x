@@ -1,0 +1,205 @@
+[
+  {
+    "id": "silicon",
+    "name": "Silicon",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" },
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Base of chips and silicon solar cells; by-product of molten regolith electrolysis",
+    "source": "https://en.wikipedia.org/wiki/Silicon"
+  },
+  {
+    "id": "gallium",
+    "name": "Gallium",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Element of GaAs, InGaP and GaN; recovered as a by-product of bauxite and zinc processing",
+    "source": "https://en.wikipedia.org/wiki/Gallium"
+  },
+  {
+    "id": "germanium",
+    "name": "Germanium",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Substrate and bottom junction of space multi-junction solar cells",
+    "source": "https://en.wikipedia.org/wiki/Germanium"
+  },
+  {
+    "id": "indium",
+    "name": "Indium",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Element of InGaP top junctions and transparent conductors",
+    "source": "https://en.wikipedia.org/wiki/Indium"
+  },
+  {
+    "id": "arsenic",
+    "name": "Arsenic",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Element of gallium arsenide",
+    "source": "https://en.wikipedia.org/wiki/Gallium_arsenide"
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Buffer gas of excimer lasers used in DUV chip lithography",
+    "source": "https://en.wikipedia.org/wiki/Excimer_laser"
+  },
+  {
+    "id": "fluorite",
+    "name": "Fluorite (fluorspar)",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Source of fluorine for PTFE and fluoropolymers and HF for chip etching",
+    "source": "https://en.wikipedia.org/wiki/Fluorite"
+  },
+  {
+    "id": "electronic_silicon",
+    "name": "Electronic-grade polysilicon",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Hyper-pure silicon for wafers and solar cells",
+    "source": "https://en.wikipedia.org/wiki/Polycrystalline_silicon"
+  },
+  {
+    "id": "gaas",
+    "name": "Gallium arsenide",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Middle junction of space solar cells; radiation-tolerant RF devices",
+    "source": "https://en.wikipedia.org/wiki/Gallium_arsenide"
+  },
+  {
+    "id": "ingap",
+    "name": "Indium gallium phosphide",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Top junction of multi-junction space solar cells",
+    "source": "https://en.wikipedia.org/wiki/Indium_gallium_phosphide"
+  },
+  {
+    "id": "gan",
+    "name": "Gallium nitride",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "why": "Efficient power converters and RF amplifiers",
+    "source": "https://en.wikipedia.org/wiki/Gallium_nitride"
+  },
+  {
+    "id": "mj_solar_cell",
+    "name": "Triple-junction solar cell (InGaP/GaAs/Ge)",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "The standard high-efficiency spacecraft solar cell",
+    "source": "https://en.wikipedia.org/wiki/Multi-junction_solar_cell"
+  },
+  {
+    "id": "si_solar_cell",
+    "name": "Silicon solar cell",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "why": "Cheaper, lower-efficiency cell used on mass-produced constellations and surface farms",
+    "source": "https://en.wikipedia.org/wiki/Solar_cell"
+  },
+  {
+    "id": "rad_hard_ic",
+    "name": "Radiation-hardened integrated circuits",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Flight computers that survive ionising radiation",
+    "source": "https://en.wikipedia.org/wiki/Radiation_hardening"
+  },
+  {
+    "id": "ai_accelerator",
+    "name": "AI accelerator chips",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Dense compute for training and running autonomy models",
+    "source": "https://en.wikipedia.org/wiki/AI_accelerator"
+  },
+  {
+    "id": "li_ion_cell",
+    "name": "Lithium-ion cell",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Energy storage through eclipse and lunar night (ISS batteries)",
+    "source": "https://en.wikipedia.org/wiki/Lithium-ion_battery"
+  },
+  {
+    "id": "ndfeb_magnet",
+    "name": "NdFeB permanent magnet",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Motors, actuators and reaction wheels",
+    "source": "https://en.wikipedia.org/wiki/Neodymium_magnet"
+  },
+  {
+    "id": "smco_magnet",
+    "name": "Samarium-cobalt magnet",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "thin": true,
+    "why": "Temperature-stable magnets for thrusters and actuators",
+    "source": "https://en.wikipedia.org/wiki/Samarium%E2%80%93cobalt_magnet"
+  },
+  {
+    "id": "nbti",
+    "name": "Niobium-titanium superconductor",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "why": "Low-temperature superconductor for large magnets (MRI, ITER poloidal coils)",
+    "source": "https://en.wikipedia.org/wiki/Niobium%E2%80%93titanium"
+  },
+  {
+    "id": "nb3sn",
+    "name": "Niobium-tin superconductor",
+    "category": "semiconductor_electronics",
+    "tier": "P",
+    "why": "Higher-field low-temperature superconductor (ITER toroidal coils)",
+    "source": "https://en.wikipedia.org/wiki/Niobium%E2%80%93tin"
+  },
+  {
+    "id": "rebco",
+    "name": "REBCO high-temperature superconductor tape",
+    "category": "semiconductor_electronics",
+    "tier": "E",
+    "thin": true,
+    "why": "Enables compact 20 T fusion magnets at about 20 K",
+    "source": "https://en.wikipedia.org/wiki/Yttrium_barium_copper_oxide"
+  },
+  {
+    "id": "rt_superconductor",
+    "name": "Room-temperature superconductor (hypothetical)",
+    "category": "semiconductor_electronics",
+    "tier": "S",
+    "thin": true,
+    "why": "Lossless high-field magnets with no cryogenics; no known physics forbids it, none found",
+    "source": "https://en.wikipedia.org/wiki/Room-temperature_superconductor"
+  }
+]

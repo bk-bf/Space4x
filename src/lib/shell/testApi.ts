@@ -1,13 +1,14 @@
 import { DAY, game } from '#lib/game/index.ts';
 import type { PlayReport } from '#lib/game/play.ts';
 import { PathPlayer } from '#lib/game/playPath.ts';
-import { economy } from '#lib/game/economy/index.ts';
+import { economy, homeSite, startProgramme } from '#lib/game/economy/index.ts';
 import { ships } from '#lib/game/ships/index.ts';
 
 export interface TestApi {
   advanceDays(days: number): void;
   play(milestone: number): PlayReport;
   crewedStation(): boolean;
+  startProgramme(number: number): boolean;
   state(): { done: number[]; sites: string[]; ships: number; launches: number; time: number };
 }
 
@@ -27,6 +28,7 @@ export function installTestApi(params: URLSearchParams): void {
       return player.report;
     },
     crewedStation: () => player.crewedStation(),
+    startProgramme: (number) => startProgramme(economy, homeSite(), number),
     state: () => ({
       done: [...economy.done],
       sites: economy.sites.map((s) => s.id),

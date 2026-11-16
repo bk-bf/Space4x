@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { DAY, Game } from '#lib/game/index.ts';
 import { withFixture } from '#lib/game/mock/fixture/index.ts';
-import { ageOf, allPosts, postLabel, postOptions, Roster, serviceOf } from './roster.svelte.ts';
+import { portraitBust, portraitHead, traitsOf } from '#lib/gfx/portraits/index.ts';
+import {
+  ageOf,
+  allPosts,
+  bestSkill,
+  portraitSpec,
+  postLabel,
+  postOptions,
+  Roster,
+  serviceOf
+} from './roster.svelte.ts';
 
 const names = (r: Roster, g: Game) => r.visible(g).map((o) => o.name);
 
@@ -107,5 +117,93 @@ describe('Roster', () => {
     expect(r.promote('o3', g)).toBe(false);
     expect(r.officer('o3')!.rank).toBe('admiral');
     expect(g.events[0]!.text).toBe('S. Novak was promoted to Admiral.');
+  });
+
+  it('gives every officer a gender and a seed, and a woman and a man in the roster', () => {
+    const r = new Roster();
+    expect(new Set(r.officers.map((o) => o.gender))).toEqual(new Set(['m', 'f']));
+    expect(new Set(r.officers.map((o) => o.seed)).size).toBe(r.officers.length);
+  });
+
+  it('draws the same face for the same officer and ages and greys it with the clock', () => {
+    const r = new Roster();
+    const g = new Game();
+    const o = r.officer('o0')!;
+    const first = portraitSpec(o, g.time);
+    expect(first).toEqual({
+      seed: 3,
+      age: 63,
+      rank: 5,
+      branch: 'staff',
+      gender: 'f',
+      rolledAt: { age: 63, rank: 2 }
+    });
+    expect(portraitHead(portraitSpec(o, g.time))).toBe(portraitHead(first));
+    g.advance(366 * DAY);
+    const later = portraitSpec(o, g.time);
+    expect(later.age).toBe(64);
+    expect(later.seed).toBe(first.seed);
+    expect(portraitBust(later)).not.toBe(portraitBust(first));
+  });
+
+  it('keeps every officer face as they age and rise through the ranks', () => {
+    const r = new Roster();
+    const g = new Game();
+    const FACE = [
+      'skin',
+      'eye',
+      'bg',
+      'jaw',
+      'eyes',
+      'brow',
+      'nose',
+      'mouth',
+      'lip',
+      'beard',
+      'gear'
+    ] as const;
+    const MORE = ['style', 'gaunt', 'jag', 'earring', 'shadow'] as const;
+    for (const o of r.officers) {
+      const start = traitsOf(portraitSpec(o, g.time));
+      for (const years of [1, 5, 10, 20]) {
+        const spec = portraitSpec(o, g.time + years * 365.25 * DAY * 1000);
+        for (const rank of [0, 3, 5]) {
+          const t = traitsOf({ ...spec, rank });
+          for (const k of [...FACE, ...MORE]) expect(t[k], `${o.name} ${k} +${years}y`).toEqual(start[k]);
+        }
+      }
+    }
+  });
+
+  it('dresses a governor in the governor uniform and everyone else as staff', () => {
+    const r = new Roster();
+    const g = new Game();
+    expect(portraitSpec(r.officer('o6')!, g.time).branch).toBe('governor');
+    expect(portraitSpec(r.officer('o0')!, g.time).branch).toBe('staff');
+    expect(portraitSpec(r.officer('o2')!, g.time).branch).toBe('staff');
+  });
+
+  it('finds the best skill of an officer', () => {
+    const r = new Roster();
+    for (const o of r.officers) expect(o.skills[bestSkill(o)]).toBe(Math.max(...o.skills));
+  });
+
+  it('groups officers as the filter chips do', () => {
+    const r = new Roster();
+    const g = new Game();
+    r.setGroup('governor');
+    expect(names(r, g)).toEqual(['T. Nakamura']);
+    expect(r.group).toBe('governor');
+    r.setGroup('staff');
+    expect(names(r, g)).toHaveLength(5);
+    r.setGroup('none');
+    expect(names(r, g)).toHaveLength(8);
+    expect(r.group).toBe('none');
+    r.setGroup('assigned');
+    expect(names(r, g)).toHaveLength(6);
+    expect(r.group).toBe('assigned');
+    r.setGroup('all');
+    expect(names(r, g)).toHaveLength(14);
+    expect(r.group).toBe('all');
   });
 });

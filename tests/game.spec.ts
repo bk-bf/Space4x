@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const REAL = ['map', 'economy', 'research', 'classes', 'colony'];
+const REAL = ['map', 'economy', 'research', 'classes'];
 const MOCK_SCREENS = ['ground', 'commanders', 'intel', 'galaxy'];
 const SITES = ['sol-station', 'deep-well', 'battle', 'boarding', 'salvage', 'gate'];
 
@@ -31,7 +31,7 @@ for (const id of MOCK_SCREENS) {
 
 test('the F keys of mock screens do nothing', async ({ page }) => {
   await open(page);
-  for (const key of ['F6', 'F7', 'F8', 'F9']) {
+  for (const key of ['F5', 'F6', 'F7', 'F8', 'F9']) {
     await page.keyboard.press(key);
     await expect(page.locator('[data-nav="map"]')).toHaveClass(/on/);
   }
@@ -46,27 +46,28 @@ test('the map has no site marker, fly-to button or scene', async ({ page }) => {
   await expect(page.locator('#siteMock')).toHaveCount(0);
 });
 
-test('the colony screen shows its facts without the mock surface scene', async ({ page }) => {
+test('?screen=colony opens the People tab of Economy, which has no mock surface scene', async ({ page }) => {
   await open(page, 'screen=colony');
-  await expect(page.locator('#colonyPick')).toBeVisible();
-  await expect(page.locator('[data-screen="colony"] .pan > h2', { hasText: 'Surface' })).toHaveCount(0);
+  await expect(page.locator('[data-screen="colony"]')).toHaveCount(0);
+  await expect(page.locator('[data-screen="economy"]')).toBeVisible();
+  await expect(page.locator('[data-tab="people"]')).toHaveClass(/on/);
+  await expect(page.locator('[data-screen="economy"] .pan > h2', { hasText: 'Surface' })).toHaveCount(0);
 });
 
 test('the game build counts food in calories and the top bar agrees with the Summary', async ({ page }) => {
   await open(page, 'screen=economy');
-  const term = (text: RegExp) =>
-    page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
-  await expect(term(/^Calories made$/)).toContainText(/T kcal a day against .* T kcal needed$/);
-  await expect(term(/^Calorie shares$/)).toContainText(/Meat \d+%/);
-  const balance = (await term(/^Food balance$/).textContent())!;
+  await expect(page.locator('#calorieBar [data-food="meat"]')).toHaveAttribute('data-share', /^0\.\d+$/);
+  await expect(page.locator('[data-screen="economy"]')).toContainText(
+    'kcal a person a day made against 2,800 needed'
+  );
+  const balance = (await page.locator('#summaryStats .ui-kpi').nth(1).locator('.big').textContent())!;
   await expect(page.locator('#chips .chip[title="Food: calories made against calories needed"]')).toHaveText(
     balance
   );
 });
 
 test('a milestone in the game build lists the site it needs', async ({ page }) => {
-  await open(page, 'screen=economy&tab=milestones&milestone=8');
-  await expect(
-    page.locator('#milestoneDetail tr', { hasText: 'ice mine at the lunar south pole' })
-  ).toContainText('None');
+  await open(page, 'screen=research&milestone=8');
+  const need = page.locator('#siteNeeds [data-site-need]', { hasText: /ice mine at the lunar south pole/i });
+  await expect(need).toHaveAttribute('data-site-need', 'missing');
 });

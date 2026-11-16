@@ -17,6 +17,6 @@ export function applyQuery(q: QueryState, params: URLSearchParams): void {
   if (q.zoom) setZoom(q.zoom);
   if (q.dock) wm.setDock(q.dock.id, q.dock.slot);
   wm.remember(!params.has('arr') && !params.has('dock'));
-  if (q.screen) shell.setScreen(q.screen);
+  if (q.screen) shell.setScreen(q.screen === 'colony' ? 'economy' : q.screen);
   flushSync();
 }

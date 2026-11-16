@@ -1,0 +1,94 @@
+[
+  {
+    "id": "rp1",
+    "name": "RP-1 kerosene",
+    "category": "propellant",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "wells", "building": "mine_earth" }],
+    "why": "Dense hydrocarbon fuel for first stages (Merlin)",
+    "source": "https://en.wikipedia.org/wiki/RP-1"
+  },
+  {
+    "id": "lox",
+    "name": "Liquid oxygen",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "why": "Oxidiser that is the largest share of chemical propellant mass",
+    "source": "https://en.wikipedia.org/wiki/Liquid_oxygen"
+  },
+  {
+    "id": "lh2",
+    "name": "Liquid hydrogen",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "why": "Highest-Isp chemical fuel and the working fluid of nuclear thermal rockets",
+    "source": "https://en.wikipedia.org/wiki/Liquid_hydrogen"
+  },
+  {
+    "id": "lch4",
+    "name": "Liquid methane",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "why": "Storable-cryogenic fuel producible on Mars (Raptor, BE-4)",
+    "source": "https://en.wikipedia.org/wiki/Methalox"
+  },
+  {
+    "id": "hydrazine",
+    "name": "Hydrazine",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Monopropellant for attitude and station-keeping thrusters",
+    "source": "https://en.wikipedia.org/wiki/Hydrazine"
+  },
+  {
+    "id": "mmh",
+    "name": "Monomethylhydrazine",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Hypergolic fuel for long-storable bipropellant thrusters",
+    "source": "https://en.wikipedia.org/wiki/Monomethylhydrazine"
+  },
+  {
+    "id": "nto",
+    "name": "Dinitrogen tetroxide",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Storable hypergolic oxidiser",
+    "source": "https://en.wikipedia.org/wiki/Dinitrogen_tetroxide"
+  },
+  {
+    "id": "af_m315e",
+    "name": "AF-M315E / ASCENT green monopropellant",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Less toxic, denser hydrazine replacement flown on NASA GPIM",
+    "source": "https://en.wikipedia.org/wiki/Green_Propellant_Infusion_Mission"
+  },
+  {
+    "id": "apcp",
+    "name": "Ammonium perchlorate composite propellant",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Solid rocket booster propellant",
+    "source": "https://en.wikipedia.org/wiki/Ammonium_perchlorate_composite_propellant"
+  },
+  {
+    "id": "antihydrogen",
+    "name": "Antihydrogen (antimatter)",
+    "category": "propellant",
+    "tier": "S",
+    "why": "Highest energy density possible; produced only in atoms-scale amounts",
+    "source": "https://en.wikipedia.org/wiki/Antimatter_rocket"
+  },
+  {
+    "id": "metallic_hydrogen",
+    "name": "Metastable metallic hydrogen (hypothetical)",
+    "category": "propellant",
+    "tier": "S",
+    "why": "Proposed propellant of theoretical Isp about 1700 s if metastable; unconfirmed",
+    "source": "https://en.wikipedia.org/wiki/Metallic_hydrogen"
+  }
+]

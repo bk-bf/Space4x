@@ -6,6 +6,7 @@ export interface LayoutState {
   name: string;
   built: boolean;
   mock: boolean;
+  size?: readonly [number, number];
 }
 
 const QUERIES = [
@@ -35,16 +36,20 @@ const QUERIES = [
   'screen=economy&tab=production',
   'screen=economy&tab=construction',
   'screen=economy&tab=stockpiles',
-  'screen=economy&tab=milestones',
-  'screen=economy&tab=milestones&milestone=5',
-  'screen=economy&tab=milestones&milestone=6',
-  'screen=economy&tab=milestones&milestone=17',
+  'screen=economy&tab=people',
+  'screen=economy&tab=people&scenario=famine',
+  'screen=economy&per=year',
+  'screen=economy&tab=production&per=year',
+  'screen=economy&tab=stockpiles&per=year',
   'screen=economy&scenario=famine',
   'screen=economy&tab=yard&scenario=travel',
   'screen=economy&tab=launch&scenario=travel',
   'screen=economy&tab=ships&scenario=travel',
   'screen=economy&tab=ships&scenario=belt',
   'screen=economy&colony=luna&scenario=belt&outpost=1',
+  'screen=economy&tab=people&colony=luna&scenario=belt&outpost=1',
+  'screen=economy&tab=stockpiles&colony=luna&scenario=belt&outpost=1',
+  'screen=economy&tab=construction&colony=luna&scenario=belt&outpost=1',
   'screen=economy&tab=production&colony=luna&scenario=belt&outpost=1',
   'screen=economy&tab=supply&colony=orbit-earth&scenario=travel',
   'screen=economy&colony=orbit-earth&scenario=travel',
@@ -52,18 +57,30 @@ const QUERIES = [
   'sel=base:orbit-earth&scenario=travel',
   'screen=research',
   'screen=research&milestone=12',
+  'screen=research&rtab=programmes&milestone=6',
+  'screen=research&rtab=unlocks&milestone=3',
   'screen=classes',
   'screen=classes&new=stage',
   'screen=classes&reached=6&new=crewed',
   'screen=classes&reached=29',
-  'screen=colony',
-  'screen=colony&scenario=famine',
   'screen=ground',
   'screen=commanders',
   'screen=commanders&cmd=3',
+  'screen=commanders&cmd=6&tab=posts',
   'screen=intel',
   'screen=galaxy',
   'screen=galaxy&sys=luy'
+];
+
+const SHORT_WINDOW: readonly [number, number] = [1280, 720];
+
+const SHORT_WINDOW_QUERIES = [
+  'screen=research&milestone=17',
+  'screen=research&rtab=programmes&milestone=6',
+  'screen=research&rtab=unlocks&milestone=3',
+  'screen=classes',
+  'screen=classes&new=stage',
+  'screen=classes&reached=6&new=crewed'
 ];
 
 const SITE_QUERIES = new Set([
@@ -87,13 +104,20 @@ export function isBuilt(screen: string): boolean {
   return existsSync(file) && !readFileSync(file, 'utf8').includes('<Placeholder');
 }
 
-export const STATES: readonly LayoutState[] = QUERIES.map((query) => {
+const stateOf = (query: string, size?: readonly [number, number]): LayoutState => {
   const screen = screenOf(query);
+  const base = query.replace(/[=&:,]/g, '-') || 'default';
   return {
     query,
     screen,
-    name: query.replace(/[=&:,]/g, '-') || 'default',
+    name: size ? `${base}-${size.join('x')}` : base,
     built: isBuilt(screen),
-    mock: MOCK_SCREENS.has(screen) || SITE_QUERIES.has(query)
+    mock: MOCK_SCREENS.has(screen) || SITE_QUERIES.has(query),
+    ...(size ? { size } : {})
   };
-});
+};
+
+export const STATES: readonly LayoutState[] = [
+  ...QUERIES.map((query) => stateOf(query)),
+  ...SHORT_WINDOW_QUERIES.map((query) => stateOf(query, SHORT_WINDOW))
+];

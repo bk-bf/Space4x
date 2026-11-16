@@ -20,8 +20,8 @@ describe('URL parameters', () => {
     expect(intel.group).toBe('');
     expect(roster.selected).toBe(roster.officers[3]!.id);
     expect(galaxy.selected).toBe('barn');
-    ui.tab = 'milestones';
-    expect(ui.tab).toBe('milestones');
+    ui.tab = 'production';
+    expect(ui.tab).toBe('production');
   });
 
   it('ignore a value that names nothing', () => {

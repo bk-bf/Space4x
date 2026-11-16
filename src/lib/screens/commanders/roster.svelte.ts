@@ -1,5 +1,6 @@
 import { className, DAY, game, isColony, START_TIME, type Game } from '#lib/game/index.ts';
 import { hash } from '#lib/gfx/math.ts';
+import type { Gender, PortraitSpec } from '#lib/gfx/portraits/index.ts';
 
 export const RANKS = [
   { id: 'lieutenant', label: 'Lieutenant', pips: 1 },
@@ -36,16 +37,21 @@ export interface Officer {
   entered: number;
   skills: number[];
   seed: number;
+  gender: Gender;
   post: Post;
 }
 
-export const POST_KINDS: readonly { id: PostKind; label: string }[] = [
-  { id: 'fleet', label: 'Fleet command' },
-  { id: 'ship', label: 'Ship' },
-  { id: 'governor', label: 'Governor' },
-  { id: 'staff', label: 'Staff' },
-  { id: 'none', label: 'Unassigned' }
+export const POST_KINDS: readonly { id: PostKind; label: string; plural: string }[] = [
+  { id: 'governor', label: 'Governor', plural: 'Governors' },
+  { id: 'staff', label: 'Staff', plural: 'Staff' },
+  { id: 'fleet', label: 'Fleet command', plural: 'Fleet commands' },
+  { id: 'ship', label: 'Ship', plural: 'Ships' },
+  { id: 'none', label: 'Unassigned', plural: 'Unassigned' }
 ];
+
+export type PostedKind = Exclude<PostKind, 'none'>;
+
+export type Group = 'all' | 'assigned' | 'none' | PostedKind;
 
 const STAFF_POSTS: readonly { id: string; label: string }[] = [
   { id: 'home-fleet', label: 'Home fleet command' },
@@ -87,7 +93,7 @@ export function postLabel(post: Post, g: Game): string {
   return postOptions(post.kind, g).find((p) => p.ref === post.ref)?.label ?? 'Unassigned';
 }
 
-const seeded = (i: number, name: string, rank: RankId, age: number, post: Post): Officer => ({
+const seeded = (i: number, name: string, rank: RankId, age: number, gender: Gender, post: Post): Officer => ({
   id: `o${i}`,
   name,
   rank,
@@ -98,28 +104,42 @@ const seeded = (i: number, name: string, rank: RankId, age: number, post: Post):
     Math.floor(hash(i, 7, 13) * 364) * DAY * 1000,
   skills: SKILLS.map((_, k) => Math.round(20 + hash(i, k, 6) * 75)),
   seed: i * 7 + 3,
+  gender,
   post
 });
 
 const mockOfficers = (): Officer[] =>
   (
     [
-      ['R. Vasquez', 'admiral', 63, 'staff', 'home-fleet'],
-      ['A. Mwangi', 'vice-admiral', 61, 'staff', 'naval-staff'],
-      ['M. Chen', 'captain', 57, 'none', ''],
-      ['S. Novak', 'captain', 55, 'staff', 'survey-office'],
-      ['I. Petrov', 'captain', 53, 'none', ''],
-      ['L. Haddad', 'commander', 49, 'none', ''],
-      ['T. Nakamura', 'commander', 47, 'governor', 'earth'],
-      ['J. Okonkwo', 'commander', 45, 'staff', 'launch-office'],
-      ['P. Silva', 'commander', 43, 'none', ''],
-      ['E. Larsen', 'lt-commander', 41, 'none', ''],
-      ['D. Kaur', 'lt-commander', 39, 'none', ''],
-      ['F. Moreau', 'lt-commander', 37, 'staff', 'academy'],
-      ['H. Yilmaz', 'lieutenant', 35, 'none', ''],
-      ['C. Brandt', 'lieutenant', 33, 'none', '']
+      ['R. Vasquez', 'admiral', 63, 'f', 'staff', 'home-fleet'],
+      ['A. Mwangi', 'vice-admiral', 61, 'm', 'staff', 'naval-staff'],
+      ['M. Chen', 'captain', 57, 'f', 'none', ''],
+      ['S. Novak', 'captain', 55, 'm', 'staff', 'survey-office'],
+      ['I. Petrov', 'captain', 53, 'm', 'none', ''],
+      ['L. Haddad', 'commander', 49, 'f', 'none', ''],
+      ['T. Nakamura', 'commander', 47, 'm', 'governor', 'earth'],
+      ['J. Okonkwo', 'commander', 45, 'm', 'staff', 'launch-office'],
+      ['P. Silva', 'commander', 43, 'f', 'none', ''],
+      ['E. Larsen', 'lt-commander', 41, 'f', 'none', ''],
+      ['D. Kaur', 'lt-commander', 39, 'f', 'none', ''],
+      ['F. Moreau', 'lt-commander', 37, 'm', 'staff', 'academy'],
+      ['H. Yilmaz', 'lieutenant', 35, 'f', 'none', ''],
+      ['C. Brandt', 'lieutenant', 33, 'm', 'none', '']
     ] as const
-  ).map(([name, rank, age, kind, ref], i) => seeded(i, name, rank, age, { kind, ref }));
+  ).map(([name, rank, age, gender, kind, ref], i) => seeded(i, name, rank, age, gender, { kind, ref }));
+
+const FACE_RANK = 2;
+
+export const portraitSpec = (o: Officer, now: number): PortraitSpec => ({
+  seed: o.seed,
+  age: ageOf(o, now),
+  rank: rankIndex(o.rank),
+  branch: o.post.kind === 'governor' ? 'governor' : 'staff',
+  gender: o.gender,
+  rolledAt: { age: ageOf(o, START_TIME), rank: FACE_RANK }
+});
+
+export const bestSkill = (o: Officer): number => o.skills.indexOf(Math.max(...o.skills));
 
 export type SortKey = 'rank' | 'name' | 'post' | 'age';
 
@@ -139,8 +159,18 @@ export class Roster {
   descending = $state(true);
   rank = $state<'all' | RankId>('all');
   assignment = $state<AssignmentFilter>('all');
-  targetKind = $state<PostKind>('staff');
-  targetRef = $state('');
+  kind = $state<'all' | PostedKind>('all');
+  tab = $state<'officers' | 'posts'>('officers');
+
+  get group(): Group {
+    if (this.kind !== 'all') return this.kind;
+    return this.assignment === 'assigned' ? 'assigned' : this.assignment === 'unassigned' ? 'none' : 'all';
+  }
+
+  setGroup(group: Group): void {
+    this.kind = group === 'all' || group === 'assigned' || group === 'none' ? 'all' : group;
+    this.assignment = group === 'assigned' ? 'assigned' : group === 'none' ? 'unassigned' : 'all';
+  }
 
   officer(id: string): Officer | undefined {
     return this.officers.find((o) => o.id === id);
@@ -150,10 +180,6 @@ export class Roster {
     const o = this.officer(id);
     if (!o) return;
     this.selected = id;
-    if (o.post.kind !== 'none') {
-      this.targetKind = o.post.kind;
-      this.targetRef = o.post.ref;
-    }
   }
 
   holder(kind: PostKind, ref: string): Officer | undefined {
@@ -176,6 +202,7 @@ export class Roster {
       .filter(
         (o) => this.assignment === 'all' || (o.post.kind !== 'none') === (this.assignment === 'assigned')
       )
+      .filter((o) => this.kind === 'all' || o.post.kind === this.kind)
       .sort((a, b) => {
         const ka = this.key(a, g),
           kb = this.key(b, g);
@@ -219,4 +246,5 @@ export function applyCommandersParams(params: URLSearchParams): void {
   const raw = params.get('cmd');
   const found = raw === null ? undefined : roster.officers[Number(raw)];
   if (found) roster.select(found.id);
+  if (params.get('tab') === 'posts') roster.tab = 'posts';
 }

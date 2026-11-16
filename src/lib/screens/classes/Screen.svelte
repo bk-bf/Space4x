@@ -1,31 +1,52 @@
 <script lang="ts">
+  import { designStats, newDesign } from '#lib/game/shipdesign/index.ts';
+  import { shipBeamMetres, shipLengthMetres } from '#lib/gfx/topdown/index.ts';
   import {
-    ROLES,
-    ROLE_NAMES,
-    YARDS,
-    component,
-    designStats,
-    yardMilestone,
-    yardName
-  } from '#lib/game/shipdesign/index.ts';
-  import { CanvasView, Panel, ScreenGrid, Stack, requestRender } from '#lib/ui/index.ts';
-  import Catalogue from './Catalogue.svelte';
+    CanvasView,
+    Icon,
+    IconList,
+    Panel,
+    ScreenGrid,
+    Stack,
+    Stat,
+    fmt,
+    materialTip,
+    requestRender,
+    type IconItem
+  } from '#lib/ui/index.ts';
+  import ClassBar from './ClassBar.svelte';
   import { designer } from './designer.svelte.ts';
   import { drawDesign } from './drawDesign.ts';
-  import Issues from './Issues.svelte';
+  import { loadedWith, primaryFigures, secondaryFigures } from './figures.ts';
+  import Flags from './Flags.svelte';
   import Load from './Load.svelte';
-  import Parts from './Parts.svelte';
-  import Stats from './Stats.svelte';
+  import Palette from './Palette.svelte';
+  import Strip from './Strip.svelte';
+
+  const EMPTY = newDesign('');
+  const EMPTY_STATS = designStats(EMPTY);
 
   const design = $derived(designer.design);
   const spec = $derived(design ? designer.specOf(design) : undefined);
-  const yards = $derived(
-    design
-      ? YARDS.filter((y) =>
-          designStats(design).lines.every((l) => component(l.component)?.builtAt.includes(y))
-        )
-      : []
+  const stats = $derived(designer.stats ?? EMPTY_STATS);
+  const loaded = $derived(designer.loaded ?? loadedWith(EMPTY, EMPTY_STATS, 0));
+  const primary = $derived(primaryFigures(stats, loaded));
+  const secondary = $derived(secondaryFigures(stats, loaded));
+  const costs = $derived<IconItem[]>(
+    Object.entries(stats.cost)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, kg]) => ({
+        icon: { kind: 'material', id },
+        amount: fmt.mass(kg),
+        tip: materialTip(id, `Needed ${fmt.mass(kg)}`)
+      }))
   );
+  const size = $derived(
+    spec && (spec.stern || spec.parts.length || spec.bow)
+      ? `${Math.round(shipLengthMetres(spec))} m long, ${Math.round(shipBeamMetres(spec))} m across`
+      : ''
+  );
+  const empty = $derived(!design || !stats.lines.length);
 
   const act = (fn: () => void) => () => {
     fn();
@@ -33,137 +54,145 @@
   };
 </script>
 
-<ScreenGrid id="classes" columns="300px minmax(0,1fr) 340px">
+<ScreenGrid id="classes" columns="384px minmax(0,1fr) 320px">
+  <Panel grow>
+    {#snippet head()}
+      <Icon name="ship" />Components
+      <small>{designer.design?.locked ? 'locked' : 'no premade classes'}</small>
+    {/snippet}
+    <Palette />
+  </Panel>
   <Stack>
-    <Panel grow>
-      {#snippet head()}Components <small>{designer.design?.locked ? 'locked' : ''}</small>{/snippet}
-      <Catalogue />
-    </Panel>
-  </Stack>
-  <Stack>
-    <Panel>
+    <Panel grow body="fill">
       {#snippet head()}
-        {#if design}
-          <input
-            id="clsName"
-            aria-label="Class name"
-            value={design.name}
-            disabled={design.locked}
-            oninput={(e) => designer.rename(e.currentTarget.value)}
-          />
-          {#if design.locked}<small id="clsLocked">locked</small>{/if}
-        {:else}
-          Class
-        {/if}
+        <Icon name="ship" />Drawing <small id="shipSize">{size}</small>
       {/snippet}
-      {#snippet tools()}
-        <button data-act="new" onclick={act(() => designer.start())}>New</button>
+      <CanvasView scale={2} bg="stars" draw={(fb, t) => drawDesign(fb, spec, t)}>
+        {#snippet labels()}
+          {#if empty}
+            <div class="ph">
+              <div class="empty" id="emptyDesign">
+                <Icon name="plus" class="lg" />
+                <div class="pf">New design</div>
+                <div>Click a component to add it. The ship draws itself from what you add.</div>
+              </div>
+            </div>
+          {/if}
+        {/snippet}
+      </CanvasView>
+    </Panel>
+    <Panel class="classpan">
+      {#snippet head()}
+        <Icon name="list" />Class
+        <small>{design ? `${stats.lines.reduce((n, l) => n + l.count, 0)} parts` : ''}</small>
+        <span class="flex"></span>
+        <button data-act="new" onclick={act(() => designer.start())}
+          ><Icon name="plus" class="sm" />New</button
+        >
         <button data-act="copy" disabled={!design} onclick={act(() => designer.copy())}>Copy</button>
         <button
           data-act="lock"
           disabled={!designer.canLock}
           title={design && !designer.canLock && !design.locked ? 'Resolve the errors first' : ''}
-          onclick={act(() => designer.lockIt())}>Lock</button
+          onclick={act(() => designer.lockIt())}><Icon name="lock" class="sm" />Lock</button
         >
         <button
           data-act="delete"
           disabled={!designer.canDelete}
           title={designer.inService ? 'A fleet is using this class' : ''}
-          onclick={act(() => designer.remove())}>Delete</button
+          onclick={act(() => designer.remove())}><Icon name="trash" class="sm" />Delete</button
         >
       {/snippet}
-      {#if design}
-        <div class="meta">
-          <label
-            >Role
-            <select
-              id="clsRole"
-              value={design.role}
-              disabled={design.locked}
-              onchange={(e) => designer.role(e.currentTarget.value as (typeof ROLES)[number])}
-            >
-              {#each ROLES as r (r)}<option value={r}>{ROLE_NAMES[r]}</option>{/each}
-            </select>
-          </label>
-          <label
-            >Built at
-            <select
-              id="clsYard"
-              value={design.yard}
-              disabled={design.locked}
-              onchange={(e) => designer.yard(e.currentTarget.value as (typeof YARDS)[number])}
-            >
-              {#each yards as y (y)}
-                <option value={y}
-                  >{yardName(y)}{yardMilestone(y) > designer.unlocked ? ' (locked)' : ''}</option
-                >
-              {/each}
-            </select>
-          </label>
-        </div>
-        <Parts />
-      {:else}
-        <p class="none" id="noClass">No class yet. Press New to start one.</p>
-      {/if}
-    </Panel>
-    <Panel title="Propellant"><Load /></Panel>
-    <Panel title="Design errors"><Issues /></Panel>
-    <Panel title="Drawing" grow body="fill">
-      <CanvasView scale={2} bg="stars" draw={(fb, t) => drawDesign(fb, spec, t)} />
+      <ClassBar />
+      <Strip />
     </Panel>
   </Stack>
-  <Stack>
-    <Panel title="Statistics" grow><Stats /></Panel>
-    <Panel>
-      {#snippet head()}Classes <small>{designer.saved.length}</small>{/snippet}
-      {#if designer.saved.length}
-        <ul id="classList">
-          {#each designer.saved as c (c.id)}
-            <li>
-              <button
-                class:on={c.id === design?.id}
-                data-class={c.id}
-                onclick={act(() => designer.pick(c.id))}>{c.name}{c.locked ? ' (locked)' : ''}</button
-              >
-            </li>
-          {/each}
-        </ul>
+  <Panel grow>
+    {#snippet head()}<Icon name="gear" />Stats{/snippet}
+    <div class="sidebody">
+      <div class="figures">
+        {#each primary as f (f.key)}
+          <div data-stat={f.key}>
+            <Stat dense icon={f.icon} value={f.value} label={f.label} warn={f.warn} tip={f.tip} />
+          </div>
+        {/each}
+      </div>
+      <h3>Propellant and payload</h3>
+      <Load />
+      <h3>Design</h3>
+      <Flags />
+      <h3>Build cost</h3>
+      {#if costs.length}
+        <IconList items={costs} variant="rate" plus={false} />
       {:else}
-        <p class="none">None designed.</p>
+        <span class="dim">Empty.</span>
       {/if}
-    </Panel>
-  </Stack>
+      <h3>More figures</h3>
+      <div class="figures">
+        {#each secondary as f (f.key)}
+          <div data-stat={f.key}>
+            <Stat dense icon={f.icon} value={f.value} label={f.label} warn={f.warn} tip={f.tip} />
+          </div>
+        {/each}
+      </div>
+    </div>
+  </Panel>
 </ScreenGrid>
 
 <style>
-  .none {
-    margin: 0;
-    color: var(--dim);
+  .figures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .sidebody {
+    min-height: 100%;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-    margin-bottom: 6px;
-    color: var(--dim);
-  }
-  .meta select {
-    background: var(--panel2);
-  }
-  #clsName {
+  .sidebody > :global(.ui-eq) {
     flex: none;
-    width: 14ch;
-    font: inherit;
-    color: inherit;
-    background: var(--panel);
-    border: 0;
-    padding: 0 4px;
+  }
+  .figures > div {
+    min-width: 0;
+  }
+  .dim {
+    color: var(--dim);
+  }
+  .flex {
+    flex: 1;
+  }
+  .ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dim);
+  }
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    max-width: 70%;
+    padding: 16px 24px;
+    text-align: center;
+    background: rgba(20, 17, 42, 0.85);
+    border: 2px dashed var(--line);
+  }
+  .pf {
+    font: 600 16px 'Pixelify';
+    color: var(--text);
+  }
+  :global(.classpan > h2 button) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 2px 0 2px 4px;
+    padding: 0 7px;
+  }
+  small {
+    font: 18px 'VT';
   }
 </style>

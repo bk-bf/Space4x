@@ -1,0 +1,38 @@
+[
+  {
+    "id": "phosphoric_acid",
+    "name": "Phosphoric acid",
+    "category": "fertiliser",
+    "tier": "P",
+    "thin": true,
+    "why": "Intermediate of phosphate fertiliser: burned phosphorus is hydrated to the acid, which ammonia then neutralises",
+    "source": "https://en.wikipedia.org/wiki/Phosphoric_acid"
+  },
+  {
+    "id": "map_fertiliser",
+    "name": "Monoammonium phosphate (MAP)",
+    "category": "fertiliser",
+    "tier": "P",
+    "thin": true,
+    "why": "Nitrogen and phosphorus fertiliser made by neutralising phosphoric acid with ammonia",
+    "source": "https://en.wikipedia.org/wiki/Monoammonium_phosphate"
+  },
+  {
+    "id": "urea",
+    "name": "Urea",
+    "category": "fertiliser",
+    "tier": "P",
+    "thin": true,
+    "why": "Main nitrogen fertiliser, made from ammonia and carbon dioxide",
+    "source": "https://en.wikipedia.org/wiki/Urea"
+  },
+  {
+    "id": "potassium_sulfate",
+    "name": "Potassium sulfate (sulfate of potash)",
+    "category": "fertiliser",
+    "tier": "P",
+    "thin": true,
+    "why": "Chloride-free potassium fertiliser; makeable anywhere potassium and sulfuric acid exist, as lunar KREEP potassium can be",
+    "source": "https://en.wikipedia.org/wiki/Potassium_sulfate"
+  }
+]

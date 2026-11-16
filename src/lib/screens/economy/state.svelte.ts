@@ -10,51 +10,79 @@ import { milestones } from '#lib/game/data/index.ts';
 import { game } from '#lib/game/index.ts';
 import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
 import { resetShips, seedBelt, seedTravel, ships } from '#lib/game/ships/index.ts';
+import type { Tab } from '#lib/ui/index.ts';
+import type { Period } from '#lib/ui/format.ts';
 
 export type TabId =
   | 'summary'
   | 'production'
   | 'construction'
   | 'stockpiles'
-  | 'milestones'
+  | 'people'
   | 'yard'
   | 'launch'
   | 'ships'
   | 'supply';
 
-export const TABS: readonly { id: TabId; label: string }[] = [
-  { id: 'summary', label: 'Summary' },
-  { id: 'production', label: 'Production' },
-  { id: 'construction', label: 'Construction' },
-  { id: 'stockpiles', label: 'Stockpiles' },
-  { id: 'milestones', label: 'Milestones' },
-  { id: 'yard', label: 'Shipyard' },
-  { id: 'launch', label: 'Launch' },
-  { id: 'ships', label: 'Ships' },
-  { id: 'supply', label: 'Supply' }
+export const TABS: readonly (Tab & { id: TabId })[] = [
+  { id: 'summary', label: 'Summary', icon: 'list' },
+  { id: 'production', label: 'Production', icon: 'factory' },
+  { id: 'construction', label: 'Construction', icon: 'hammer' },
+  { id: 'stockpiles', label: 'Stockpiles', icon: 'box' },
+  { id: 'people', label: 'People', icon: 'people' },
+  { id: 'yard', label: 'Shipyard', icon: 'yard' },
+  { id: 'launch', label: 'Launch', icon: 'rocket' },
+  { id: 'ships', label: 'Ships', icon: 'ship' },
+  { id: 'supply', label: 'Supply', icon: 'flame' }
 ];
 
 export const isTabId = (id: string | null | undefined): id is TabId => TABS.some((t) => t.id === id);
 
-export const ui: {
+interface EconomyUi {
   site: string;
   tab: TabId;
+  period: Period;
   group: number | null;
+  groupKind: string;
+  target: string;
+  switchCount: number;
   order: number | null;
   pick: string;
+  buildKind: string;
+  recipe: string;
+  quantity: number;
+  side: 'pick' | 'order';
+  material: string;
+  category: string;
+  showEmpty: boolean;
   milestone: number;
   vessel: string | null;
   yardOrder: number | null;
-} = $state({
+}
+
+const initial = (): EconomyUi => ({
   site: 'earth',
   tab: 'summary',
+  period: 'day',
   group: null,
+  groupKind: 'all',
+  target: '',
+  switchCount: 1,
   order: null,
   pick: 'farmland',
+  buildKind: 'all',
+  recipe: '',
+  quantity: 1,
+  side: 'pick',
+  material: 'iron',
+  category: 'all',
+  showEmpty: false,
   milestone: 1,
   vessel: null,
   yardOrder: null
 });
+
+export const ui: EconomyUi = $state(initial());
 
 export function showColony(id: string): void {
   const site = siteById(id);
@@ -75,8 +103,11 @@ export function applyEconomyParams(params: URLSearchParams): void {
   for (const id of params.get('surveyed')?.split(',') ?? []) completeSurvey(id);
   const tab = params.get('tab');
   const colony = params.get('colony');
+  if (params.get('screen') === 'colony') ui.tab = 'people';
   if (isTabId(tab)) ui.tab = tab;
   if (colony) showColony(colony);
+  const period = params.get('per');
+  if (period === 'day' || period === 'year') ui.period = period;
   const milestone = Number(params.get('milestone'));
   if (Number.isInteger(milestone) && milestone >= 1 && milestone <= milestones.length)
     ui.milestone = milestone;
@@ -92,14 +123,5 @@ export function resetEconomyScreen(): void {
   resetEconomy();
   resetShips();
   resetSurvey();
-  Object.assign(ui, {
-    site: 'earth',
-    tab: 'summary',
-    group: null,
-    order: null,
-    pick: 'farmland',
-    milestone: 1,
-    vessel: null,
-    yardOrder: null
-  });
+  Object.assign(ui, initial());
 }
