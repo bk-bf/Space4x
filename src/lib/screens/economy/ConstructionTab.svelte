@@ -15,7 +15,7 @@
     removeOrder,
     standing,
     touch,
-    unlockedAfter,
+    waitingOn,
     unlockedProcesses,
     type BuildOrder,
     type Site
@@ -200,14 +200,13 @@
             kind={b.kind}
             corner={standingN ? `×${fmt.count(standingN)}` : undefined}
             mark={isOpenB ? undefined : 'lock'}
-            cornerRight={isOpenB ? undefined : String(unlockedAfter(b.milestone))}
             minis={costs.slice(0, 3).map(([m]) => mat(m))}
             minisMore={Math.max(0, costs.length - 3)}
             dimmed={!isOpenB}
             selected={ui.side === 'pick' && picked?.id === b.id}
             tip={buildingTip(
               b.id,
-              isOpenB ? 'Open' : warn(`Needs milestone ${unlockedAfter(b.milestone)}`),
+              isOpenB ? 'Open' : warn(`Needs ${waitingOn(economy, b.milestone).join(' and ')}`),
               standingN ? `${fmt.count(standingN)} standing` : dim('None standing'),
               `Build time ${fmt.days(buildHours(b.id) / 24)}`
             )}
@@ -313,7 +312,7 @@
           </div>
         {:else}
           <div class="hot" id="lockedNote">
-            <Icon name="lock" class="sm" /> Needs milestone {unlockedAfter(picked.milestone)}
+            <Icon name="lock" class="sm" /> Needs {waitingOn(economy, picked.milestone).join(' and ')}
           </div>
         {/if}
       </Card>

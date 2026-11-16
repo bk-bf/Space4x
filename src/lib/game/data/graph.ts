@@ -32,6 +32,7 @@ export const materialSites = (id: string) => ({ extract: extractionBodies(id), m
 
 export interface ReachOptions {
   upTo?: number;
+  tags?: ReadonlySet<number>;
   thinOnly?: boolean;
   site?: Site;
 }
@@ -43,10 +44,9 @@ export interface Reach {
   components: Set<string>;
 }
 
-const included = (item: { milestone: number; thin?: boolean }, upTo: number, thinOnly: boolean): boolean =>
-  item.milestone <= upTo && (!thinOnly || item.thin === true);
-
-export const reach = ({ upTo = Infinity, thinOnly = false, site }: ReachOptions = {}): Reach => {
+export const reach = ({ upTo = Infinity, tags, thinOnly = false, site }: ReachOptions = {}): Reach => {
+  const included = (item: { milestone: number; thin?: boolean }): boolean =>
+    (tags ? tags.has(item.milestone) : item.milestone <= upTo) && (!thinOnly || item.thin === true);
   const have = new Set<string>();
   const used = new Set<string>();
   const built = new Set<string>();
@@ -54,7 +54,7 @@ export const reach = ({ upTo = Infinity, thinOnly = false, site }: ReachOptions 
   const thinMaterial = new Set(materials.filter((m: Material) => m.thin).map((m) => m.id));
   const wanted = (id: string) => !thinOnly || thinMaterial.has(id);
   const candidates = buildings.filter(
-    (b: Building) => included(b, upTo, thinOnly) && (site === undefined || b.where.includes(site))
+    (b: Building) => included(b) && (site === undefined || b.where.includes(site))
   );
 
   let changed = true;
@@ -85,7 +85,7 @@ export const reach = ({ upTo = Infinity, thinOnly = false, site }: ReachOptions 
       }
     }
     for (const r of recipes) {
-      if (used.has(r.id) || !included(r, upTo, thinOnly) || !built.has(r.building)) continue;
+      if (used.has(r.id) || !included(r) || !built.has(r.building)) continue;
       if (!Object.keys(r.inputs).every((m) => have.has(m))) continue;
       used.add(r.id);
       changed = true;
@@ -93,7 +93,7 @@ export const reach = ({ upTo = Infinity, thinOnly = false, site }: ReachOptions 
     }
     if (site === undefined) {
       for (const c of shipComponents as Component[]) {
-        if (made.has(c.id) || !included(c, upTo, thinOnly)) continue;
+        if (made.has(c.id) || !included(c)) continue;
         const buildable =
           c.builtAt.some((b) => built.has(b)) && Object.keys(c.cost).every((m) => have.has(m));
         if (buildable) {

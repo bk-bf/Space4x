@@ -132,9 +132,10 @@ test.describe('ship designer', () => {
     await expect(add(page, 'chemical_engine_methalox')).toBeEnabled();
     await expect(add(page, 'chemical_engine_hydrolox')).toBeDisabled();
     await expect(part(page, 'chemical_engine_hydrolox')).toHaveAttribute('data-locked', '6');
-    await expect(part(page, 'chemical_engine_hydrolox')).toContainText('after 6');
+    await expect(part(page, 'chemical_engine_hydrolox')).toContainText('locked');
     await part(page, 'chemical_engine_hydrolox').hover();
     await expect(page.locator('#ui-tip')).toContainText('Crewed lunar landing and surface outpost');
+    await expect(page.locator('#ui-tip')).toContainText('needs LEO station first');
     await open(page, 'screen=classes&reached=6');
     await expect(add(page, 'chemical_engine_hydrolox')).toBeEnabled();
     await expect(part(page, 'chemical_engine_hydrolox')).not.toHaveAttribute('data-locked', /./);

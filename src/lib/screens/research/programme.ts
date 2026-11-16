@@ -3,22 +3,23 @@ import {
   material,
   materials,
   milestones,
+  opensTags,
+  prerequisitesOf,
   recipes,
   shipComponent,
   shipComponents,
+  tagOpen,
   type Building,
   type Component,
   type Milestone
 } from '#lib/game/data/index.ts';
 import {
   isUnlocked,
-  opens,
   programmeBill,
   programmeStatus,
   siteNeedMissing,
   siteNeedProgress,
   standsAnywhere,
-  unlockedUpTo,
   type Economy,
   type ProgrammeStatus,
   type Site
@@ -52,8 +53,6 @@ export interface RequireRow {
 
 export interface Check {
   requires: RequireRow[];
-  earlierDone: boolean;
-  frontier: number;
   bill: BillRow[];
   stand: StandRow[];
   sites: SiteRow[];
@@ -61,7 +60,6 @@ export interface Check {
 }
 
 export function checkFor(eco: Economy, site: Site, m: Milestone): Check {
-  const frontier = unlockedUpTo(eco);
   const bill = Object.entries(programmeBill(m)).map(([id, need]) => {
     const have = site.stock[id] ?? 0;
     return { id, have, need, ok: have >= need };
@@ -87,14 +85,12 @@ export function checkFor(eco: Economy, site: Site, m: Milestone): Check {
     };
   });
   const requires = m.requires.map((number) => ({ number, ok: eco.done.includes(number) }));
-  const earlierDone = m.number <= frontier;
   const blockers =
     requires.filter((r) => !r.ok).length +
-    (earlierDone ? 0 : 1) +
     stand.filter((s) => !s.ok).length +
     sites.filter((s) => !s.ok).length +
     bill.filter((b) => !b.ok).length;
-  return { requires, earlierDone, frontier, bill, stand, sites, blockers };
+  return { requires, bill, stand, sites, blockers };
 }
 
 export function billShare(eco: Economy, site: Site, m: Milestone): number {
@@ -109,7 +105,7 @@ export const GROUP_NAMES: Record<ProgrammeStatus, string> = {
   running: 'Running',
   ready: 'Ready to start',
   waiting: 'Waiting for materials or buildings',
-  locked: 'Locked behind earlier milestones',
+  locked: 'Locked behind prerequisites',
   done: 'Done'
 };
 
@@ -142,33 +138,35 @@ export interface Opened {
   buildings: Building[];
   components: Component[];
   materials: string[];
+  alsoNeeds: boolean;
 }
 
-const KEPT_AT_START = 1;
-
 function newMaterials(tags: readonly number[]): string[] {
-  const lowest = Math.min(...tags);
-  const earlier = new Set(recipes.filter((r) => r.milestone < lowest).flatMap((r) => Object.keys(r.outputs)));
   const ground = new Set(
     materials.filter((m) => (m.sources ?? []).some((s) => s.body === 'earth')).map((m) => m.id)
   );
   const made = recipes.filter((r) => tags.includes(r.milestone)).flatMap((r) => Object.keys(r.outputs));
-  return [...new Set(made)].filter((id) => !earlier.has(id) && !ground.has(id) && !material(id).unit);
+  const elsewhere = new Set(
+    recipes.filter((r) => !tags.includes(r.milestone)).flatMap((r) => Object.keys(r.outputs))
+  );
+  return [...new Set(made)].filter((id) => !elsewhere.has(id) && !ground.has(id) && !material(id).unit);
 }
 
 export function openedBy(number: number): Opened {
-  const tags = number === 0 ? [] : opens(number);
   if (number === 0) {
     return {
-      buildings: buildings.filter((b) => b.milestone <= KEPT_AT_START),
-      components: shipComponents.filter((c) => c.milestone <= KEPT_AT_START),
-      materials: []
+      buildings: buildings.filter((b) => tagOpen([], b.milestone)),
+      components: shipComponents.filter((c) => tagOpen([], c.milestone)),
+      materials: [],
+      alsoNeeds: false
     };
   }
+  const tags = opensTags(number);
   return {
     buildings: buildings.filter((b) => tags.includes(b.milestone)),
     components: shipComponents.filter((c) => tags.includes(c.milestone)),
-    materials: tags.length ? newMaterials(tags) : []
+    materials: tags.length ? newMaterials(tags) : [],
+    alsoNeeds: tags.some((t) => prerequisitesOf(t).length > 1)
   };
 }
 

@@ -64,7 +64,7 @@
         onchange={(e) => designer.yard(e.currentTarget.value as (typeof YARDS)[number])}
       >
         {#each yards as y (y)}
-          <option value={y}>{yardName(y)}{yardMilestone(y) > designer.unlocked ? ' (locked)' : ''}</option>
+          <option value={y}>{yardName(y)}{designer.unlocked(yardMilestone(y)) ? '' : ' (locked)'}</option>
         {/each}
       </select>
     </label>

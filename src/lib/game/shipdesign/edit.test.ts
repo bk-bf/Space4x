@@ -76,7 +76,7 @@ describe('locking a design', () => {
   });
 
   it('refuses a component that is still locked in the game', () => {
-    expect(canLock(good, 1)).toBe(false);
+    expect(canLock(good, (tag) => tag <= 1)).toBe(false);
   });
 
   it('freezes the class: no edit changes it, a copy is open', () => {

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { milestones } from '#lib/game/data/index.ts';
-import { missingFor, newSite, programmeStatus, startEconomy, type Economy } from '#lib/game/economy/index.ts';
-import { SHORT_NAMES } from './names.ts';
+import { SHORT_NAMES, milestones, opensTags } from '#lib/game/data/index.ts';
+import {
+  missingFor,
+  newSite,
+  programmeBill,
+  programmeStatus,
+  startEconomy,
+  startProgramme,
+  type Economy
+} from '#lib/game/economy/index.ts';
 import { GROUPS, checkFor, milestoneIcon, openedBy, openedCount } from './programme.ts';
 
 const states = (): Economy[] => {
@@ -50,13 +57,42 @@ describe('the programme card checks what the game checks', () => {
           expect(checkFor(eco, eco.sites[0]!, m).blockers).toBe(0);
   });
 
-  it('names the earlier milestone still open when a later one is checked', () => {
+  it('lets a milestone start while a lower unrelated one is still open', () => {
+    const eco = startEconomy();
+    eco.done = [1, 2, 3, 4];
+    const site = eco.sites[0]!;
+    const six = milestones.find((m) => m.number === 6)!;
+    const check = checkFor(eco, site, six);
+    expect(check.requires.every((r) => r.ok)).toBe(true);
+    expect(programmeStatus(eco, site, six)).not.toBe('locked');
+    expect(
+      programmeStatus(
+        eco,
+        site,
+        milestones.find((m) => m.number === 5)!
+      )
+    ).not.toBe('done');
+  });
+
+  it('starts a milestone whose prerequisites are done while a lower unrelated one is still open', () => {
+    const [, , moon] = states();
+    const eco = moon!;
+    eco.done = [1, 2, 3, 4];
+    const site = eco.sites[0]!;
+    const six = milestones.find((m) => m.number === 6)!;
+    for (const [id, need] of Object.entries(programmeBill(six))) site.stock[id] = need * 2;
+    expect(programmeStatus(eco, site, six)).toBe('ready');
+    expect(startProgramme(eco, site, 6)).toBe(true);
+    expect(eco.running.map((p) => p.number)).toEqual([6]);
+    expect(eco.done).not.toContain(5);
+  });
+
+  it('keeps a milestone locked until its own prerequisites are done', () => {
     const eco = startEconomy();
     const seventeen = milestones.find((m) => m.number === 17)!;
     const check = checkFor(eco, eco.sites[0]!, seventeen);
-    expect(check.earlierDone).toBe(false);
-    expect(check.frontier).toBe(1);
     expect(check.requires.every((r) => !r.ok)).toBe(true);
+    expect(programmeStatus(eco, eco.sites[0]!, seventeen)).toBe('locked');
   });
 });
 
@@ -82,7 +118,7 @@ describe('the tiles', () => {
 
   it('list what is open at the start and what each milestone opens', () => {
     expect(openedCount(openedBy(0))).toBeGreaterThan(0);
-    expect(openedBy(1).buildings.every((b) => b.milestone === 2)).toBe(true);
+    expect(openedBy(1).buildings.every((b) => opensTags(1).includes(b.milestone))).toBe(true);
     expect(openedCount(openedBy(1))).toBeGreaterThan(0);
   });
 });

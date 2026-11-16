@@ -1,6 +1,6 @@
 import { classes, classInUse, game, specFor, statsFor, type ClassRegistry } from '#lib/game/index.ts';
 import { milestones } from '#lib/game/data/index.ts';
-import { economy, touch, unlockedUpTo } from '#lib/game/economy/index.ts';
+import { economy, touch, waitingOn, unlockedTag } from '#lib/game/economy/index.ts';
 import { payloadFor, loadedWith, type Loaded } from './figures.ts';
 import {
   addPart,
@@ -68,8 +68,12 @@ export class Designer {
     return this.pickedId ? this.registry.find(this.pickedId) : undefined;
   }
 
-  get unlocked(): number {
-    return unlockedUpTo(economy);
+  get unlocked(): (tag: number) => boolean {
+    return unlockedTag(economy);
+  }
+
+  waitsFor(tag: number): string[] {
+    return waitingOn(economy, tag);
   }
 
   get stats(): DesignStats | undefined {

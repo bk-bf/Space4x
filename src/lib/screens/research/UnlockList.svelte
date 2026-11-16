@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { milestones } from '#lib/game/data/index.ts';
+  import { milestones, shortName } from '#lib/game/data/index.ts';
   import { economy, homeSite } from '#lib/game/economy/index.ts';
   import { PixIcon } from '#lib/ui/index.ts';
-  import { shortName } from './names.ts';
   import { openedBy, openedCount, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
@@ -30,7 +29,9 @@
   {@const o = openedBy(r.number)}
   {@const n = openedCount(o)}
   <div class="uh">
-    <span class="num">{r.number || '-'}</span><b>{r.label}</b><small class="dim">{n} items</small>
+    <span class="num">{r.number || '-'}</span><b>{r.label}</b><small class="dim"
+      >{n} items{o.alsoNeeds ? ', some need more' : ''}</small
+    >
   </div>
   <div class="eq">
     {#each o.buildings as b (b.id)}<PixIcon kind="building" id={b.id} size={16} />{/each}

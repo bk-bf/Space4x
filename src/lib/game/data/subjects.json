@@ -1,0 +1,10 @@
+[
+  { "id": "launch", "name": "Launch and logistics" },
+  { "id": "habitats", "name": "Habitats and construction" },
+  { "id": "power", "name": "Power" },
+  { "id": "computing", "name": "Computing" },
+  { "id": "chemistry", "name": "Chemistry" },
+  { "id": "mining", "name": "Mining" },
+  { "id": "propulsion", "name": "Propulsion" },
+  { "id": "physics", "name": "Physics" }
+]

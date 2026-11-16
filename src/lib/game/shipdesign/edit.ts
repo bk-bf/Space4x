@@ -1,6 +1,6 @@
 import { component, isEngine } from './catalogue.ts';
 import { PROPELLANT_KINDS, isPropellant, type PropellantKind } from './propellants.ts';
-import { designStats } from './stats.ts';
+import { designStats, type Unlocked } from './stats.ts';
 import type { Load, Part, Role, ShipDesign, Yard } from './types.ts';
 
 export const MAX_COUNT = 99;
@@ -80,11 +80,11 @@ export const setRole = (design: ShipDesign, role: Role): ShipDesign =>
 export const setYard = (design: ShipDesign, yard: Yard): ShipDesign =>
   design.locked ? design : { ...design, yard };
 
-export const canLock = (design: ShipDesign, unlockedUpTo = Infinity): boolean =>
-  !design.locked && designStats(design, unlockedUpTo).errors === 0;
+export const canLock = (design: ShipDesign, unlocked?: Unlocked): boolean =>
+  !design.locked && designStats(design, unlocked).errors === 0;
 
-export const lock = (design: ShipDesign, unlockedUpTo = Infinity): ShipDesign =>
-  canLock(design, unlockedUpTo) ? { ...design, locked: true } : design;
+export const lock = (design: ShipDesign, unlocked?: Unlocked): ShipDesign =>
+  canLock(design, unlocked) ? { ...design, locked: true } : design;
 
 export const copyOf = (design: ShipDesign, id: string): ShipDesign => ({
   ...design,

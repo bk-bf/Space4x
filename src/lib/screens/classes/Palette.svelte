@@ -26,14 +26,15 @@
   </div>
   <TileGrid min={86} gap={5}>
     {#each k.items as c (c.id)}
-      {@const open = c.milestone <= designer.unlocked}
+      {@const open = designer.unlocked(c.milestone)}
+      {@const waits = open ? [] : designer.waitsFor(c.milestone)}
       {@const have = designer.design ? countOf(designer.design, c.id) : 0}
       <div class="cell" data-part={c.id} data-locked={open ? undefined : c.milestone}>
         <Tile
           variant="cmp"
           icons={[{ kind: 'component', id: c.id }]}
           name={c.name}
-          value={open ? keyFigure(c) : `after ${c.milestone}`}
+          value={open ? keyFigure(c) : 'locked'}
           cornerRight={have ? `×${have}` : undefined}
           mark={open ? undefined : 'lock'}
           markTone="hot"
@@ -43,7 +44,7 @@
           tip={componentTip(
             c.id,
             ...factList(c).map(dim),
-            open ? '' : warn(`Waits for ${milestone(c.milestone).name}`)
+            open ? '' : warn(`Part of ${milestone(c.milestone).name}; needs ${waits.join(' and ')} first`)
           )}
           onselect={() => pick(c.id)}
         />

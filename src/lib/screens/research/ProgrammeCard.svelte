@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { material, milestone, type Milestone } from '#lib/game/data/index.ts';
+  import { material, milestone, shortName, TIER_NAMES, type Milestone } from '#lib/game/data/index.ts';
   import {
     describeMissing,
     economy,
@@ -32,7 +32,6 @@
     type Chip,
     type IconItem
   } from '#lib/ui/index.ts';
-  import { shortName, TIER_NAMES } from './names.ts';
   import { checkFor, milestoneIcon, openedBy, openedCount, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
@@ -179,7 +178,7 @@
     {/if}
   </CardSection>
 
-  <CardSection label="Needs milestones">
+  <CardSection label="Prerequisites">
     <div class="needs" id="requires">
       {#each check.requires as r (r.number)}
         <Tile
@@ -195,11 +194,7 @@
           onselect={() => pickRequired(r.number)}
         />
       {/each}
-      {#if !check.earlierDone}
-        <span class="hot" id="earlier"
-          >Every milestone before it must be done first (next is {check.frontier})</span
-        >
-      {:else if !check.requires.length}
+      {#if !check.requires.length}
         <span class="dim">none</span>
       {/if}
     </div>
@@ -210,6 +205,9 @@
       <IconList items={unlockItems} variant="icons" />
     {:else}
       <span class="dim">nothing new, it is a gate for later ones</span>
+    {/if}
+    {#if opened.alsoNeeds && unlockItems.length}
+      <div class="dim" id="alsoNeeds">Some also wait for their other prerequisites.</div>
     {/if}
   </CardSection>
 </Card>

@@ -17,10 +17,15 @@ import {
   materialSites,
   milestone,
   milestones,
+  missingPrerequisites,
+  opensTags,
   reach,
   recipes,
   recipesProducing,
   shipComponents,
+  subjects,
+  tagOpen,
+  tagsOf,
   type Amounts,
   type Body,
   type Site
@@ -337,6 +342,52 @@ describe('milestones', () => {
       expect(unknown(m.needs.components, componentIds), `${m.id} components`).toEqual([]);
     }
     expect(milestone(1).requires).toEqual([]);
+  });
+
+  it.each([true, false])(
+    'makes what each milestone needs from its own ancestors alone (thin path: %s)',
+    (thinOnly) => {
+      for (const m of milestones) {
+        const got = reach({ tags: tagsOf(m.number), thinOnly });
+        expect(
+          m.needs.materials.filter((id) => !got.materials.has(id)),
+          `${m.id} materials`
+        ).toEqual([]);
+        expect(
+          m.needs.buildings.filter((id) => !got.buildings.has(id)),
+          `${m.id} buildings`
+        ).toEqual([]);
+        expect(
+          m.needs.components.filter((id) => !got.components.has(id)),
+          `${m.id} components`
+        ).toEqual([]);
+      }
+    }
+  );
+
+  it('name a known subject each, and every subject is used', () => {
+    const known = subjects.map((s) => s.id);
+    expect(new Set(known).size).toBe(known.length);
+    for (const m of milestones) expect(known, m.id).toContain(m.subject);
+    for (const s of subjects)
+      expect(
+        milestones.some((m) => m.subject === s.id),
+        s.id
+      ).toBe(true);
+  });
+
+  it('unlock a tag once its own requires are done, and tag 0 from the start', () => {
+    expect(tagOpen([], 0)).toBe(true);
+    expect(tagOpen([], 1)).toBe(true);
+    expect(tagOpen([1], 2)).toBe(true);
+    expect(tagOpen([1], 3)).toBe(false);
+    expect(tagOpen([1, 2], 3)).toBe(true);
+    expect(missingPrerequisites([1], 4)).toEqual([3]);
+  });
+
+  it('opens a tag from each of its prerequisites', () => {
+    expect(opensTags(1)).toEqual(expect.arrayContaining([2, 3, 4, 15]));
+    for (const m of milestones) for (const r of m.requires) expect(opensTags(r), m.id).toContain(m.number);
   });
 
   it('end at jump point stabilisation', () => {

@@ -192,10 +192,16 @@ export interface SiteNeed {
   flown?: string;
 }
 
+export interface Subject {
+  id: string;
+  name: string;
+}
+
 export interface Milestone {
   id: string;
   number: number;
   name: string;
+  subject: string;
   tier: Tier;
   optional?: boolean;
   unlocks: string;

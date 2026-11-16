@@ -10,7 +10,7 @@ import {
   standing,
   touch,
   unlockedProcesses,
-  unlockedUpTo,
+  unlockedTag,
   type Site
 } from './economy/index.ts';
 import { Player } from './play.ts';
@@ -106,7 +106,7 @@ export class PathPlayer extends Player {
     let d: ShipDesign = { ...newDesign(id, name), role, yard };
     for (const [c, n] of parts) d = setCount(d, c, n);
     for (const [k, kg] of load ?? []) d = setLoad(d, k, kg);
-    d = lock(d, unlockedUpTo(economy));
+    d = lock(d, unlockedTag(economy));
     if (!d.locked)
       throw new Error(
         `${name} could not be locked: ${statsFor(d)

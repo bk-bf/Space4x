@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { milestone, milestones } from '#lib/game/data/index.ts';
+  import { milestone, milestones, shortName } from '#lib/game/data/index.ts';
   import { economy, homeSite, programmeDays, runningProgramme } from '#lib/game/economy/index.ts';
   import type { ProgrammeStatus } from '#lib/game/economy/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
   import { Icon, Tile, TileGrid, dim, fmt, tipText, warn } from '#lib/ui/index.ts';
-  import { shortName } from './names.ts';
   import { GROUPS, GROUP_NAMES, billShare, checkFor, milestoneIcon, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
@@ -51,7 +50,10 @@
     if (status === 'done') return { note: 'done', tone: 'cool' };
     if (status === 'locked')
       return {
-        note: `needs ${m.requires.filter((r) => !economy.done.includes(r)).join(', ')}`,
+        note: `needs ${m.requires
+          .filter((r) => !economy.done.includes(r))
+          .map(shortName)
+          .join(', ')}`,
         tone: 'cool'
       };
     const rows = checkFor(economy, site, m).bill;

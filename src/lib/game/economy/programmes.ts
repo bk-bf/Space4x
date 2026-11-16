@@ -2,7 +2,7 @@ import { building, material, milestone, milestones, reach, shipComponent } from 
 import type { Amounts, Milestone, Tier } from '#lib/game/data/index.ts';
 import type { Economy, Programme, Site } from './types.ts';
 import { siteNeedMissing } from './needs.ts';
-import { requiresMet, unlockedUpTo } from './unlocks.ts';
+import { requiresMet } from './unlocks.ts';
 
 export const PROGRAMME_MATERIAL_KG = 50_000;
 export const PROGRAMME_BASE_DAYS = 60;
@@ -47,7 +47,6 @@ export function programmeBill(m: Milestone): Amounts {
 
 export type Missing =
   | { kind: 'requires'; number: number }
-  | { kind: 'locked' }
   | { kind: 'building'; id: string }
   | { kind: 'builder'; id: string }
   | { kind: 'site'; label: string }
@@ -62,7 +61,6 @@ export const standsAnywhere = (eco: Economy, buildingId: string): boolean =>
 export function missingFor(eco: Economy, site: Site, m: Milestone): Missing[] {
   const out: Missing[] = [];
   for (const r of m.requires) if (!eco.done.includes(r)) out.push({ kind: 'requires', number: r });
-  if (m.number > unlockedUpTo(eco)) out.push({ kind: 'locked' });
   for (const id of m.needs.buildings) if (!standsAnywhere(eco, id)) out.push({ kind: 'building', id });
   for (const need of m.needs.sites ?? []) {
     const gap = siteNeedMissing(eco, need);
@@ -104,7 +102,6 @@ export const runningProgramme = (eco: Economy, number: number): Programme | unde
 
 export const describeMissing = (x: Missing): string => {
   if (x.kind === 'requires') return `Needs ${milestone(x.number).name}`;
-  if (x.kind === 'locked') return 'Needs every earlier milestone';
   if (x.kind === 'building') return `No ${building(x.id).name}`;
   if (x.kind === 'site') return x.label;
   if (x.kind === 'builder') return `No ${building(x.id).name} to build parts`;

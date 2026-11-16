@@ -5,7 +5,13 @@ import { crewedVehicle, build, upperStage } from './fixtures.ts';
 import { setLoad } from './edit.ts';
 import type { IssueCode, ShipDesign } from './types.ts';
 
-const codes = (d: ShipDesign, unlocked?: number, level?: 'error' | 'warning'): IssueCode[] =>
+const upTo = (n: number) => (tag: number) => tag <= n;
+
+const codes = (
+  d: ShipDesign,
+  unlocked?: (tag: number) => boolean,
+  level?: 'error' | 'warning'
+): IssueCode[] =>
   designStats(d, unlocked)
     .issues.filter((i) => !level || i.level === level)
     .map((i) => i.code);
@@ -177,7 +183,7 @@ describe('design errors', () => {
     ['kerolox_engine', 1],
     ['propellant_tank', 2]
   ] as const;
-  const errors = (d: ShipDesign, unlocked?: number) => codes(d, unlocked, 'error');
+  const errors = (d: ShipDesign, unlocked?: (tag: number) => boolean) => codes(d, unlocked, 'error');
   const warnings = (d: ShipDesign) => codes(d, undefined, 'warning');
 
   it('asks for components when there are none', () => {
@@ -185,8 +191,8 @@ describe('design errors', () => {
   });
 
   it('rejects a class that uses a locked component', () => {
-    expect(errors(build(stage), 0)).toContain('locked-part');
-    expect(errors(build(stage), 1)).not.toContain('locked-part');
+    expect(errors(build(stage), upTo(0))).toContain('locked-part');
+    expect(errors(build(stage), upTo(1))).not.toContain('locked-part');
   });
 
   it('rejects a ship with no engine', () => {
@@ -253,16 +259,16 @@ describe('design errors', () => {
       ['propellant_tank', 1],
       ['structure_truss', 1]
     ]);
-    expect(codes(d, 3, 'error')).toEqual([]);
-    expect(codes(d, 3, 'warning')).toContain('power-deficit');
-    expect(codes(d, 3)).not.toContain('locked-part');
+    expect(codes(d, upTo(3), 'error')).toEqual([]);
+    expect(codes(d, upTo(3), 'warning')).toContain('power-deficit');
+    expect(codes(d, upTo(3))).not.toContain('locked-part');
     const without = build([
       ['crew_capsule', 1],
       ['chemical_engine_methalox', 1],
       ['propellant_tank', 1],
       ['structure_truss', 1]
     ]);
-    expect(codes(without, 3, 'error')).toContain('power-deficit');
+    expect(codes(without, upTo(3), 'error')).toContain('power-deficit');
   });
 
   it('warns when a solar ship has no battery for the eclipse', () => {

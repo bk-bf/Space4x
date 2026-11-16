@@ -159,11 +159,13 @@ function condition(
   };
 }
 
+export type Unlocked = (tag: number) => boolean;
+
 export const yardName = (yard: Yard): string => building(yard).name;
 
 export const yardMilestone = (yard: Yard): number => building(yard).milestone;
 
-export function designStats(design: ShipDesign, unlocked = Infinity): DesignStats {
+export function designStats(design: ShipDesign, unlocked: Unlocked = () => true): DesignStats {
   const items = design.parts.flatMap((p) => {
     const c = component(p.component);
     return c && p.count > 0 ? [{ c, count: p.count }] : [];
@@ -272,7 +274,7 @@ function issuesOf(
   design: ShipDesign,
   items: readonly { c: Component; count: number }[],
   s: Base,
-  unlocked: number
+  unlocked: Unlocked
 ): Issue[] {
   const out: Issue[] = [];
   const error = (code: Issue['code'], text: string) => out.push({ level: 'error', code, text });
@@ -284,10 +286,10 @@ function issuesOf(
     return out;
   }
   for (const { c } of items)
-    if (c.milestone > unlocked)
+    if (!unlocked(c.milestone))
       error(
         'locked-part',
-        `${c.name} is locked until milestone ${c.milestone}: ${milestone(c.milestone).name}.`
+        `${c.name} is locked until the research that leads to ${milestone(c.milestone).name} is done.`
       );
 
   if (!has(isEngine)) error('no-engine', 'No engine: the ship cannot change its velocity.');

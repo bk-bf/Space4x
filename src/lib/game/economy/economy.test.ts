@@ -16,8 +16,8 @@ import {
   siteFlows,
   startEconomy,
   startProgramme,
+  isUnlocked,
   unlockedProcesses,
-  unlockedUpTo,
   type Economy,
   type GroupActor,
   type Site
@@ -75,7 +75,9 @@ describe('the start state', () => {
   it('unlocks only the first milestone records and nothing is done', () => {
     const eco = startEconomy();
     expect(eco.done).toEqual([]);
-    expect(unlockedUpTo(eco)).toBe(1);
+    expect(isUnlocked(eco, { milestone: 0 })).toBe(true);
+    expect(isUnlocked(eco, { milestone: 1 })).toBe(true);
+    expect(isUnlocked(eco, { milestone: 2 })).toBe(false);
     const site = earthOf(eco);
     expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).not.toContain(
       'polyimide_synthesis'
@@ -370,11 +372,12 @@ describe('milestones as programmes', () => {
     advanceEconomy(eco, programmeDays(m1) * DAY, (t) => logs.push(t));
     expect(eco.done).toEqual([1]);
     expect(logs).toContain('Milestone 1 reached: Reusable orbital launch.');
-    expect(unlockedUpTo(eco)).toBe(2);
+    expect(isUnlocked(eco, { milestone: 2 })).toBe(true);
+    expect(isUnlocked(eco, { milestone: 3 })).toBe(false);
     expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).toContain('polyimide_synthesis');
     expect(programmeStatus(eco, site, milestone(2))).toBe('waiting');
-    expect(programmeStatus(eco, site, milestone(3))).toBe('waiting');
-    expect(programmeStatus(eco, site, milestone(5))).toBe('locked');
+    expect(programmeStatus(eco, site, milestone(3))).toBe('locked');
+    expect(programmeStatus(eco, site, milestone(15))).toBe('locked');
   });
 
   it('slows a programme that needs compute to what data centres supply', () => {

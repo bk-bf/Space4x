@@ -1,6 +1,6 @@
 import { DAY, formatClock } from './clock.ts';
 import { classes } from './classes.svelte.ts';
-import { building, material, milestone, milestones, recipesProducing } from './data/index.ts';
+import { building, material, milestone, recipesProducing } from './data/index.ts';
 import type { Milestone } from './data/index.ts';
 import {
   assign,
@@ -20,7 +20,7 @@ import {
   startProgramme,
   touch,
   unlockedProcesses,
-  unlockedUpTo,
+  unlockedTag,
   type Site
 } from './economy/index.ts';
 import { lock, newDesign, setCount, type ShipDesign } from './shipdesign/index.ts';
@@ -55,7 +55,7 @@ export function launchDesigns(): { booster: ShipDesign; orbiter: ShipDesign } {
     if (found) return found;
     let d: ShipDesign = { ...newDesign(id, name), role, yard: 'rocket_factory' };
     for (const [c, n] of parts) d = setCount(d, c, n);
-    d = lock(d, unlockedUpTo(economy));
+    d = lock(d, unlockedTag(economy));
     classes.add(d);
     return d;
   };
@@ -272,10 +272,7 @@ export class Player {
       }
       for (const x of missing) {
         if (x.kind === 'requires') this.reach(x.number);
-        else if (x.kind === 'locked') {
-          const f = milestones.find((q) => !q.optional && !economy.done.includes(q.number));
-          if (f && f.number < n) this.reach(f.number);
-        } else if (x.kind === 'building') this.provideBuilding(x.id);
+        else if (x.kind === 'building') this.provideBuilding(x.id);
         else if (x.kind === 'site') this.provideSite(n);
         else if (x.kind === 'builder') this.ensureBuilding(x.id);
         else if (x.kind === 'material') this.produce(x.id, this.billRate(x.id, x.need));
@@ -313,7 +310,7 @@ export class Player {
         ['propellant_tank', 1]
       ] as [string, number][])
         d = setCount(d, c, n);
-      habitat = lock(d, unlockedUpTo(economy));
+      habitat = lock(d, unlockedTag(economy));
       classes.add(habitat);
     }
     const here = (id: string) =>
