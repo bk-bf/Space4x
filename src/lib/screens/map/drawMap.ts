@@ -754,7 +754,14 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     } else {
       if (!vis(b.p)) continue;
       const rock = b.minor === 'asteroid' || b.minor === 'comet',
-        r = rock && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R * 1.3 + 4 : b.R * (b.look?.rings ? 2.3 : b.small ? smallReach(b.small) : 1),
+        r =
+          rock && b.mk
+            ? 3
+            : b.mk
+              ? MARK_R + 1
+              : b.star
+                ? b.R * 1.3 + 4
+                : b.R * (b.look?.rings ? 2.3 : b.small ? smallReach(b.small) : 1),
         ry = rock && b.mk ? 3 : b.mk ? MARK_R + 1 : b.star ? b.R + 4 : b.R;
       if (chosen && b.mk && rock) brackets(f, b.p[0], b.p[1], 5, 4);
       an.push({
