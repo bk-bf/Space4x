@@ -140,7 +140,7 @@ test.describe('food at an outpost', () => {
     await expect(page.locator('#summaryStats .ui-kpi').nth(1).locator('small')).toHaveText(
       '0 kcal each a day'
     );
-    await expect(page.locator('#calorieShares')).toHaveText('EatenFood ration 100%');
+    await expect(page.locator('#calorieShares')).toHaveText('Eaten Food ration 100%');
     await expect(page.locator('[data-screen="economy"]')).toContainText('5 t, 3.4 y in store');
   });
 });

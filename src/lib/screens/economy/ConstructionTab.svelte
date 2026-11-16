@@ -40,7 +40,7 @@
     type FilterItem,
     type IconItem
   } from '#lib/ui/index.ts';
-  import NumberField from './NumberField.svelte';
+  import Field from './Field.svelte';
   import TabBody from './TabBody.svelte';
   import { KIND_ORDER, kindIcon } from './model.ts';
   import { bld, mat } from './refs.ts';
@@ -308,7 +308,7 @@
             </CardSection>
           {/if}
           <div class="row">
-            <NumberField label="Quantity" bind:value={ui.quantity} width={6} name="quantity" />
+            <Field label="Quantity" bind:value={ui.quantity} width={6} name="quantity" />
             <button id="orderAdd" onclick={addToQueue}><Icon name="plus" />Add to queue</button>
           </div>
         {:else}

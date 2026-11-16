@@ -37,12 +37,6 @@ async function design(page: Page, name: string, role: string, parts: [string, st
   await expect(page.locator('#clsLocked')).toBeVisible();
 }
 
-const row = (page: Page, table: string, ...cells: string[]) => {
-  let r = page.locator(`${table} tr.pick`);
-  for (const c of cells) r = r.filter({ has: page.locator('td', { hasText: c }) });
-  return r;
-};
-
 test.describe('leaving Earth', () => {
   test('designs a two-stage launcher and a station module, builds them, launches, founds a station and delivers cargo', async ({
     page

@@ -14,7 +14,6 @@ const mapLabel = (page: Page, text: string) =>
   page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}( ×\\d+)?$`) });
 const term = (page: Page, text: RegExp): Locator =>
   page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
-const heading = (page: Page, screen: string) => page.locator(`[data-screen="${screen}"] .pan > h2`).first();
 
 test.describe('classes', () => {
   test('a class designed from nothing can be named and deleted while nothing builds it', async ({ page }) => {

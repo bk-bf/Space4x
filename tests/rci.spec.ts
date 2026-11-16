@@ -56,8 +56,8 @@ test.describe('research', () => {
     page
   }) => {
     await open(page, 'screen=economy&tab=production');
-    await page.locator('#groups tr.pick', { hasText: 'Stainless steel' }).first().click();
-    await page.locator('#recipePick').selectOption({ label: 'GRCop copper-chromium-niobium alloy' });
+    await page.locator('#groups button.ui-tile', { hasText: 'Stainless steel' }).first().click();
+    await page.getByRole('button', { name: 'GRCop copper-chromium-niobium alloy', exact: true }).click();
     await page.locator('input[name="switchCount"]').fill('1');
     await page.locator('#recipeSwitch').click();
     await advance(page, DAY);

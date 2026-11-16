@@ -31,7 +31,7 @@
     type IconItem
   } from '#lib/ui/index.ts';
   import GroupTile from './GroupTile.svelte';
-  import NumberField from './NumberField.svelte';
+  import Field from './Field.svelte';
   import TabBody from './TabBody.svelte';
   import { KIND_ORDER, groupViews, kindIcon } from './model.ts';
   import { bld, mat } from './refs.ts';
@@ -203,7 +203,7 @@
             {#if target}
               <div class="dim target" id="chosenRecipe">{target.name}</div>
               <div class="row">
-                <NumberField
+                <Field
                   label="How many"
                   bind:value={ui.switchCount}
                   max={chosen.group.count}
