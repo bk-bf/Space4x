@@ -114,6 +114,11 @@ export class Pix {
     this.d[i + 3] = 255;
   }
 
+  get(x: number, y: number): Color {
+    const i = (y * this.w + x) * 4;
+    return [this.d[i]!, this.d[i + 1]!, this.d[i + 2]!];
+  }
+
   has(x: number, y: number): boolean {
     return x >= 0 && y >= 0 && x < this.w && y < this.h && this.d[(y * this.w + x) * 4 + 3]! > 0;
   }
