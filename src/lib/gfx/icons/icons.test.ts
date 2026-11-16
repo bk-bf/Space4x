@@ -42,24 +42,16 @@ describe('icon coverage', () => {
       ).toBe(true);
   });
 
-  it('lists the ids that fall back to a generic drawing', () => {
+  it('gives every id in the data its own drawing', () => {
     const fallback = (Object.keys(ids) as IconKind[]).flatMap((kind) =>
       ids[kind].filter((id) => !hasIconArt({ kind, id })).map((id) => `${kind}:${id}`)
     );
-    expect(fallback.sort()).toEqual([
-      'component:cargo_bay',
-      'component:crew_capsule',
-      'component:fuel_cell',
-      'component:landing_legs',
-      'component:survey_suite',
-      'material:u_mo_fuel',
-      'material:uzrh_fuel',
-      'material:w_cermet'
-    ]);
+    expect(fallback.sort()).toEqual([]);
   });
 
-  it('keeps the fallback of a known kind distinct from an unknown id', () => {
+  it('draws the parts the mockup lacked differently from the generic box and from each other', () => {
     expect(digest('component', 'cargo_bay')).not.toBe(digest('component', 'not_in_the_data'));
+    expect(digest('component', 'fuel_cell')).not.toBe(digest('component', 'cargo_bay'));
   });
 });
 

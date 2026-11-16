@@ -249,6 +249,82 @@ const DRAW: Record<string, Draw> = {
     im.line(13, 5, 15, 8, C.white.m);
     im.rect(13, 12, 2, 2, C.orange.m);
   },
+  cargo_bay(im) {
+    im.box(1, 3, 14, 10, C.steel);
+    im.rect(2, 4, 12, 1, C.steel.h);
+    im.rect(3, 6, 4, 5, C.dark.d);
+    im.rect(9, 6, 4, 5, C.dark.d);
+    im.box(3, 8, 4, 3, C.orange);
+    im.box(9, 7, 4, 4, C.gold);
+    im.rect(7, 4, 2, 8, C.steel.d);
+    for (let x = 2; x < 14; x += 2) im.set(x, 12, x % 4 ? C.gold.m : C.dark.d);
+  },
+  crew_capsule(im) {
+    im.poly(
+      [
+        [6, 1],
+        [10, 1],
+        [13, 11],
+        [3, 11]
+      ],
+      (x) => (x < 7 ? C.white.l : x < 10 ? C.white.m : C.steel.m)
+    );
+    im.rect(6, 1, 4, 1, C.white.h);
+    im.rect(7, 4, 2, 2, C.glass.m);
+    im.set(7, 4, C.glass.h);
+    im.rect(4, 8, 8, 1, C.steel.d);
+    im.poly(
+      [
+        [3, 11],
+        [13, 11],
+        [12, 14],
+        [4, 14]
+      ],
+      (_x, y) => (y < 13 ? C.orange.m : C.copper.d)
+    );
+    im.rect(3, 11, 10, 1, C.orange.h);
+  },
+  landing_legs(im) {
+    im.box(5, 2, 6, 4, C.steel);
+    im.rect(6, 3, 4, 1, C.steel.h);
+    im.line(5, 5, 2, 12, C.steel.l);
+    im.line(6, 5, 3, 12, C.steel.d);
+    im.line(10, 5, 13, 12, C.steel.l);
+    im.line(9, 5, 12, 12, C.steel.d);
+    im.line(8, 6, 8, 12, C.steel.m);
+    im.rect(0, 13, 5, 1, C.gold.m);
+    im.rect(11, 13, 5, 1, C.gold.m);
+    im.rect(6, 13, 4, 1, C.gold.d);
+    im.rect(0, 14, 5, 1, C.dark.d);
+    im.rect(11, 14, 5, 1, C.dark.d);
+  },
+  fuel_cell(im) {
+    im.box(1, 3, 14, 10, ramp([60, 150, 150]));
+    for (let x = 3; x < 13; x += 2) im.rect(x, 4, 1, 8, x % 4 === 3 ? C.teal.h : C.dark.d);
+    im.rect(1, 3, 14, 1, C.teal.h);
+    im.rect(2, 1, 3, 2, C.blue.m);
+    im.rect(11, 1, 3, 2, C.red.m);
+    im.rect(3, 13, 1, 2, C.steel.m);
+    im.rect(12, 13, 1, 2, C.steel.m);
+    im.set(7, 8, GLOW);
+    im.set(8, 7, GLOW);
+    im.set(8, 9, GLOW);
+  },
+  survey_suite(im) {
+    im.cylH(1, 7, 8, 4, C.steel);
+    im.rect(9, 6, 1, 6, C.steel.d);
+    im.disc(12.5, 5, 3.2, C.white.m);
+    im.disc(12.5, 5, 2, C.dark.d);
+    im.set(12, 4, C.glass.h);
+    im.line(10, 8, 12, 6, C.steel.l);
+    im.rect(2, 10, 6, 2, C.dark.d);
+    im.set(3, 11, C.teal.h);
+    im.set(5, 11, C.green.m);
+    im.rect(3, 12, 3, 3, C.steel.m);
+    im.rect(2, 14, 5, 1, C.steel.d);
+    im.set(7, 3, C.gold.m);
+    im.line(7, 3, 4, 6, C.gold.d);
+  },
   structure_truss(im) {
     im.rect(1, 3, 14, 1, C.steel.l);
     im.rect(1, 12, 14, 1, C.steel.d);
