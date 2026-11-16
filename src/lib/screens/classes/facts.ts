@@ -1,6 +1,6 @@
 import type { Component } from '#lib/game/data/index.ts';
 import { PROPELLANTS, isPropellant, massOf } from '#lib/game/shipdesign/index.ts';
-import { formatMass } from '#lib/screens/economy/format.ts';
+import { fmt } from '#lib/ui/index.ts';
 
 export const formatThrust = (n: number): string => {
   if (n >= 1e6) return `${(n / 1e6).toFixed(2)} MN`;
@@ -24,23 +24,26 @@ export const formatAccel = (a: number): string =>
       ? `${(a * 1000).toFixed(1)} mm/s²`
       : `${(a * 1e6).toFixed(0)} µm/s²`;
 
-export function factsOf(c: Component): string {
+export function factList(c: Component): string[] {
   const d = c.design;
-  const out: string[] = [formatMass(massOf(c))];
+  const out: string[] = [`Mass ${fmt.mass(massOf(c))}`];
   if (c.performance) {
-    out.push(`${c.performance.isp} s`, formatThrust(c.performance.thrust));
-    if (c.performance.power) out.push(formatKw(c.performance.power));
+    out.push(`Isp ${c.performance.isp} s, thrust ${formatThrust(c.performance.thrust)}`);
+    if (c.performance.power) out.push(`Needs ${formatKw(c.performance.power)}`);
   }
-  if (d.volume) out.push(`${d.volume} m³`);
-  if (d.cargo) out.push(`carries ${formatMass(d.cargo)}`);
-  if (d.housing) out.push(`berths ${d.housing}`);
-  if (d.supports) out.push(`sustains ${d.supports}`);
-  if (d.generates) out.push(`makes ${formatKw(d.generates)}`);
-  if (d.radiates) out.push(`sheds ${formatKw(d.radiates)}`);
-  if (d.storage) out.push(`${d.storage} kWh`);
-  if (d.landing) out.push(`lands ${formatMass(d.landing)}`);
-  if (d.reentry) out.push(`returns ${formatMass(d.reentry)}`);
+  if (d.volume) out.push(`Tank ${d.volume} m³`);
+  if (d.cargo) out.push(`Carries ${fmt.mass(d.cargo)}`);
+  if (d.housing) out.push(`Berths ${d.housing}`);
+  if (d.supports) out.push(`Sustains ${d.supports} crew`);
+  if (d.generates) out.push(`Makes ${formatKw(d.generates)} at 1 AU`);
+  if (d.radiates) out.push(`Sheds ${formatKw(d.radiates)}`);
+  if (d.storage) out.push(`Stores ${d.storage} kWh`);
+  if (d.landing) out.push(`Lands ${fmt.mass(d.landing)}`);
+  if (d.reentry) out.push(`Returns ${fmt.mass(d.reentry)}`);
   const kind = d.propellants?.find(isPropellant);
-  if (kind && !d.volume) out.push(PROPELLANTS[kind].name.toLowerCase());
-  return out.join(' · ');
+  if (kind && !d.volume) out.push(`Burns ${PROPELLANTS[kind].name.toLowerCase()}`);
+  return out;
 }
+
+export const keyFigure = (c: Component): string =>
+  c.performance ? `${c.performance.isp} s` : fmt.mass(massOf(c));

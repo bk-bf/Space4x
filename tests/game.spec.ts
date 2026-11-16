@@ -66,9 +66,8 @@ test('the game build counts food in calories and the top bar agrees with the Sum
   );
 });
 
-test.fixme('a milestone in the game build lists the site it needs', async ({ page }) => {
+test('a milestone in the game build lists the site it needs', async ({ page }) => {
   await open(page, 'screen=research&milestone=8');
-  await expect(
-    page.locator('#milestoneDetail tr', { hasText: 'ice mine at the lunar south pole' })
-  ).toContainText('None');
+  const need = page.locator('#siteNeeds [data-site-need]', { hasText: /ice mine at the lunar south pole/i });
+  await expect(need).toHaveAttribute('data-site-need', 'missing');
 });

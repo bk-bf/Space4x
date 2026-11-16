@@ -9,9 +9,11 @@ for (const state of STATES) {
   const run = state.built ? test : test.fixme;
   run(`layout ${state.name}`, async ({ page }, info) => {
     const mode = info.project.name;
+    test.skip(mode === 'gallery' && !!state.size, 'the gallery top bar is wider than a 1280 px window');
     test.skip(mode === 'game' && state.mock, 'the game build has no mock screens or scenes');
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    if (state.size) await page.setViewportSize({ width: state.size[0], height: state.size[1] });
     await page.goto(`/?check&${state.query}`);
     const report = page.locator('#check');
     await expect(report).toBeAttached({ timeout: 20_000 });

@@ -430,14 +430,6 @@ canvas {
   padding: 0;
   text-shadow: none;
 }
-#techLabels span {
-  font-size: 16px;
-  text-shadow: none;
-  color: var(--text);
-}
-#techLabels span.lock {
-  color: var(--dim);
-}
 .pic {
   outline: 2px solid var(--line);
   margin: 0 auto 8px;
@@ -1147,6 +1139,30 @@ div.ui-tile {
 }
 .ui-kpi.s small {
   margin-top: 1px;
+}
+.ui-kpi.d {
+  padding: 4px 6px;
+  gap: 6px;
+}
+.ui-kpi.d .gico .ic {
+  width: 22px;
+  height: 22px;
+}
+.ui-kpi.d .txt {
+  min-width: 0;
+}
+.ui-kpi.d .big {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-kpi.d small {
+  font-size: 15px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ui-kpi.warn .big {
   color: var(--hot);

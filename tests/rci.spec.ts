@@ -13,17 +13,6 @@ async function expectCleanLayout(page: Page) {
   expect(await page.evaluate(() => window.space4xLayoutCheck?.() ?? ['no layout check'])).toEqual([]);
 }
 
-const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const panel = (page: Page, title: string): Locator =>
-  page.locator('.pan').filter({ has: page.locator('h2', { hasText: new RegExp(`^\\s*${escape(title)}`) }) });
-
-const rows = (page: Page, title: string): Locator => panel(page, title).locator('tr.pick');
-
-const row = (page: Page, title: string, text: string): Locator => rows(page, title).filter({ hasText: text });
-
-const node = (page: Page, n: number): Locator => page.locator(`#techLabels [data-milestone="${n}"]`);
-
 async function advance(page: Page, seconds: number, times = 1) {
   for (let i = 0; i < times; i++) await page.locator(`#steps [data-step="${seconds}"]`).click();
 }
@@ -35,26 +24,16 @@ async function eventTexts(page: Page): Promise<string[]> {
 }
 
 test.describe('research', () => {
-  test('shows the 29 milestones as a chain, and a node click selects one', async ({ page }) => {
-    await open(page, 'screen=research');
-    await expect(page.locator('#techLabels span')).toHaveCount(29);
-    await expect(node(page, 1)).toHaveClass(/waiting/);
-    await expect(node(page, 2)).toHaveClass(/locked/);
-    await node(page, 29).click();
-    await expect(page.locator('#techLabels .sel')).toHaveText('29');
-    await expect(page.locator('#milestoneDetail h3').first()).toHaveText('29. Jump point stabilisation');
-    await expect(row(page, 'Milestones', 'Jump point stabilisation')).toHaveClass(/on/);
-    await expectCleanLayout(page);
-  });
+  const tile = (page: Page, n: number): Locator => page.locator(`#techTree [data-milestone="${n}"] button`);
+  const slot = (page: Page, n: number): Locator => page.locator(`#techTree [data-milestone="${n}"]`);
+  const card = (page: Page): Locator => page.locator('[data-screen="research"] .ui-card');
+  const title = (page: Page): Locator => card(page).locator('header .t');
+  const kpi = (page: Page, label: string): Locator =>
+    page.locator('[data-screen="research"] .ui-kpi').filter({ has: page.getByText(label, { exact: true }) });
+  const rtab = (page: Page, id: string) =>
+    page.locator(`[data-screen="research"] [data-tab="${id}"]`).click();
 
-  test('the query selects a milestone', async ({ page }) => {
-    await open(page, 'screen=research&milestone=12');
-    await expect(page.locator('#milestoneDetail h3').first()).toHaveText('12. Cislunar propellant economy');
-  });
-
-  test('a programme started here runs with the clock, survives a screen switch and writes an event', async ({
-    page
-  }) => {
+  async function makeMilestoneOneReady(page: Page) {
     await open(page, 'screen=economy&tab=production');
     await page.locator('#groups button.ui-tile', { hasText: 'Stainless steel' }).first().click();
     await page.getByRole('button', { name: 'GRCop copper-chromium-niobium alloy', exact: true }).click();
@@ -62,15 +41,145 @@ test.describe('research', () => {
     await page.locator('#recipeSwitch').click();
     await advance(page, DAY);
     await page.locator('[data-nav="research"]').click();
-    await expect(node(page, 1)).toHaveClass(/ready/);
+  }
+
+  test('shows the 29 milestones as tiles in a dependency tree, and a tile click selects one', async ({
+    page
+  }) => {
+    await open(page, 'screen=research');
+    await expect(page.locator('#techTree .tpos')).toHaveCount(29);
+    await expect(slot(page, 1)).toHaveAttribute('data-status', 'waiting');
+    await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
+    await expect(title(page)).toHaveText('1. Reusable orbital launch');
+    await tile(page, 29).click();
+    await expect(title(page)).toHaveText('29. Jump point stabilisation');
+    await expect(tile(page, 29)).toHaveClass(/sel/);
+    await expect(tile(page, 1)).not.toHaveClass(/sel/);
+    await expectCleanLayout(page);
+  });
+
+  test('selecting a milestone outlines what it needs and what it opens, and the lines follow the done ones', async ({
+    page
+  }) => {
+    await open(page, 'screen=research&milestone=3');
+    await expect(tile(page, 1)).toHaveClass(/needs/);
+    await expect(tile(page, 6)).toHaveClass(/feeds/);
+    await expect(tile(page, 11)).toHaveClass(/feeds/);
+    await expect(tile(page, 2)).not.toHaveClass(/needs|feeds/);
+    const open_ = page.locator('#techTree svg path[stroke="#443d80"]');
+    const done = page.locator('#techTree svg path[stroke="#f2b35d"]');
+    expect(await open_.getAttribute('d')).toMatch(/^M/);
+    expect(await done.getAttribute('d')).toBe('');
+    await open(page, 'screen=research&reached=3');
+    expect(await done.getAttribute('d')).toMatch(/^M/);
+  });
+
+  test('the tree shrinks its tiles to fit a short window and keeps every tile on screen', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await open(page, 'screen=research');
+    const box = await page.locator('#techTree').boundingBox();
+    for (const n of [1, 15, 29]) {
+      const b = await tile(page, n).boundingBox();
+      expect(b!.y).toBeGreaterThanOrEqual(box!.y);
+      expect(b!.y + b!.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
+      expect(b!.x + b!.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
+    }
+  });
+
+  test('the query selects a milestone and a tab', async ({ page }) => {
+    await open(page, 'screen=research&milestone=12&rtab=unlocks');
+    await expect(title(page)).toHaveText('12. Cislunar propellant economy');
+    await expect(page.locator('[data-unlock="12"]')).toHaveClass(/sel/);
+    await expect(page.locator('[data-unlock="0"]')).toContainText('At the start');
+    await page.locator('[data-unlock="5"]').click();
+    await expect(title(page)).toHaveText('5. Data centres and autonomy');
+  });
+
+  test('the strip counts reached, running, ready and open milestones, compute and what is open', async ({
+    page
+  }) => {
+    await open(page, 'screen=research');
+    await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('0 of 29');
+    await expect(kpi(page, 'none running')).toBeVisible();
+    await expect(kpi(page, 'ready of 1 open').locator('.big')).toHaveText('0');
+    await expect(kpi(page, 'buildings and parts open').locator('.big')).not.toHaveText('0');
+    await open(page, 'screen=research&reached=3');
+    await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('3 of 29');
+  });
+
+  test('the programmes tab groups milestones by state and a tile selects one', async ({ page }) => {
+    await open(page, 'screen=research&rtab=programmes');
+    const group = (status: string) => page.locator(`.slot[data-status="${status}"]`);
+    await expect(page.locator('h3[data-group="running"]')).toContainText('0');
+    await expect(group('waiting')).toHaveCount(1);
+    await expect(group('locked')).toHaveCount(28);
+    await expect(group('waiting').locator('.ui-nm')).toHaveText('Orbital launch');
+    await expect(group('waiting')).toContainText('of 13 in store');
+    await page.locator('.slot[data-milestone="6"] button').click();
+    await expect(title(page)).toHaveText('6. Crewed lunar landing and surface outpost');
+    await expectCleanLayout(page);
+  });
+
+  test('the card lists everything a programme checks and which of it is met', async ({ page }) => {
+    await open(page, 'screen=research&milestone=6');
+    await expect(page.locator('#programmeStart')).toBeDisabled();
+    await expect(page.locator('#programmeWhy')).toBeVisible();
+    const needs = page.locator('#siteNeeds [data-site-need]');
+    await expect(needs).toHaveCount(1);
+    await expect(needs).toHaveAttribute('data-site-need', 'missing');
+    await expect(needs).toContainText('Crewed outpost on the Moon');
+    await expect(card(page).locator('.ui-have.short').first()).toBeVisible();
+    await expect(page.locator('#requires')).toContainText('LEO station');
+    await expect(page.locator('#earlier')).toContainText('Every milestone before it');
+    await open(page, 'screen=research&milestone=17');
+    await expect(page.locator('#siteNeeds')).toContainText('Miner on a metallic asteroid');
+    await expect(card(page).locator('.ui-have.stand.short').first()).toBeVisible();
+    await open(page, 'screen=research&milestone=2&reached=1');
+    await expect(page.locator('#earlier')).toHaveCount(0);
+    await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
+  });
+
+  test('the Start button stays inside a 1280x720 window for every milestone', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await open(page, 'screen=research');
+    for (let n = 1; n <= 29; n++) {
+      await tile(page, n).click();
+      const b = await page.locator('#programmeStart').boundingBox();
+      expect(b, `milestone ${n}`).not.toBeNull();
+      expect(b!.y, `milestone ${n}`).toBeGreaterThanOrEqual(0);
+      expect(b!.y + b!.height, `milestone ${n}`).toBeLessThanOrEqual(720);
+      expect(b!.x + b!.width, `milestone ${n}`).toBeLessThanOrEqual(1280);
+    }
+  });
+
+  test('a programme is started here, runs with the clock, survives a screen switch and writes an event', async ({
+    page
+  }) => {
+    await open(page, 'screen=research');
+    await expect(page.locator('#programmeStart')).toBeDisabled();
+    await expect(page.locator('#programmeWhy')).toContainText('GRCop copper-chromium-niobium alloy short');
+    await makeMilestoneOneReady(page);
+    await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
+    await expect(page.locator('#programmeWhy')).toHaveCount(0);
+    await expect(page.locator('#programmeStart')).toBeEnabled();
+    await expect(card(page).locator('.ui-have.short')).toHaveCount(0);
     await page.locator('#programmeStart').click();
-    await expect(node(page, 1)).toHaveClass(/running/);
-    await expect(panel(page, 'Running').locator('tr', { hasText: 'Reusable orbital launch' })).toBeVisible();
+    await expect(slot(page, 1)).toHaveAttribute('data-status', 'running');
+    await expect(page.locator('#programmeStart')).toHaveCount(0);
+    await expect(page.locator('#programmeProgress')).toBeVisible();
+    await expect(kpi(page, 'next done in 60 d')).toBeVisible();
+    await rtab(page, 'programmes');
+    await expect(page.locator('.slot[data-status="running"]')).toHaveCount(1);
     await page.locator('[data-nav="economy"]').click();
     await page.locator('[data-nav="research"]').click();
-    await expect(node(page, 1)).toHaveClass(/running/);
+    await expect(page.locator('.slot[data-status="running"]')).toHaveCount(1);
     await advance(page, 30 * DAY, 3);
-    await expect(node(page, 1)).toHaveClass(/done/);
+    await expect(page.locator('.slot[data-status="done"]')).toHaveCount(1);
+    await rtab(page, 'tree');
+    await expect(slot(page, 1)).toHaveAttribute('data-status', 'done');
+    await expect(page.locator('#techTree svg path[stroke="#f2b35d"]')).toHaveAttribute('d', /^M/);
     await expect(page.locator('#chips .chip[title="Milestones reached"]')).toHaveText('1/29');
     const events = await eventTexts(page);
     expect(events.some((e) => e.includes('Milestone 1 reached: Reusable orbital launch.'))).toBe(true);

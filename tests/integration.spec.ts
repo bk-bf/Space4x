@@ -89,17 +89,13 @@ test.describe('the top bar', () => {
     await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
   });
 
-  test.fixme('a milestone lists the site it needs and what is still missing', async ({ page }) => {
+  test('a milestone lists the site it needs and what is still missing', async ({ page }) => {
     await open(page, 'screen=research&milestone=6');
-    const detail = page.locator('#milestoneDetail');
-    await expect(detail).toContainText('6. Crewed lunar landing and surface outpost');
-    const site = detail.locator('tr', { hasText: 'crewed outpost on the Moon' });
-    await expect(site).toContainText('Site');
-    await expect(site).toContainText('None');
+    const outpost = page.locator('#siteNeeds [data-site-need]', { hasText: /crewed outpost on the Moon/i });
+    await expect(outpost).toHaveAttribute('data-site-need', 'missing');
     await open(page, 'screen=research&milestone=17');
-    await expect(
-      page.locator('#milestoneDetail tr', { hasText: 'miner on a metallic asteroid' })
-    ).toContainText('None');
+    const miner = page.locator('#siteNeeds [data-site-need]', { hasText: /miner on a metallic asteroid/i });
+    await expect(miner).toHaveAttribute('data-site-need', 'missing');
   });
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
