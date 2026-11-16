@@ -294,6 +294,7 @@
                     icons={o ? [mat(o)] : [bld(picked.id)]}
                     iconSize={32}
                     selected={recipe === r.id}
+                    label={r.name}
                     tip={tipText(
                       r.name,
                       Object.keys(r.outputs)

@@ -184,6 +184,7 @@
                   icons={o ? [mat(o)] : [bld(sel.building.id)]}
                   iconSize={32}
                   selected={target?.id === p.id}
+                  label={p.name}
                   tip={tipText(
                     p.name,
                     Object.keys(p.outputs)

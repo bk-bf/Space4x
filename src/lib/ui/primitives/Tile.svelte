@@ -39,6 +39,7 @@
     art?: Snippet;
     warn?: boolean;
     tip?: Tip;
+    label?: string;
     onselect?: () => void;
     disabled?: boolean;
     class?: string;
@@ -73,6 +74,7 @@
     art,
     warn = false,
     tip,
+    label,
     onselect,
     disabled = false,
     class: extra = '',
@@ -141,6 +143,7 @@
     class:warn
     type="button"
     aria-pressed={selected}
+    aria-label={label}
     {disabled}
     onclick={onselect}
     use:tooltip={tip}
@@ -155,6 +158,7 @@
     class:lock={locked}
     class:idle
     class:warn
+    aria-label={label}
     use:tooltip={tip}
   >
     {@render body()}

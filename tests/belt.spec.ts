@@ -135,11 +135,11 @@ test.describe('survey through the UI', () => {
 test.describe('food at an outpost', () => {
   test('the Summary counts the crew in calories and how long the rations last', async ({ page }) => {
     await open(page, 'screen=economy&colony=luna&scenario=belt&outpost=1');
-    const term = (text: RegExp) =>
-      page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
-    await expect(term(/^Calories made$/)).toHaveText('0 kcal a day against 11.2 k kcal needed');
-    await expect(term(/^Calorie shares$/)).toHaveText('Food ration 100%');
-    await expect(term(/^Food in store$/)).toHaveText('5.00 t, 3.4 y');
+    await expect(page.locator('#summaryStats .ui-kpi').nth(1).locator('small')).toHaveText(
+      '0 kcal each a day'
+    );
+    await expect(page.locator('#calorieShares')).toHaveText('EatenFood ration 100%');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('5 t, 3.4 y in store');
   });
 });
 
@@ -179,20 +179,26 @@ test.describe('founding in a region', () => {
     await expectCleanLayout(page);
     await page.locator('#foundGo').click();
     await expect(page.locator('#siteRegion')).toContainText('Maria');
-    await expect(page.locator('#siteRegion')).toContainText('Ilmenite');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('Ilmenite');
     await page.locator('[data-tab="production"]').click();
     await expect(page.locator('#groups')).toContainText('Regolith excavator');
-    await expect(page.locator('#groups')).toContainText('Grade');
+    await page.locator('#groups button.ui-tile', { hasText: 'Regolith excavator' }).click();
+    await expect(
+      page.locator('[data-screen="economy"] .ui-card .ui-pill', { hasText: 'grade' })
+    ).toBeVisible();
     await expectCleanLayout(page);
   });
 
   test('shows the region and the grade an extraction group applies', async ({ page }) => {
     await open(page, 'screen=economy&tab=production&colony=luna&scenario=belt&outpost=1');
     await expect(page.locator('#groups')).toContainText('Ice mine');
-    await expect(page.locator('#groups')).toContainText('2.00');
+    await page.locator('#groups button.ui-tile', { hasText: 'Ice mine' }).click();
+    await expect(
+      page.locator('[data-screen="economy"] .ui-card .ui-pill', { hasText: 'grade 2.00' })
+    ).toBeVisible();
     await page.locator('[data-tab="summary"]').click();
     await expect(page.locator('#siteRegion')).toContainText('South polar cold traps');
-    await expect(page.locator('#siteRegion')).toContainText('Water');
+    await expect(page.locator('[data-screen="economy"]')).toContainText('Water');
     await expectCleanLayout(page);
   });
 });

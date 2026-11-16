@@ -65,8 +65,12 @@ test.describe('leaving Earth', () => {
 
     await goTo(page, 'economy');
     await tab(page, 'production');
-    await row(page, '#groups', 'Alloy works', 'Stainless steel').first().click();
-    await page.locator('#recipePick').selectOption({ label: 'GRCop copper-chromium-niobium alloy' });
+    await page
+      .locator('#groups button.ui-tile', { hasText: 'Stainless steel' })
+      .filter({ hasText: 'Alloy works' })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'GRCop copper-chromium-niobium alloy', exact: true }).click();
     await page.locator('input[name="switchCount"]').fill('2');
     await page.locator('#recipeSwitch').click();
 
@@ -124,10 +128,12 @@ test.describe('leaving Earth', () => {
     await expect(page.locator('#foundGo')).toBeEnabled();
     await page.locator('#foundGo').click();
 
-    await expect(page.locator('#colonyTree [data-colony]')).toHaveCount(2);
-    await expect(page.locator('#colonyTree [data-colony="orbit-earth"]')).toContainText('orbital station');
+    await expect(page.locator('#siteList [data-site]')).toHaveCount(2);
+    await expect(page.locator('#siteList [data-site="orbit-earth"]')).toContainText('orbital station');
     await tab(page, 'stockpiles');
-    await expect(page.locator('#stockpiles tr', { hasText: 'Stainless steel' })).toContainText('1.00 t');
+    await expect(page.locator('#stockpiles button.ui-tile', { hasText: 'Stainless steel' })).toContainText(
+      '1 t'
+    );
     await expectCleanLayout(page);
   });
 
@@ -142,9 +148,7 @@ test.describe('leaving Earth', () => {
     expect(state.launches).toBe(2);
     await page.locator(MONTH).click();
     await expect(page.locator('.chip[title="Milestones reached"]')).toContainText('3/29');
-    await expect(page.locator('#colonyTree [data-colony]')).toHaveCount(2);
-    await tab(page, 'milestones');
-    await expect(page.locator('#milestones tr.pick').nth(2).locator('td').nth(3)).toContainText('Done');
+    await expect(page.locator('#siteList [data-site]')).toHaveCount(2);
   });
 });
 

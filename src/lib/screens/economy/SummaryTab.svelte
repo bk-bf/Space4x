@@ -66,6 +66,12 @@
       .sort((a, b) => b[1] - a[1])
       .map(([id, v]) => ({ id, kcalPerHour: v, share: food.made > 0 ? v / food.made : 0 }))
   );
+  const eatenShares = $derived(
+    Object.entries(food.eatenBy)
+      .filter(([, kcal]) => food.eaten > 0 && kcal / food.eaten >= 0.005)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, kcal]) => ({ id, share: kcal / food.eaten }))
+  );
   const foodStockKcal = $derived(foodIds.reduce((a, m) => a + (site.stock[m] ?? 0) * kcalOf(m), 0));
   const foodStockKg = $derived(foodIds.reduce((a, m) => a + (site.stock[m] ?? 0), 0));
   const foodDays = $derived(
@@ -211,6 +217,14 @@
       />
     </div>
     <CalorieBar parts={foodParts} need={food.demand} period={ui.period} />
+    {#if eatenShares.length}
+      <div class="pills" id="calorieShares">
+        <span class="dim">Eaten</span>
+        {#each eatenShares as e (e.id)}
+          <Pill text="{materialName(e.id)} {fmt.pct(e.share)}" tip="Share of the calories people eat" />
+        {/each}
+      </div>
+    {/if}
     <div class="grid">
       <TileGrid min={116} gap={5}>
         {#each foods as id (id)}
@@ -378,6 +392,9 @@
     gap: 6px;
     margin-bottom: 4px;
     flex-wrap: wrap;
+  }
+  .dim {
+    color: var(--dim);
   }
   .none {
     color: var(--dim);
