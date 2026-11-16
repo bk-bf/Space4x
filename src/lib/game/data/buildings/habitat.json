@@ -7,7 +7,11 @@
     "milestone": 3,
     "thin": true,
     "estimated": true,
-    "cost": { "stainless_steel": 800, "platinum": 1, "copper": 100 },
+    "cost": {
+      "stainless_steel": 800,
+      "platinum": 1,
+      "copper": 100
+    },
     "workers": 2
   },
   {
@@ -19,9 +23,14 @@
     "start": true,
     "thin": true,
     "estimated": true,
-    "cost": { "stainless_steel": 200, "copper": 20 },
+    "cost": {
+      "stainless_steel": 200,
+      "copper": 20
+    },
     "workers": 200,
-    "footprint": { "land": 100 }
+    "footprint": {
+      "land": 100
+    }
   },
   {
     "id": "greenhouse",
@@ -31,9 +40,16 @@
     "milestone": 11,
     "thin": true,
     "estimated": true,
-    "cost": { "al_li_alloy": 2000, "fused_silica": 800, "polyimide": 100, "copper": 100 },
+    "cost": {
+      "al_li_alloy": 2000,
+      "fused_silica": 800,
+      "polyimide": 100,
+      "copper": 100
+    },
     "workers": 6,
-    "footprint": { "habitat": 2000 }
+    "footprint": {
+      "habitat": 2000
+    }
   },
   {
     "id": "algae_bioreactor",
@@ -42,9 +58,15 @@
     "where": ["earth", "moon", "mars", "orbit"],
     "milestone": 11,
     "estimated": true,
-    "cost": { "al_li_alloy": 1000, "fused_silica": 500, "copper": 50 },
+    "cost": {
+      "al_li_alloy": 1000,
+      "fused_silica": 500,
+      "copper": 50
+    },
     "workers": 2,
-    "footprint": { "habitat": 300 }
+    "footprint": {
+      "habitat": 300
+    }
   },
   {
     "id": "protein_fermenter",
@@ -53,9 +75,14 @@
     "where": ["earth", "moon", "mars", "orbit"],
     "milestone": 11,
     "estimated": true,
-    "cost": { "stainless_steel": 1500, "copper": 100 },
+    "cost": {
+      "stainless_steel": 1500,
+      "copper": 100
+    },
     "workers": 3,
-    "footprint": { "habitat": 200 }
+    "footprint": {
+      "habitat": 200
+    }
   },
   {
     "id": "food_plant",
@@ -65,8 +92,30 @@
     "milestone": 3,
     "thin": true,
     "estimated": true,
-    "cost": { "stainless_steel": 800, "copper": 60 },
+    "cost": {
+      "stainless_steel": 800,
+      "copper": 60
+    },
     "workers": 10,
-    "footprint": { "habitat": 500 }
+    "footprint": {
+      "habitat": 500
+    }
+  },
+  {
+    "id": "ranch",
+    "name": "Ranch",
+    "kind": "habitat",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {
+      "stainless_steel": 300,
+      "copper": 20
+    },
+    "workers": 100,
+    "footprint": {
+      "land": 500
+    }
   }
 ]

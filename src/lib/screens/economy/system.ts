@@ -32,13 +32,13 @@ registerStatus('food', () => {
     ? {
         icon: 'grain',
         value: `${formatPercent(f.cover)} fed`,
-        title: 'Food: share of people fed',
+        title: 'Food: share of the calorie need met',
         warn: true
       }
     : {
         icon: 'grain',
         value: `${spare >= 0 ? '+' : ''}${formatPercent(spare)}`,
-        title: 'Food: production against need',
+        title: 'Food: calories made against calories needed',
         warn: spare < 0
       };
 });

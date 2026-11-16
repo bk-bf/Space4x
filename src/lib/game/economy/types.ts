@@ -54,7 +54,7 @@ export interface Site {
   berths: number | null;
   population: number;
   workforceShare: number;
-  foodPerPersonDay: number;
+  kcalPerPersonDay: number;
   growthPerYear: number;
   gridKw: number;
   stock: Record<string, number>;

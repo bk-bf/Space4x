@@ -22,6 +22,7 @@
   import {
     formatCount,
     formatDays,
+    formatKcal,
     formatMass,
     formatPeople,
     formatPercent,
@@ -41,6 +42,19 @@
   );
   const foodDays = $derived(
     food.made >= food.demand ? Infinity : foodStock / Math.max(1e-9, food.demand - food.made) / 24
+  );
+
+  const foodRows = $derived<Cell[][]>(
+    [...new Set([...Object.keys(food.madeBy), ...Object.keys(food.eatenBy)])]
+      .sort(
+        (a, b) =>
+          (food.eatenBy[b] ?? 0) - (food.eatenBy[a] ?? 0) || (food.madeBy[b] ?? 0) - (food.madeBy[a] ?? 0)
+      )
+      .map((m): Cell[] => [
+        material(m).name,
+        formatKcal((food.madeBy[m] ?? 0) * 24),
+        formatPercent(food.eaten > 0 ? (food.eatenBy[m] ?? 0) / food.eaten : 0)
+      ])
   );
 
   const kinds = $derived.by(() => {
@@ -101,8 +115,8 @@
       rows={[
         ['People', formatPeople(site.population)],
         ['Growth', `${formatRate(flows.growthPerHour * 8766)} a year`],
-        ['Food needed', `${formatMass(food.demand * 24)} a day`],
-        ['Food grown', `${formatMass(food.made * 24)} a day`],
+        ['Calories needed', `${formatKcal(food.demand * 24)} a day`],
+        ['Calories made', `${formatKcal(food.made * 24)} a day`],
         [
           'Food balance',
           `${food.made >= food.demand ? '+' : ''}${formatPercent(food.made / food.demand - 1)}`
@@ -114,6 +128,11 @@
         ]
       ]}
     />
+    {#if foodRows.length}
+      <div id="foodShares">
+        <Table head={['Food', '>Made a day', '>Share eaten']} rows={foodRows} />
+      </div>
+    {/if}
     <h3>Workers</h3>
     <DefList
       rows={[

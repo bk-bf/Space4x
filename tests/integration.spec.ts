@@ -72,7 +72,7 @@ test.describe('the top bar', () => {
     await expect(chip(page, 'Power: generation less demand')).toHaveText(
       (await term(page, /^Balance$/).textContent())!
     );
-    await expect(chip(page, 'Food: production against need')).toHaveText(
+    await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(
       (await term(page, /^Food balance$/).textContent())!
     );
 
@@ -85,12 +85,26 @@ test.describe('the top bar', () => {
     await expect(page.locator('[data-screen="research"]')).toContainText('0 of 29 reached');
   });
 
+  test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {
+    await open(page, 'screen=economy');
+    const needed = await term(page, /^Calories needed$/).textContent();
+    const made = await term(page, /^Calories made$/).textContent();
+    expect(needed).toMatch(/T kcal a day$/);
+    expect(made).toMatch(/T kcal a day$/);
+    const shares = page.locator('#foodShares tbody tr');
+    await expect(shares.filter({ hasText: 'Wheat' })).toContainText('%');
+    await expect(shares.filter({ hasText: 'Meat' })).toContainText('%');
+    const balance = (await term(page, /^Food balance$/).textContent())!;
+    expect(balance).toMatch(/^\+\d+%$/);
+    await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
+  });
+
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
     await expect(page.locator('#chips .chip')).toHaveCount(6);
     for (const title of [
       'People',
-      'Food: production against need',
+      'Food: calories made against calories needed',
       'Power: generation less demand',
       'Compute produced an hour',
       'Scarcest material',

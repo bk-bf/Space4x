@@ -12,6 +12,17 @@ const scaled = (n: number, units: readonly [number, string][]): string => {
   return `${a >= 10 ? Math.round(n) : n.toFixed(a >= 1 ? 1 : 2)} ${units[units.length - 1]?.[1] ?? ''}`.trim();
 };
 
+export function formatKcal(kcal: number): string {
+  if (Math.abs(kcal) < 0.5) return '0 kcal';
+  return scaled(kcal, [
+    [1e12, 'T kcal'],
+    [1e9, 'G kcal'],
+    [1e6, 'M kcal'],
+    [1e3, 'k kcal'],
+    [1, 'kcal']
+  ]);
+}
+
 export function formatPeople(n: number): string {
   if (n >= 1e9) return `${(n / 1e9).toFixed(2)} bn`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)} M`;

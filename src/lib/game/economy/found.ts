@@ -3,6 +3,7 @@ import type { Site as Where } from '#lib/game/data/index.ts';
 import { gradeIn } from './deposits.ts';
 import { buildingsAt, isMass, processesAt } from './processes.ts';
 import { unlockedProcesses } from './actions.ts';
+import { earthStart } from './start.ts';
 import type { Economy, Site, SitePlace } from './types.ts';
 import { isUnlocked } from './unlocks.ts';
 
@@ -77,7 +78,7 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
     berths: 0,
     population: 0,
     workforceShare: FOUNDING_CREW_SHARE,
-    foodPerPersonDay: 1,
+    kcalPerPersonDay: earthStart.kcalPerPersonDay,
     growthPerYear: 0,
     gridKw: 0,
     stock: {},

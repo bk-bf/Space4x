@@ -1,4 +1,4 @@
-import { building, milestone } from '#lib/game/data/index.ts';
+import { building, material, milestone } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { gradeAt, isDepleted } from './deposits.ts';
@@ -74,7 +74,7 @@ export interface SiteFlows {
   lostMass: number;
   builtMass: number;
   eatenMass: number;
-  food: { demand: number; eaten: number; cover: number; made: number };
+  food: { demand: number; eaten: number; cover: number; made: number; eatenBy: Amounts; madeBy: Amounts };
   power: Balance;
   compute: Balance;
   workers: { available: number; needed: number; share: number };
@@ -241,17 +241,21 @@ function settle(site: Site, actors: Actor[]): void {
   }
 }
 
+export const kcalOf = (id: string): number => material(id).kcalPerKg ?? 0;
+
 function eat(site: Site, net: Amounts, demand: number): Amounts {
   const eaten: Amounts = {};
-  const surplus = foodIds.map((m) => [m, Math.max(0, net[m] ?? 0)] as const).filter(([, v]) => v > 0);
+  const surplus = foodIds
+    .map((m) => [m, Math.max(0, net[m] ?? 0) * kcalOf(m)] as const)
+    .filter(([, v]) => v > 0);
   const made = surplus.reduce((a, [, v]) => a + v, 0);
   if (made >= demand) {
-    for (const [m, v] of surplus) eaten[m] = (v * demand) / made;
+    for (const [m, v] of surplus) eaten[m] = (v * demand) / made / kcalOf(m);
     return eaten;
   }
-  for (const [m, v] of surplus) eaten[m] = v;
+  for (const [m, v] of surplus) eaten[m] = v / kcalOf(m);
   const stocked = foodIds.filter((m) => (site.stock[m] ?? 0) > STOCK_EPS);
-  const held = stocked.reduce((a, m) => a + (site.stock[m] ?? 0), 0);
+  const held = stocked.reduce((a, m) => a + (site.stock[m] ?? 0) * kcalOf(m), 0);
   if (held <= 0) return eaten;
   const rest = demand - made;
   for (const m of stocked) eaten[m] = (eaten[m] ?? 0) + (rest * (site.stock[m] ?? 0)) / held;
@@ -289,15 +293,24 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   for (const m of new Set([...Object.keys(produced), ...Object.keys(consumed)]))
     net[m] = (produced[m] ?? 0) - (consumed[m] ?? 0);
 
-  const demand = (site.population * site.foodPerPersonDay) / 24;
-  const made = foodIds.reduce((a, m) => a + Math.max(0, net[m] ?? 0), 0);
+  const demand = (site.population * site.kcalPerPersonDay) / 24;
+  const madeBy: Amounts = {};
+  for (const m of foodIds) {
+    const kcal = Math.max(0, net[m] ?? 0) * kcalOf(m);
+    if (kcal > 0) madeBy[m] = kcal;
+  }
+  const made = Object.values(madeBy).reduce((a, v) => a + v, 0);
   const eaten = eat(site, net, demand);
   let eatenMass = 0;
+  let eatenKcal = 0;
+  const eatenBy: Amounts = {};
   for (const [m, v] of Object.entries(eaten)) {
     net[m] = (net[m] ?? 0) - v;
     eatenMass += v;
+    eatenBy[m] = v * kcalOf(m);
+    eatenKcal += eatenBy[m];
   }
-  const cover = demand > 0 ? Math.min(1, eatenMass / demand) : 1;
+  const cover = demand > 0 ? Math.min(1, eatenKcal / demand) : 1;
   const growthPerHour =
     cover >= 1 - 1e-9
       ? site.growthPerYear / HOURS_PER_YEAR
@@ -313,7 +326,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     lostMass,
     builtMass,
     eatenMass,
-    food: { demand, eaten: eatenMass, cover, made },
+    food: { demand, eaten: eatenKcal, cover, made, eatenBy, madeBy },
     power: {
       supply: site.gridKw + (produced[POWER] ?? 0),
       demand: wanted(POWER),

@@ -15,7 +15,7 @@ export interface StartSite {
   body: string;
   population: number;
   workforceShare: number;
-  foodPerPersonDay: number;
+  kcalPerPersonDay: number;
   growthPerYear: number;
   gridKw: number;
   stockDays: number;
@@ -36,7 +36,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
     berths: null,
     population: data.population,
     workforceShare: data.workforceShare,
-    foodPerPersonDay: data.foodPerPersonDay,
+    kcalPerPersonDay: data.kcalPerPersonDay,
     growthPerYear: data.growthPerYear,
     gridKw: data.gridKw,
     stock: {},

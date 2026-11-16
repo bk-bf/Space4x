@@ -68,6 +68,33 @@ const massOnly = (r: { inputs: Amounts; outputs: Amounts }) =>
 const OPEN_AIR = new Set(['farmland']);
 const unknown = (ids: string[], known: Set<string>) => ids.filter((id) => !known.has(id));
 
+describe('food', () => {
+  const foods = materials.filter((m) => m.category === 'food');
+
+  it('gives every food an energy content with a source, or marks it estimated', () => {
+    expect(foods.map((m) => m.id)).toEqual(expect.arrayContaining(['wheat', 'meat', 'food_ration']));
+    for (const m of foods) {
+      expect(m.kcalPerKg, m.id).toBeGreaterThan(50);
+      expect(m.kcalPerKg, m.id).toBeLessThan(9000);
+      expect(m.kcalSource, m.id).toMatch(/^https?:\/\//);
+      expect(m.kcalBasis?.length, m.id).toBeGreaterThan(20);
+    }
+  });
+
+  it('makes meat in a ranch from feed crops and water, at the published feed ratio, without creating mass', () => {
+    const r = recipes.find((x) => x.id === 'ranch_meat')!;
+    expect(r.building).toBe('ranch');
+    expect(r.estimated).toBe(true);
+    expect(r.source).toMatch(/^https?:\/\//);
+    expect(Object.keys(r.outputs)).toEqual(['meat']);
+    const feed = (r.inputs.wheat ?? 0) + (r.inputs.soybean ?? 0);
+    expect(feed / (r.outputs.meat ?? 1)).toBeGreaterThanOrEqual(2.8);
+    expect(feed / (r.outputs.meat ?? 1)).toBeLessThanOrEqual(3.2);
+    expect(mass(r.outputs)).toBeLessThan(mass(r.inputs));
+    expect(buildings.find((b) => b.id === 'ranch')?.where).toEqual(['earth']);
+  });
+});
+
 describe('ids', () => {
   const duplicates = (ids: string[]) => ids.filter((id, i) => ids.indexOf(id) !== i);
 

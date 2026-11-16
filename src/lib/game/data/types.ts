@@ -76,6 +76,10 @@ export interface Material {
   thin?: boolean;
   unit?: Unit;
   sources?: Source[];
+  kcalPerKg?: number;
+  kcalSource?: string;
+  kcalBasis?: string;
+  kcalEstimated?: boolean;
   why: string;
   source: string;
 }
