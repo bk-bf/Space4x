@@ -157,6 +157,7 @@ export interface ComponentDesign {
   insulates?: boolean;
   automates?: boolean;
   surveys?: boolean;
+  samples?: boolean;
   basis: string;
   source?: string;
   estimated: boolean;
@@ -175,6 +176,18 @@ export interface Component {
   design: ComponentDesign;
 }
 
+export interface SiteNeed {
+  label: string;
+  world?: string;
+  body?: Body;
+  place?: 'surface' | 'orbit';
+  region?: string;
+  buildings?: string[];
+  people?: number;
+  fed?: boolean;
+  stock?: { material: string; amount: number };
+}
+
 export interface Milestone {
   id: string;
   number: number;
@@ -183,6 +196,6 @@ export interface Milestone {
   optional?: boolean;
   unlocks: string;
   requires: number[];
-  needs: { materials: string[]; buildings: string[]; components: string[] };
+  needs: { materials: string[]; buildings: string[]; components: string[]; sites?: SiteNeed[] };
   sources: string[];
 }

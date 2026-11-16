@@ -5,7 +5,8 @@ import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, unloadItem } from './cargo.ts
 import { classes } from '#lib/game/classes.svelte.ts';
 import { completeSurvey, isSurveyable, isSurveyed, surveyDays } from '#lib/game/survey.svelte.ts';
 import { burnHop, planHop, surfaceBodyOf, type HopKind } from './hop.ts';
-import { canSurvey, designOf, mainKind } from './model.ts';
+import { canSample, canSurvey, cargoRoom, designOf, mainKind } from './model.ts';
+import { SAMPLE_DAYS, SAMPLE_KG, sampleMaterial } from './sample.ts';
 import { cycleOrders } from './run.ts';
 import { ships } from './state.svelte.ts';
 import {
@@ -20,7 +21,7 @@ import {
   type Destination
 } from './trips.ts';
 import type { Order, Vessel } from './types.ts';
-import { tripOptionOf } from './world.ts';
+import { bodyOfWhereabouts, tripOptionOf } from './world.ts';
 import { siteOf } from './orders.ts';
 
 const MAX_STEPS = 256;
@@ -183,6 +184,28 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     say(game, v, `${v.name} surveyed ${name}: its regions and grades are known.`, cursor.t);
     v.orders.shift();
     touch();
+    return 'next';
+  }
+  if (order.type === 'sample') {
+    const world = bodyOfWhereabouts(v.at);
+    const found = world ? sampleMaterial(world) : undefined;
+    if (!world || !found) {
+      block(v, `${v.name} is not at an asteroid.`);
+      return 'stop';
+    }
+    if (!canSample(designOf(v))) {
+      block(v, `${v.name} carries no sampling arm.`);
+      return 'stop';
+    }
+    if (cargoRoom(v) <= 0) {
+      block(v, `${v.name} has no room for a sample.`);
+      return 'stop';
+    }
+    v.blocked = null;
+    if (!work(v, SAMPLE_DAYS * DAY, cursor, end)) return 'stop';
+    v.cargo[found] = (v.cargo[found] ?? 0) + Math.min(SAMPLE_KG, cargoRoom(v));
+    say(game, v, `${v.name} took a sample of ${game.body(world)?.name ?? world}.`, cursor.t);
+    v.orders.shift();
     return 'next';
   }
   if (order.type === 'wait') {

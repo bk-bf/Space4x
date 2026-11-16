@@ -10,6 +10,7 @@ export type NewOrder =
   | { type: 'fly'; body: string; angle: number; profile?: Profile }
   | { type: 'land'; body: string; profile?: Profile; region?: string }
   | { type: 'survey'; body: string }
+  | { type: 'sample' }
   | { type: 'dock'; site: string }
   | { type: 'load'; item: Item; amount: number | null }
   | { type: 'unload'; item: Item; amount: number | null }
@@ -113,6 +114,8 @@ export function orderLabel(game: Game, o: Order): string {
       return `Unload ${o.amount === null ? 'all' : `${Math.round(o.amount).toLocaleString('en-US')} kg`} ${itemName(o.item)}`;
     case 'survey':
       return `Survey ${body(o.body)}`;
+    case 'sample':
+      return 'Take a sample';
     case 'wait':
       return `Wait ${Math.round((o.seconds / 3600) * 10) / 10} h`;
   }

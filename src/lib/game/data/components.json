@@ -364,6 +364,29 @@
     }
   },
   {
+    "id": "fuel_cell",
+    "name": "Fuel cell and reactant tanks",
+    "kind": "power",
+    "milestone": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "stainless_steel": 150,
+      "titanium": 60,
+      "nickel_superalloy": 40,
+      "copper": 30,
+      "hydrogen": 25,
+      "oxygen": 200
+    },
+    "design": {
+      "mass": 525,
+      "storage": 500,
+      "basis": "An alkaline hydrogen and oxygen fuel cell stack with its reactant tanks, drawn down for a short flight, which is how crewed capsules flew before solar arrays and batteries: 500 kWh is 225 kg of hydrogen and oxygen (2.2 kWh a kilogram: 33 kWh per kg of hydrogen at 60 percent efficiency, 1 kg of hydrogen to 8 kg of oxygen) and 300 kg of stack and tanks. Its storage counts as a battery's: a design that draws more than it makes is allowed with a warning that gives the hours it lasts.",
+      "source": "https://en.wikipedia.org/wiki/Apollo_command_and_service_module",
+      "estimated": true
+    }
+  },
+  {
     "id": "battery_pack",
     "name": "Battery pack",
     "kind": "power",
@@ -606,8 +629,10 @@
     "design": {
       "mass": 100,
       "power": 1.5,
-      "basis": "A robotic arm and its end tools.",
-      "estimated": true
+      "basis": "A robotic arm and its end tools; OSIRIS-REx touched Bennu with a sampling head and brought home 121.6 g, so a sample is a kilogram or less.",
+      "estimated": true,
+      "samples": true,
+      "source": "https://en.wikipedia.org/wiki/OSIRIS-REx"
     }
   },
   {

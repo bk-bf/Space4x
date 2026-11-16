@@ -68,6 +68,41 @@ const massOnly = (r: { inputs: Amounts; outputs: Amounts }) =>
 const OPEN_AIR = new Set(['farmland']);
 const unknown = (ids: string[], known: Set<string>) => ids.filter((id) => !known.has(id));
 
+describe('what milestones need to stand somewhere', () => {
+  const needs = milestones.flatMap((m) => (m.needs.sites ?? []).map((n) => ({ m, n })));
+
+  it('names a body, a place, a region and buildings that exist', () => {
+    expect(needs.map(({ m }) => m.number)).toEqual([6, 7, 8, 11, 12, 15, 16, 17]);
+    for (const { m, n } of needs) {
+      expect(n.label.length, `${m.number}`).toBeGreaterThan(8);
+      expect(n.world !== undefined || n.body !== undefined, `${m.number}`).toBe(true);
+      if (n.world) expect(WORLD_BODIES[n.world] ?? n.world, `${m.number}`).toBeTruthy();
+      if (n.region) {
+        const found = regions.find((r) => r.id === n.region);
+        expect(found?.world, `${m.number} region`).toBe(n.world);
+      }
+      for (const b of n.buildings ?? []) {
+        expect(buildingIds.has(b), `${m.number} ${b}`).toBe(true);
+        if (n.world && n.place === 'surface' && n.world !== 'earth')
+          expect(buildings.find((x) => x.id === b)?.where, `${m.number} ${b} on ${n.world}`).toContain(
+            bodyTypeOf(n.world)
+          );
+      }
+      if (n.stock) expect(materialIds.has(n.stock.material), `${m.number}`).toBe(true);
+    }
+  });
+
+  it('keeps the reachability of every milestone from Earth alone: a site need adds no material or building', () => {
+    for (const m of milestones) {
+      const got = reach({ upTo: m.number, thinOnly: true });
+      expect(
+        m.needs.buildings.filter((id) => !got.buildings.has(id)),
+        `${m.number}`
+      ).toEqual([]);
+    }
+  });
+});
+
 describe('food', () => {
   const foods = materials.filter((m) => m.category === 'food');
 

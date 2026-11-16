@@ -10,7 +10,8 @@ import {
   surfaceToOrbit
 } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { canAerobrake, mainKind, vesselShip } from './model.ts';
+import { canAerobrake, hopShip } from './model.ts';
+import type { PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { siteOf } from './orders.ts';
 import { reasonText } from './trips.ts';
 import type { Vessel } from './types.ts';
@@ -25,6 +26,7 @@ export interface Hop {
   dv: number;
   propellant: number;
   seconds: number;
+  fuel: PropellantKind;
 }
 
 export function surfaceBodyOf(v: Vessel): string | undefined {
@@ -36,9 +38,10 @@ export function surfaceBodyOf(v: Vessel): string | undefined {
 const surfaceG = (gm: number, radius: number): number => gm / (radius * radius);
 
 export function planHop(game: Game, v: Vessel, kind: HopKind, body: string): Hop | string {
-  const ship = vesselShip(v);
+  const chosen = hopShip(v);
   const fb = flightBody(game, body);
-  if (!ship) return 'The ship has no drive.';
+  if (!chosen) return 'The ship has no drive.';
+  const ship = chosen.ship;
   if (!fb) return reasonText({ code: 'unknown-body', message: '' });
   const aero = kind === 'descent' && !!fb.atmosphere && canAerobrake(v);
   const dv = kind === 'descent' ? orbitToSurface(fb, { aero }) : surfaceToOrbit(fb);
@@ -59,13 +62,17 @@ export function planHop(game: Game, v: Vessel, kind: HopKind, body: string): Hop
   }
   const have = shipDeltaV(ship);
   if (have < dv) return reasonText({ code: 'delta-v', message: '', need: dv, have });
-  return { kind, dv, propellant: mass - massAfterBurn(mass, dv, ship.engine.isp), seconds: HOP_SECONDS };
+  return {
+    kind,
+    dv,
+    propellant: mass - massAfterBurn(mass, dv, ship.engine.isp),
+    seconds: HOP_SECONDS,
+    fuel: chosen.fuel
+  };
 }
 
 export function burnHop(v: Vessel, hop: Hop): void {
-  const kind = mainKind(v);
-  if (!kind) return;
-  const used = Math.min(hop.propellant, v.propellant[kind] ?? 0);
-  v.propellant[kind] = (v.propellant[kind] ?? 0) - used;
+  const used = Math.min(hop.propellant, v.propellant[hop.fuel] ?? 0);
+  v.propellant[hop.fuel] = (v.propellant[hop.fuel] ?? 0) - used;
   economy.ledger.burned += used;
 }

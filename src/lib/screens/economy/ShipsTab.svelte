@@ -157,7 +157,7 @@
     touch();
   }
 
-  let orderType = $state<'load' | 'unload' | 'dock' | 'wait' | 'survey'>('load');
+  let orderType = $state<'load' | 'unload' | 'dock' | 'wait' | 'survey' | 'sample'>('load');
   let surveyBody = $state('');
   let itemKey = $state('propellant:methalox');
   let amount = $state(1000);
@@ -205,6 +205,7 @@
     if (!vessel) return;
     let o: NewOrder | undefined;
     if (orderType === 'wait') o = { type: 'wait', seconds: waitHours * 3600 };
+    else if (orderType === 'sample') o = { type: 'sample' };
     else if (orderType === 'survey') {
       const id = surveyTarget;
       if (id) o = { type: 'survey', body: id };
@@ -342,6 +343,7 @@
         <option value="unload">Unload</option>
         <option value="dock">Dock</option>
         <option value="survey">Survey</option>
+        <option value="sample">Sample</option>
         <option value="wait">Wait</option>
       </select></label
     >

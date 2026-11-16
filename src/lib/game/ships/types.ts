@@ -13,6 +13,7 @@ export type Order =
   | { id: number; type: 'fly'; body: string; angle: number; profile: Profile }
   | { id: number; type: 'land'; body: string; profile: Profile; region?: string }
   | { id: number; type: 'survey'; body: string }
+  | { id: number; type: 'sample' }
   | { id: number; type: 'dock'; site: string }
   | { id: number; type: 'load'; item: Item; amount: number | null }
   | { id: number; type: 'unload'; item: Item; amount: number | null }

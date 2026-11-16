@@ -4,6 +4,7 @@
     economy,
     missingFor,
     opensRecords,
+    siteNeedMissing,
     process,
     programmeBill,
     programmeCompute,
@@ -42,6 +43,10 @@
     ...m.needs.buildings.map((id): Cell[] => {
       const n = economy.sites.reduce((a, x) => a + standing(x, id), 0);
       return [building(id).name, 'Building', { text: n > 0 ? formatCount(n) : 'None', warn: n <= 0 }];
+    }),
+    ...(m.needs.sites ?? []).map((need): Cell[] => {
+      const gap = siteNeedMissing(economy, need);
+      return [need.label.replace(/^No /, ''), 'Site', { text: gap ? 'None' : 'Yes', warn: !!gap }];
     }),
     ...m.needs.components.map((id): Cell[] => {
       const c = shipComponent(id);

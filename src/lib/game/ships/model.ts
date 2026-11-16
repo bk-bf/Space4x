@@ -45,9 +45,40 @@ export function canSurvey(design: ShipDesign | undefined): boolean {
   return !!design && design.parts.some((p) => p.count > 0 && component(p.component)?.design.surveys);
 }
 
+export function canSample(design: ShipDesign | undefined): boolean {
+  return !!design && design.parts.some((p) => p.count > 0 && component(p.component)?.design.samples);
+}
+
 export function canAerobrake(v: Vessel): boolean {
   const d = designOf(v);
   return !!d && reentryRating(d) >= wetMass(v);
+}
+
+export function hopShip(v: Vessel): { ship: Ship; fuel: PropellantKind } | undefined {
+  const stats = statsOf(v);
+  const main = stats?.main;
+  if (!stats || !main) return undefined;
+  const loaded = stats.drives.filter((d) => d === main || (v.propellant[d.propellant] ?? 0) > 0);
+  const best = loaded.sort((a, b) => b.thrust * b.throttle - a.thrust * a.throttle)[0] ?? main;
+  const others = PROPELLANT_KINDS.filter((k) => k !== best.propellant).reduce(
+    (a, k) => a + (v.propellant[k] ?? 0),
+    0
+  );
+  return {
+    fuel: best.propellant,
+    ship: {
+      dryMass: stats.dryMass + others,
+      payload: cargoMass(v),
+      propellant: v.propellant[best.propellant] ?? 0,
+      engine: {
+        isp: best.isp,
+        thrust: best.thrust,
+        thrustSeaLevel: best.thrustSeaLevel,
+        ...(best.power > 0 ? { power: best.power } : {})
+      },
+      powerAvailable: Math.max(0, stats.power.balance)
+    }
+  };
 }
 
 export function vesselShip(v: Vessel): Ship | undefined {
