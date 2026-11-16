@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { asteroids } from '#lib/game/data/index.ts';
+import { asteroids, cometRecord } from '#lib/game/data/index.ts';
 import { NAMED_BODIES, smallBody } from './catalogue.ts';
 import { drawSmallBody, smallReach, spinStep, type Pixels } from './render.ts';
 
@@ -99,7 +99,7 @@ describe('small bodies', () => {
     const game = new Game();
     for (const b of game.world.bodies) {
       const small = smallBodyOf(b);
-      expect(!!small).toBe(!!asRecord(b.id));
+      expect(!!small).toBe(!!asRecord(b.id) || !!cometRecord(b.id));
     }
     expect(game.world.bodies.some((b) => b.id === 'luna' && b.type === 'rock')).toBe(true);
     expect(smallBodyOf(game.world.bodies.find((b) => b.id === 'luna')!)).toBeUndefined();
