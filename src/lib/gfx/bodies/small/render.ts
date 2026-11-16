@@ -476,8 +476,3 @@ export function drawSmallBody(
   }
   blit(f, spriteOf(body, r, frame), x, y);
 }
-
-export function renderSprite(body: SmallBody, radius: number, step: number): Uint8ClampedArray {
-  const r = Math.max(2, Math.round(radius));
-  return spriteOf(body, r, spinFrame(body, step, r)).d;
-}
