@@ -12,6 +12,7 @@ export { default as Stack } from './primitives/Stack.svelte';
 export { default as Split } from './primitives/Split.svelte';
 export { default as Placeholder } from './primitives/Placeholder.svelte';
 export { default as PixIcon } from './primitives/PixIcon.svelte';
+export { default as Portrait } from './primitives/Portrait.svelte';
 export { default as Tile } from './primitives/Tile.svelte';
 export { default as TileGrid } from './primitives/TileGrid.svelte';
 export { default as Card } from './primitives/Card.svelte';

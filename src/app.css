@@ -451,6 +451,20 @@ canvas {
   font-size: 17px;
   padding: 1px 7px;
 }
+.tabs2.icons {
+  margin-bottom: 8px;
+}
+.tabs2.icons button {
+  font-size: 18px;
+  padding: 2px 9px 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.tabs2.icons .ic {
+  width: 16px;
+  height: 16px;
+}
 details {
   margin-left: 10px;
 }
@@ -746,6 +760,28 @@ div.ui-tile {
 .ui-tile.node {
   width: 104px;
   height: 100px;
+}
+.ui-tile.off {
+  width: 112px;
+  height: 138px;
+  padding-top: 5px;
+}
+.ui-tile.off .ui-art {
+  height: 72px;
+}
+.ui-tile.slot {
+  width: 96px;
+  height: 44px;
+  padding: 2px;
+  justify-content: center;
+  font-size: 14px;
+}
+.ui-tile.warn {
+  box-shadow:
+    0 -2px 0 var(--hot),
+    0 2px 0 var(--hot),
+    -2px 0 0 var(--hot),
+    2px 0 0 var(--hot);
 }
 .ui-tile .dim,
 .ui-eq .dim {
@@ -1098,6 +1134,19 @@ div.ui-tile {
   font-size: 24px;
   color: var(--accent);
   line-height: 1;
+}
+.ui-kpi.s {
+  padding: 3px 10px;
+}
+.ui-kpi.s .gico .ic {
+  width: 26px;
+  height: 26px;
+}
+.ui-kpi.s .big {
+  font-size: 20px;
+}
+.ui-kpi.s small {
+  margin-top: 1px;
 }
 .ui-kpi.warn .big {
   color: var(--hot);

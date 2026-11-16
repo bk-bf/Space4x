@@ -9,7 +9,7 @@
   import PixIcon from './PixIcon.svelte';
   import { tooltip, type Tip } from './tooltip.ts';
 
-  type Variant = 'auto' | 'prod' | 'stk' | 'bld' | 'q' | 'cmp' | 'node';
+  type Variant = 'auto' | 'prod' | 'stk' | 'bld' | 'q' | 'cmp' | 'node' | 'off' | 'slot';
 
   interface Props {
     variant?: Variant;
@@ -36,6 +36,8 @@
     idle?: boolean;
     minis?: readonly IconRef[];
     minisMore?: number;
+    art?: Snippet;
+    warn?: boolean;
     tip?: Tip;
     onselect?: () => void;
     disabled?: boolean;
@@ -68,6 +70,8 @@
     idle = false,
     minis = [],
     minisMore = 0,
+    art,
+    warn = false,
     tip,
     onselect,
     disabled = false,
@@ -92,7 +96,9 @@
     >
   {/if}
   {#if trend}<span class="ui-trend {trendTone(trend)}"><Icon name={trend} /></span>{/if}
-  {#if icons.length}
+  {#if art}
+    <span class="ui-art">{@render art()}</span>
+  {:else if icons.length}
     <span class="ui-art">
       {#each icons as icon, i (i)}<PixIcon kind={icon.kind} id={icon.id} size={iconSize} tip={false} />{/each}
     </span>
@@ -132,6 +138,7 @@
     class:dimmed
     class:lock={locked}
     class:idle
+    class:warn
     type="button"
     aria-pressed={selected}
     {disabled}
@@ -147,6 +154,7 @@
     class:dimmed
     class:lock={locked}
     class:idle
+    class:warn
     use:tooltip={tip}
   >
     {@render body()}

@@ -8,13 +8,14 @@
     value: string;
     label: string;
     warn?: boolean;
+    compact?: boolean;
     tip?: Tip;
   }
 
-  let { icon, value, label, warn = false, tip }: Props = $props();
+  let { icon, value, label, warn = false, compact = false, tip }: Props = $props();
 </script>
 
-<div class="ui-kpi" class:warn use:tooltip={tip}>
+<div class="ui-kpi" class:warn class:s={compact} use:tooltip={tip}>
   <span class="gico"><Icon name={icon} class="lg" /></span>
   <div>
     <div class="big">{value}</div>

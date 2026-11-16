@@ -25,6 +25,7 @@
     Panel,
     PixIcon,
     Pill,
+    Portrait,
     ScreenGrid,
     Stat,
     Tabs,
@@ -229,6 +230,19 @@
             mark="lock"
             note="S"
           />
+          <Tile variant="off" name="A. Mwangi" sub="Vice admiral" selected>
+            {#snippet art()}
+              <Portrait
+                spec={{ seed: 10, age: 61, rank: 4, branch: 'staff', gender: 'm' }}
+                view="head"
+                scale={2}
+              />
+            {/snippet}
+          </Tile>
+          <Tile variant="off" warn name="Naval staff" sub="vacant">
+            {#snippet art()}<Icon name="plus" />{/snippet}
+          </Tile>
+          <Tile variant="slot" name="Naval academy" />
           <Tile variant="stk" dimmed icons={[mat('helium3')]} name="Helium-3" value="0" note="0" meter={0} />
           <Tile
             variant="prod"
