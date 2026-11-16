@@ -22,9 +22,10 @@ export const ASTEROID_COLOUR: Record<AsteroidType, RGB> = {
   metallic: [150, 200, 240]
 };
 
-export function asteroidMark(f: FB, x: number, y: number, col: RGB): void {
+export function asteroidMark(f: FB, x: number, y: number, col: RGB, plus: boolean): void {
   x = Math.round(x);
   y = Math.round(y);
+  if (!plus) return f.px(x, y, col);
   f.rect(x - 1, y, 3, 1, col);
   f.rect(x, y - 1, 1, 3, col);
 }

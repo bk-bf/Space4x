@@ -67,6 +67,7 @@ const SCENE_LABEL_PRI = 1;
 const NEAR_UNIT_PX = 0.75;
 const DRAWN_PRI = 50;
 const ASTEROID_NAMES_BELOW = 1.5e9;
+const ASTEROID_PLUS_BELOW = 5e9;
 const ASTEROID_BASE_PRI = 1;
 const ASTEROID_MAX_BOOST = 4;
 const HOSTILE_PRI = 15;
@@ -265,7 +266,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     for (const b of shown) {
       if (b.mk) {
         if (b.star) starMark(f, b.p[0], b.p[1], b.tint?.core[0], b.tint?.core[2]);
-        else if (b.asteroid !== undefined) asteroidMark(f, b.p[0], b.p[1], b.col);
+        else if (b.asteroid !== undefined) asteroidMark(f, b.p[0], b.p[1], b.col, s < ASTEROID_PLUS_BELOW);
         else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.look && vis(b.p, sphereReach(b.look, b.R))) drawSphere(f, b.look, b.p[0], b.p[1], b.R);
