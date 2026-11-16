@@ -24,6 +24,7 @@ export interface PortraitSpec {
   rank: number;
   branch: 'staff' | 'ground' | 'governor';
   gender: Gender;
+  rolledAt?: { age: number; rank: number };
 }
 
 export interface Traits {
@@ -125,15 +126,25 @@ export function rng(seed: number): () => number {
 
 const pick = <T>(r: () => number, a: readonly T[]): T => a[Math.floor(r() * a.length)]!;
 
-export function traitsOf(spec: PortraitSpec): Traits {
-  const { seed, age, rank, gender } = spec;
-  const r = rng(seed),
-    f = gender === 'f',
-    grey = Math.max(0, Math.min(1, (age - 40) / 26));
+const greyShare = (age: number) => Math.max(0, Math.min(1, (age - 40) / 26));
+
+function rollLook(r: () => number): Pick<Traits, 'skin' | 'eye' | 'bg'> {
   const skin = SKIN[Math.floor(r() * 6)]!;
   const eye = EYE[Math.floor(r() * (r() < 0.12 ? 10 : 7))]!;
   const bg = pick(r, BACKDROPS);
-  const hair = r() < grey ? (age > 60 && r() < 0.6 ? GREY[1] : GREY[0]) : pick(r, HAIR);
+  return { skin, eye, bg };
+}
+
+function rollHair(r: () => number, age: number): Ramp4 {
+  return r() < greyShare(age) ? (age > 60 && r() < 0.6 ? GREY[1] : GREY[0]) : pick(r, HAIR);
+}
+
+function roll(spec: PortraitSpec): Traits {
+  const { seed, age, rank, gender } = spec;
+  const r = rng(seed),
+    f = gender === 'f';
+  const { skin, eye, bg } = rollLook(r);
+  const hair = rollHair(r, age);
   let style = pick(
     r,
     hairFor(gender).filter((k) => !BALDING.includes(k))
@@ -177,5 +188,20 @@ export function traitsOf(spec: PortraitSpec): Traits {
     jag,
     earring,
     shadow
+  };
+}
+
+export function traitsOf(spec: PortraitSpec): Traits {
+  const { rolledAt, ...now } = spec;
+  if (!rolledAt) return roll(now);
+  const face = roll({ ...now, age: rolledAt.age, rank: rolledAt.rank });
+  const r = rng(spec.seed);
+  rollLook(r);
+  return {
+    ...face,
+    age: spec.age,
+    rank: spec.rank,
+    hair: rollHair(r, spec.age),
+    cap: face.cap && spec.rank >= 2
   };
 }

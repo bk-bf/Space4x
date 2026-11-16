@@ -136,12 +136,38 @@ describe('the same officer, the same face', () => {
     expect(portraitHead(again).url).toBe(portraitHead(spec).url);
   });
 
-  it('keeps the face and changes only what age, rank and post change', () => {
-    const young = traitsOf({ ...spec, age: 30 });
-    const old = traitsOf({ ...spec, age: 62 });
-    expect(old.skin).toBe(young.skin);
-    expect(old.eye).toBe(young.eye);
-    expect(old.jaw).toBe(young.jaw);
+  it('rolls the face at one age and rank when asked, so it never changes as they age or rise', () => {
+    const rolledAt = { age: 40, rank: 2 };
+    const FACE = ['skin', 'eye', 'jaw', 'eyes', 'brow', 'nose', 'mouth', 'beard', 'gear', 'style'] as const;
+    for (const gender of ['m', 'f'] as const)
+      for (let seed = 0; seed < 60; seed++) {
+        const at = (age: number, rank: number) =>
+          traitsOf({ seed, age, rank, branch: 'staff', gender, rolledAt });
+        const start = at(40, 2);
+        for (const [age, rank] of [
+          [28, 0],
+          [47, 3],
+          [58, 4],
+          [71, 5]
+        ] as const)
+          for (const k of FACE) expect(at(age, rank)[k]).toEqual(start[k]);
+      }
+  });
+
+  it('rolls the same picture as an unrolled spec when asked at the age and a rank that can wear a cap', () => {
+    const plain: PortraitSpec = { seed: 12, age: 52, rank: 3, branch: 'staff', gender: 'm' };
+    const rolled: PortraitSpec = { ...plain, rolledAt: { age: 52, rank: 3 } };
+    expect(sha(portraitBust(rolled).pixels)).toBe(sha(portraitBust(plain).pixels));
+  });
+
+  it('only shows a cap on a rank that can wear one', () => {
+    const rolledAt = { age: 45, rank: 2 };
+    const capped = Array.from({ length: 60 }, (_, seed) => seed).filter(
+      (seed) => traitsOf({ seed, age: 45, rank: 4, branch: 'staff', gender: 'm', rolledAt }).cap
+    );
+    expect(capped.length).toBeGreaterThan(0);
+    for (const seed of capped)
+      expect(traitsOf({ seed, age: 45, rank: 1, branch: 'staff', gender: 'm', rolledAt }).cap).toBe(false);
   });
 
   it('greys the hair with age', () => {
@@ -240,6 +266,11 @@ describe('portrait cache', () => {
     expect(portraitHead(MAN)).toBe(portraitHead({ ...MAN }));
     expect(portraitBust(MAN, 'clean')).toBe(portraitBust(MAN, 'clean'));
     expect(portraitBust(MAN, 'clean')).not.toBe(portraitBust(MAN, 'gritty'));
+    const rolled = { ...MAN, rolledAt: { age: 30, rank: 2 } };
+    expect(portraitBust(rolled)).toBe(portraitBust({ ...rolled }));
+    expect(portraitBust({ ...MAN, age: 70, rolledAt: { age: 30, rank: 2 } })).not.toBe(
+      portraitBust({ ...MAN, age: 70, rolledAt: { age: 60, rank: 2 } })
+    );
     const over = { ...BASE, style: 'bald' as const };
     expect(portraitBust(MAN, 'gritty', over)).toBe(portraitBust(MAN, 'gritty', { ...over }));
   });

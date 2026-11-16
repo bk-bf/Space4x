@@ -44,9 +44,16 @@ export const PORTRAIT_STYLES: readonly { id: PortraitStyle; name: string; note: 
 export const DEFAULT_PORTRAIT_STYLE: PortraitStyle = 'gritty';
 
 const keyOf = (spec: PortraitSpec, style: PortraitStyle, over?: TraitOverrides): string =>
-  [spec.seed, spec.age, spec.rank, spec.branch, spec.gender, style, over ? JSON.stringify(over) : ''].join(
-    ':'
-  );
+  [
+    spec.seed,
+    spec.age,
+    spec.rank,
+    spec.branch,
+    spec.gender,
+    spec.rolledAt ? `${spec.rolledAt.age}.${spec.rolledAt.rank}` : '',
+    style,
+    over ? JSON.stringify(over) : ''
+  ].join(':');
 
 const images = new Map<string, Pix>();
 
