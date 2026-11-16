@@ -6,6 +6,7 @@ export interface LayoutState {
   name: string;
   built: boolean;
   mock: boolean;
+  size?: readonly [number, number];
 }
 
 const QUERIES = [
@@ -52,6 +53,8 @@ const QUERIES = [
   'sel=base:orbit-earth&scenario=travel',
   'screen=research',
   'screen=research&milestone=12',
+  'screen=research&rtab=programmes&milestone=6',
+  'screen=research&rtab=unlocks&milestone=3',
   'screen=classes',
   'screen=classes&new=stage',
   'screen=classes&reached=6&new=crewed',
@@ -65,6 +68,14 @@ const QUERIES = [
   'screen=intel',
   'screen=galaxy',
   'screen=galaxy&sys=luy'
+];
+
+const SHORT_WINDOW: readonly [number, number] = [1280, 720];
+
+const SHORT_WINDOW_QUERIES = [
+  'screen=research&milestone=17',
+  'screen=research&rtab=programmes&milestone=6',
+  'screen=research&rtab=unlocks&milestone=3'
 ];
 
 const SITE_QUERIES = new Set([
@@ -88,13 +99,20 @@ export function isBuilt(screen: string): boolean {
   return existsSync(file) && !readFileSync(file, 'utf8').includes('<Placeholder');
 }
 
-export const STATES: readonly LayoutState[] = QUERIES.map((query) => {
+const stateOf = (query: string, size?: readonly [number, number]): LayoutState => {
   const screen = screenOf(query);
+  const base = query.replace(/[=&:,]/g, '-') || 'default';
   return {
     query,
     screen,
-    name: query.replace(/[=&:,]/g, '-') || 'default',
+    name: size ? `${base}-${size.join('x')}` : base,
     built: isBuilt(screen),
-    mock: MOCK_SCREENS.has(screen) || SITE_QUERIES.has(query)
+    mock: MOCK_SCREENS.has(screen) || SITE_QUERIES.has(query),
+    ...(size ? { size } : {})
   };
-});
+};
+
+export const STATES: readonly LayoutState[] = [
+  ...QUERIES.map((query) => stateOf(query)),
+  ...SHORT_WINDOW_QUERIES.map((query) => stateOf(query, SHORT_WINDOW))
+];
