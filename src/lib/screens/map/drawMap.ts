@@ -2,10 +2,8 @@ import {
   AU,
   bodyPosition,
   FLEET_SENSOR,
-  resolveGoal,
   sitePosition,
   type Contact,
-  type Fleet,
   type Game,
   type SelectionKind,
   type StarSystem
@@ -154,19 +152,6 @@ function trail(c: Contact): Point[] {
   return pts;
 }
 
-function course(game: Game, fleet: Fleet): Point[] {
-  const pts: Point[] = [[fleet.x, fleet.y]];
-  let at = fleet.at;
-  for (const o of fleet.orders) {
-    const goal = resolveGoal(game, fleet, o);
-    if (!goal) break;
-    if (!(goal.body && goal.body.id === at)) pts.push([goal.x, goal.y]);
-    at = goal.body?.id;
-    if (o.type === 'orbit' || goal.jump) break;
-  }
-  return pts;
-}
-
 let cacheKey = '';
 let lastKey = '';
 let cache: Uint8ClampedArray | null = null;
@@ -288,11 +273,6 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
 
   const selFleet = sel.kind === 'fleet' ? game.fleet(sel.id) : undefined;
   if (selFleet && selFleet.system === game.world.system) {
-    if (layers.Course) {
-      const pts = course(game, selFleet).map(([x, y]) => S(x, y));
-      for (let i = 1; i < pts.length; i++)
-        clipLine(f, pts[i - 1]![0], pts[i - 1]![1], pts[i]![0], pts[i]![1], PAL.course, 3, t >> 1);
-    }
     if (layers.Sensors) {
       const P = S(selFleet.x, selFleet.y);
       orbitArc(f, P[0], P[1], FLEET_SENSOR / s, PAL.sensor, 3, t >> 2);

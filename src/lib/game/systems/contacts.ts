@@ -1,6 +1,5 @@
 import { formatEventTime } from '../clock';
-import { bodyPosition } from '../orbits';
-import { isColony } from '../orders';
+import { bodyPosition, isColony } from '../orbits';
 import type { Game } from '../state.svelte';
 import { registerSystem } from '../systems';
 import type { Contact } from '../types';

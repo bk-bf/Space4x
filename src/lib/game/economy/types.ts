@@ -1,4 +1,4 @@
-import type { Body } from '#lib/game/data/index.ts';
+import type { Amounts, Site as Where } from '#lib/game/data/index.ts';
 
 export interface Group {
   id: number;
@@ -17,6 +17,27 @@ export interface BuildOrder {
   stalled: string | null;
 }
 
+export interface YardOrder {
+  id: number;
+  design: string;
+  name: string;
+  yard: string;
+  cost: Amounts;
+  hours: number;
+  done: number;
+  paused: boolean;
+  stalled: string | null;
+}
+
+export interface Delivery {
+  site: string;
+  design: string;
+  order: number;
+  at: number;
+}
+
+export type SitePlace = 'surface' | 'orbit';
+
 export interface Alerts {
   food: boolean;
   power: boolean;
@@ -25,8 +46,11 @@ export interface Alerts {
 export interface Site {
   id: string;
   name: string;
-  body: Body;
+  body: Where;
   worldBody: string;
+  place: SitePlace;
+  angle: number;
+  berths: number | null;
   population: number;
   workforceShare: number;
   foodPerPersonDay: number;
@@ -35,6 +59,8 @@ export interface Site {
   stock: Record<string, number>;
   groups: Group[];
   queue: BuildOrder[];
+  yard: YardOrder[];
+  launches: number[];
   alerts: Alerts;
 }
 
@@ -50,6 +76,7 @@ export interface Ledger {
   built: number;
   spent: number;
   lost: number;
+  burned: number;
 }
 
 export interface Economy {
@@ -58,6 +85,7 @@ export interface Economy {
   running: Programme[];
   elapsed: number;
   nextId: number;
+  delivered: Delivery[];
   ledger: Ledger;
 }
 

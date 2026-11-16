@@ -19,7 +19,7 @@ function nextEvent(eco: Economy, site: Site, flows: SiteFlows): number {
   }
   for (const a of flows.actors) {
     if (a.share <= 0) continue;
-    if (a.kind === 'build') t = Math.min(t, ((1 - a.order.done) * a.hours) / a.share);
+    if (a.kind === 'build' || a.kind === 'yard') t = Math.min(t, ((1 - a.order.done) * a.hours) / a.share);
     if (a.kind === 'programme') {
       const hours = programmeDays(milestone(a.programme.number)) * 24;
       t = Math.min(t, ((1 - a.programme.progress) * hours) / a.share);
@@ -70,6 +70,19 @@ function applySegment(
         site.queue.splice(site.queue.indexOf(o), 1);
         placeBuilding(eco, site, o);
         log(`${site.name} finished a ${building(o.building).name}.`, false, at, site.id);
+      }
+    }
+    if (a.kind === 'yard') {
+      const o = a.order;
+      o.done = Math.min(1, o.done + (a.share * hours) / a.hours);
+      const short = a.share < 1 - 1e-9 && a.limit?.kind === 'material' ? a.limit.id : null;
+      if (short && short !== o.stalled)
+        log(`The ${o.name} at ${site.name} is waiting for ${material(short).name}.`, true, at, site.id);
+      o.stalled = short;
+      if (o.done >= 1 - 1e-9) {
+        site.yard.splice(site.yard.indexOf(o), 1);
+        eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
+        log(`${site.name} finished a ${o.name}.`, false, at, site.id);
       }
     }
     if (a.kind === 'programme') {

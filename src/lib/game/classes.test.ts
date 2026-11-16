@@ -6,8 +6,6 @@ import {
   classInUse,
   classStats,
   ClassRegistry,
-  fleetSpeed,
-  MOCK_FLEET_SPEED,
   shipClass,
   shipClasses,
   specFor,
@@ -63,10 +61,5 @@ describe('the ship class registry', () => {
     const g = withFixture(new Game());
     expect(classInUse(g, 'pathfinder')).toBe(true);
     expect(classInUse(g, 'unused')).toBe(false);
-  });
-
-  it('moves the mock fleets at a fixed speed without any class', () => {
-    const g = withFixture(new Game());
-    expect(fleetSpeed(g.fleet('convoy')!)).toBe(MOCK_FLEET_SPEED);
   });
 });

@@ -348,9 +348,9 @@ function issuesOf(
   else {
     const body = YARD_BODY[design.yard];
     if (body && s.main && !s.loaded.liftoff[body])
-      error(
+      warn(
         'no-liftoff',
-        `Thrust too low to leave ${BODY_NAMES[body]}, where the ${yardName(design.yard).toLowerCase()} stands: thrust to weight is ${s.loaded.thrustToWeight[body].toFixed(2)}, ${MIN_LIFTOFF_TWR} is needed.`
+        `Alone this cannot leave ${BODY_NAMES[body]}: thrust to weight is ${s.loaded.thrustToWeight[body].toFixed(2)} and ${MIN_LIFTOFF_TWR} is needed. It must ride a lower stage in a launch stack.`
       );
     if (design.role === 'launcher' && s.main) {
       const need = surfaceToOrbit(earth);

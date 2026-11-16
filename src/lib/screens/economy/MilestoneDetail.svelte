@@ -40,7 +40,7 @@
 
   const needRows = $derived<Cell[][]>([
     ...m.needs.buildings.map((id): Cell[] => {
-      const n = standing(site, id);
+      const n = economy.sites.reduce((a, x) => a + standing(x, id), 0);
       return [building(id).name, 'Building', { text: n > 0 ? formatCount(n) : 'None', warn: n <= 0 }];
     }),
     ...m.needs.components.map((id): Cell[] => {

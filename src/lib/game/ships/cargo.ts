@@ -1,0 +1,82 @@
+import type { Site } from '#lib/game/economy/index.ts';
+import { PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
+import { cargoRoom, propellantRoom, statsOf } from './model.ts';
+import type { Item, Vessel } from './types.ts';
+
+export const HANDLING_SECONDS = 4 * 3600;
+export const DOCK_SECONDS = 3600;
+
+const EPS = 1e-9;
+
+export function propellantAvailable(site: Site, kind: PropellantKind): number {
+  let most = Infinity;
+  for (const [m, share] of Object.entries(PROPELLANTS[kind].mix))
+    if (share > 0) most = Math.min(most, (site.stock[m] ?? 0) / share);
+  return Number.isFinite(most) ? Math.max(0, most) : 0;
+}
+
+export function propellantShort(site: Site, kind: PropellantKind): string | undefined {
+  for (const [m, share] of Object.entries(PROPELLANTS[kind].mix))
+    if (share > 0 && (site.stock[m] ?? 0) <= EPS) return m;
+  return undefined;
+}
+
+export function drawPropellant(site: Site, kind: PropellantKind, kg: number): void {
+  for (const [m, share] of Object.entries(PROPELLANTS[kind].mix))
+    site.stock[m] = Math.max(0, (site.stock[m] ?? 0) - share * kg);
+}
+
+export function returnPropellant(site: Site, kind: PropellantKind, kg: number): void {
+  for (const [m, share] of Object.entries(PROPELLANTS[kind].mix))
+    site.stock[m] = (site.stock[m] ?? 0) + share * kg;
+}
+
+const take = (want: number | null, ...limits: number[]): number =>
+  Math.max(0, Math.min(want ?? Infinity, ...limits));
+
+export function loadItem(site: Site, v: Vessel, item: Item, amount: number | null): number {
+  if (item.kind === 'cargo') {
+    const n = take(amount, site.stock[item.id] ?? 0, cargoRoom(v));
+    if (n <= 0) return 0;
+    site.stock[item.id] = (site.stock[item.id] ?? 0) - n;
+    v.cargo[item.id] = (v.cargo[item.id] ?? 0) + n;
+    return n;
+  }
+  if (item.kind === 'propellant') {
+    const n = take(amount, propellantAvailable(site, item.id), propellantRoom(v, item.id));
+    if (n <= 0) return 0;
+    drawPropellant(site, item.id, n);
+    v.propellant[item.id] = (v.propellant[item.id] ?? 0) + n;
+    return n;
+  }
+  const berths = statsOf(v)?.berths ?? 0;
+  const n = Math.floor(take(amount, site.population, Math.max(0, berths - v.crew)));
+  if (n <= 0) return 0;
+  site.population -= n;
+  v.crew += n;
+  return n;
+}
+
+export function unloadItem(site: Site, v: Vessel, item: Item, amount: number | null): number {
+  if (item.kind === 'cargo') {
+    const n = take(amount, v.cargo[item.id] ?? 0);
+    if (n <= 0) return 0;
+    v.cargo[item.id] = (v.cargo[item.id] ?? 0) - n;
+    if ((v.cargo[item.id] ?? 0) <= EPS) delete v.cargo[item.id];
+    site.stock[item.id] = (site.stock[item.id] ?? 0) + n;
+    return n;
+  }
+  if (item.kind === 'propellant') {
+    const n = take(amount, v.propellant[item.id] ?? 0);
+    if (n <= 0) return 0;
+    v.propellant[item.id] = (v.propellant[item.id] ?? 0) - n;
+    returnPropellant(site, item.id, n);
+    return n;
+  }
+  const room = site.berths === null ? Infinity : Math.max(0, site.berths - site.population);
+  const n = Math.floor(take(amount, v.crew, room));
+  if (n <= 0) return 0;
+  v.crew -= n;
+  site.population += n;
+  return n;
+}

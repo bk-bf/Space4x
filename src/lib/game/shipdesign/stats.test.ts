@@ -297,10 +297,11 @@ describe('design errors', () => {
     ).toContain('no-yard');
   });
 
-  it('rejects thrust too low to leave the body the yard stands on', () => {
+  it('warns, without blocking the design, when thrust cannot leave the body the yard stands on alone', () => {
     const slow = build(upperStage, { yard: 'rocket_factory' });
-    expect(errors(slow)).toContain('no-liftoff');
-    expect(errors(build(upperStage, { yard: 'orbital_shipyard' }))).not.toContain('no-liftoff');
+    expect(warnings(slow)).toContain('no-liftoff');
+    expect(errors(slow)).not.toContain('no-liftoff');
+    expect(warnings(build(upperStage, { yard: 'orbital_shipyard' }))).not.toContain('no-liftoff');
     const strong = build(
       [
         ['chemical_engine_methalox', 3],
@@ -310,7 +311,7 @@ describe('design errors', () => {
     );
     const s = designStats(strong);
     expect(s.loaded.thrustToWeight.earth).toBeGreaterThan(MIN_LIFTOFF_TWR);
-    expect(errors(strong)).not.toContain('no-liftoff');
+    expect(warnings(strong)).not.toContain('no-liftoff');
   });
 
   it('warns when a launch vehicle cannot reach orbit', () => {

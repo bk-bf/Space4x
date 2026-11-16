@@ -3,8 +3,6 @@ import type { ShipClass } from './design.ts';
 import type { Game } from './state.svelte';
 import type { Fleet } from './types';
 
-export const MOCK_FLEET_SPEED = 1000;
-
 const statsOf = new WeakMap<ShipDesign, DesignStats>();
 const specOf = new WeakMap<ShipDesign, ShipClass>();
 
@@ -70,8 +68,6 @@ export const classStats = (id: string): DesignStats | undefined => {
 };
 
 export const fleetClassId = (f: Fleet): string | undefined => f.ships[0]?.classId;
-
-export const fleetSpeed = (f: Fleet): number => (f.ships.length ? MOCK_FLEET_SPEED : 0);
 
 type Use = (classId: string) => boolean;
 

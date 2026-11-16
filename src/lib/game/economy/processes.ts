@@ -8,7 +8,7 @@ import {
   recipe,
   recipesAt
 } from '#lib/game/data/index.ts';
-import type { Amounts, Body, Building, Recipe } from '#lib/game/data/index.ts';
+import type { Amounts, Building, Recipe, Site as Where } from '#lib/game/data/index.ts';
 
 export const POWER = '@power';
 export const EXTRACT_KG_PER_HOUR = 1000;
@@ -35,12 +35,12 @@ export const isExtraction = (id: string): boolean => id.startsWith(EXTRACT);
 const perHour = (amounts: Amounts, hours: number): Amounts =>
   Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, v / hours]));
 
-const selfExtracted = (r: Recipe, body: Body): string[] =>
+const selfExtracted = (r: Recipe, body: Where): string[] =>
   Object.keys(r.inputs).filter((m) =>
     material(m).sources?.some((s) => s.body === body && s.building === r.building)
   );
 
-function recipeProcess(r: Recipe, body: Body): Process {
+function recipeProcess(r: Recipe, body: Where): Process {
   const inputs = perHour(r.inputs, r.hours);
   const extracts: Amounts = {};
   for (const m of selfExtracted(r, body)) {
@@ -110,7 +110,7 @@ function extractionProcess(materialId: string, b: Building): Process {
 
 const cache = new Map<string, Process>();
 
-export function process(id: string, body: Body): Process {
+export function process(id: string, body: Where): Process {
   const key = `${body}|${id}`;
   const hit = cache.get(key);
   if (hit) return hit;
@@ -125,7 +125,7 @@ export function process(id: string, body: Body): Process {
   return made;
 }
 
-export function processesAt(buildingId: string, body: Body): Process[] {
+export function processesAt(buildingId: string, body: Where): Process[] {
   const b = building(buildingId);
   const recs = recipesAt(buildingId);
   const own = new Set(recs.flatMap((r) => selfExtracted(r, body)));
@@ -135,7 +135,7 @@ export function processesAt(buildingId: string, body: Body): Process[] {
   return [...extraction, ...recs.map((r) => process(r.id, body))];
 }
 
-export const buildingsAt = (body: Body): Building[] => buildings.filter((b) => b.where.includes(body));
+export const buildingsAt = (body: Where): Building[] => buildings.filter((b) => b.where.includes(body));
 
 export const isMass = (id: string): boolean => id !== POWER && hasMaterial(id) && !material(id).unit;
 

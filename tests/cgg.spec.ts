@@ -50,7 +50,8 @@ test.describe('ship designer', () => {
 
     await setCount(page, 'propellant_tank', 40);
     await expect(issue(page, 'no-liftoff')).toBeVisible();
-    await expect(page.locator('[data-act="lock"]')).toBeDisabled();
+    await expect(page.locator('#issues .error')).toHaveCount(0);
+    await expect(page.locator('[data-act="lock"]')).toBeEnabled();
     await expect(stat(page, 'Earth thrust/weight')).toContainText('too low');
 
     await setCount(page, 'propellant_tank', 3);
