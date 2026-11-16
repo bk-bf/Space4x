@@ -162,7 +162,7 @@ export function seedJump(game: Game, outpost = false): void {
     standFirst(economy, site, 'data_centre');
     site.population = 6;
     site.berths = 6;
-    site.gridKw = 2000;
+    site.gridKw = 8000;
     site.stock.food_ration = 5000;
     site.stock.stainless_steel = 200_000;
   }

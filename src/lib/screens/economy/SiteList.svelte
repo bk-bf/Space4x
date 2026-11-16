@@ -48,14 +48,18 @@
             troubled(s.id) && warn('Short of food or power')
           )}
         >
-          <img
-            class="ui-px"
-            src={planetSprite(planetOf(s.worldBody), 30)}
-            width="30"
-            height="30"
-            alt=""
-            draggable="false"
-          />
+          {#if s.place === 'point'}
+            <span class="point"><Icon name="net" /></span>
+          {:else}
+            <img
+              class="ui-px"
+              src={planetSprite(planetOf(s.worldBody), 30)}
+              width="30"
+              height="30"
+              alt=""
+              draggable="false"
+            />
+          {/if}
           <span class="nm">{s.name}</span>
           <span class="dim">{fmt.population(s.population)}</span>
           {#if troubled(s.id)}<span class="hot"><Icon name="warn" class="sm" /></span>{/if}
@@ -73,6 +77,13 @@
   }
   .system b {
     font: 600 14px 'Pixelify';
+  }
+  .point {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    color: var(--cool);
   }
   .site {
     flex-direction: row;
