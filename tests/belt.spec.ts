@@ -38,7 +38,7 @@ test.describe('asteroids on the map', () => {
       .locator('#mapLabels span:not([hidden])')
       .evaluateAll((els, names) => els.filter((e) => names.includes(e.textContent ?? '')).length, rocks);
     expect(shown).toBe(0);
-    expect(named).toContain('body:earth');
+    expect(named).toContain('body:neptune');
     await expectCleanLayout(page);
   });
 
@@ -65,6 +65,7 @@ test.describe('asteroids on the map', () => {
     await open(page);
     await page.locator('#w-side [data-tab="bodies"]').click();
     await expect(page.locator('#rockList tr.pick')).toHaveCount(ASTEROIDS.length);
+    await expectCleanLayout(page);
     await page.locator('#rockFilter').selectOption('metallic');
     await expect(page.locator('#rockList tr.pick')).toHaveCount(
       ASTEROIDS.filter((a) => a.type === 'metallic').length
@@ -75,11 +76,11 @@ test.describe('asteroids on the map', () => {
     await page.locator('#rockFilter').selectOption('near');
     await expect(row(page, '#rockList', 'Bennu')).toHaveCount(1);
     await expect(row(page, '#rockList', 'Psyche')).toHaveCount(0);
-    await expectCleanLayout(page);
   });
 
   test('can be shown from the selection window', async ({ page }) => {
     await open(page, 'sel=body:bennu');
+    await page.locator('#w-side [data-tab="display"]').click();
     await win(page, 'sel').locator('[data-go="show"]').click();
     await expect
       .poll(async () => Number(await page.locator('#zoomNow').getAttribute('data-mpp')))
