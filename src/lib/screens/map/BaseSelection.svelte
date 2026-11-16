@@ -17,8 +17,15 @@
     site.groups.map((g) => `${g.count} ${building(g.building).name.toLowerCase()}`).join(', ')
   );
   const facts = $derived<[string, string][]>([
-    ['Kind', site.place === 'orbit' ? 'Orbital station' : 'Surface outpost'],
-    ['Around', game.body(site.worldBody)?.name ?? site.worldBody],
+    [
+      'Kind',
+      site.place === 'orbit'
+        ? 'Orbital station'
+        : site.place === 'point'
+          ? 'Jump point outpost'
+          : 'Surface outpost'
+    ],
+    ['Around', game.body(site.worldBody)?.name ?? game.jump(site.worldBody)?.point.name ?? site.worldBody],
     ...(site.region ? [['Region', region(site.region)?.name ?? ''] as [string, string]] : []),
     ['People', `${Math.round(site.population)} of ${site.berths ?? 0} berths`],
     ['Fed', `${Math.round(flows.food.cover * 100)}%`],

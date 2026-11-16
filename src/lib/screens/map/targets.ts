@@ -150,7 +150,7 @@ export function presets(g: Game, fw: number, fh: number): Preset[] {
       L: v.trip ? FLEET_ROAMING_L : fit(SHIP_VIEW_M, fh * FLEET_PARKED_FILL),
       aim: target('ship', v.id)
     });
-  for (const base of economy.sites.filter((x) => x.place === 'orbit'))
+  for (const base of economy.sites.filter((x) => x.place === 'orbit' || x.place === 'point'))
     list.push({
       id: base.id,
       label: base.name,

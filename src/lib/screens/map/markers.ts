@@ -109,9 +109,14 @@ export function baseMark(f: FB, x: number, y: number, col: RGB): void {
     f.px(x + i, y + j, col);
 }
 
-export function jumpMark(f: FB, x: number, y: number, t: number): void {
-  f.ring(x, y, 5, PAL.jump, 2, t >> 1);
-  f.ring(x, y, 2, PAL.jump, 2, -(t >> 1));
+export function jumpMark(f: FB, x: number, y: number, t: number, stable = false): void {
+  if (stable) {
+    f.ring(x, y, 5, PAL.jump, 1, 0);
+    f.ring(x, y, 2, PAL.jump, 1, 0);
+  } else {
+    f.ring(x, y, 5, PAL.jump, 2, t >> 1);
+    f.ring(x, y, 2, PAL.jump, 2, -(t >> 1));
+  }
   f.px(x, y, PAL.jump);
 }
 

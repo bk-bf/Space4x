@@ -334,13 +334,17 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     const P = S(j.x, j.y),
       key2 = target('jump', j.id),
       b = under(P),
-      text = j.surveyed === false ? `${j.name}, unsurveyed` : j.name;
+      text = j.stable
+        ? `${j.name}, stable`
+        : j.surveyed === false
+          ? `${j.name}, unsurveyed`
+          : `${j.name}, unstable`;
     if (b) {
-      b.list.push({ id: key2, text, target: key2, ...pickOf(key2, false) });
+      b.list.push({ id: key2, text, target: key2, ...pickOf(key2, true, 'jump', j.id) });
       continue;
     }
     if (!vis(P, 20)) continue;
-    jumpMark(f, P[0], P[1], t);
+    jumpMark(f, P[0], P[1], t, !!j.stable);
     an.push({
       id: key2,
       text,
@@ -348,9 +352,10 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       y: P[1],
       rx: 6,
       ry: 6,
+      sel: sel.kind === 'jump' && sel.id === j.id,
       pri: aim === key2 ? FOCUS_PRI : 4,
       target: key2,
-      ...pickOf(key2, false)
+      ...pickOf(key2, true, 'jump', j.id)
     });
   }
 
@@ -467,7 +472,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       });
   }
 
-  for (const base of economy.sites.filter((x) => x.place === 'orbit')) {
+  for (const base of economy.sites.filter((x) => x.place === 'orbit' || x.place === 'point')) {
     const st = stateOf(game, { kind: 'site', site: base.id });
     if (!st) continue;
     const P = S(st.pos[0], st.pos[1]),

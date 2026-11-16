@@ -53,7 +53,7 @@
     world.systems.map((s) => ({ system: s, fleets: world.fleets.filter((f) => f.system === s.id) }))
   );
   const vessels = $derived(ships.vessels);
-  const bases = $derived(economy.sites.filter((x) => x.place === 'orbit'));
+  const bases = $derived(economy.sites.filter((x) => x.place === 'orbit' || x.place === 'point'));
   const vesselRows = $derived(vessels.map((v) => [v.name, vesselWhere(v)]));
   const baseRows = $derived(bases.map((b) => [b.name, Math.round(b.population)]));
   const bodyRows = $derived(bodies.map((b) => [b.name, b.facts.kind, peopleAt(b.id)]));
