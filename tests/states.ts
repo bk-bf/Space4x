@@ -50,6 +50,7 @@ const QUERIES = [
   'screen=ground',
   'screen=commanders',
   'screen=commanders&cmd=3',
+  'screen=commanders&cmd=6&tab=posts',
   'screen=intel',
   'screen=galaxy',
   'screen=galaxy&sys=luy'

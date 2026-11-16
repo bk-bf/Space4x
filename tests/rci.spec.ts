@@ -20,9 +20,6 @@ const panel = (page: Page, title: string): Locator =>
 
 const rows = (page: Page, title: string): Locator => panel(page, title).locator('tr.pick');
 
-const postRow = (page: Page, label: string): Locator =>
-  rows(page, 'Posts').filter({ has: page.getByRole('cell', { name: label, exact: true }) });
-
 const row = (page: Page, title: string, text: string): Locator => rows(page, title).filter({ hasText: text });
 
 const node = (page: Page, n: number): Locator => page.locator(`#techLabels [data-milestone="${n}"]`);
@@ -81,88 +78,141 @@ test.describe('research', () => {
 });
 
 test.describe('commanders', () => {
-  const nameColumn = async (page: Page) =>
-    rows(page, 'Officers').locator('td:nth-child(2)').allTextContents();
+  const tile = (page: Page, name: string): Locator =>
+    page.locator('.ui-tile.off').filter({ has: page.locator('.ui-nm b', { hasText: name }) });
+  const tiles = (page: Page): Locator => page.locator('.ui-tile.off');
+  const names = (page: Page) => tiles(page).locator('.ui-nm b').allTextContents();
+  const slot = (page: Page, label: string): Locator =>
+    page.locator('.ui-card .ui-tile.slot').filter({ has: page.getByText(label, { exact: true }) });
+  const card = (page: Page): Locator => page.locator('.ui-card');
+  const stat = (page: Page, label: string): Locator =>
+    page.locator('.ui-kpi').filter({ has: page.getByText(label, { exact: true }) });
+  const chip = (page: Page, id: string): Locator => page.locator(`[data-filter="${id}"]`);
+  const postTab = (page: Page, tab: 'officers' | 'posts') => page.locator(`[data-tab="${tab}"]`).click();
+  const faceOf = (page: Page, name: string) => tile(page, name).locator('img.portrait').getAttribute('src');
 
-  test('the query selects an officer and the panel shows portrait, post, age, service and skills', async ({
+  test('the query selects an officer and the card shows bust, gender, post, service, best skill and skills', async ({
     page
   }) => {
     await open(page, 'screen=commanders&cmd=3');
-    await expect(panel(page, 'Captain S. Novak')).toBeVisible();
-    await expect(page.locator('.portrait canvas')).toHaveAttribute('width', '60');
-    await expect(panel(page, 'Captain S. Novak').locator('dl').first()).toContainText('Survey office');
-    await expect(panel(page, 'Captain S. Novak').locator('dl').first()).toContainText('Service');
-    await expect(panel(page, 'Captain S. Novak').locator('.skill')).toHaveCount(5);
-    const lit = await page
-      .locator('.portrait canvas')
-      .evaluate(
-        (c: HTMLCanvasElement) => new Set([...c.getContext('2d')!.getImageData(0, 0, 60, 64).data]).size
-      );
-    expect(lit).toBeGreaterThan(20);
+    await expect(card(page).locator('.t')).toHaveText('S. Novak');
+    await expect(card(page).locator('.s')).toHaveText('Captain, age 55');
+    const flow = card(page).locator('.flow').first();
+    await expect(flow).toContainText('GenderMale');
+    await expect(flow).toContainText('PostSurvey office');
+    await expect(flow).toContainText('Served');
+    await expect(flow).toContainText('Best at');
+    await expect(card(page).locator('[role="meter"]')).toHaveCount(5);
+    const bust = card(page).locator('img.portrait.bust');
+    await expect(bust).toHaveAttribute('width', '192');
+    await expect(bust).toHaveAttribute('height', '216');
+    expect(await bust.evaluate((i: HTMLImageElement) => [i.naturalWidth, i.naturalHeight])).toEqual([64, 72]);
+    expect(await bust.evaluate((i) => getComputedStyle(i).imageRendering)).toBe('pixelated');
+    await expect(tiles(page)).toHaveCount(14);
     await expectCleanLayout(page);
   });
 
-  test('selecting a row shows that officer', async ({ page }) => {
+  test('every officer has a portrait tile with name, rank and post', async ({ page }) => {
     await open(page, 'screen=commanders');
-    await row(page, 'Officers', 'M. Chen').click();
-    await expect(row(page, 'Officers', 'M. Chen')).toHaveClass(/on/);
-    await expect(panel(page, 'Captain M. Chen').locator('dl').first()).toContainText('Unassigned');
-    await expect(panel(page, 'Captain M. Chen').locator('dl').first()).toContainText('57');
+    await expect(tiles(page)).toHaveCount(14);
+    const head = tiles(page).first().locator('img.portrait.head');
+    expect(await head.evaluate((i: HTMLImageElement) => [i.naturalWidth, i.naturalHeight])).toEqual([32, 36]);
+    await expect(tile(page, 'S. Novak')).toContainText('Captain');
+    await expect(tile(page, 'S. Novak')).toContainText('Survey office');
+    await expect(tile(page, 'M. Chen')).toContainText('unassigned');
+    await expect(stat(page, 'officers')).toContainText('14');
+    await expect(stat(page, 'in a post')).toContainText('6');
+    await expect(stat(page, 'posts vacant')).toContainText('0');
+    await expect(stat(page, 'flag officers')).toContainText('2');
   });
 
-  test('the table sorts by column in both directions', async ({ page }) => {
+  test('selecting a tile shows that officer', async ({ page }) => {
     await open(page, 'screen=commanders');
-    expect((await nameColumn(page))[0]).toBe('R. Vasquez');
+    await tile(page, 'M. Chen').click();
+    await expect(tile(page, 'M. Chen')).toHaveAttribute('aria-pressed', 'true');
+    await expect(card(page).locator('.t')).toHaveText('M. Chen');
+    await expect(card(page).locator('.s')).toHaveText('Captain, age 57');
+    await expect(card(page).locator('.flow').first()).toContainText('Postunassigned');
+    await expect(card(page).locator('.flow').first()).toContainText('GenderFemale');
+  });
+
+  test('the same officer keeps the same face when the order changes', async ({ page }) => {
+    await open(page, 'screen=commanders');
+    const before = await faceOf(page, 'R. Vasquez');
     await page.locator('#sortDir').selectOption('asc');
-    expect((await nameColumn(page))[0]).toBe('C. Brandt');
+    expect((await names(page))[0]).toBe('C. Brandt');
+    expect(await faceOf(page, 'R. Vasquez')).toBe(before);
+    expect(await faceOf(page, 'C. Brandt')).not.toBe(before);
+  });
+
+  test('the officers sort by each key in both directions', async ({ page }) => {
+    await open(page, 'screen=commanders');
+    expect((await names(page))[0]).toBe('R. Vasquez');
+    await page.locator('#sortDir').selectOption('asc');
+    expect((await names(page))[0]).toBe('C. Brandt');
     await page.locator('#sortBy').selectOption('name');
     await page.locator('#sortDir').selectOption('desc');
-    expect((await nameColumn(page))[0]).toBe('H. Yilmaz');
+    expect((await names(page))[0]).toBe('H. Yilmaz');
     await page.locator('#sortBy').selectOption('age');
-    expect((await nameColumn(page))[0]).toBe('R. Vasquez');
+    expect((await names(page))[0]).toBe('R. Vasquez');
     await page.locator('#sortDir').selectOption('asc');
-    expect((await nameColumn(page))[0]).toBe('C. Brandt');
+    expect((await names(page))[0]).toBe('C. Brandt');
     await page.locator('#sortBy').selectOption('post');
     await page.locator('#sortDir').selectOption('asc');
-    await expect(rows(page, 'Officers').first()).toContainText('Governor, Earth');
+    await expect(tiles(page).first()).toContainText('Governor, Earth');
     await expectCleanLayout(page);
   });
 
-  test('the table filters by rank and by assigned or unassigned', async ({ page }) => {
+  test('the officers filter by post group and by rank', async ({ page }) => {
     await open(page, 'screen=commanders');
+    await expect(chip(page, 'all')).toContainText('All 14');
+    await expect(chip(page, 'assigned')).toContainText('Assigned 6');
+    await expect(chip(page, 'none')).toContainText('Unassigned 8');
+    await expect(chip(page, 'governor')).toContainText('Governors 1');
+    await expect(chip(page, 'staff')).toContainText('Staff 5');
+    await expect(chip(page, 'fleet')).toHaveCount(0);
+    await expect(chip(page, 'ship')).toHaveCount(0);
+    await chip(page, 'governor').click();
+    expect(await names(page)).toEqual(['T. Nakamura']);
+    await expect(chip(page, 'governor')).toHaveAttribute('aria-pressed', 'true');
+    await chip(page, 'staff').click();
+    await expect(tiles(page)).toHaveCount(5);
+    await chip(page, 'all').click();
     await page.locator('#rankFilter').selectOption('captain');
-    await expect(rows(page, 'Officers')).toHaveCount(3);
-    await expect(page.locator('#officerCount')).toHaveText('3 of 14');
-    await page.locator('#assignFilter').selectOption('unassigned');
-    await expect(rows(page, 'Officers')).toHaveCount(2);
-    await expect(rows(page, 'Officers').last()).toContainText('I. Petrov');
+    expect(await names(page)).toEqual(['M. Chen', 'S. Novak', 'I. Petrov']);
+    await chip(page, 'none').click();
+    expect(await names(page)).toEqual(['M. Chen', 'I. Petrov']);
     await page.locator('#rankFilter').selectOption('all');
-    await expect(rows(page, 'Officers')).toHaveCount(8);
-    await page.locator('#assignFilter').selectOption('assigned');
-    await expect(rows(page, 'Officers')).toHaveCount(6);
+    await expect(tiles(page)).toHaveCount(8);
+    await chip(page, 'assigned').click();
+    await expect(tiles(page)).toHaveCount(6);
     await expectCleanLayout(page);
   });
 
-  test('an officer is assigned to a colony or staff from the game state lists, and no fleet or ship exists', async ({
+  test('an officer is assigned to a colony or staff post from the game state, and no fleet or ship exists', async ({
     page
   }) => {
     await open(page, 'screen=commanders');
-    await row(page, 'Officers', 'I. Petrov').click();
-    for (const kind of ['fleet', 'ship']) {
-      await page.locator('#postKind').selectOption(kind);
-      await expect(page.locator('#postRef option')).toHaveText(['None exist yet']);
-      await expect(page.locator('#assign')).toBeDisabled();
-    }
-    await page.locator('#postKind').selectOption('governor');
-    await expect(page.locator('#postRef option')).toHaveText(['Governor, Earth (T. Nakamura)']);
-    await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'I. Petrov')).toContainText('Governor, Earth');
-    await expect(row(page, 'Officers', 'T. Nakamura')).toContainText('Unassigned');
-    await page.locator('#postKind').selectOption('staff');
-    await page.locator('#postRef').selectOption({ label: 'Naval academy (F. Moreau)' });
-    await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'F. Moreau')).toContainText('Unassigned');
-    await expect(row(page, 'Officers', 'I. Petrov')).toContainText('Naval academy');
+    await tile(page, 'I. Petrov').click();
+    await expect(card(page).locator('.ui-tile.slot .ui-nm b')).toHaveText([
+      'Governor, Earth',
+      'Home fleet command',
+      'Naval staff',
+      'Naval academy',
+      'Launch office',
+      'Survey office',
+      'Unassign'
+    ]);
+    await expect(slot(page, 'Unassign')).toBeDisabled();
+    await slot(page, 'Governor, Earth').hover();
+    await expect(page.locator('#ui-tip')).toContainText('Now held by T. Nakamura');
+    await slot(page, 'Governor, Earth').click();
+    await expect(tile(page, 'I. Petrov')).toContainText('Governor, Earth');
+    await expect(tile(page, 'T. Nakamura')).toContainText('unassigned');
+    await expect(slot(page, 'Governor, Earth')).toHaveAttribute('aria-pressed', 'true');
+    await slot(page, 'Naval academy').click();
+    await expect(tile(page, 'F. Moreau')).toContainText('unassigned');
+    await expect(tile(page, 'I. Petrov')).toContainText('Naval academy');
     await expectCleanLayout(page);
   });
 
@@ -170,17 +220,17 @@ test.describe('commanders', () => {
     page
   }) => {
     await open(page, 'screen=commanders');
-    await row(page, 'Officers', 'I. Petrov').click();
-    await page.locator('#postKind').selectOption('staff');
-    await page.locator('#postRef').selectOption({ label: 'Launch office (J. Okonkwo)' });
-    await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'J. Okonkwo')).toContainText('Unassigned');
-    await expect(postRow(page, 'Launch office')).toContainText('I. Petrov');
-    await page.locator('#postKind').selectOption('none');
-    await expect(page.locator('#assign')).toHaveText('Release');
-    await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'I. Petrov')).toContainText('Unassigned');
-    await expect(postRow(page, 'Launch office')).toContainText('Vacant');
+    await tile(page, 'I. Petrov').click();
+    await slot(page, 'Launch office').click();
+    await expect(tile(page, 'J. Okonkwo')).toContainText('unassigned');
+    await postTab(page, 'posts');
+    await expect(tile(page, 'Launch office')).toContainText('I. Petrov');
+    await postTab(page, 'officers');
+    await slot(page, 'Unassign').click();
+    await expect(tile(page, 'I. Petrov')).toContainText('unassigned');
+    await postTab(page, 'posts');
+    await expect(tile(page, 'Launch office')).toContainText('vacant');
+    await expect(stat(page, 'posts vacant')).toContainText('1');
     const events = await eventTexts(page);
     expect(
       events.some((e) => e.includes('I. Petrov was posted to Launch office. J. Okonkwo was relieved.'))
@@ -188,48 +238,63 @@ test.describe('commanders', () => {
     expect(events.some((e) => e.includes('I. Petrov was released from Launch office.'))).toBe(true);
   });
 
-  test('a row in the posts table picks the post for the assignment form', async ({ page }) => {
+  test('a held post tile selects its holder and a vacant one takes the selected officer', async ({
+    page
+  }) => {
     await open(page, 'screen=commanders');
-    await row(page, 'Officers', 'D. Kaur').click();
-    await postRow(page, 'Survey office').click();
-    await expect(page.locator('#postKind')).toHaveValue('staff');
-    await expect(page.locator('#postRef')).toHaveValue('survey-office');
-    await page.locator('#assign').click();
-    await expect(row(page, 'Officers', 'D. Kaur')).toContainText('Survey office');
+    await postTab(page, 'posts');
+    await expect(page.locator('h3', { hasText: 'Governors' })).toBeVisible();
+    await expect(page.locator('h3', { hasText: 'Staff' })).toBeVisible();
+    await expect(tiles(page)).toHaveCount(6);
+    await tile(page, 'Survey office').click();
+    await expect(card(page).locator('.t')).toHaveText('S. Novak');
+    await slot(page, 'Unassign').click();
+    await expect(tile(page, 'Survey office')).toHaveClass(/warn/);
+    await expect(tile(page, 'Survey office')).toContainText('vacant');
+    await postTab(page, 'officers');
+    await tile(page, 'D. Kaur').click();
+    await postTab(page, 'posts');
+    await tile(page, 'Survey office').click();
+    await expect(tile(page, 'Survey office')).toContainText('D. Kaur');
+    await expect(tile(page, 'Survey office')).not.toHaveClass(/warn/);
+    await expect(stat(page, 'posts vacant')).toContainText('0');
+    await expectCleanLayout(page);
   });
 
   test('a promotion moves the officer up one rank until the highest', async ({ page }) => {
     await open(page, 'screen=commanders');
-    await row(page, 'Officers', 'H. Yilmaz').click();
+    await tile(page, 'H. Yilmaz').click();
     await expect(page.locator('#promote')).toHaveText('Promote to Lt commander');
     await page.locator('#promote').click();
-    await expect(panel(page, 'Lt commander H. Yilmaz')).toBeVisible();
-    await expect(row(page, 'Officers', 'H. Yilmaz')).toContainText('Lt commander');
-    await row(page, 'Officers', 'R. Vasquez').click();
+    await expect(card(page).locator('.s')).toHaveText('Lt commander, age 35');
+    await expect(tile(page, 'H. Yilmaz')).toContainText('Lt commander');
+    await tile(page, 'R. Vasquez').click();
     await expect(page.locator('#promote')).toBeDisabled();
     await expect(page.locator('#promote')).toHaveText('Highest rank');
   });
 
   test('officers age with the clock', async ({ page }) => {
     await open(page, 'screen=commanders');
-    const age = () => row(page, 'Officers', 'R. Vasquez').locator('td').last();
-    await expect(age()).toHaveText('63');
+    await tile(page, 'R. Vasquez').click();
+    await expect(card(page).locator('.s')).toHaveText('Admiral, age 63');
     await advance(page, 30 * DAY, 12);
     await advance(page, 5 * DAY);
     await advance(page, DAY);
-    await expect(age()).toHaveText('64');
-    await row(page, 'Officers', 'R. Vasquez').click();
-    await expect(panel(page, 'Admiral R. Vasquez').locator('dl').first()).toContainText('64');
+    await expect(card(page).locator('.s')).toHaveText('Admiral, age 64');
   });
 
-  test('the selected officer and the sort survive switching screens', async ({ page }) => {
+  test('the selected officer, the tab and the sort survive switching screens', async ({ page }) => {
     await open(page, 'screen=commanders');
     await page.locator('#sortBy').selectOption('name');
-    await row(page, 'Officers', 'E. Larsen').click();
+    await tile(page, 'E. Larsen').click();
     await page.locator('[data-nav="intel"]').click();
     await page.locator('[data-nav="commanders"]').click();
     await expect(page.locator('#sortBy')).toHaveValue('name');
-    await expect(panel(page, 'Lt commander E. Larsen')).toBeVisible();
+    await expect(card(page).locator('.t')).toHaveText('E. Larsen');
+    await postTab(page, 'posts');
+    await page.locator('[data-nav="intel"]').click();
+    await page.locator('[data-nav="commanders"]').click();
+    await expect(page.locator('[data-tab="posts"]')).toHaveClass(/on/);
   });
 });
 
