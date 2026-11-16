@@ -597,6 +597,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       if (chosen && b.mk && b.asteroid !== undefined) brackets(f, b.p[0], b.p[1], 5, 4);
       an.push({
         ...base,
+        ...(b.asteroid !== undefined ? { solid: false } : {}),
         x: b.p[0],
         y: b.p[1],
         rx: r,

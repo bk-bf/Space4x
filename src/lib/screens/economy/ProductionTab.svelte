@@ -49,7 +49,7 @@
       buildingName(a.group.building),
       a.group.process ? process(a.group.process, site.body).name : 'None',
       formatCount(a.group.count),
-      a.group.process && isExtraction(a.group.process) ? a.grade.toFixed(2) : '-',
+      ...(site.region ? [a.group.process && isExtraction(a.group.process) ? a.grade.toFixed(2) : '-'] : []),
       a.group.process ? { pct: Math.round(a.share * 100) } : '-',
       makes(a),
       status(a)
@@ -136,7 +136,9 @@
 <h3>Buildings <small>{actors.length} groups</small></h3>
 <div id="groups">
   <Table
-    head={['Building', 'Recipe', '>Count', '>Grade', 'Running', 'Makes a day', 'Status']}
+    head={site.region
+      ? ['Building', 'Recipe', '>Count', '>Grade', 'Running', 'Makes a day', 'Status']
+      : ['Building', 'Recipe', '>Count', 'Running', 'Makes a day', 'Status']}
     {rows}
     selected={selIndex}
     keys={actors.map((a) => String(a.group.id))}

@@ -126,7 +126,10 @@ export function seedBelt(game: Game, outpost = false): void {
       { crew: 4, cargo: { stainless_steel: 2500, copper: 400, ai_models: 3 } }
     );
     const site = foundSite(game, founder, 'ice_mine', 'luna-south-pole');
-    if (typeof site !== 'string') site.gridKw = 2000;
+    if (typeof site !== 'string') {
+      site.gridKw = 2000;
+      site.stock.food_ration = 5000;
+    }
   }
   vessel(
     lander,
