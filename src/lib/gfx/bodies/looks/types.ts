@@ -47,8 +47,8 @@ export interface LookDef {
   readonly gradRange?: number;
   readonly rawOf?: () => number;
   readonly shapeFn?: Channel;
-  readonly shapeFace?: number;
   readonly lumpyAmp?: number;
+  readonly macro?: Channel;
   readonly shape?: readonly [number, number, number];
   readonly atmo?: Veil;
   readonly halo?: Veil;
@@ -62,9 +62,7 @@ export interface Look {
   readonly shade: Shader;
   readonly tint: RGB;
   readonly cube: Cube;
-  readonly shapeCube: Cube | null;
-  readonly shapeFn: Channel | undefined;
-  readonly lumpyAmp: number;
+  readonly surface: Channel | undefined;
   readonly shape: readonly [number, number, number] | undefined;
   readonly bump: number;
   readonly gradAt: number;

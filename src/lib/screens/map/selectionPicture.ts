@@ -1,6 +1,6 @@
 import { fleetClassId, shipClass, type Game, type Selection } from '#lib/game/index.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
-import { drawSmallBody, smallReach, spinStep } from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach, tickSeconds } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { drawSphere } from '#lib/gfx/bodies/sphere.ts';
@@ -66,7 +66,7 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
     const b = game.body(sel.id);
     f.start();
     const small = b ? smallBodyOf(b) : undefined;
-    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), spinStep(t));
+    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), tickSeconds(t));
     else if (b) {
       const look = lookOf(b);
       drawSphere(

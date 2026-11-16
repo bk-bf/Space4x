@@ -16,6 +16,7 @@ const VIEWS: readonly (readonly [string, string])[] = [
   ['belt', 'belt'],
   ['ceres', 'ceres'],
   ['bennu', 'bennu'],
+  ['apophis-close', 'apophis:0.6'],
   ['site-sol-station', 'sol-station'],
   ['site-deep-well', 'deep-well'],
   ['site-battle', 'battle'],

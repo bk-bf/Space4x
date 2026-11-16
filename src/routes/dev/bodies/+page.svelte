@@ -7,7 +7,7 @@
     NAMED_BODIES,
     smallBody,
     smallReach,
-    spinStep,
+    tickSeconds,
     type ShapeFamily,
     type SmallBody,
     type SmallInfo
@@ -24,7 +24,8 @@
   const SIZES = [
     { id: 'fit', label: 'Fitted' },
     { id: 'map', label: 'On the map', radius: 9 },
-    { id: 'near', label: 'Near', radius: 22 }
+    { id: 'near', label: 'Near', radius: 22 },
+    { id: 'close', label: 'Close', radius: 40 }
   ];
   const GENERIC: readonly SmallInfo[] = [
     { id: 'sample-rubble-pile', name: 'Rubble pile', type: 'carbonaceous', diameter: 0.6 },
@@ -64,7 +65,7 @@
 
   function draw(fb: FB, b: SmallBody, t: number) {
     fb.start();
-    drawSmallBody(fb, b, CELL / 2, CELL / 2, radiusOf(b), spinStep(t));
+    drawSmallBody(fb, b, CELL / 2, CELL / 2, radiusOf(b), tickSeconds(t));
     fb.present();
   }
 

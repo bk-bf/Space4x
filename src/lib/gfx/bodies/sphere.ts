@@ -1,33 +1,20 @@
 import { clamp, hash, mix } from '#lib/gfx/math.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import type { RGB } from '#lib/gfx/palette.ts';
-import { sampleChannel, sampleCube } from './cube.ts';
-import type { Pixels } from './small/render.ts';
+import { sampleCube } from './cube.ts';
+import { LIGHT, orientation, SHADES, type Box, type Pixels, type SphereState } from './light.ts';
+import { drawRock, rockReach } from './rock/raster.ts';
 import { want } from './looks/bake.ts';
-import { h3, mulMat, rotX, rotY, rotZ } from './looks/math.ts';
+import { h3 } from './looks/math.ts';
 import { ADD, LAND, SEA, type Colour, type Look, type Texels } from './looks/types.ts';
 
-export interface SphereState {
-  rot: number;
-  tilt?: number;
-  pitch?: number;
-  lights?: boolean;
-}
+export type { Box, Pixels, SphereState };
 
-export const LIGHT = (() => {
-  const v = [-0.55, -0.45, 0.7] as const,
-    l = Math.hypot(...v);
-  return [v[0] / l, v[1] / l, v[2] / l] as const;
-})();
 const LXY = Math.hypot(LIGHT[0], LIGHT[1]);
-const SHADES = [0.2, 0.5, 0.76, 1] as const;
 const CITY: RGB = [255, 214, 120];
 const GLINT_FROM = 0.975;
 const GLINT_COVER = 0.7;
 const RING_REACH = 2.35;
-const TRACE_STEPS = 40;
-const TRACE_MIN_STEP = 0.025;
-const TRACE_RELAX = 0.55;
 
 const Gf = new Float64Array(24);
 const Of = new Float64Array(8);
@@ -94,14 +81,9 @@ const haloThick = (look: Look, R: number) =>
   look.halo && R >= 8 ? Math.max(1, R * 0.02 * (look.halo.k ?? 1)) : 0;
 
 export const sphereReach = (look: Look, R: number): number =>
-  R * (look.rings ? RING_REACH : 1) * (look.shapeCube ? (1 + look.lumpyAmp) / (1 + 0.6 * look.lumpyAmp) : 1) +
-  atmoThick(look, R) +
-  haloThick(look, R) +
-  1;
-
-export function orientation(st: SphereState) {
-  return mulMat(mulMat(rotY(st.rot), rotX(st.pitch ?? 0)), rotZ(-(st.tilt ?? 0)));
-}
+  look.surface
+    ? (R + 0.5) * rockReach(look) + 1
+    : R * (look.rings ? RING_REACH : 1) + atmoThick(look, R) + haloThick(look, R) + 1;
 
 function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number): void {
   const D = f.d,
@@ -142,17 +124,25 @@ function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number): 
   }
 }
 
-export function drawSphere(f: Pixels, look: Look, st: SphereState, cx: number, cy: number, R: number): void {
+export function drawSphere(
+  f: Pixels,
+  look: Look,
+  st: SphereState,
+  cx: number,
+  cy: number,
+  R: number
+): Box | undefined {
+  if (look.surface) return drawRock(f, look, st, cx, cy, R);
   const atmo = look.atmo,
     halo = look.halo,
     th = atmoThick(look, R),
     th2 = haloThick(look, R),
     RR = sphereReach(look, R);
-  if (cx + RR < 0 || cy + RR < 0 || cx - RR > f.w || cy - RR > f.h) return;
+  if (cx + RR < 0 || cy + RR < 0 || cx - RR > f.w || cy - RR > f.h) return undefined;
   if (!look.ready) {
     want(look);
     drawStandIn(f, look, cx, cy, R);
-    return;
+    return undefined;
   }
   const rings = look.rings && R >= 2.5;
   if (rings) drawRings(f, cx, cy, R, false);
@@ -169,8 +159,6 @@ export function drawSphere(f: Pixels, look: Look, st: SphereState, cx: number, c
     P7 = P[7],
     P8 = P[8],
     shape = look.shape,
-    lumpy = look.shapeCube ? look.lumpyAmp : 0,
-    sc3 = look.shapeCube,
     D = f.d,
     W = f.w,
     E = R + th + th2,
@@ -195,29 +183,11 @@ export function drawSphere(f: Pixels, look: Look, st: SphereState, cx: number, c
     sc = 0,
     qa = 0,
     qb = 0,
-    qc = 0,
-    ia = 0,
-    ib = 0,
-    ic = 0;
-  const disp = (hx: number, hy: number, hz: number) => {
-    const l = 1 / Math.sqrt(hx * hx + hy * hy + hz * hz);
-    return (sampleChannel(sc3!, hx * l, hy * l, hz * l, 0) - 0.5) * 2 * lumpy;
-  };
-  const gfun = (hx: number, hy: number, hz: number) => {
-    const u = hx * ia,
-      v = hy * ib,
-      w = hz * ic;
-    return Math.sqrt(u * u + v * v + w * w) - 1 - disp(hx, hy, hz);
-  };
+    qc = 0;
   if (shape) {
-    const nrm = 1 + 0.6 * lumpy;
-    ia = nrm / shape[0];
-    ib = nrm / shape[1];
-    ic = nrm / shape[2];
-    const kb = 1 + lumpy;
-    sa = ia / kb;
-    sb = ib / kb;
-    sc = ic / kb;
+    sa = 1 / shape[0];
+    sb = 1 / shape[1];
+    sc = 1 / shape[2];
     qa = sa * sa;
     qb = sb * sb;
     qc = sc * sc;
@@ -254,45 +224,13 @@ export function drawSphere(f: Pixels, look: Look, st: SphereState, cx: number, c
           disc = B * B - A * C;
         if (disc < 0) continue;
         const sq = Math.sqrt(disc);
-        let z = (-B + sq) / A,
+        const z = (-B + sq) / A,
           hx = ox + z * P2,
           hy = oy + z * P5,
           hz = oz + z * P8,
           bx = hx * qa,
           by = hy * qb,
           bz = hz * qc;
-        if (lumpy) {
-          const z0 = (-B - sq) / A;
-          let hit = false,
-            zz = z,
-            prev = z + 0.05;
-          for (let k = 0; k < TRACE_STEPS && zz >= z0; k++) {
-            const g = gfun(ox + zz * P2, oy + zz * P5, oz + zz * P8);
-            if (g < 0) {
-              hit = true;
-              break;
-            }
-            prev = zz;
-            zz -= Math.max(TRACE_MIN_STEP, g * TRACE_RELAX);
-          }
-          if (!hit) continue;
-          let lo = zz,
-            hi = prev;
-          for (let k = 0; k < 5; k++) {
-            const mid = (lo + hi) / 2;
-            if (gfun(ox + mid * P2, oy + mid * P5, oz + mid * P8) < 0) lo = mid;
-            else hi = mid;
-          }
-          z = lo;
-          hx = ox + z * P2;
-          hy = oy + z * P5;
-          hz = oz + z * P8;
-          const e = 0.03,
-            g0 = gfun(hx, hy, hz);
-          bx = gfun(hx + e, hy, hz) - g0;
-          by = gfun(hx, hy + e, hz) - g0;
-          bz = gfun(hx, hy, hz + e) - g0;
-        }
         const bl = 1 / h3(bx, by, bz),
           dl = 1 / h3(hx, hy, hz);
         nx = (P0 * bx + P3 * by + P6 * bz) * bl;

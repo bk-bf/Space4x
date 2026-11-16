@@ -1,5 +1,6 @@
 import { hash } from '#lib/gfx/math.ts';
-import type { ShapeFamily, SmallBody, SmallType } from './render.ts';
+import type { Lumpy } from '#lib/gfx/bodies/looks/cratered.ts';
+import type { ShapeFamily, SmallBody, SmallType } from './draw.ts';
 import { shapeSpec, type Lobe, type ShapeSpec, type Vec3 } from './shape.ts';
 
 export interface SmallInfo {
@@ -24,7 +25,49 @@ interface Named {
   readonly family: ShapeFamily;
   readonly spec: ShapeSpec;
   readonly tilt?: number;
+  readonly rock?: Partial<Lumpy>;
 }
+
+const ROCK: Readonly<Record<ShapeFamily, Lumpy>> = {
+  top: { amp: 0.16, lump: 0.1, dent: 0.25, ridge: 0.05, freq: 2.6, octaves: 3 },
+  contact: {
+    amp: 0.26,
+    lump: 0.14,
+    dent: 0.2,
+    ridge: 0.05,
+    freq: 2.2,
+    facets: 6,
+    facetMin: 0.8,
+    facetMax: 1
+  },
+  peanut: {
+    amp: 0.28,
+    lump: 0.14,
+    dent: 0.2,
+    ridge: 0.05,
+    freq: 1.9,
+    facets: 7,
+    facetMin: 0.76,
+    facetMax: 0.98
+  },
+  elongated: {
+    amp: 0.34,
+    lump: 0.2,
+    dent: 0.2,
+    ridge: 0.05,
+    freq: 2,
+    facets: 7,
+    facetMin: 0.66,
+    facetMax: 0.92
+  },
+  bone: { amp: 0.22, lump: 0.1, dent: 0.2, ridge: 0.05, freq: 2, facets: 5, facetMin: 0.82, facetMax: 1 },
+  lumpy: { amp: 0.4, lump: 0.2, dent: 0.2, ridge: 0.05, freq: 1.7, facets: 9 },
+  round: { amp: 0.1, lump: 0.05, dent: 0.18, ridge: 0.04, freq: 1.6 },
+  nucleus: { amp: 0.3, lump: 0.1, dent: 0.2, ridge: 0.07, freq: 1.4 }
+};
+
+const RUBBLE_FROM = 80;
+const RUBBLE: Partial<Lumpy> = { lump: 0.18, freq: 2.8 };
 
 const lobe = (c: Vec3, a: Vec3, n?: number): Lobe => (n === undefined ? { c, a } : { c, a, n });
 const ball = (a: Vec3): readonly Lobe[] => [lobe([0, 0, 0], a)];
@@ -196,16 +239,6 @@ const NAMED: Readonly<Record<string, Named>> = {
       ]
     }),
     tilt: 0.2
-  },
-  ceres: {
-    family: 'round',
-    spec: shapeSpec(173, ball([1, 0.97, 1]), {
-      lumps: 0.012,
-      craters: 1.5,
-      craterDepth: 0.14,
-      spots: [{ dir: [0.55, 0.45, 0.7], rho: 0.07, tone: 0.8 }]
-    }),
-    tilt: 0.1
   },
   pallas: {
     family: 'round',
@@ -385,8 +418,14 @@ export function smallBody(info: SmallInfo): SmallBody {
       type,
       family: named.family,
       spec: named.spec,
+      rock: {
+        ...ROCK[named.family],
+        ...(named.spec.boulders >= RUBBLE_FROM ? RUBBLE : {}),
+        ...named.rock,
+        ...(named.family === 'nucleus' && named.spec.lobes.length === 1 ? { waist: true } : {})
+      },
       tilt: named.tilt ?? between(id, 5, -0.5, 0.5),
-      phase: Math.floor(between(id, 7, 0, 48)),
+      phase: between(id, 7, 0, Math.PI * 2),
       dir: hash(seedOf(id), 9, 77) < 0.5 ? 1 : -1
     };
     cache.set(id, b);

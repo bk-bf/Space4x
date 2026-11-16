@@ -1,11 +1,13 @@
 export { FAMILY_NAMES, NAMED_BODIES, smallBody, type SmallInfo } from './catalogue.ts';
 export {
   drawSmallBody,
+  smallLook,
   smallReach,
-  spinStep,
-  spins,
-  SPIN_TICKS,
+  smallReady,
+  spinClock,
+  tickSeconds,
+  turns,
   type ShapeFamily,
   type SmallBody,
   type SmallType
-} from './render.ts';
+} from './draw.ts';

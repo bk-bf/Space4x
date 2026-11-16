@@ -14,7 +14,7 @@ export const makeCube = (channels: number, face: number): Cube => ({
   data: new Uint8Array(0)
 });
 
-function faceDir(half: number, face: number, i: number, j: number): [number, number, number] {
+export function faceDir(half: number, face: number, i: number, j: number): [number, number, number] {
   const u = (i + 0.5) / half - 1,
     v = (j + 0.5) / half - 1,
     a = face === 0 ? 1 : face === 1 ? -1 : u,

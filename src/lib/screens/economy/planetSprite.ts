@@ -1,6 +1,6 @@
 import { lookOf, sphereState, staticRot } from '#lib/game/looks.ts';
 import type { Body } from '#lib/game/types.ts';
-import { drawSmallBody, smallReach, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach, smallReady, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import { lookById } from '#lib/gfx/bodies/looks/index.ts';
 import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
 import { sprite } from '#lib/gfx/icons/sprite.ts';
@@ -11,7 +11,7 @@ const ROT = 0.6;
 
 const smallSprite = (body: SmallBody, size: number): string =>
   sprite(
-    `small:${body.key}:${size}`,
+    `small:${body.key}:${size}:${smallReady(body) ? 'ready' : 'wait'}`,
     size,
     size,
     (im) =>
@@ -27,8 +27,8 @@ const smallSprite = (body: SmallBody, size: number): string =>
   ).url;
 
 export function planetSprite(body: Body | undefined, size: number, small?: SmallBody): string {
-  if (small) return smallSprite(small, size);
   void bakes.n;
+  if (small) return smallSprite(small, size);
   const look = (body ? lookOf(body) : lookById('earth'))!,
     state = {
       ...(body ? sphereState(body, look, staticRot(look, ROT), true) : { rot: ROT, lights: true }),

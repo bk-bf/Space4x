@@ -5,7 +5,7 @@ import { Game } from '#lib/game/index.ts';
 import { lookIdOf, lookOf, moonFamily } from '#lib/game/looks.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { drawSphere, sphereReach, type SphereState } from '#lib/gfx/bodies/sphere.ts';
-import type { Pixels } from '#lib/gfx/bodies/small/render.ts';
+import type { Pixels } from '#lib/gfx/bodies/light.ts';
 import { bakeNow } from './bake.ts';
 import { familyLook, FAMILY_KINDS } from './families.ts';
 import golden from './planets.golden.json';

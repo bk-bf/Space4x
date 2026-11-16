@@ -1,4 +1,4 @@
-import { drawSmallBody, smallReach, spinStep, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach, tickSeconds, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { RAD } from '#lib/gfx/bodies/looks/math.ts';
 import { PAL } from '#lib/gfx/palette.ts';
@@ -22,7 +22,7 @@ export function drawColonyPlanet(
   const cy = Math.floor(fb.h / 2);
   if (small) {
     const fit = Math.floor(Math.min(fb.w / 2, fb.h / 2) / smallReach(small)) - 6;
-    drawSmallBody(fb, small, cx, cy, Math.max(10, fit), spinStep(t));
+    drawSmallBody(fb, small, cx, cy, Math.max(10, fit), tickSeconds(t));
     fb.present();
     return;
   }

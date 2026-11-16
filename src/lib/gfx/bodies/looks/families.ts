@@ -75,8 +75,7 @@ export function familyLook(kind: FamilyKind, seed: number, round = false): Look 
             amp: kind === 'ice' ? 0.1 : kind === 'rock' ? 0.2 : 0.28,
             lump: kind === 'ice' ? 0.05 : kind === 'rock' ? 0.1 : 0.16,
             dent: kind === 'ice' ? 0.12 : 0.22,
-            ridge: 0.05,
-            face: 64
+            ridge: 0.05
           },
     groovePattern = (x: number, y: number, z: number) => contour(warped(x, y, z, 2.4, 1.2, seed2, 3), 0.025),
     dark = scaled(base, tint, 0.55);

@@ -28,7 +28,6 @@ export interface Lumpy {
   lump: number;
   dent: number;
   ridge?: number;
-  face?: number;
   freq?: number;
   octaves?: number;
   waist?: boolean;
@@ -48,6 +47,7 @@ export interface CraterOptions {
   tilt?: number;
   pitch?: number;
   shape?: readonly [number, number, number];
+  macro?: At;
   lumpy?: Lumpy;
   layers: readonly CraterLayerDef[];
   features?: readonly FeatureDef[];
@@ -186,7 +186,7 @@ export function craterLook(o: CraterOptions): Look {
     id: o.id,
     shapeFn,
     lumpyAmp,
-    shapeFace: o.lumpy?.face ?? 96,
+    macro: o.macro,
     face: o.face ?? 192,
     bump: o.bump ?? 0.9,
     gradRange: o.gradRange ?? 1.6,

@@ -65,6 +65,12 @@ export function want(look: Look): void {
   schedule();
 }
 
+export function forget(look: Look): void {
+  const at = queue.indexOf(look);
+  if (at >= 0) queue.splice(at, 1);
+  if (running?.look === look) running = null;
+}
+
 export function bakeNow(look: Look): void {
   if (look.ready) return;
   const own = running?.look === look ? running.steps : bakeSteps(look);
