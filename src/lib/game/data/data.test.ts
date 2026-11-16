@@ -99,7 +99,8 @@ describe('what milestones need to stand somewhere', () => {
             n.place === 'orbit' ? 'orbit' : 'jump-point'
           );
       }
-      for (const b of Object.keys(n.ran ?? {})) expect(buildingIds.has(b), `${m.number} ${b}`).toBe(true);
+      for (const b of Object.keys(n.ran ?? {}))
+        expect(buildingIds.has(b) || recipes.some((r) => r.id === b), `${m.number} ${b}`).toBe(true);
       if (n.stock) expect(materialIds.has(n.stock.material), `${m.number}`).toBe(true);
       if (n.made) expect(materialIds.has(n.made.material), `${m.number}`).toBe(true);
       if (n.flown) expect(componentIds.has(n.flown), `${m.number}`).toBe(true);

@@ -454,7 +454,7 @@
           "label": "No fusion plant has run",
           "buildings": ["fusion_plant"],
           "ran": {
-            "fusion_plant": 24
+            "d_t_fusion_power": 24
           }
         }
       ],
@@ -528,8 +528,7 @@
       "components": [],
       "sites": [
         {
-          "label": "No scoop at a gas giant has made helium-3",
-          "body": "gas-giant",
+          "label": "No scoop at a gas or ice giant has made helium-3",
           "place": "surface",
           "buildings": ["gas_giant_scoop"],
           "made": {

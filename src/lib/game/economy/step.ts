@@ -66,8 +66,11 @@ function applySegment(
     if (!isStockless(m)) site.made[m] = (site.made[m] ?? 0) + rate * hours;
 
   for (const a of flows.actors) {
-    if (a.kind === 'group' && a.share > 0)
-      site.ran[a.group.building] = (site.ran[a.group.building] ?? 0) + a.group.count * a.share * hours;
+    if (a.kind === 'group' && a.share > 0) {
+      const worked = a.group.count * a.share * hours;
+      for (const key of [a.group.building, a.group.process])
+        if (key) site.ran[key] = (site.ran[key] ?? 0) + worked;
+    }
     if (a.kind === 'build') {
       const o = a.order;
       o.done = Math.min(1, o.done + (a.share * hours) / a.hours);
