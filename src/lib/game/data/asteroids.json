@@ -3783,19 +3783,6 @@
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1867"
   },
   {
-    "id": "titius",
-    "number": 1998,
-    "name": "Titius",
-    "type": "carbonaceous",
-    "spectral": "Xc",
-    "a": 2.41895,
-    "e": 0.06513,
-    "diameter": 14.24,
-    "mass": 2118000000000000.0,
-    "massEstimated": true,
-    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1998"
-  },
-  {
     "id": "herschel",
     "number": 2000,
     "name": "Herschel",
@@ -3820,19 +3807,6 @@
     "mass": 5667000000000000.0,
     "massEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2002"
-  },
-  {
-    "id": "polonskaya",
-    "number": 2006,
-    "name": "Polonskaya",
-    "type": "stony",
-    "typeBasis": "albedo",
-    "a": 2.32485,
-    "e": 0.1923,
-    "diameter": 4.625,
-    "mass": 139900000000000.0,
-    "massEstimated": true,
-    "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2006"
   },
   {
     "id": "chiron",
@@ -4325,7 +4299,7 @@
   {
     "id": "1993-sb",
     "number": 15788,
-    "name": "(1993 SB)",
+    "name": "1993 SB",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6931,
@@ -4339,7 +4313,7 @@
   {
     "id": "1993-sc",
     "number": 15789,
-    "name": "(1993 SC)",
+    "name": "1993 SC",
     "type": "carbonaceous",
     "typeBasis": "albedo",
     "a": 39.6833,
@@ -4352,7 +4326,7 @@
   {
     "id": "1994-gv9",
     "number": 15807,
-    "name": "(1994 GV9)",
+    "name": "1994 GV9",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.7296,
@@ -4366,7 +4340,7 @@
   {
     "id": "1994-js",
     "number": 15809,
-    "name": "(1994 JS)",
+    "name": "1994 JS",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.0049,
@@ -4394,7 +4368,7 @@
   {
     "id": "1994-tb",
     "number": 15820,
-    "name": "(1994 TB)",
+    "name": "1994 TB",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.8058,
@@ -4408,7 +4382,7 @@
   {
     "id": "1995-da2",
     "number": 15836,
-    "name": "(1995 DA2)",
+    "name": "1995 DA2",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 36.4678,
@@ -4422,7 +4396,7 @@
   {
     "id": "1996-tl66",
     "number": 15874,
-    "name": "(1996 TL66)",
+    "name": "1996 TL66",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 84.716,
@@ -4436,7 +4410,7 @@
   {
     "id": "1996-tp66",
     "number": 15875,
-    "name": "(1996 TP66)",
+    "name": "1996 TP66",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.7062,
@@ -4450,7 +4424,7 @@
   {
     "id": "1997-cr29",
     "number": 15883,
-    "name": "(1997 CR29)",
+    "name": "1997 CR29",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.2445,
@@ -4464,7 +4438,7 @@
   {
     "id": "1994-jq1",
     "number": 16684,
-    "name": "(1994 JQ1)",
+    "name": "1994 JQ1",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.9143,
@@ -4478,7 +4452,7 @@
   {
     "id": "1994-vk8",
     "number": 19255,
-    "name": "(1994 VK8)",
+    "name": "1994 VK8",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.0774,
@@ -4492,7 +4466,7 @@
   {
     "id": "1996-sz4",
     "number": 19299,
-    "name": "(1996 SZ4)",
+    "name": "1996 SZ4",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.8909,
@@ -4506,7 +4480,7 @@
   {
     "id": "1996-to66",
     "number": 19308,
-    "name": "(1996 TO66)",
+    "name": "1996 TO66",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.4052,
@@ -4547,7 +4521,7 @@
   {
     "id": "1995-qz9",
     "number": 20108,
-    "name": "(1995 QZ9)",
+    "name": "1995 QZ9",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6459,
@@ -4561,7 +4535,7 @@
   {
     "id": "1996-tr66",
     "number": 20161,
-    "name": "(1996 TR66)",
+    "name": "1996 TR66",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.8996,
@@ -4589,7 +4563,7 @@
   {
     "id": "1995-sm55",
     "number": 24835,
-    "name": "(1995 SM55)",
+    "name": "1995 SM55",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.0792,
@@ -4603,7 +4577,7 @@
   {
     "id": "1997-qj4",
     "number": 24952,
-    "name": "(1997 QJ4)",
+    "name": "1997 QJ4",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6308,
@@ -4617,7 +4591,7 @@
   {
     "id": "1998-hj151",
     "number": 24978,
-    "name": "(1998 HJ151)",
+    "name": "1998 HJ151",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.1557,
@@ -4631,7 +4605,7 @@
   {
     "id": "1996-gq21",
     "number": 26181,
-    "name": "(1996 GQ21)",
+    "name": "1996 GQ21",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 92.7888,
@@ -4645,7 +4619,7 @@
   {
     "id": "1998-sm165",
     "number": 26308,
-    "name": "(1998 SM165)",
+    "name": "1998 SM165",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.8238,
@@ -4659,7 +4633,7 @@
   {
     "id": "1999-de9",
     "number": 26375,
-    "name": "(1999 DE9)",
+    "name": "1999 DE9",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 55.6139,
@@ -4700,7 +4674,7 @@
   {
     "id": "1997-cu29",
     "number": 33001,
-    "name": "(1997 CU29)",
+    "name": "1997 CU29",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.6702,
@@ -4714,7 +4688,7 @@
   {
     "id": "1998-vg44",
     "number": 33340,
-    "name": "(1998 VG44)",
+    "name": "1998 VG44",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.5899,
@@ -4728,7 +4702,7 @@
   {
     "id": "1998-sn165",
     "number": 35671,
-    "name": "(1998 SN165)",
+    "name": "1998 SN165",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 38.0285,
@@ -4756,7 +4730,7 @@
   {
     "id": "1999-hb12",
     "number": 38084,
-    "name": "(1999 HB12)",
+    "name": "1999 HB12",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 55.3622,
@@ -4784,7 +4758,7 @@
   {
     "id": "1999-kr16",
     "number": 40314,
-    "name": "(1999 KR16)",
+    "name": "1999 KR16",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 48.5331,
@@ -4798,7 +4772,7 @@
   {
     "id": "2001-ur163",
     "number": 42301,
-    "name": "(2001 UR163)",
+    "name": "2001 UR163",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 51.6824,
@@ -4825,7 +4799,7 @@
   {
     "id": "1999-ox3",
     "number": 44594,
-    "name": "(1999 OX3)",
+    "name": "1999 OX3",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 32.6064,
@@ -4853,7 +4827,7 @@
   {
     "id": "1995-tl8",
     "number": 48639,
-    "name": "(1995 TL8)",
+    "name": "1995 TL8",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 52.8247,
@@ -4881,7 +4855,7 @@
   {
     "id": "1998-hm151",
     "number": 52747,
-    "name": "(1998 HM151)",
+    "name": "1998 HM151",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 44.2074,
@@ -4962,7 +4936,7 @@
   {
     "id": "2002-tx300",
     "number": 55636,
-    "name": "(2002 TX300)",
+    "name": "2002 TX300",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.4128,
@@ -4990,7 +4964,7 @@
   {
     "id": "2002-ve95",
     "number": 55638,
-    "name": "(2002 VE95)",
+    "name": "2002 VE95",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6226,
@@ -5004,7 +4978,7 @@
   {
     "id": "1999-cl158",
     "number": 59358,
-    "name": "(1999 CL158)",
+    "name": "1999 CL158",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 41.6356,
@@ -5018,7 +4992,7 @@
   {
     "id": "2000-ee173",
     "number": 60608,
-    "name": "(2000 EE173)",
+    "name": "2000 EE173",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 49.1599,
@@ -5060,7 +5034,7 @@
   {
     "id": "1998-ww24",
     "number": 69986,
-    "name": "(1998 WW24)",
+    "name": "1998 WW24",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.7134,
@@ -5074,7 +5048,7 @@
   {
     "id": "1998-wa25",
     "number": 69987,
-    "name": "(1998 WA25)",
+    "name": "1998 WA25",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.7924,
@@ -5088,7 +5062,7 @@
   {
     "id": "1998-wa31",
     "number": 69988,
-    "name": "(1998 WA31)",
+    "name": "1998 WA31",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 55.4857,
@@ -5102,7 +5076,7 @@
   {
     "id": "1998-wu31",
     "number": 69990,
-    "name": "(1998 WU31)",
+    "name": "1998 WU31",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.5043,
@@ -5130,7 +5104,7 @@
   {
     "id": "1999-cp133",
     "number": 79969,
-    "name": "(1999 CP133)",
+    "name": "1999 CP133",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 34.8976,
@@ -5144,7 +5118,7 @@
   {
     "id": "1999-cc158",
     "number": 79978,
-    "name": "(1999 CC158)",
+    "name": "1999 CC158",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 54.2182,
@@ -5158,7 +5132,7 @@
   {
     "id": "1999-df9",
     "number": 79983,
-    "name": "(1999 DF9)",
+    "name": "1999 DF9",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 46.4873,
@@ -5172,7 +5146,7 @@
   {
     "id": "2000-yw134",
     "number": 82075,
-    "name": "(2000 YW134)",
+    "name": "2000 YW134",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 58.2792,
@@ -5200,7 +5174,7 @@
   {
     "id": "2002-tc302",
     "number": 84522,
-    "name": "(2002 TC302)",
+    "name": "2002 TC302",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 55.7719,
@@ -5214,7 +5188,7 @@
   {
     "id": "2002-vr128",
     "number": 84719,
-    "name": "(2002 VR128)",
+    "name": "2002 VR128",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6087,
@@ -5228,7 +5202,7 @@
   {
     "id": "2003-vs2",
     "number": 84922,
-    "name": "(2003 VS2)",
+    "name": "2003 VS2",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6921,
@@ -5242,7 +5216,7 @@
   {
     "id": "1998-hp151",
     "number": 85627,
-    "name": "(1998 HP151)",
+    "name": "1998 HP151",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.7992,
@@ -5256,7 +5230,7 @@
   {
     "id": "1998-kr65",
     "number": 85633,
-    "name": "(1998 KR65)",
+    "name": "1998 KR65",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.4353,
@@ -5270,7 +5244,7 @@
   {
     "id": "1999-oy3",
     "number": 86047,
-    "name": "(1999 OY3)",
+    "name": "1999 OY3",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.7561,
@@ -5284,7 +5258,7 @@
   {
     "id": "2000-oo67",
     "number": 87269,
-    "name": "(2000 OO67)",
+    "name": "2000 OO67",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 597.056,
@@ -5354,7 +5328,7 @@
   {
     "id": "1998-hk151",
     "number": 91133,
-    "name": "(1998 HK151)",
+    "name": "1998 HK151",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.1883,
@@ -5368,7 +5342,7 @@
   {
     "id": "1998-us43",
     "number": 91205,
-    "name": "(1998 US43)",
+    "name": "1998 US43",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.5197,
@@ -5382,7 +5356,7 @@
   {
     "id": "2002-gx32",
     "number": 95625,
-    "name": "(2002 GX32)",
+    "name": "2002 GX32",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 52.7919,
@@ -5396,7 +5370,7 @@
   {
     "id": "1998-vf31",
     "number": 101429,
-    "name": "(1998 VF31)",
+    "name": "1998 VF31",
     "type": "stony",
     "typeBasis": "assumed",
     "a": 1.52421,
@@ -5410,7 +5384,7 @@
   {
     "id": "1999-bz5",
     "number": 101580,
-    "name": "(1999 BZ5)",
+    "name": "1999 BZ5",
     "type": "stony",
     "typeBasis": "assumed",
     "a": 2.60472,
@@ -5424,7 +5398,7 @@
   {
     "id": "1996-tq66",
     "number": 118228,
-    "name": "(1996 TQ66)",
+    "name": "1996 TQ66",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.6563,
@@ -5438,7 +5412,7 @@
   {
     "id": "1999-ht11",
     "number": 118378,
-    "name": "(1999 HT11)",
+    "name": "1999 HT11",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.6057,
@@ -5452,7 +5426,7 @@
   {
     "id": "1999-hc12",
     "number": 118379,
-    "name": "(1999 HC12)",
+    "name": "1999 HC12",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 45.1733,
@@ -5466,7 +5440,7 @@
   {
     "id": "2000-om67",
     "number": 118702,
-    "name": "(2000 OM67)",
+    "name": "2000 OM67",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 98.4284,
@@ -5480,7 +5454,7 @@
   {
     "id": "2001-kc77",
     "number": 119068,
-    "name": "(2001 KC77)",
+    "name": "2001 KC77",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 54.7772,
@@ -5494,7 +5468,7 @@
   {
     "id": "2002-cy224",
     "number": 119878,
-    "name": "(2002 CY224)",
+    "name": "2002 CY224",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 54.2053,
@@ -5508,7 +5482,7 @@
   {
     "id": "2002-kx14",
     "number": 119951,
-    "name": "(2002 KX14)",
+    "name": "2002 KX14",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 38.6392,
@@ -5522,7 +5496,7 @@
   {
     "id": "2002-wc19",
     "number": 119979,
-    "name": "(2002 WC19)",
+    "name": "2002 WC19",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 48.2821,
@@ -5536,7 +5510,7 @@
   {
     "id": "2003-fy128",
     "number": 120132,
-    "name": "(2003 FY128)",
+    "name": "2003 FY128",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 49.3791,
@@ -5550,7 +5524,7 @@
   {
     "id": "2003-op32",
     "number": 120178,
-    "name": "(2003 OP32)",
+    "name": "2003 OP32",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.1286,
@@ -5564,7 +5538,7 @@
   {
     "id": "2004-ew95",
     "number": 120216,
-    "name": "(2004 EW95)",
+    "name": "2004 EW95",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.2364,
@@ -5592,7 +5566,7 @@
   {
     "id": "2004-ty364",
     "number": 120348,
-    "name": "(2004 TY364)",
+    "name": "2004 TY364",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.0464,
@@ -5606,7 +5580,7 @@
   {
     "id": "1999-uj7",
     "number": 121514,
-    "name": "(1999 UJ7)",
+    "name": "1999 UJ7",
     "type": "carbonaceous",
     "typeBasis": "albedo",
     "a": 1.52453,
@@ -5619,7 +5593,7 @@
   {
     "id": "2001-yh140",
     "number": 126154,
-    "name": "(2001 YH140)",
+    "name": "2001 YH140",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.5832,
@@ -5633,7 +5607,7 @@
   {
     "id": "2000-jg81",
     "number": 130391,
-    "name": "(2000 JG81)",
+    "name": "2000 JG81",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.2195,
@@ -5647,7 +5621,7 @@
   {
     "id": "2001-xt254",
     "number": 131696,
-    "name": "(2001 XT254)",
+    "name": "2001 XT254",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 53.365,
@@ -5661,7 +5635,7 @@
   {
     "id": "2001-xh255",
     "number": 131697,
-    "name": "(2001 XH255)",
+    "name": "2001 XH255",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 35.0909,
@@ -5699,7 +5673,7 @@
   {
     "id": "2003-lg7",
     "number": 136120,
-    "name": "(2003 LG7)",
+    "name": "2003 LG7",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 61.7919,
@@ -5737,7 +5711,7 @@
   {
     "id": "1999-rb216",
     "number": 137295,
-    "name": "(1999 RB216)",
+    "name": "1999 RB216",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.8529,
@@ -5751,7 +5725,7 @@
   {
     "id": "2004-ux10",
     "number": 144897,
-    "name": "(2004 UX10)",
+    "name": "2004 UX10",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.1767,
@@ -5793,7 +5767,7 @@
   {
     "id": "2005-rr43",
     "number": 145453,
-    "name": "(2005 RR43)",
+    "name": "2005 RR43",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.4741,
@@ -5807,7 +5781,7 @@
   {
     "id": "2005-tb190",
     "number": 145480,
-    "name": "(2005 TB190)",
+    "name": "2005 TB190",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 75.7314,
@@ -5821,7 +5795,7 @@
   {
     "id": "2000-cr105",
     "number": 148209,
-    "name": "(2000 CR105)",
+    "name": "2000 CR105",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 229.256,
@@ -5863,7 +5837,7 @@
   {
     "id": "2001-ku76",
     "number": 182294,
-    "name": "(2001 KU76)",
+    "name": "2001 KU76",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 44.7976,
@@ -5877,7 +5851,7 @@
   {
     "id": "2004-pb112",
     "number": 184212,
-    "name": "(2004 PB112)",
+    "name": "2004 PB112",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 108.441,
@@ -5891,7 +5865,7 @@
   {
     "id": "2005-uq513",
     "number": 202421,
-    "name": "(2005 UQ513)",
+    "name": "2005 UQ513",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.4709,
@@ -5947,7 +5921,7 @@
   {
     "id": "2004-xa192",
     "number": 230965,
-    "name": "(2004 XA192)",
+    "name": "2004 XA192",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.496,
@@ -5961,7 +5935,7 @@
   {
     "id": "2007-jj43",
     "number": 278361,
-    "name": "(2007 JJ43)",
+    "name": "2007 JJ43",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 47.7492,
@@ -5975,7 +5949,7 @@
   {
     "id": "2005-qu182",
     "number": 303775,
-    "name": "(2005 QU182)",
+    "name": "2005 QU182",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 111.727,
@@ -6003,7 +5977,7 @@
   {
     "id": "2003-qw90",
     "number": 307616,
-    "name": "(2003 QW90)",
+    "name": "2003 QW90",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.9025,
@@ -6017,7 +5991,7 @@
   {
     "id": "2006-sq372",
     "number": 308933,
-    "name": "(2006 SQ372)",
+    "name": "2006 SQ372",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 805.382,
@@ -6031,7 +6005,7 @@
   {
     "id": "1993-ro",
     "number": 385185,
-    "name": "(1993 RO)",
+    "name": "1993 RO",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.4103,
@@ -6073,7 +6047,7 @@
   {
     "id": "2009-ye7",
     "number": 386723,
-    "name": "(2009 YE7)",
+    "name": "2009 YE7",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 44.5534,
@@ -6087,7 +6061,7 @@
   {
     "id": "2004-nt33",
     "number": 444030,
-    "name": "(2004 NT33)",
+    "name": "2004 NT33",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.3605,
@@ -6101,7 +6075,7 @@
   {
     "id": "2003-uz413",
     "number": 455502,
-    "name": "(2003 UZ413)",
+    "name": "2003 UZ413",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.3844,
@@ -6115,7 +6089,7 @@
   {
     "id": "1999-cd158",
     "number": 469306,
-    "name": "(1999 CD158)",
+    "name": "1999 CD158",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 43.8385,
@@ -6129,7 +6103,7 @@
   {
     "id": "2001-qf298",
     "number": 469372,
-    "name": "(2001 QF298)",
+    "name": "2001 QF298",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.4323,
@@ -6143,7 +6117,7 @@
   {
     "id": "2007-jh43",
     "number": 470308,
-    "name": "(2007 JH43)",
+    "name": "2007 JH43",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.2981,
@@ -6199,7 +6173,7 @@
   {
     "id": "2010-re64",
     "number": 523639,
-    "name": "(2010 RE64)",
+    "name": "2010 RE64",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 66.0407,
@@ -6213,7 +6187,7 @@
   {
     "id": "2015-rr245",
     "number": 523794,
-    "name": "(2015 RR245)",
+    "name": "2015 RR245",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 82.4791,
@@ -6227,7 +6201,7 @@
   {
     "id": "2007-vl305",
     "number": 527604,
-    "name": "(2007 VL305)",
+    "name": "2007 VL305",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 30.2075,
@@ -6241,7 +6215,7 @@
   {
     "id": "2008-kv42",
     "number": 528219,
-    "name": "(2008 KV42)",
+    "name": "2008 KV42",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 41.5093,
@@ -6255,7 +6229,7 @@
   {
     "id": "2008-st291",
     "number": 528381,
-    "name": "(2008 ST291)",
+    "name": "2008 ST291",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 99.4124,
@@ -6269,7 +6243,7 @@
   {
     "id": "2017-uv43",
     "number": 606357,
-    "name": "(2017 UV43)",
+    "name": "2017 UV43",
     "type": "stony",
     "typeBasis": "assumed",
     "a": 6.74013,
@@ -6283,7 +6257,7 @@
   {
     "id": "1997-sz10",
     "number": 612051,
-    "name": "(1997 SZ10)",
+    "name": "1997 SZ10",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 48.1882,
@@ -6297,7 +6271,7 @@
   {
     "id": "2001-qr322",
     "number": 612243,
-    "name": "(2001 QR322)",
+    "name": "2001 QR322",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 30.3558,
@@ -6311,7 +6285,7 @@
   {
     "id": "2002-xv93",
     "number": 612533,
-    "name": "(2002 XV93)",
+    "name": "2002 XV93",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 39.5791,
@@ -6325,7 +6299,7 @@
   {
     "id": "2003-qx113",
     "number": 612584,
-    "name": "(2003 QX113)",
+    "name": "2003 QX113",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 49.5137,
@@ -6339,7 +6313,7 @@
   {
     "id": "2004-xr190",
     "number": 612911,
-    "name": "(2004 XR190)",
+    "name": "2004 XR190",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 57.8309,
@@ -6353,7 +6327,7 @@
   {
     "id": "2005-tn74",
     "number": 613100,
-    "name": "(2005 TN74)",
+    "name": "2005 TN74",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.6827,
@@ -6367,7 +6341,7 @@
   {
     "id": "2006-rj103",
     "number": 613490,
-    "name": "(2006 RJ103)",
+    "name": "2006 RJ103",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 30.1881,
@@ -6381,7 +6355,7 @@
   {
     "id": "2015-kh162",
     "number": 674118,
-    "name": "(2015 KH162)",
+    "name": "2015 KH162",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 61.6745,
@@ -6395,7 +6369,7 @@
   {
     "id": "2010-tk7",
     "number": 706765,
-    "name": "(2010 TK7)",
+    "name": "2010 TK7",
     "type": "carbonaceous",
     "typeBasis": "albedo",
     "a": 0.998508,
@@ -6407,7 +6381,7 @@
   },
   {
     "id": "1993-rp",
-    "name": "(1993 RP)",
+    "name": "1993 RP",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 35.2425,
@@ -6420,7 +6394,7 @@
   },
   {
     "id": "1995-gj",
-    "name": "(1995 GJ)",
+    "name": "1995 GJ",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 42.9037,
@@ -6433,7 +6407,7 @@
   },
   {
     "id": "1998-ww31",
-    "name": "(1998 WW31)",
+    "name": "1998 WW31",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 44.9108,
@@ -6446,7 +6420,7 @@
   },
   {
     "id": "2003-la7",
-    "name": "(2003 LA7)",
+    "name": "2003 LA7",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 75.4734,
@@ -6459,7 +6433,7 @@
   },
   {
     "id": "2004-kv18",
-    "name": "(2004 KV18)",
+    "name": "2004 KV18",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 30.0995,
@@ -6472,7 +6446,7 @@
   },
   {
     "id": "2005-tn53",
-    "name": "(2005 TN53)",
+    "name": "2005 TN53",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 30.2717,
@@ -6485,7 +6459,7 @@
   },
   {
     "id": "2006-qh181",
-    "name": "(2006 QH181)",
+    "name": "2006 QH181",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 66.1759,
@@ -6498,7 +6472,7 @@
   },
   {
     "id": "2008-lc18",
-    "name": "(2008 LC18)",
+    "name": "2008 LC18",
     "type": "stony",
     "typeBasis": "assumed",
     "a": 29.881,
@@ -6511,7 +6485,7 @@
   },
   {
     "id": "2010-kz39",
-    "name": "(2010 KZ39)",
+    "name": "2010 KZ39",
     "type": "icy",
     "typeBasis": "assumed",
     "a": 45.0073,
