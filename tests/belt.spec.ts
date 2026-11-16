@@ -132,6 +132,29 @@ test.describe('survey through the UI', () => {
   });
 });
 
+test.describe('food at an outpost', () => {
+  test('the Summary counts the crew in calories and how long the rations last', async ({ page }) => {
+    await open(page, 'screen=economy&colony=luna&scenario=belt&outpost=1');
+    const term = (text: RegExp) =>
+      page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
+    await expect(term(/^Calories made$/)).toHaveText('0 kcal a day against 11.2 k kcal needed');
+    await expect(term(/^Calorie shares$/)).toHaveText('Food ration 100%');
+    await expect(term(/^Food in store$/)).toHaveText('5.00 t, 3.4 y');
+  });
+});
+
+test.describe('sampling through the UI', () => {
+  test('a sample order is offered and a probe without a sampling arm is told so', async ({ page }) => {
+    await open(page, 'screen=economy&tab=ships&scenario=belt');
+    await row(page, '#vessels', 'Survey probe 2').click();
+    await page.locator('#orderType').selectOption('sample');
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders')).toContainText('Take a sample');
+    await expect(page.locator('#vesselBlocked')).toContainText('no sampling arm');
+    await expectCleanLayout(page);
+  });
+});
+
 test.describe('founding in a region', () => {
   test('asks for the region, offers what it can work, and shows the region in the economy', async ({
     page

@@ -12,6 +12,7 @@
     economy,
     flowsOf,
     isFood,
+    kcalOf,
     programmeDays,
     remainingMass,
     siteDeposits,
@@ -40,21 +41,21 @@
       .filter(([m]) => isFood(m))
       .reduce((a, [, v]) => a + v, 0)
   );
+  const foodStockKcal = $derived(
+    Object.entries(site.stock)
+      .filter(([m]) => isFood(m))
+      .reduce((a, [m, v]) => a + v * kcalOf(m), 0)
+  );
   const foodDays = $derived(
-    food.made >= food.demand ? Infinity : foodStock / Math.max(1e-9, food.demand - food.made) / 24
+    food.made >= food.demand ? Infinity : foodStockKcal / Math.max(1e-9, food.demand - food.made) / 24
   );
 
-  const foodRows = $derived<Cell[][]>(
-    [...new Set([...Object.keys(food.madeBy), ...Object.keys(food.eatenBy)])]
-      .sort(
-        (a, b) =>
-          (food.eatenBy[b] ?? 0) - (food.eatenBy[a] ?? 0) || (food.madeBy[b] ?? 0) - (food.madeBy[a] ?? 0)
-      )
-      .map((m): Cell[] => [
-        material(m).name,
-        formatKcal((food.madeBy[m] ?? 0) * 24),
-        formatPercent(food.eaten > 0 ? (food.eatenBy[m] ?? 0) / food.eaten : 0)
-      ])
+  const foodShares = $derived(
+    Object.entries(food.eatenBy)
+      .filter(([, kcal]) => food.eaten > 0 && kcal / food.eaten >= 0.005)
+      .sort((x, y) => y[1] - x[1])
+      .map(([m, kcal]) => `${material(m).name.replace(/ \(.*\)$/, '')} ${formatPercent(kcal / food.eaten)}`)
+      .join(', ')
   );
 
   const kinds = $derived.by(() => {
@@ -115,12 +116,15 @@
       rows={[
         ['People', formatPeople(site.population)],
         ['Growth', `${formatRate(flows.growthPerHour * 8766)} a year`],
-        ['Calories needed', `${formatKcal(food.demand * 24)} a day`],
-        ['Calories made', `${formatKcal(food.made * 24)} a day`],
+        [
+          'Calories made',
+          `${formatKcal(food.made * 24)} a day against ${formatKcal(food.demand * 24)} needed`
+        ],
         [
           'Food balance',
           `${food.made >= food.demand ? '+' : ''}${formatPercent(food.made / food.demand - 1)}`
         ],
+        ['Calorie shares', foodShares || 'None eaten'],
         ['People fed', formatPercent(food.cover)],
         [
           'Food in store',
@@ -128,11 +132,6 @@
         ]
       ]}
     />
-    {#if foodRows.length}
-      <div id="foodShares">
-        <Table head={['Food', '>Made a day', '>Share eaten']} rows={foodRows} />
-      </div>
-    {/if}
     <h3>Workers</h3>
     <DefList
       rows={[

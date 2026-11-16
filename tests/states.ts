@@ -37,6 +37,8 @@ const QUERIES = [
   'screen=economy&tab=stockpiles',
   'screen=economy&tab=milestones',
   'screen=economy&tab=milestones&milestone=5',
+  'screen=economy&tab=milestones&milestone=6',
+  'screen=economy&tab=milestones&milestone=17',
   'screen=economy&scenario=famine',
   'screen=economy&tab=yard&scenario=travel',
   'screen=economy&tab=launch&scenario=travel',

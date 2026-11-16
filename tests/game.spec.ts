@@ -51,3 +51,22 @@ test('the colony screen shows its facts without the mock surface scene', async (
   await expect(page.locator('#colonyPick')).toBeVisible();
   await expect(page.locator('[data-screen="colony"] .pan > h2', { hasText: 'Surface' })).toHaveCount(0);
 });
+
+test('the game build counts food in calories and the top bar agrees with the Summary', async ({ page }) => {
+  await open(page, 'screen=economy');
+  const term = (text: RegExp) =>
+    page.locator('dl dt', { hasText: text }).locator('xpath=following-sibling::dd[1]');
+  await expect(term(/^Calories made$/)).toContainText(/T kcal a day against .* T kcal needed$/);
+  await expect(term(/^Calorie shares$/)).toContainText(/Meat \d+%/);
+  const balance = (await term(/^Food balance$/).textContent())!;
+  await expect(page.locator('#chips .chip[title="Food: calories made against calories needed"]')).toHaveText(
+    balance
+  );
+});
+
+test('a milestone in the game build lists the site it needs', async ({ page }) => {
+  await open(page, 'screen=economy&tab=milestones&milestone=8');
+  await expect(
+    page.locator('#milestoneDetail tr', { hasText: 'ice mine at the lunar south pole' })
+  ).toContainText('None');
+});

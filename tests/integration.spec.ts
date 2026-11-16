@@ -87,16 +87,28 @@ test.describe('the top bar', () => {
 
   test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {
     await open(page, 'screen=economy');
-    const needed = await term(page, /^Calories needed$/).textContent();
     const made = await term(page, /^Calories made$/).textContent();
-    expect(needed).toMatch(/T kcal a day$/);
-    expect(made).toMatch(/T kcal a day$/);
-    const shares = page.locator('#foodShares tbody tr');
-    await expect(shares.filter({ hasText: 'Wheat' })).toContainText('%');
-    await expect(shares.filter({ hasText: 'Meat' })).toContainText('%');
+    expect(made).toMatch(/T kcal a day against .* T kcal needed$/);
+    const shares = term(page, /^Calorie shares$/);
+    await expect(shares).toContainText(/Wheat \d+%/);
+    await expect(shares).toContainText(/Meat \d+%/);
     const balance = (await term(page, /^Food balance$/).textContent())!;
     expect(balance).toMatch(/^\+\d+%$/);
     await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
+  });
+
+  test('a milestone lists the site it needs and what is still missing', async ({ page }) => {
+    await open(page, 'screen=economy&tab=milestones&milestone=6');
+    const detail = page.locator('#milestoneDetail');
+    await expect(detail).toContainText('6. Crewed lunar landing and surface outpost');
+    const site = detail.locator('tr', { hasText: 'crewed outpost on the Moon' });
+    await expect(site).toContainText('Site');
+    await expect(site).toContainText('None');
+    await goTo(page, 'economy');
+    await open(page, 'screen=economy&tab=milestones&milestone=17');
+    await expect(
+      page.locator('#milestoneDetail tr', { hasText: 'miner on a metallic asteroid' })
+    ).toContainText('None');
   });
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
