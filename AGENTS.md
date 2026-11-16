@@ -33,6 +33,7 @@ Tests: Playwright has two projects, each with its own dev server. `gallery` runs
 | `game/shipdesign/`      | ship design as components with counts: stats, design errors, flight handoff, top-down art      |
 | `gfx/`                  | pixel framebuffer, noise and dither, planets, sun, ship class specs, scenes, icons             |
 | `gfx/topdown/`          | top-down ships, turrets, craft, stations and props generated from a design, and their renderer |
+| `gfx/icons/`            | pixel icons for every material, building and ship component, drawn in code from the data ids   |
 | `ui/`                   | shared primitives, the window manager, the frame bus, the shell state, the layout check        |
 | `shell/`                | the app shell: top bar, screen stage, keyboard, URL query states                               |
 | `screens/list.ts`       | the nine screens, their icons and F keys                                                       |
@@ -220,6 +221,50 @@ Canvases draw from the frame bus: `CanvasView` and `PixelCanvas` call `draw(fb, 
 
 The global stylesheet is `src/app.css`, ported from the mockup. Its tokens (`--bg`, `--panel`, `--accent`, `--hot`, `--cool`, ...) and class names are the look; use them rather than new colours or fonts.
 
+## Icons, tiles and formatting
+
+The management screens are built from icon tiles and cards, not text tables. The look is `mockup/ui/`; what it needs is below, so read this instead of the mockup's code. Everything is exported from `#lib/ui/index.ts` (components, `fmt`, tooltip helpers) and `#lib/gfx/index.ts` (icon functions). `/dev/tiles` (gallery build) shows every primitive and the whole icon set; `tests/primitives.spec.ts` covers it.
+
+### Icon functions (`src/lib/gfx/icons/`)
+
+- `materialIcon(id)`, `buildingIcon(id)`, `componentIcon(id)` return a PNG data URL, rendered once and cached. Sizes: materials and components 16 by 16, buildings 24 by 20 (`ICON_SIZE`). Draw them with `image-rendering: pixelated` at whole multiples; `PixIcon` does it.
+- `IconRef` is `{ kind: 'material' | 'building' | 'component', id }`; `iconUrl(ref)` and `iconSprite(ref)` (`{ url, width, height, pixels }`) take one.
+- The pixels are the mockup's, checked id by id against it (`icons.test.ts`, fixture `mockup-hashes.json`). A material's shape follows its category, its colour and two-letter mark come from tables in `materials.ts`; a material in the data without a colour gets the mockup's generated hue.
+- An id the tables do not know is never blank. A material the data holds is drawn by its category; an id not in the data is a grey orb; a building is a hangar and a component a box, tinted by its `kind`. `hasIconArt(ref)` is false for those, and `icons.test.ts` lists them (today: the components `cargo_bay`, `crew_capsule`, `landing_legs` and the materials `u_mo_fuel`, `uzrh_fuel`, `w_cermet`, which keep generated colours). Draw a new id in the generator file, add its hash to `mockup-hashes.json` only if the mockup has it, and the list in the test shrinks.
+- `materialLook(id)` gives `{ base, R, shape, code }` (the colour ramp, for bars coloured like the material). `CATEGORY_NAMES`, `CATEGORY_ORDER`, `CATEGORY_EXAMPLES` (one material per category), `BUILDING_KIND_NAMES`, `COMPONENT_KIND_NAMES`, `KIND_COLOURS` (the stripe colour of a building or component kind) and `KIND_EXAMPLES` are the vocabulary for filters and headings; `categoryName(c)`, `buildingKindName(k)`, `componentKindName(k)` give a human name for any value.
+- The 11 by 11 glyphs live in `gfx/icons.ts` (`ICONS`, drawn by `Icon`); the mockup's new ones (`up`, `down`, `flat`, `lock`, `check`, `plus`, `minus`, `cross`, `hammer`, `box`, `power`, `clock`, `trash`, `flame`, `wrench`, `rocket`, `leaf`, `atom`, `arrowR`, `filter`) are in it. `Icon` takes `class="xs"` (11 px), `"sm"` (14), `"lg"` (33).
+
+### Tile primitives (`src/lib/ui/primitives/`)
+
+Their classes are prefixed `ui-` in `app.css`. Edges are `--edge`, as in the approved look: a selected tile differs by its background, not its edge.
+
+| Component | Props |
+| --- | --- |
+| `PixIcon` | `kind`, `id`, `size` 16, 32 or 48 (default 16; a building at 32 is 48 by 40), `tip` (default: the item's own tooltip; `false` for none), `class` |
+| `Tile` | `variant` (`auto`, or a fixed size from the mockup: `prod` 104 by 104, `stk` 116 by 112, `bld` 104 by 118, `q` 120 by 104, `cmp` 86 by 104, `node` 104 by 100), `icons` (up to two `IconRef`), `iconSize` (default 32), `name` (two lines, clipped), `sub` (a dim second line under a one-line name), `value`, `note` and `noteTone`, `meter` (0 to 1) and `meterTone`, `trend` (`up`, `down`, `flat`, top right), `kind` (stripe colour from a building or component kind), `corner` (text top left), `badge` and `badgeTone` (glyph top left), `cornerRight` and `mark`/`markTone` (text and glyph top right), `minis` and `minisMore` (a row of small icons, e.g. costs, and "+n"), `selected`, `dimmed`, `locked`, `idle`, `disabled`, `tip`, `onselect`, `class`, children (extra footer). `prod` puts `value` and `meter` on one row; every other variant stacks them. With `onselect` it is a `<button>` (focusable; Enter and Space select; `aria-pressed` follows `selected`), without it a plain `div`. Tones are `cool`, `hot`, `dim` (and `accent` for marks). |
+| `TileGrid` | `min` (column width in px, default 104), `gap` (default 6); wraps with `repeat(auto-fill, min)`. The mockup used 104, 116 and 120 wide columns with gaps 6, 5 and 5. |
+| `Card` | `title`, `subtitle`, `icon` and `iconSize` (header icon), `chips` (`{ icon?, text, tone?, tip? }[]`, a row of `Pill`s), `aside` (snippet, header right), `class`, children (the sections) |
+| `CardSection` | `label` (small dim heading), children |
+| `IconList` | `items` (`{ icon, amount?, need?, ok?, tip? }[]`), `to` (a second list after an arrow: a recipe), `variant`: `rate` (icon over amount, `+` between), `have` (amount over `/ need`, green when `ok`, red when not), `stand` (boxed icon over yes or no, coloured by `ok`), `icons` (boxed icons only); `size` (default 32), `plus` |
+| `FilterChips` | `items` (`{ id, label?, count?, icon? (IconRef or glyph name), tip? }[]`), `bind:value`, `onchange`; buttons in a `group`, `aria-pressed` on the chosen one |
+| `Pill` | `icon` (glyph), `text`, `tone` (`hot`, `cool`), `tip` |
+| `Bar` | `value` (0 to 1), `tone` (`accent`, `hot`, `cool`), `thick`, `full`, `faded` |
+| `Stat` | `icon` (glyph), `value`, `label`, `warn`, `tip`; the mockup's KPI box |
+
+`tip` everywhere is a `Tip`: a string in the mockup's format (first line the title, then lines; `~` starts a dimmed line, `!` a warning line), or `{ title, lines: { text, tone? }[] }`. Build strings with `tipText(title, ...lines)`, `dim(text)`, `warn(text)`. `materialTip(id, ...extra)`, `buildingTip(id, ...extra)`, `componentTip(id, ...extra)` and `iconTip(ref, ...extra)` give name, category or kind and the dimmed description from the data, and append your lines (numbers, stock, "Short of power"). `materialName(id)`, `buildingName(id)`, `componentName(id)` and `iconName(ref)` are the player-facing names; never show an id.
+
+`use:tooltip={tip}` (from `#lib/ui/index.ts`) puts the same tooltip on any element. The tooltip is one `div#ui-tip` on `body`, made on first use. It follows the pointer (14 px right and 16 px below, flipped left or above at the right and bottom edges, then kept inside the window), opens under an element that gets keyboard focus, closes on Escape, and the innermost element with a tip wins. A tile with an `icons` list shows its own tip, not one per icon.
+
+### Formatting (`src/lib/ui/format.ts`, `fmt` from `#lib/ui/index.ts`)
+
+Pure functions, tested in `format.test.ts`. Quantities come in SI base units as the game holds them (kilograms, kilowatts, newtons, seconds) and leave in the unit the screens show.
+
+- `group(n)` and `count(n)`: whole number with thousands separators. `num(v)`: 0 decimals from 100, 1 from 10, 2 from 0.1, 3 below, `0` under 0.0005.
+- `mass(kg)` gives tonnes (`2.5 t`, `0.005 t`), `power(kW)` megawatts, `thrust(N)` kilonewtons, `people(n)` millions (`8,200 M`), `pct(fraction)`, `amount(a, unit?)` by the material's unit (`kg` as tonnes, `cu`, `model`).
+- `days(d)` (`13 d`, `1.1 y`, `never`) and `duration(seconds)` (`30 s`, `10 min`, `2 h`, then days).
+- Gain and loss: `signed(value, text)`, `signedAmount`, `signedPower`, `signedPct` (a zero shows as `0`, no sign); `toneOf(change)` is `cool`, `hot` or `dim`; `trend(net, stock?)` is `up`, `down` or `flat` (flat when tiny against the stock) and `trendTone(trend)` its tone.
+- Rates: `PERIODS` (`day`, `year`), `perHour(perSecond)`, `rate(perHour, period, unit?, signed?)` (`24 t/d`, `+8,760 t/yr`, `0`).
+
 ## The window manager
 
 `wm` (from `#lib/ui/index.ts`) owns the map desk's windows: docked left (290px), right (310px) or along the bottom (238px), stacked in columns with 8px gutters, or floating. Windows drag by their title bar, re-dock when dropped within 40px of an edge, minimise, close and toggle dock in either mode. `wm.tile()` places them and runs on its own when a window's content or the desk size changes. The Panels popup (the gear) switches the arrangement, shows and hides windows and resets the layout.
@@ -232,7 +277,7 @@ The Playwright web server picks a free port, or uses `PORT` when it is set, so s
 
 ## The layout test is the gate for UI work
 
-`tests/layout.spec.ts` loads every query state at 1440x900 (`SIZE=w,h` overrides it) with `?check` and fails with the messages of `src/lib/ui/layoutCheck.ts`: gaps, overlaps, panels off an edge, clipped or cut-off content, cells past an edge, squashed frames, canvases not filling their frames, scroll and empty-space imbalance, overlapping map labels, labels under windows, a wrapped top bar and a scrolling page. A screen whose `Screen.svelte` still renders `<Placeholder` is `fixme`; replacing the placeholder turns its states on, and they must pass before the work is done. `tests/interaction.spec.ts` covers the clock, steps, screen switching and every window operation; `tests/primitives.spec.ts` covers the shared primitives on `/dev/primitives`.
+`tests/layout.spec.ts` loads every query state at 1440x900 (`SIZE=w,h` overrides it) with `?check` and fails with the messages of `src/lib/ui/layoutCheck.ts`: gaps, overlaps, panels off an edge, clipped or cut-off content, cells past an edge, squashed frames, canvases not filling their frames, scroll and empty-space imbalance, overlapping map labels, labels under windows, a wrapped top bar and a scrolling page. A screen whose `Screen.svelte` still renders `<Placeholder` is `fixme`; replacing the placeholder turns its states on, and they must pass before the work is done. `tests/interaction.spec.ts` covers the clock, steps, screen switching and every window operation; `tests/primitives.spec.ts` covers the shared primitives on `/dev/primitives` and the tile kit and icon set on `/dev/tiles`.
 
 For a change to layout or behaviour, also look at the result: `SHOTS=<dir> pnpm test:layout`, then open the PNGs next to the mockup in the same state.
 
