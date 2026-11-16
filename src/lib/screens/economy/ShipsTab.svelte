@@ -29,38 +29,58 @@
     type VesselPlan
   } from '#lib/game/ships/index.ts';
   import { isSurveyable, isSurveyed, knownRegions } from '#lib/game/survey.svelte.ts';
-  import { DefList, Table, type Cell } from '#lib/ui/index.ts';
-  import Bar from './Bar.svelte';
-  import Field from './Field.svelte';
-  import { formatMass, shortName } from './format.ts';
-  import { ui } from './state.svelte.ts';
+  import type { IconName } from '#lib/gfx/icons.ts';
   import {
-    bodyName,
-    cargoText,
-    dayText,
-    holdText,
-    propellantText,
-    tankText,
-    vesselWhere,
-    whereabouts
-  } from './shipsView.ts';
+    Card,
+    CardSection,
+    FilterChips,
+    Icon,
+    IconList,
+    Tile,
+    TileGrid,
+    buildingTip,
+    dim,
+    fmt,
+    materialName,
+    materialTip,
+    tipText,
+    warn,
+    type FilterItem
+  } from '#lib/ui/index.ts';
+  import Field from './Field.svelte';
+  import ShipTile from './ShipTile.svelte';
+  import TabBody from './TabBody.svelte';
+  import { bodyName, vesselWhere, whereabouts } from './shipsView.ts';
+  import { daysText, kms, propellantIcon, propellantName, vesselIcon } from './shipTiles.ts';
+  import { ui } from './state.svelte.ts';
 
   const vessels = $derived(ships.vessels);
   const vessel = $derived(vesselById(ui.vessel ?? '') ?? vessels[0]);
   const stats = $derived(vessel ? statsOf(vessel) : undefined);
-  const selected = $derived(vessel ? vessels.indexOf(vessel) : -1);
 
-  const rows = $derived<Cell[][]>(
-    vessels.map((v) => [
-      v.name,
-      className(v.design),
-      vesselWhere(v),
-      tankText(v),
-      holdText(v),
-      v.crew,
-      v.blocked ? { icon: 'warn', text: v.blocked, warn: true } : v.run ? 'Supply run' : v.orders.length
-    ])
-  );
+  type Kind = 'all' | 'trip' | 'site' | 'orbit' | 'surface' | 'blocked';
+  let kind = $state<Kind>('all');
+  const kindOf = (v: (typeof vessels)[number]): Kind[] => [
+    v.trip ? 'trip' : v.at.kind,
+    ...(v.blocked ? (['blocked'] as Kind[]) : [])
+  ];
+  const KINDS: { id: Kind; label: string; icon: IconName; tip: string }[] = [
+    { id: 'trip', label: '', icon: 'rocket', tip: 'On a trip' },
+    { id: 'site', label: '', icon: 'yard', tip: 'Docked or landed at a site' },
+    { id: 'orbit', label: '', icon: 'ship', tip: 'Free in orbit' },
+    { id: 'surface', label: '', icon: 'dome', tip: 'Landed with no site' },
+    { id: 'blocked', label: '', icon: 'warn', tip: 'Blocked' }
+  ];
+  const chips = $derived<FilterItem[]>([
+    { id: 'all', label: 'All', count: vessels.length },
+    ...KINDS.filter((k) => vessels.some((v) => kindOf(v).includes(k.id))).map((k) => ({
+      id: k.id,
+      icon: k.icon,
+      count: vessels.filter((v) => kindOf(v).includes(k.id)).length,
+      tip: k.tip
+    }))
+  ]);
+  const shown = $derived(kind === 'all' ? vessels : vessels.filter((v) => kindOf(v).includes(kind)));
 
   let destKey = $state('');
   let profile = $state<'cheapest' | 'balanced' | 'fastest'>('cheapest');
@@ -116,23 +136,10 @@
     planned = { vessel: vessel.id, key: dest.key, plan: planVessel(game, vessel, dest.to) };
   }
 
-  const shown = $derived(
+  const shownPlan = $derived(
     planned && vessel && planned.vessel === vessel.id && dest && planned.key === dest.key
       ? planned.plan
       : null
-  );
-
-  const optionRows = $derived<Cell[][]>(
-    (shown?.options ?? []).map((o) => [
-      o.profile,
-      dayText(Math.max(0, o.departure - game.elapsed)),
-      dayText(o.duration),
-      `${(o.dv / 1000).toFixed(2)} km/s`,
-      formatMass(o.propellant),
-      formatMass(o.propellantLeft),
-      o.canStop ? 'Yes' : { text: 'No', warn: true },
-      o.canReturn ? 'Yes' : 'No'
-    ])
   );
 
   function fly(p: 'cheapest' | 'balanced' | 'fastest') {
@@ -199,7 +206,6 @@
 
   const orders = $derived(vessel?.orders ?? []);
   const row = $derived(Math.max(0, Math.min(picked, orders.length - 1)));
-  const orderRows = $derived<Cell[][]>(orders.map((o, i) => [i + 1, orderLabel(game, o)]));
 
   function add() {
     if (!vessel) return;
@@ -264,245 +270,396 @@
     foundMessage = installModule(game, vessel) ?? '';
     touch();
   }
+
+  const propellants = $derived(
+    PROPELLANT_KINDS.filter((k) => (vessel?.propellant[k] ?? 0) > 0).map((k) => ({
+      icon: propellantIcon(k),
+      amount: fmt.mass(vessel?.propellant[k] ?? 0),
+      tip: tipText(propellantName(k), `${fmt.mass(vessel?.propellant[k] ?? 0)} aboard`)
+    }))
+  );
+  const cargo = $derived(
+    Object.entries(vessel?.cargo ?? {})
+      .filter(([, kg]) => kg > 0)
+      .map(([m, kg]) => ({
+        icon: { kind: 'material' as const, id: m },
+        amount: fmt.amount(kg, material(m).unit),
+        tip: materialTip(m, `${fmt.amount(kg, material(m).unit)} aboard`)
+      }))
+  );
+  const mainFuel = $derived(stats?.main ? propellantIcon(stats.main.propellant) : undefined);
+
+  const ORDER_TYPES: FilterItem[] = [
+    { id: 'load', label: 'Load' },
+    { id: 'unload', label: 'Unload' },
+    { id: 'dock', label: 'Dock' },
+    { id: 'survey', label: 'Survey' },
+    { id: 'sample', label: 'Sample' },
+    { id: 'wait', label: 'Wait' }
+  ];
+  const PROFILE_NAMES = { cheapest: 'Cheapest', balanced: 'Balanced', fastest: 'Fastest' } as const;
+  const PROFILES: FilterItem[] = Object.entries(PROFILE_NAMES).map(([id, label]) => ({ id, label }));
 </script>
 
-<h3>Ships <small>{vessels.length}</small></h3>
-{#if vessels.length}
-  <div id="vessels">
-    <Table
-      head={['Ship', 'Design', 'Where', '>Tanks', '>Hold', '>Crew', 'Orders']}
-      {rows}
-      {selected}
-      keys={vessels.map((v) => v.id)}
-      onpick={(r) => (ui.vessel = vessels[r]?.id ?? null)}
-    />
-  </div>
-{:else}
-  <p class="none" id="noVessels">No ships yet. Build one on the Shipyard tab.</p>
-{/if}
-{#if vessel}
-  <h3 id="vesselName">{vessel.name}</h3>
-  <DefList
-    two
-    rows={[
-      ['Where', vesselWhere(vessel)],
-      ['Delta-v', stats?.main ? `${(stats.main.deltaV / 1000).toFixed(2)} km/s at design load` : 'No drive'],
-      ['Propellant', propellantText(vessel)],
-      ['Cargo', cargoText(vessel)],
-      ['Crew', `${vessel.crew} of ${stats?.berths ?? 0} berths`],
-      ['Mass', formatMass(stats?.dryMass ?? 0)]
-    ]}
-  />
-  {#if vessel.blocked}<p class="warn" id="vesselBlocked">{vessel.blocked}</p>{/if}
-  <h3>Orders</h3>
-  {#if orderRows.length}
-    <div id="vesselOrders">
-      <Table
-        rows={orderRows}
-        selected={row}
-        onpick={(i) => (picked = i)}
-        keys={orders.map((o) => String(o.id))}
-      />
+{#snippet main()}
+  <h3><Icon name="ship" class="sm" />Ships <small class="dim">{vessels.length}</small></h3>
+  {#if vessels.length}
+    <FilterChips items={chips} value={kind} onchange={(id) => (kind = id as Kind)} />
+    <div id="vessels">
+      <TileGrid min={120} gap={5}>
+        {#each shown as v (v.id)}
+          <ShipTile vessel={v} selected={v.id === vessel?.id} onselect={() => (ui.vessel = v.id)} />
+        {/each}
+      </TileGrid>
     </div>
   {:else}
-    <p class="none" id="noOrders">No orders.</p>
+    <p class="dim" id="noVessels">No ships yet. Build one on the Shipyard tab.</p>
   {/if}
-  <Bar>
-    <button
-      id="orderUp"
-      disabled={row <= 0 || !orders.length}
-      onclick={() => {
-        moveOrder(vessel, orders[row]!.id, -1);
-        picked = row - 1;
-      }}>Up</button
+{/snippet}
+
+{#snippet side()}
+  {#if vessel}
+    <Card
+      title={vessel.name}
+      subtitle="{className(vessel.design)}, {vesselWhere(vessel)}"
+      icon={vesselIcon(vessel)}
+      chips={[
+        ...(stats?.main
+          ? [{ icon: 'rocket' as const, text: kms(stats.main.deltaV), tip: 'Delta-v at design load' }]
+          : [{ icon: 'warn' as const, text: 'No drive', tone: 'hot' as const }]),
+        { icon: 'people', text: `${vessel.crew} of ${stats?.berths ?? 0}`, tip: 'Crew and berths' },
+        { icon: 'box', text: fmt.mass(stats?.dryMass ?? 0), tip: 'Dry mass' }
+      ]}
     >
-    <button
-      id="orderDown"
-      disabled={row >= orders.length - 1}
-      onclick={() => {
-        moveOrder(vessel, orders[row]!.id, 1);
-        picked = row + 1;
-      }}>Down</button
-    >
-    <button id="orderRemove" disabled={!orders.length} onclick={() => removeOrder(vessel, orders[row]!.id)}
-      >Remove</button
-    >
-    <button id="orderClear" disabled={!orders.length && !vessel.run} onclick={() => clearOrders(vessel)}
-      >Clear</button
-    >
-  </Bar>
-  <Bar>
-    <label class="pick"
-      >Order
-      <select
-        id="orderType"
-        value={orderType}
-        onchange={(e) => (orderType = e.currentTarget.value as typeof orderType)}
-      >
-        <option value="load">Load</option>
-        <option value="unload">Unload</option>
-        <option value="dock">Dock</option>
-        <option value="survey">Survey</option>
-        <option value="sample">Sample</option>
-        <option value="wait">Wait</option>
-      </select></label
-    >
-    {#if orderType === 'load' || orderType === 'unload'}
-      <label class="pick"
-        >Item
-        <select id="orderItem" value={item?.key ?? ''} onchange={(e) => (itemKey = e.currentTarget.value)}>
-          {#each items as i (i.key)}<option value={i.key}>{i.label}</option>{/each}
-        </select></label
-      >
-      <label class="pick"><input id="orderAll" type="checkbox" bind:checked={all} /> All</label>
-      <Field label="Kilograms" bind:value={amount} width={8} name="orderAmount" disabled={all} max={1e9} />
-    {:else if orderType === 'survey'}
-      <label class="pick"
-        >Body
-        <select id="orderSurvey" value={surveyTarget} onchange={(e) => (surveyBody = e.currentTarget.value)}>
-          {#each surveyable as b (b)}<option value={b}>{bodyName(b)}</option>{/each}
-        </select></label
-      >
-    {:else if orderType === 'dock'}
-      <label class="pick"
-        >At
-        <select id="orderDock" value={dockSite} onchange={(e) => (dockSite = e.currentTarget.value)}>
-          {#each orbitSites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
-        </select></label
-      >
-    {:else}
-      <Field label="Hours" bind:value={waitHours} width={6} name="orderHours" />
-    {/if}
-    <button id="orderAdd" onclick={add}>Add order</button>
-  </Bar>
-  <h3>Trip</h3>
-  <Bar>
-    <label class="pick"
-      >Destination
-      <select id="tripTo" value={dest?.key ?? ''} onchange={(e) => (destKey = e.currentTarget.value)}>
-        {#each groups as g (g)}
-          <optgroup label={g}>
-            {#each dests.filter((d) => d.group === g) as d (d.key)}<option value={d.key}>{d.label}</option
-              >{/each}
-          </optgroup>
-        {/each}
-      </select></label
-    >
-    <label class="pick"
-      >Profile
-      <select
-        id="tripProfile"
-        value={profile}
-        onchange={(e) => (profile = e.currentTarget.value as typeof profile)}
-      >
-        <option value="cheapest">Cheapest</option>
-        <option value="balanced">Balanced</option>
-        <option value="fastest">Fastest</option>
-      </select></label
-    >
-    <button id="tripPlan" disabled={!!vessel.trip} onclick={plan}>Plan trip</button>
-    <button id="tripGo" disabled={!shown?.options.length} onclick={() => fly(profile)}>Fly</button>
-  </Bar>
-  {#if shown}
-    {#if shown.options.length}
-      <div id="tripOptions">
-        <Table
-          head={[
-            'Profile',
-            '>Departs in',
-            '>Duration',
-            '>Delta-v',
-            '>Propellant',
-            '>Left',
-            'Stops',
-            'Returns'
-          ]}
-          rows={optionRows}
-        />
-      </div>
-    {:else}
-      <ul id="tripReasons">
-        {#each shown.reasons as r, i (i)}<li>{r}</li>{/each}
-      </ul>
-    {/if}
-  {/if}
-  {#if found.length || installable || (vessel && needsRegion(vessel))}
-    <h3>Found or join a site</h3>
-    {#if vessel && needsRegion(vessel)}
-      <Bar>
-        <label class="pick"
-          >Region
-          <select
-            id="foundRegion"
-            value={chosenRegion ?? ''}
-            onchange={(e) => (foundRegion = e.currentTarget.value)}
-            disabled={!regions.length}
+      {#if vessel.blocked}<p class="hot" id="vesselBlocked">{vessel.blocked}</p>{/if}
+      <CardSection label="Propellant">
+        {#if propellants.length}
+          <IconList items={propellants} size={16} />
+        {:else}
+          <span class="dim">None</span>
+        {/if}
+      </CardSection>
+      <CardSection label="Cargo">
+        {#if cargo.length}
+          <IconList items={cargo} size={16} />
+        {:else}
+          <span class="dim">Empty</span>
+        {/if}
+      </CardSection>
+      {#if vessel.run}
+        <p class="dim" id="runNote">
+          Supply run: {material(vessel.run.item).name} from {whereabouts({
+            kind: 'site',
+            site: vessel.run.from
+          })}
+          to {whereabouts({ kind: 'site', site: vessel.run.to })}.
+        </p>
+      {/if}
+
+      <CardSection label="Orders">
+        {#if orders.length}
+          <div id="vesselOrders" class="orders">
+            {#each orders as o, i (o.id)}
+              <button
+                type="button"
+                class="ord"
+                class:on={i === row}
+                aria-pressed={i === row}
+                onclick={() => (picked = i)}><span class="dim">{i + 1}</span>{orderLabel(game, o)}</button
+              >
+            {/each}
+          </div>
+        {:else}
+          <span class="dim" id="noOrders">No orders.</span>
+        {/if}
+        <div class="row">
+          <button
+            id="orderUp"
+            disabled={row <= 0 || !orders.length}
+            onclick={() => {
+              moveOrder(vessel, orders[row]!.id, -1);
+              picked = row - 1;
+            }}><Icon name="up" />Up</button
           >
-            {#each regions as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
-          </select></label
-        >
-        {#if !regions.length}<span class="none" id="noRegions"
-            >Survey this body first, or every known region has a site.</span
-          >{/if}
-      </Bar>
-    {/if}
-    {#if found.length}
-      <Bar>
-        <label class="pick"
-          >First building
-          <select
-            id="foundBuilding"
-            value={foundPick?.building.id ?? ''}
-            onchange={(e) => (foundChoice = e.currentTarget.value)}
+          <button
+            id="orderDown"
+            disabled={row >= orders.length - 1}
+            onclick={() => {
+              moveOrder(vessel, orders[row]!.id, 1);
+              picked = row + 1;
+            }}><Icon name="down" />Down</button
           >
-            {#each found as f (f.building.id)}<option value={f.building.id}
-                >{f.building.name}{f.missing.length
-                  ? ` (short of ${shortName(f.missing[0]!.id)})`
-                  : ''}</option
-              >{/each}
-          </select></label
-        >
-        <button id="foundGo" disabled={!foundPick || foundPick.missing.length > 0} onclick={found_}
-          >Found a site</button
-        >
-      </Bar>
-    {/if}
-    {#if installable}
-      <Bar><button id="installGo" onclick={install}>Join this ship to the site</button></Bar>
-    {/if}
-    {#if foundMessage}<p class="warn" id="foundMessage">{foundMessage}</p>{/if}
+          <button
+            id="orderRemove"
+            disabled={!orders.length}
+            onclick={() => removeOrder(vessel, orders[row]!.id)}><Icon name="trash" />Remove</button
+          >
+          <button id="orderClear" disabled={!orders.length && !vessel.run} onclick={() => clearOrders(vessel)}
+            >Clear</button
+          >
+        </div>
+      </CardSection>
+
+      <CardSection label="Add an order">
+        <div id="orderType">
+          <FilterChips
+            items={ORDER_TYPES}
+            value={orderType}
+            onchange={(id) => (orderType = id as typeof orderType)}
+          />
+        </div>
+        <div class="row">
+          {#if orderType === 'load' || orderType === 'unload'}
+            <label class="pick"
+              >Item
+              <select
+                id="orderItem"
+                value={item?.key ?? ''}
+                onchange={(e) => (itemKey = e.currentTarget.value)}
+              >
+                {#each items as i (i.key)}<option value={i.key}>{i.label}</option>{/each}
+              </select></label
+            >
+            <label class="pick"><input id="orderAll" type="checkbox" bind:checked={all} /> All</label>
+            <Field
+              label="Kilograms"
+              bind:value={amount}
+              width={8}
+              name="orderAmount"
+              disabled={all}
+              max={1e9}
+            />
+          {:else if orderType === 'survey'}
+            <label class="pick"
+              >Body
+              <select
+                id="orderSurvey"
+                value={surveyTarget}
+                onchange={(e) => (surveyBody = e.currentTarget.value)}
+              >
+                {#each surveyable as b (b)}<option value={b}>{bodyName(b)}</option>{/each}
+              </select></label
+            >
+          {:else if orderType === 'dock'}
+            <label class="pick"
+              >At
+              <select id="orderDock" value={dockSite} onchange={(e) => (dockSite = e.currentTarget.value)}>
+                {#each orbitSites as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
+              </select></label
+            >
+          {:else if orderType === 'wait'}
+            <Field label="Hours" bind:value={waitHours} width={6} name="orderHours" />
+          {/if}
+          <button id="orderAdd" onclick={add}><Icon name="plus" />Add order</button>
+        </div>
+      </CardSection>
+
+      <CardSection label="Trip">
+        <div class="row">
+          <label class="pick"
+            >To
+            <select id="tripTo" value={dest?.key ?? ''} onchange={(e) => (destKey = e.currentTarget.value)}>
+              {#each groups as g (g)}
+                <optgroup label={g}>
+                  {#each dests.filter((d) => d.group === g) as d (d.key)}<option value={d.key}
+                      >{d.label}</option
+                    >{/each}
+                </optgroup>
+              {/each}
+            </select></label
+          >
+        </div>
+        <div id="tripProfile">
+          <FilterChips items={PROFILES} value={profile} onchange={(id) => (profile = id as typeof profile)} />
+        </div>
+        <div class="row">
+          <button id="tripPlan" disabled={!!vessel.trip} onclick={plan}><Icon name="clock" />Plan trip</button
+          >
+          <button id="tripGo" disabled={!shownPlan?.options.length} onclick={() => fly(profile)}
+            ><Icon name="rocket" />Fly</button
+          >
+        </div>
+        {#if shownPlan}
+          {#if shownPlan.options.length}
+            <div id="tripOptions">
+              <TileGrid min={86} gap={4}>
+                {#each shownPlan.options as o (o.profile)}
+                  <Tile
+                    variant="cmp"
+                    icons={mainFuel ? [mainFuel] : []}
+                    iconSize={16}
+                    name={PROFILE_NAMES[o.profile]}
+                    corner={daysText(Math.max(0, o.departure - game.elapsed))}
+                    mark={o.canStop ? undefined : 'warn'}
+                    markTone="hot"
+                    value={daysText(o.duration)}
+                    selected={profile === o.profile}
+                    tip={tipText(
+                      PROFILE_NAMES[o.profile],
+                      `Departs in ${daysText(Math.max(0, o.departure - game.elapsed))}`,
+                      `Takes ${daysText(o.duration)}`,
+                      `Delta-v ${kms(o.dv)}`,
+                      `Propellant ${fmt.mass(o.propellant)}, ${fmt.mass(o.propellantLeft)} left`,
+                      o.canStop ? 'Can stop at the target' : warn('Cannot stop at the target'),
+                      o.canReturn ? 'Can come back' : dim('Cannot come back')
+                    )}
+                    onselect={() => (profile = o.profile)}
+                  >
+                    <span class="mini">{kms(o.dv)}</span>
+                  </Tile>
+                {/each}
+              </TileGrid>
+            </div>
+          {:else}
+            <ul id="tripReasons">
+              {#each shownPlan.reasons as r, i (i)}<li><Icon name="warn" class="xs" />{r}</li>{/each}
+            </ul>
+          {/if}
+        {/if}
+      </CardSection>
+
+      {#if found.length || installable || needsRegion(vessel)}
+        <CardSection label="Found or join a site">
+          {#if needsRegion(vessel)}
+            <div class="row">
+              <label class="pick"
+                >Region
+                <select
+                  id="foundRegion"
+                  value={chosenRegion ?? ''}
+                  onchange={(e) => (foundRegion = e.currentTarget.value)}
+                  disabled={!regions.length}
+                >
+                  {#each regions as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
+                </select></label
+              >
+              {#if !regions.length}<span class="dim" id="noRegions"
+                  >Survey this body first, or every known region has a site.</span
+                >{/if}
+            </div>
+          {/if}
+          {#if found.length}
+            <div id="foundBuilding">
+              <TileGrid min={86} gap={4}>
+                {#each found as f (f.building.id)}
+                  <Tile
+                    variant="cmp"
+                    icons={[{ kind: 'building', id: f.building.id }]}
+                    iconSize={32}
+                    name={f.building.name}
+                    dimmed={f.missing.length > 0}
+                    selected={foundPick?.building.id === f.building.id}
+                    tip={buildingTip(
+                      f.building.id,
+                      ...f.missing.map(
+                        (m) =>
+                          `Short of ${materialName(m.id)}: need ${fmt.mass(m.need)}, have ${fmt.mass(m.have)}`
+                      )
+                    )}
+                    onselect={() => (foundChoice = f.building.id)}
+                  />
+                {/each}
+              </TileGrid>
+            </div>
+            {#if foundPick?.missing.length}
+              <IconList
+                variant="have"
+                size={16}
+                items={foundPick.missing.map((m) => ({
+                  icon: { kind: 'material', id: m.id },
+                  amount: fmt.mass(m.have),
+                  need: fmt.mass(m.need),
+                  ok: false,
+                  tip: materialTip(m.id)
+                }))}
+              />
+            {/if}
+            <div class="row">
+              <button id="foundGo" disabled={!foundPick || foundPick.missing.length > 0} onclick={found_}
+                ><Icon name="plus" />Found a site</button
+              >
+            </div>
+          {/if}
+          {#if installable}
+            <div class="row">
+              <button id="installGo" onclick={install}>Join this ship to the site</button>
+            </div>
+          {/if}
+          {#if foundMessage}<p class="hot" id="foundMessage">{foundMessage}</p>{/if}
+        </CardSection>
+      {/if}
+    </Card>
+  {:else}
+    <Card title="No ship selected" subtitle="build one on the Shipyard tab" />
   {/if}
-  {#if vessel.run}
-    <p class="none" id="runNote">
-      Supply run: {material(vessel.run.item).name} from {whereabouts({ kind: 'site', site: vessel.run.from })} to
-      {whereabouts({ kind: 'site', site: vessel.run.to })}.
-    </p>
-  {/if}
-{/if}
+{/snippet}
+
+<TabBody {main} {side} />
 
 <style>
-  .none {
-    margin: 4px 0;
+  .dim {
     color: var(--dim);
   }
-  .warn,
-  ul {
-    margin: 4px 0;
+  .hot {
     color: var(--hot);
+    margin: 0;
   }
-  ul {
-    padding-left: 18px;
+  p {
+    margin: 0;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .row button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .pick {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin: 2px 4px;
     color: var(--dim);
   }
   .pick select {
     color: var(--text);
-    max-width: 36ch;
+    max-width: 220px;
+  }
+  .orders {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ord {
+    color: var(--text);
+    display: flex;
+    gap: 6px;
+    text-align: left;
+    margin: 0;
+    padding: 1px 6px;
+  }
+  .ord.on {
+    background: var(--panel2);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  ul {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--hot);
+  }
+  li {
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+  }
+  .mini {
+    font-size: 14px;
+    color: var(--dim);
   }
   button:disabled,
   select:disabled {
