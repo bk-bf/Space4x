@@ -1,5 +1,4 @@
-import { hash, mix } from '#lib/gfx/math.ts';
-import { dith } from '#lib/gfx/noise.ts';
+import { hash } from '#lib/gfx/math.ts';
 import type { RGB } from '#lib/gfx/palette.ts';
 import { LIGHT, type Box, type Pixels } from '#lib/gfx/bodies/light.ts';
 import { forget } from '#lib/gfx/bodies/looks/bake.ts';
@@ -9,6 +8,7 @@ import { clamp, fbm, smoothstep } from '#lib/gfx/bodies/looks/terrain.ts';
 import type { Look } from '#lib/gfx/bodies/looks/types.ts';
 import { meshBytes, meshOf } from '#lib/gfx/bodies/rock/mesh.ts';
 import { drawRock, rockReady, rockReach } from '#lib/gfx/bodies/rock/raster.ts';
+import { drawTail, tailReach, tailShown, type CometTail } from './tail.ts';
 import { basinRelief, macroRadius, shapeReach, type ShapeSpec } from './shape.ts';
 
 export type SmallType = 'carbonaceous' | 'stony' | 'metallic' | 'comet';
@@ -29,8 +29,7 @@ export interface SmallBody {
 const FACE = 192;
 const BUDGET_BYTES = 48 * 1024 * 1024;
 const LUMP_NORM = 0.6;
-const TAIL_FROM = 5;
-const TAIL_UNTIL = 40;
+const SUN_ANGLE = Math.atan2(LIGHT[1], LIGHT[0]);
 
 const PALETTES: Readonly<Record<SmallType, readonly Stops[]>> = {
   carbonaceous: [
@@ -169,57 +168,6 @@ export const smallReach = (body: SmallBody): number => {
     : (shapeReach(body.spec) * (1 + body.rock.amp)) / (1 + LUMP_NORM * body.rock.amp);
 };
 
-const TAIL_ION: RGB = [150, 200, 240];
-const TAIL_DUST: RGB = [220, 196, 150];
-const TAIL_LENGTH = 7;
-const TAIL_MAX = 140;
-const SUN_ANGLE = Math.atan2(LIGHT[1], LIGHT[0]);
-
-function drawTail(f: Pixels, cx: number, cy: number, radius: number, sun: number): void {
-  const length = Math.min(radius * TAIL_LENGTH, TAIL_MAX),
-    ax = -Math.cos(sun),
-    ay = -Math.sin(sun),
-    D = f.d,
-    reach = Math.ceil(length + radius * 2),
-    X = Math.round(cx),
-    Y = Math.round(cy);
-  for (let j = -reach; j <= reach; j++)
-    for (let i = -reach; i <= reach; i++) {
-      const x = X + i,
-        y = Y + j;
-      if (x < 0 || y < 0 || x >= f.w || y >= f.h) continue;
-      const along = i * ax + j * ay,
-        across = -i * ay + j * ax,
-        t = along / length;
-      let col: RGB | null = null,
-        p = 0;
-      if (t > 0 && t < 1) {
-        const ion = Math.exp(-((across / (radius * 0.35 + t * radius * 0.5)) ** 2));
-        const dust = Math.exp(-(((across - t * radius * 1.4) / (radius * 0.5 + t * radius * 1.1)) ** 2));
-        if (ion > dust * 0.8) {
-          p = ion * (1 - t) * 0.9;
-          col = TAIL_ION;
-        } else {
-          p = dust * (1 - t) * 0.55;
-          col = TAIL_DUST;
-        }
-      } else if (t <= 0) {
-        const d = Math.hypot(i, j) / (radius * 1.7);
-        if (d < 1) {
-          p = (1 - d) ** 1.4 * 0.5;
-          col = TAIL_ION;
-        }
-      }
-      if (col && dith(x, y) < p) {
-        const q = (y * f.w + x) * 4,
-          k = 0.55;
-        D[q] = mix(D[q]!, col[0], k);
-        D[q + 1] = mix(D[q + 1]!, col[1], k);
-        D[q + 2] = mix(D[q + 2]!, col[2], k);
-      }
-    }
-}
-
 export function drawSmallBody(
   f: Pixels,
   body: SmallBody,
@@ -227,12 +175,14 @@ export function drawSmallBody(
   cy: number,
   radius: number,
   turn: number,
-  sun?: number
+  sun?: number,
+  tail?: CometTail
 ): Box | undefined {
   const r = Math.max(2, radius),
-    reach = smallReach(body) * (r + 0.5) + 2;
+    tails = !!tail && body.type === 'comet' && tailShown(r, tail.au),
+    reach = Math.max(smallReach(body) * (r + 0.5) + 2, tails ? tailReach(r, tail!.au) + 2 : 0);
   if (cx + reach < 0 || cy + reach < 0 || cx - reach > f.w || cy - reach > f.h) return undefined;
-  if (body.type === 'comet' && r >= TAIL_FROM && r <= TAIL_UNTIL) drawTail(f, cx, cy, r, sun ?? SUN_ANGLE);
+  if (tails) drawTail(f, cx, cy, r, sun ?? SUN_ANGLE, tail!, body.spec.seed);
   const look = smallLook(body);
   release(look);
   return drawRock(f, look, { rot: body.phase + turn, tilt: body.tilt, sun }, cx, cy, r);

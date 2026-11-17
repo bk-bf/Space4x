@@ -14,7 +14,14 @@ import { economy } from '#lib/game/economy/index.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
-import { drawSmallBody, smallReach, smallReady, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
+import {
+  drawSmallBody,
+  smallReach,
+  smallReady,
+  tailReach,
+  type CometTail,
+  type SmallBody
+} from '#lib/gfx/bodies/small/index.ts';
 import { drawSphere, sphereReach, type Box, type SphereState } from '#lib/gfx/bodies/sphere.ts';
 import type { Look } from '#lib/gfx/bodies/looks/types.ts';
 import { lookOf, sphereState, staticRot, turnAt } from '#lib/game/looks.ts';
@@ -246,6 +253,11 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
 
 const sunAngle = (p: Point, sun: Point): number => Math.atan2(sun[1] - p[1], sun[0] - p[0]);
 
+const cometTail = (b: MapBody, sun: number): CometTail => ({
+  au: b.orbit / AU,
+  motion: sun + Math.PI + (b.omega >= 0 ? Math.PI / 2 : -Math.PI / 2)
+});
+
 function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
   const { bodies, moving } = staticBodies(game, system),
     first = bodies.length - moving.length,
@@ -440,8 +452,10 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
         else bodyMark(f, b.p[0], b.p[1], b.col, !!b.parent, !!b.look?.rings);
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.small) {
-        b.box = vis(b.p, smallReach(b.small) * b.R + 4)
-          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, b.turn, sunAngle(b.p, sunP))
+        const sun = sunAngle(b.p, sunP),
+          tail = b.small.type === 'comet' ? cometTail(b, sun) : undefined;
+        b.box = vis(b.p, Math.max(smallReach(b.small) * b.R + 4, tail ? tailReach(b.R, tail.au) + 2 : 0))
+          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, b.turn, sun, tail)
           : undefined;
       } else if (b.look && b.state) {
         b.state.sun = sunAngle(b.p, sunP);

@@ -7,6 +7,7 @@
     NAMED_BODIES,
     smallBody,
     smallReach,
+    type CometTail,
     type ShapeFamily,
     type SmallBody,
     type SmallInfo
@@ -20,6 +21,7 @@
   const TICK_MS = 100;
   const CELL = 120;
   const GALLERY_TURN = 0.012;
+  const GALLERY_TAIL: CometTail = { au: 1, motion: Math.PI / 2 };
   const FIT = 52;
   const SIZES = [
     { id: 'fit', label: 'Fitted' },
@@ -65,7 +67,7 @@
 
   function draw(fb: FB, b: SmallBody, t: number) {
     fb.start();
-    drawSmallBody(fb, b, CELL / 2, CELL / 2, radiusOf(b), -t * GALLERY_TURN);
+    drawSmallBody(fb, b, CELL / 2, CELL / 2, radiusOf(b), -t * GALLERY_TURN, undefined, GALLERY_TAIL);
     fb.present();
   }
 

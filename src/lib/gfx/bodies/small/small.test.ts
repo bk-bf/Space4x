@@ -12,6 +12,7 @@ import {
   smallReady,
   type SmallBody
 } from './draw.ts';
+import { activityAt, tailReach, TAIL_FROM, TAIL_UNTIL, type CometTail } from './tail.ts';
 
 const SIZES = [3, 6, 12, 24, 48, 96, 264];
 const TICK_TURN = (2 * Math.PI) / 300;
@@ -79,7 +80,7 @@ const GENERIC: readonly SmallInfo[] = [
   { id: 'sample-comet-2', name: 'Comet', type: 'comet', diameter: 9 }
 ];
 
-describe('small bodies', () => {
+describe('small bodies', { timeout: 30_000 }, () => {
   it('draws the same pixels for the same body and time', () => {
     const b = ready(info('bennu'));
     expect(Array.from(paint(b, 40, 3).d)).toEqual(Array.from(paint(b, 40, 3).d));
@@ -180,5 +181,103 @@ describe('small bodies', () => {
       expect(!!small).toBe((!!record(b.id) && !record(b.id)!.dwarf) || !!cometRecord(b.id));
     }
     expect(smallBodyOf(game.world.bodies.find((b) => b.id === 'luna')!)).toBeUndefined();
+  });
+});
+
+describe('comet tails', { timeout: 30_000 }, () => {
+  const W = 640,
+    H = 480,
+    SKY = 20,
+    SUN = Math.PI,
+    NEAR: CometTail = { au: 1, motion: -Math.PI / 2 };
+
+  function sky(): Pixels {
+    const f = canvas(1);
+    const d = new Uint8ClampedArray(W * H * 4).fill(SKY);
+    return { ...f, w: W, h: H, d };
+  }
+
+  const comet = () => ready(GENERIC.find((g) => g.id === 'sample-comet')!);
+
+  function draw(radius: number, tail: CometTail | undefined, cx = 160, cy = 240, b = comet()): Pixels {
+    const f = sky();
+    drawSmallBody(f, b, cx, cy, radius, 0, SUN, tail);
+    return f;
+  }
+
+  function beyond(f: Pixels, b: SmallBody, radius: number, cx = 160, cy = 240) {
+    const nucleus = smallReach(b) * (radius + 0.5) + 2;
+    let n = 0,
+      far = 0,
+      sx = 0,
+      sy = 0;
+    for (let y = 0; y < f.h; y++)
+      for (let x = 0; x < f.w; x++) {
+        const q = (y * f.w + x) * 4;
+        if (f.d[q] === SKY && f.d[q + 1] === SKY && f.d[q + 2] === SKY) continue;
+        const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
+        if (d <= nucleus) continue;
+        n++;
+        sx += x + 0.5 - cx;
+        sy += y + 0.5 - cy;
+        far = Math.max(far, d);
+      }
+    return { n, far, x: n ? sx / n : 0, y: n ? sy / n : 0 };
+  }
+
+  it('draws the same pixels for the same comet, place and time', () => {
+    expect(Array.from(draw(20, NEAR).d)).toEqual(Array.from(draw(20, NEAR).d));
+  });
+
+  it('adds light away from the Sun only inside the radius band', () => {
+    const b = comet();
+    for (const radius of [TAIL_FROM - 1, TAIL_UNTIL + 1])
+      expect(beyond(draw(radius, NEAR), b, radius).n, `${radius}`).toBe(0);
+    for (const radius of [TAIL_FROM, 14, 30, TAIL_UNTIL]) {
+      const t = beyond(draw(radius, NEAR), b, radius);
+      expect(t.n, `${radius}`).toBeGreaterThan(radius * radius);
+      expect(t.x, `${radius}`).toBeGreaterThan(Math.abs(t.y));
+      expect(t.far, `${radius}`).toBeLessThanOrEqual(tailReach(radius, NEAR.au) + 2);
+    }
+  });
+
+  it('only adds light: no pixel of the sky around the nucleus gets darker', () => {
+    const b = comet(),
+      f = draw(30, NEAR),
+      nucleus = smallReach(b) * 30.5 + 2;
+    let darker = 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (Math.hypot(x + 0.5 - 160, y + 0.5 - 240) > nucleus && f.d[(y * W + x) * 4]! < SKY) darker++;
+    expect(darker).toBe(0);
+  });
+
+  it('bends the dust tail behind the motion', () => {
+    const b = comet(),
+      down = beyond(draw(30, { au: 1, motion: Math.PI / 2 }), b, 30),
+      up = beyond(draw(30, { au: 1, motion: -Math.PI / 2 }), b, 30);
+    expect(down.y).toBeLessThan(0);
+    expect(up.y).toBeGreaterThan(0);
+  });
+
+  it('shortens the tail away from the Sun and draws none beyond about 5 AU', () => {
+    const b = comet(),
+      reach = (au: number) => beyond(draw(14, { au, motion: 0 }), b, 14).far;
+    expect(activityAt(0.5)).toBe(1);
+    expect(reach(3)).toBeLessThan(reach(1));
+    expect(reach(5)).toBeLessThan(reach(3));
+    expect(beyond(draw(14, { au: 6, motion: 0 }), b, 14).n).toBe(0);
+    expect(beyond(draw(14, { au: 17.9, motion: 0 }), b, 14).n).toBe(0);
+  });
+
+  it('draws nothing for a comet whose tail is outside the frame', () => {
+    const f = draw(30, NEAR, -tailReach(30, 1) - 10, 240);
+    expect(f.d.every((v) => v === SKY)).toBe(true);
+  });
+
+  it('draws the tail of a comet whose nucleus is just off the left edge', () => {
+    const b = comet(),
+      f = draw(20, NEAR, -60, 240, b);
+    expect(f.d.some((v) => v !== SKY)).toBe(true);
   });
 });

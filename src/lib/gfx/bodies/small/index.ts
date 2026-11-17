@@ -8,3 +8,4 @@ export {
   type SmallBody,
   type SmallType
 } from './draw.ts';
+export { tailReach, type CometTail } from './tail.ts';
