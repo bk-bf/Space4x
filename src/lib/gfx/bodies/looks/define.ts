@@ -40,6 +40,7 @@ export function defineLook(def: LookDef): Look {
     halo: def.halo,
     rimW: def.rimW ?? DEFAULT_RIM,
     rings: !!def.rings,
+    plateau: def.plateau ?? 0,
     facing: def.facing,
     tilt: def.tilt,
     pitch: def.pitch,

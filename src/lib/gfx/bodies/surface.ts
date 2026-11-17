@@ -21,6 +21,21 @@ const Of = new Float64Array(8);
 const G = Gf as unknown as Texels;
 const O = Of as unknown as Colour;
 
+const plateauTables = new Map<number, Float64Array>();
+
+function plateaus(step: number): Float64Array {
+  let table = plateauTables.get(step);
+  if (!table) {
+    table = new Float64Array(256);
+    for (let i = 0; i < 256; i++) {
+      const lum = i + 0.5;
+      table[i] = Math.exp(Math.round(Math.log(lum) / step) * step) / lum;
+    }
+    plateauTables.set(step, table);
+  }
+  return table;
+}
+
 export interface Span {
   n: number;
   px: Float64Array;
@@ -88,6 +103,7 @@ export function shadeSpan(f: Pixels, y: number, look: Look, P: Mat, R: number, s
     SH = span.shadow,
     cube = look.cube,
     shade = look.shade,
+    steps = look.plateau && look.bump && R > BUMP_FROM ? plateaus(look.plateau) : undefined,
     bumpK = look.bump && R > BUMP_FROM ? look.bump : 0,
     relief = !bumpK && R > RELIEF_FROM,
     gi = look.gradAt,
@@ -111,6 +127,13 @@ export function shadeSpan(f: Pixels, y: number, look: Look, P: Mat, R: number, s
     Of[LAND] = 0;
     Of[SEA] = 0;
     shade(px, py, pz, R, dv, G, O);
+    if (steps) {
+      const lum = Of[0]! * 0.3 + Of[1]! * 0.59 + Of[2]! * 0.11,
+        k = steps[lum < 0 ? 0 : lum > 255 ? 255 : lum | 0]!;
+      Of[0] = Of[0]! * k;
+      Of[1] = Of[1]! * k;
+      Of[2] = Of[2]! * k;
+    }
     let L = LT[i]!;
     if (bumpK) L -= (Gf[gi]! - 0.5) * bx + (Gf[gi + 1]! - 0.5) * by + (Gf[gi + 2]! - 0.5) * bz;
     else if (relief) L += Of[ADD]! * RELIEF_K * nz;

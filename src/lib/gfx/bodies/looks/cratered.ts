@@ -77,6 +77,8 @@ const BIG_DENT = [
   { f: 7, dn: 0.7, rmin: 0.14, rmax: 0.3, depth: 0.5 }
 ] as const;
 
+const PLATEAU = 0.09;
+
 export function craterLook(o: CraterOptions): Look {
   const ls = layers(o.layers, o.seed ?? 0),
     fs = (o.features ?? []).map(feature),
@@ -188,6 +190,7 @@ export function craterLook(o: CraterOptions): Look {
     lumpyAmp,
     macro: o.macro,
     face: o.face ?? 192,
+    plateau: PLATEAU,
     bump: o.bump ?? 0.9,
     gradRange: o.gradRange ?? 1.6,
     rawOf: () => rawLast,
