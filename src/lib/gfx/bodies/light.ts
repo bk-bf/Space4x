@@ -11,6 +11,7 @@ export interface SphereState {
   tilt?: number;
   pitch?: number;
   lights?: boolean;
+  sun?: number;
 }
 
 export interface Box {
@@ -25,6 +26,15 @@ export const LIGHT = (() => {
     l = Math.hypot(...v);
   return [v[0] / l, v[1] / l, v[2] / l] as const;
 })();
+
+export type Light = readonly [number, number, number];
+
+const LIGHT_XY = Math.hypot(LIGHT[0], LIGHT[1]);
+
+export function lightOf(st: SphereState): Light {
+  const a = st.sun;
+  return a === undefined ? LIGHT : [Math.cos(a) * LIGHT_XY, Math.sin(a) * LIGHT_XY, LIGHT[2]];
+}
 
 export const SHADES = [0.2, 0.5, 0.76, 1] as const;
 

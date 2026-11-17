@@ -48,7 +48,7 @@ describe('named looks', () => {
     20_000
   );
 
-  it('the planets keep the pixels the game drew before the looks were added', () => {
+  it('the planets keep their checked pixels', () => {
     const entries = Object.entries(golden as Record<string, string>);
     expect(entries.length).toBe(24);
     for (const [key, hash] of entries) {

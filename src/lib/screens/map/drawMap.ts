@@ -244,6 +244,8 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
   return value;
 }
 
+const sunAngle = (p: Point, sun: Point): number => Math.atan2(sun[1] - p[1], sun[0] - p[0]);
+
 function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
   const { bodies, moving } = staticBodies(game, system),
     first = bodies.length - moving.length,
@@ -428,6 +430,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
           orbitArc(f, c[0], c[1], b.orbit / s, PAL.orbit);
         }
     if (layers.Asteroids && system?.belt) drawBelt(f, S, s, game.elapsed, system.belt);
+    const star0 = system?.stars[0] ?? { x: 0, y: 0 },
+      sunP = S(star0.x, star0.y);
     for (const b of shown) {
       if (b.mk) {
         if (b.star) starMark(f, b.p[0], b.p[1], b.tint?.core[0], b.tint?.core[2]);
@@ -437,12 +441,14 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.small) {
         b.box = vis(b.p, smallReach(b.small) * b.R + 4)
-          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, b.turn)
+          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, b.turn, sunAngle(b.p, sunP))
           : undefined;
-      } else if (b.look && b.state)
+      } else if (b.look && b.state) {
+        b.state.sun = sunAngle(b.p, sunP);
         b.box = vis(b.p, sphereReach(b.look, b.R))
           ? drawSphere(f, b.look, b.state, b.p[0], b.p[1], b.R)
           : undefined;
+      }
     }
     if (useCache && !liveStar && key === lastKey) {
       cache = cache && cache.length === f.d.length ? cache : new Uint8ClampedArray(f.d.length);

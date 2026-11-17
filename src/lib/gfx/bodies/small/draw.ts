@@ -173,12 +173,12 @@ const TAIL_ION: RGB = [150, 200, 240];
 const TAIL_DUST: RGB = [220, 196, 150];
 const TAIL_LENGTH = 7;
 const TAIL_MAX = 140;
-const TAIL_ANGLE = Math.atan2(-LIGHT[1], -LIGHT[0]);
+const SUN_ANGLE = Math.atan2(LIGHT[1], LIGHT[0]);
 
-function drawTail(f: Pixels, cx: number, cy: number, radius: number): void {
+function drawTail(f: Pixels, cx: number, cy: number, radius: number, sun: number): void {
   const length = Math.min(radius * TAIL_LENGTH, TAIL_MAX),
-    ax = Math.cos(TAIL_ANGLE),
-    ay = Math.sin(TAIL_ANGLE),
+    ax = -Math.cos(sun),
+    ay = -Math.sin(sun),
     D = f.d,
     reach = Math.ceil(length + radius * 2),
     X = Math.round(cx),
@@ -226,13 +226,14 @@ export function drawSmallBody(
   cx: number,
   cy: number,
   radius: number,
-  turn: number
+  turn: number,
+  sun?: number
 ): Box | undefined {
   const r = Math.max(2, radius),
     reach = smallReach(body) * (r + 0.5) + 2;
   if (cx + reach < 0 || cy + reach < 0 || cx - reach > f.w || cy - reach > f.h) return undefined;
-  if (body.type === 'comet' && r >= TAIL_FROM && r <= TAIL_UNTIL) drawTail(f, cx, cy, r);
+  if (body.type === 'comet' && r >= TAIL_FROM && r <= TAIL_UNTIL) drawTail(f, cx, cy, r, sun ?? SUN_ANGLE);
   const look = smallLook(body);
   release(look);
-  return drawRock(f, look, { rot: body.phase + turn, tilt: body.tilt }, cx, cy, r);
+  return drawRock(f, look, { rot: body.phase + turn, tilt: body.tilt, sun }, cx, cy, r);
 }

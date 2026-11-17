@@ -1,10 +1,11 @@
 import { clamp } from '#lib/gfx/math.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import {
-  LIGHT,
+  lightOf,
   orientation,
   SHADES,
   type Box,
+  type Light,
   type Pixels,
   type SphereState
 } from '#lib/gfx/bodies/light.ts';
@@ -52,7 +53,7 @@ export const rockReach = (look: Look): number => meshOf(look)?.reach ?? UNBAKED_
 
 export const rockReady = (look: Look): boolean => look.ready && !!meshOf(look);
 
-function disc(f: Pixels, look: Look, cx: number, cy: number, R: number): Box {
+function disc(f: Pixels, look: Look, cx: number, cy: number, R: number, light: Light): Box {
   const D = f.d,
     r = R + 0.5,
     x0 = Math.max(0, Math.floor(cx - r)),
@@ -65,7 +66,7 @@ function disc(f: Pixels, look: Look, cx: number, cy: number, R: number): Box {
         dy = (y + 0.5 - cy) / r,
         n2 = 1 - dx * dx - dy * dy;
       if (n2 < 0) continue;
-      const L = dx * LIGHT[0] + dy * LIGHT[1] + Math.sqrt(n2) * LIGHT[2],
+      const L = dx * light[0] + dy * light[1] + Math.sqrt(n2) * light[2],
         k = SHADES[clamp(Math.floor((L * 1.15 + 0.12) * 3 + dith(x, y)), 0, 3)]!,
         q = (y * f.w + x) * 4;
       D[q] = look.tint[0] * k;
@@ -87,7 +88,7 @@ export function drawRock(
   const mesh = meshOf(look),
     Rp = R + 0.5;
   if (!look.ready) want(look);
-  if (!mesh) return disc(f, look, cx, cy, R);
+  if (!mesh) return disc(f, look, cx, cy, R, lightOf(st));
   const reach = Rp * mesh.reach + 1;
   if (cx + reach < 0 || cy + reach < 0 || cx - reach > f.w || cy - reach > f.h) return undefined;
   return raster(f, look, mesh, st, cx, cy, Rp);
@@ -110,9 +111,10 @@ function raster(f: Pixels, look: Look, mesh: Mesh, st: SphereState, cx: number, 
     P6 = P[6],
     P7 = P[7],
     P8 = P[8],
-    lx = P0 * LIGHT[0] + P1 * LIGHT[1] + P2 * LIGHT[2],
-    ly = P3 * LIGHT[0] + P4 * LIGHT[1] + P5 * LIGHT[2],
-    lz = P6 * LIGHT[0] + P7 * LIGHT[1] + P8 * LIGHT[2];
+    light = lightOf(st),
+    lx = P0 * light[0] + P1 * light[1] + P2 * light[2],
+    ly = P3 * light[0] + P4 * light[1] + P5 * light[2],
+    lz = P6 * light[0] + P7 * light[1] + P8 * light[2];
   room(nv, 0);
   const sx = SX,
     sy = SY,
@@ -195,7 +197,7 @@ function raster(f: Pixels, look: Look, mesh: Mesh, st: SphereState, cx: number, 
       }
     }
   }
-  shadePass(f, look, mesh, list, P, X0, Y0, BW, BH, Rp);
+  shadePass(f, look, mesh, list, P, X0, Y0, BW, BH, Rp, light);
   return box;
 }
 
@@ -209,7 +211,8 @@ function shadePass(
   Y0: number,
   BW: number,
   BH: number,
-  Rp: number
+  Rp: number,
+  light: Light
 ): void {
   const pos = mesh.pos,
     nl = NL,
@@ -271,7 +274,7 @@ function shadePass(
     }
     if (n) {
       sp.n = n;
-      shadeSpan(f, y, look, P, Rp, PLAIN);
+      shadeSpan(f, y, look, P, Rp, PLAIN, light);
       n = 0;
     }
   }

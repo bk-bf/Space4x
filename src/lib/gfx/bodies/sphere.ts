@@ -1,7 +1,15 @@
 import { clamp, hash } from '#lib/gfx/math.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import type { RGB } from '#lib/gfx/palette.ts';
-import { LIGHT, orientation, SHADES, type Box, type Pixels, type SphereState } from './light.ts';
+import {
+  lightOf,
+  orientation,
+  SHADES,
+  type Box,
+  type Light,
+  type Pixels,
+  type SphereState
+} from './light.ts';
 import { drawRock, rockReach } from './rock/raster.ts';
 import { shadeSpan, spanRoom, type SpanStyle } from './surface.ts';
 import { want } from './looks/bake.ts';
@@ -10,7 +18,6 @@ import type { Look } from './looks/types.ts';
 
 export type { Box, Pixels, SphereState };
 
-const LXY = Math.hypot(LIGHT[0], LIGHT[1]);
 const RING_REACH = 2.35;
 
 const ringDensity = (rr: number) =>
@@ -26,7 +33,7 @@ const ringDensity = (rr: number) =>
             ? 0.1
             : 0.72;
 
-function drawRings(f: Pixels, cx: number, cy: number, R: number, front: boolean): void {
+function drawRings(f: Pixels, cx: number, cy: number, R: number, front: boolean, light: Light): void {
   const rx = R * 2.3,
     ry = rx * 0.3,
     x0 = Math.max(0, Math.floor(cx - rx)),
@@ -34,8 +41,9 @@ function drawRings(f: Pixels, cx: number, cy: number, R: number, front: boolean)
     y0 = Math.max(0, Math.floor(front ? cy : cy - ry)),
     y1 = Math.min(f.h - 1, Math.ceil(front ? cy + ry : cy)),
     D = f.d,
-    ax = -LIGHT[0] / LXY,
-    ay = -LIGHT[1] / LXY,
+    lxy = Math.hypot(light[0], light[1]),
+    ax = -light[0] / lxy,
+    ay = -light[1] / lxy,
     big = R > 9;
   for (let y = y0; y <= y1; y++)
     for (let x = x0; x <= x1; x++) {
@@ -77,7 +85,7 @@ export const sphereReach = (look: Look, R: number): number =>
     ? (R + 0.5) * rockReach(look) + 1
     : R * (look.rings ? RING_REACH : 1) + atmoThick(look, R) + haloThick(look, R) + 1;
 
-function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number): void {
+function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number, light: Light): void {
   const D = f.d,
     W = f.w,
     X0 = Math.floor(cx),
@@ -102,7 +110,7 @@ function drawStandIn(f: Pixels, look: Look, cx: number, cy: number, R: number): 
         ny = dy * inv,
         n2 = 1 - nx * nx - ny * ny,
         nz = n2 > 0 ? Math.sqrt(n2) : 0,
-        L = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2],
+        L = nx * light[0] + ny * light[1] + nz * light[2],
         x = X0 + i,
         y = Y0 + j,
         s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dith(x, y)), 0, 3),
@@ -133,11 +141,12 @@ export function drawSphere(
   if (cx + RR < 0 || cy + RR < 0 || cx - RR > f.w || cy - RR > f.h) return undefined;
   if (!look.ready) {
     want(look);
-    drawStandIn(f, look, cx, cy, R);
+    drawStandIn(f, look, cx, cy, R, lightOf(st));
     return undefined;
   }
-  const rings = look.rings && R >= 2.5;
-  if (rings) drawRings(f, cx, cy, R, false);
+  const rings = look.rings && R >= 2.5,
+    light = lightOf(st);
+  if (rings) drawRings(f, cx, cy, R, false, light);
   const P = orientation(st),
     P0 = P[0],
     P1 = P[1],
@@ -167,9 +176,9 @@ export function drawSphere(
       rings: !!rings
     },
     inv = 1 / (R + 0.5),
-    L0 = LIGHT[0],
-    L1 = LIGHT[1],
-    L2 = LIGHT[2];
+    L0 = light[0],
+    L1 = light[1],
+    L2 = light[2];
   let sa = 0,
     sb = 0,
     sc = 0,
@@ -285,9 +294,9 @@ export function drawSphere(
     }
     if (k) {
       sp.n = k;
-      shadeSpan(f, y, look, P, R, style);
+      shadeSpan(f, y, look, P, R, style, light);
       k = 0;
     }
   }
-  if (rings) drawRings(f, cx, cy, R, true);
+  if (rings) drawRings(f, cx, cy, R, true, light);
 }

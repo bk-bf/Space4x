@@ -2,7 +2,7 @@ import { clamp, hash, mix } from '#lib/gfx/math.ts';
 import type { RGB } from '#lib/gfx/palette.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import { sampleCube } from './cube.ts';
-import { LIGHT, SHADES, type Pixels } from './light.ts';
+import { SHADES, type Light, type Pixels } from './light.ts';
 import type { Mat } from './looks/math.ts';
 import { ADD, LAND, SEA, type Colour, type Look, type Texels } from './looks/types.ts';
 
@@ -15,26 +15,19 @@ const RELIEF_K = 0.22;
 const BUMP_FROM = 8;
 const RING_SHADOW = 0.5;
 const RIM_MIX = 0.55;
+const GAIN = 0.88;
 
 const Gf = new Float64Array(24);
 const Of = new Float64Array(8);
 const G = Gf as unknown as Texels;
 const O = Of as unknown as Colour;
 
-const plateauTables = new Map<number, Float64Array>();
-
-function plateaus(step: number): Float64Array {
-  let table = plateauTables.get(step);
-  if (!table) {
-    table = new Float64Array(256);
-    for (let i = 0; i < 256; i++) {
-      const lum = i + 0.5;
-      table[i] = Math.exp(Math.round(Math.log(lum) / step) * step) / lum;
-    }
-    plateauTables.set(step, table);
-  }
-  return table;
-}
+const STEPS = 2;
+const TOP = 3 * STEPS;
+const LEVELS = Float64Array.from({ length: TOP + 1 }, (_, i) => {
+  const s = Math.min(2, Math.floor(i / STEPS));
+  return SHADES[s]! + (SHADES[s + 1]! - SHADES[s]!) * (i / STEPS - s);
+});
 
 export interface Span {
   n: number;
@@ -90,7 +83,15 @@ export const PLAIN: SpanStyle = {
   rings: false
 };
 
-export function shadeSpan(f: Pixels, y: number, look: Look, P: Mat, R: number, style: SpanStyle): void {
+export function shadeSpan(
+  f: Pixels,
+  y: number,
+  look: Look,
+  P: Mat,
+  R: number,
+  style: SpanStyle,
+  light: Light
+): void {
   const n = span.n,
     PX = span.px,
     PY = span.py,
@@ -103,14 +104,13 @@ export function shadeSpan(f: Pixels, y: number, look: Look, P: Mat, R: number, s
     SH = span.shadow,
     cube = look.cube,
     shade = look.shade,
-    steps = look.plateau && look.bump && R > BUMP_FROM ? plateaus(look.plateau) : undefined,
     bumpK = look.bump && R > BUMP_FROM ? look.bump : 0,
     relief = !bumpK && R > RELIEF_FROM,
     gi = look.gradAt,
     gr = look.gradRange * 2,
-    L0 = LIGHT[0],
-    L1 = LIGHT[1],
-    L2 = LIGHT[2],
+    L0 = light[0],
+    L1 = light[1],
+    L2 = light[2],
     bx = (P[0] * L0 + P[1] * L1 + P[2] * L2) * bumpK * gr,
     by = (P[3] * L0 + P[4] * L1 + P[5] * L2) * bumpK * gr,
     bz = (P[6] * L0 + P[7] * L1 + P[8] * L2) * bumpK * gr,
@@ -127,24 +127,17 @@ export function shadeSpan(f: Pixels, y: number, look: Look, P: Mat, R: number, s
     Of[LAND] = 0;
     Of[SEA] = 0;
     shade(px, py, pz, R, dv, G, O);
-    if (steps) {
-      const lum = Of[0]! * 0.3 + Of[1]! * 0.59 + Of[2]! * 0.11,
-        k = steps[lum < 0 ? 0 : lum > 255 ? 255 : lum | 0]!;
-      Of[0] = Of[0]! * k;
-      Of[1] = Of[1]! * k;
-      Of[2] = Of[2]! * k;
-    }
     let L = LT[i]!;
     if (bumpK) L -= (Gf[gi]! - 0.5) * bx + (Gf[gi + 1]! - 0.5) * by + (Gf[gi + 2]! - 0.5) * bz;
     else if (relief) L += Of[ADD]! * RELIEF_K * nz;
     if (rings && SH[i] && L > 0) L -= RING_SHADOW;
-    const s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dv), 0, 3),
-      k = SHADES[s]!,
+    const level = clamp(Math.floor((L * GAIN + 0.12) * TOP + dv), 0, TOP),
+      k = LEVELS[level]!,
       q = (row + x) * 4;
     let r = Of[0]! * k,
       g = Of[1]! * k,
       b = Of[2]! * k;
-    if (s === 0) {
+    if (level < STEPS) {
       r += DARK[0];
       g += DARK[1];
       b += DARK[2];

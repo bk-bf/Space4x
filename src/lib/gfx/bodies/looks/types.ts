@@ -54,7 +54,6 @@ export interface LookDef {
   readonly halo?: Veil;
   readonly rimW?: number;
   readonly rings?: boolean;
-  readonly plateau?: number;
 }
 
 export interface Look {
@@ -73,7 +72,6 @@ export interface Look {
   readonly halo: Veil | undefined;
   readonly rimW: number;
   readonly rings: boolean;
-  readonly plateau: number;
   readonly facing: number | undefined;
   tilt: number | undefined;
   pitch: number | undefined;
