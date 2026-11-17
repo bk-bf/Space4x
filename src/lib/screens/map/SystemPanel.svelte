@@ -7,8 +7,17 @@
   import { DefList, select, Table, Tabs, Window } from '#lib/ui/index.ts';
   import { asteroids, comets, isSmallBody } from '#lib/game/data/index.ts';
   import { GROUPS, TYPE_NAMES, formatSize, groupOf } from '#lib/game/asteroids.ts';
-  import { flyTo, layers, mapPresets, readout, toggleLayer, zoomBy, type Layer } from './camera.svelte';
-  import type { Preset } from './targets';
+  import {
+    flyTo,
+    flyToTarget,
+    layers,
+    mapPresets,
+    readout,
+    toggleLayer,
+    zoomBy,
+    type Layer
+  } from './camera.svelte';
+  import { target, type Preset } from './targets';
   import { peopleAt } from '#lib/screens/economy/lookup.ts';
   import { focus, showSystem } from './focus';
 
@@ -178,6 +187,7 @@
         planets.map((b) => b.id)
       )}
       onpick={(i) => select('body', planets[i]!.id)}
+      onopen={(i) => flyToTarget(target('body', planets[i]!.id))}
     />
     <h3>Moons <small>{moonCount}</small></h3>
     <div id="moonList">
@@ -194,6 +204,7 @@
                 g.moons.map((m) => m.id)
               )}
               onpick={(i) => select('body', g.moons[i]!.id)}
+              onopen={(i) => flyToTarget(target('body', g.moons[i]!.id))}
             />
           </div>
         </details>
@@ -215,6 +226,7 @@
           rocks.map((a) => a.id)
         )}
         onpick={(i) => select('body', rocks[i]!.id)}
+        onopen={(i) => flyToTarget(target('body', rocks[i]!.id))}
       />
     </div>
     <h3>Comets <small>{cometList.length}</small></h3>
@@ -228,6 +240,7 @@
           cometList.map((c) => c.id)
         )}
         onpick={(i) => select('body', cometList[i]!.id)}
+        onopen={(i) => flyToTarget(target('body', cometList[i]!.id))}
       />
     </div>
   {:else if tab === 'contacts'}

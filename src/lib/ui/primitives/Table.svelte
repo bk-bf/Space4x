@@ -7,11 +7,12 @@
     rows: readonly (readonly Cell[])[];
     selected?: number;
     onpick?: (row: number) => void;
+    onopen?: (row: number) => void;
     keys?: readonly string[];
     numeric?: readonly boolean[];
   }
 
-  let { head = [], rows, selected = -1, onpick, keys, numeric: alignRight }: Props = $props();
+  let { head = [], rows, selected = -1, onpick, onopen, keys, numeric: alignRight }: Props = $props();
 
   const numeric = $derived(alignRight ?? head.map(isNumericColumn));
 
@@ -37,6 +38,7 @@
           data-key={keys?.[r]}
           tabindex="0"
           onclick={() => onpick(r)}
+          ondblclick={() => onopen?.(r)}
           onkeydown={(e) => onkey(e, r)}
         >
           {#each row as cell, i (i)}<TableCell {cell} numeric={!!numeric[i]} />{/each}
