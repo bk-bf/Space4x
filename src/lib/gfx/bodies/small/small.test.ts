@@ -10,12 +10,11 @@ import {
   smallLook,
   smallReach,
   smallReady,
-  SPIN_RATE,
   type SmallBody
 } from './draw.ts';
 
 const SIZES = [3, 6, 12, 24, 48, 96, 264];
-const FRAME = 1 / 30;
+const TICK_TURN = (2 * Math.PI) / 300;
 
 function canvas(size: number): Pixels {
   return { w: size, h: size, d: new Uint8ClampedArray(size * size * 4) };
@@ -27,10 +26,10 @@ function ready(info: SmallInfo): SmallBody {
   return b;
 }
 
-function paint(b: SmallBody, radius: number, seconds = 0): Pixels {
+function paint(b: SmallBody, radius: number, turn = 0): Pixels {
   const reach = Math.ceil(smallReach(b) * (radius + 0.5)) + 4,
     f = canvas(reach * 2);
-  drawSmallBody(f, b, reach, reach, radius, seconds);
+  drawSmallBody(f, b, reach, reach, radius, turn);
   return f;
 }
 
@@ -102,14 +101,13 @@ describe('small bodies', () => {
     expect(Array.from(paint(a, 24).d)).not.toEqual(Array.from(paint(b, 24).d));
   });
 
-  it('turns smoothly: one frame at 30 a second moves the picture a little, a full turn comes back', () => {
+  it('turns smoothly: a small turn moves the picture a little, a full turn comes back', () => {
     const b = ready(info('eros')),
       R = 150,
-      a = paint(b, R, 10),
-      next = paint(b, R, 10 + FRAME),
-      later = paint(b, R, 10 + 30 * FRAME),
-      turn = paint(b, R, 10 + (Math.PI * 2) / SPIN_RATE);
-    expect(SPIN_RATE * FRAME * R).toBeLessThan(1);
+      a = paint(b, R, 1),
+      next = paint(b, R, 1 + TICK_TURN),
+      later = paint(b, R, 1 + 30 * TICK_TURN),
+      turn = paint(b, R, 1 + Math.PI * 2);
     expect(moved(a, next)).toBeGreaterThan(0);
     expect(moved(a, next)).toBeLessThan(moved(a, later) / 8);
     expect(moved(a, turn)).toBeLessThan(moved(a, next));

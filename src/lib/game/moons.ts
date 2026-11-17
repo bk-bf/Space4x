@@ -4,6 +4,8 @@ import { smallBodyFacts, smallBodyRadius } from './asteroids';
 import type { Body } from './types';
 import { AU, KM, orbitRate } from './units';
 
+const HOURS_PER_DAY = 24;
+
 const kindOf = (m: MoonRecord): string =>
   m.irregular ? 'Irregular moon' : m.type === 'icy' ? 'Icy moon' : 'Moon';
 
@@ -19,6 +21,7 @@ export function moonBody(m: MoonRecord, planetOrbit: number): Body {
     angle: hash(m.code, 3, 11) * Math.PI * 2,
     angularSpeed: orbitRate(m.period),
     tilt: hash(m.code, 4, 11) * 0.4,
+    rotation: m.rotation ?? m.period * HOURS_PER_DAY,
     facts: smallBodyFacts(kindOf(m), m, planetOrbit / AU)
   };
 }

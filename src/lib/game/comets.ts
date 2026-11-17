@@ -16,6 +16,7 @@ export function cometBody(c: CometRecord): Body {
     angle: hash(seed, 3, 11) * Math.PI * 2,
     angularSpeed: orbitRate(periodDays(c)),
     tilt: hash(seed, 4, 11) * 0.4,
+    rotation: c.rotation,
     facts: smallBodyFacts('Comet', c, c.a)
   };
 }

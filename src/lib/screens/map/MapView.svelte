@@ -72,7 +72,7 @@
       drawn = drawMap(fb, game, t, dt);
     anchors = drawn.anchors;
     marks = drawn.marks;
-    live = drawn.live.length > 0 || drawn.spinning;
+    live = drawn.live.length > 0;
     const painted = performance.now() - t0,
       d = desk(),
       ships = `${drawn.ships.marker} ${drawn.ships.icon} ${drawn.ships.true}`,

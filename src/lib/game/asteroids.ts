@@ -95,6 +95,7 @@ export function asteroidBody(a: AsteroidRecord): Body {
     angle: hash(seed, 3, 11) * Math.PI * 2,
     angularSpeed: orbitRate(periodDays(a)),
     tilt: hash(seed, 4, 11) * 0.4,
+    rotation: a.rotation,
     facts: smallBodyFacts(a.dwarf ? 'Dwarf planet' : 'Asteroid', a, a.a)
   };
 }

@@ -27,6 +27,7 @@ export interface Body {
   angle: number;
   angularSpeed: number;
   tilt?: number;
+  rotation?: number;
   rings?: boolean;
   surveyed?: boolean;
   parent?: string;

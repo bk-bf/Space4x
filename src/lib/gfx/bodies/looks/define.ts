@@ -1,6 +1,5 @@
 import { allocCube, bakeFace, gradeFace, makeCube, type Channel } from '#lib/gfx/bodies/cube.ts';
 import { bakeRadii, setMesh } from '#lib/gfx/bodies/rock/mesh.ts';
-import { bakePaint } from '#lib/gfx/bodies/rock/paint.ts';
 import type { Look, LookDef } from './types.ts';
 
 const DEFAULT_TINT = [124, 122, 120] as const;
@@ -56,9 +55,5 @@ export function* bakeSteps(look: Look): Generator<void> {
   const raw = look.bump ? new Float32Array(6 * c.face * c.face) : null;
   for (let f = 0; f < 6; f++) yield* bakeFace(c, f, look.channels, raw, look.rawOf);
   if (raw) for (let f = 0; f < 6; f++) yield* gradeFace(c, f, raw, look.gradAt, look.gradRange);
-  if (look.surface) {
-    yield* bakePaint(look, c);
-    c.data = new Uint8Array(0);
-  }
   look.ready = true;
 }

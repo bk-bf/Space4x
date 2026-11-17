@@ -100,7 +100,6 @@ export interface Mesh {
   readonly pos: Float32Array;
   readonly reach: number;
   readonly normals: (Float32Array | undefined)[];
-  readonly flat: (Float32Array | undefined)[];
 }
 
 export function* bakeRadii(surface: Surface, out: (mesh: Mesh) => void): Generator<void> {
@@ -119,7 +118,7 @@ export function* bakeRadii(surface: Surface, out: (mesh: Mesh) => void): Generat
     pos[i * 3 + 2] = z * r;
     if (r > reach) reach = r;
   }
-  out({ pos, reach, normals: [], flat: [] });
+  out({ pos, reach, normals: [] });
 }
 
 export function normalsAt(mesh: Mesh, level: number): Float32Array {
@@ -159,25 +158,6 @@ export function normalsAt(mesh: Mesh, level: number): Float32Array {
   return out;
 }
 
-const STEEP_FROM = 0.35;
-const STEEP_RAMP = 0.45;
-
-export function flatAt(mesh: Mesh, level: number): Float32Array {
-  const have = mesh.flat[level];
-  if (have) return have;
-  const N = normalsAt(mesh, level),
-    p = mesh.pos,
-    n = icosphere().counts[level]!,
-    out = new Float32Array(n);
-  for (let v = 0, o = 0; v < n; v++, o += 3) {
-    const l = Math.hypot(p[o]!, p[o + 1]!, p[o + 2]!) || 1,
-      c = (N[o]! * p[o]! + N[o + 1]! * p[o + 1]! + N[o + 2]! * p[o + 2]!) / l;
-    out[v] = Math.min(1, Math.max(0, (c - STEEP_FROM) / STEEP_RAMP));
-  }
-  mesh.flat[level] = out;
-  return out;
-}
-
 const meshes = new WeakMap<object, Mesh>();
 
 export const meshOf = (owner: object): Mesh | undefined => meshes.get(owner);
@@ -186,9 +166,5 @@ export function setMesh(owner: object, mesh: Mesh): void {
   meshes.set(owner, mesh);
 }
 
-export function dropMesh(owner: object): void {
-  meshes.delete(owner);
-}
-
 export const meshBytes = (mesh: Mesh): number =>
-  mesh.pos.byteLength + [...mesh.normals, ...mesh.flat].reduce((s, n) => s + (n?.byteLength ?? 0), 0);
+  mesh.pos.byteLength + mesh.normals.reduce((s, n) => s + (n?.byteLength ?? 0), 0);

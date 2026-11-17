@@ -1,25 +1,17 @@
-import { clamp, hash, mix } from '#lib/gfx/math.ts';
+import { clamp, hash } from '#lib/gfx/math.ts';
 import { dith } from '#lib/gfx/noise.ts';
 import type { RGB } from '#lib/gfx/palette.ts';
-import { sampleCube } from './cube.ts';
 import { LIGHT, orientation, SHADES, type Box, type Pixels, type SphereState } from './light.ts';
 import { drawRock, rockReach } from './rock/raster.ts';
+import { shadeSpan, spanRoom, type SpanStyle } from './surface.ts';
 import { want } from './looks/bake.ts';
 import { h3 } from './looks/math.ts';
-import { ADD, LAND, SEA, type Colour, type Look, type Texels } from './looks/types.ts';
+import type { Look } from './looks/types.ts';
 
 export type { Box, Pixels, SphereState };
 
 const LXY = Math.hypot(LIGHT[0], LIGHT[1]);
-const CITY: RGB = [255, 214, 120];
-const GLINT_FROM = 0.975;
-const GLINT_COVER = 0.7;
 const RING_REACH = 2.35;
-
-const Gf = new Float64Array(24);
-const Of = new Float64Array(8);
-const G = Gf as unknown as Texels;
-const O = Of as unknown as Colour;
 
 const ringDensity = (rr: number) =>
   rr < 1.24 || rr > 2.28
@@ -146,9 +138,7 @@ export function drawSphere(
   }
   const rings = look.rings && R >= 2.5;
   if (rings) drawRings(f, cx, cy, R, false);
-  const cube = look.cube,
-    shade = look.shade,
-    P = orientation(st),
+  const P = orientation(st),
     P0 = P[0],
     P1 = P[1],
     P2 = P[2],
@@ -168,16 +158,18 @@ export function drawSphere(
     Y0 = Math.floor(cy),
     fx = cx - X0,
     fy = cy - Y0,
-    lights = !!st.lights,
-    cityNoise = R > 60 && cube.channels > 5,
-    bumpK = look.bump && R > 8 ? look.bump : 0,
-    gi = look.gradAt,
-    gr = look.gradRange * 2,
+    style: SpanStyle = {
+      lights: !!st.lights,
+      cityNoise: R > 60 && look.cube.channels > 5,
+      rimW: look.rimW,
+      rim: atmo?.rim ?? 0.8,
+      rimC: atmo && R > 10 && !shape ? atmo.c : undefined,
+      rings: !!rings
+    },
     inv = 1 / (R + 0.5),
     L0 = LIGHT[0],
     L1 = LIGHT[1],
-    L2 = LIGHT[2],
-    rimW = look.rimW;
+    L2 = LIGHT[2];
   let sa = 0,
     sb = 0,
     sc = 0,
@@ -196,6 +188,15 @@ export function drawSphere(
     j1 = Math.min(Math.floor(E), f.h - 1 - Y0),
     i0 = Math.max(Math.ceil(-E), -X0),
     i1 = Math.min(Math.floor(E), W - 1 - X0);
+  const sp = spanRoom(Math.max(0, i1 - i0 + 1)),
+    SX = sp.px,
+    SY = sp.py,
+    SZ = sp.pz,
+    SL = sp.light,
+    SN = sp.nz,
+    SXS = sp.x,
+    SS = sp.shadow;
+  let k = 0;
   for (let j = j0; j <= j1; j++) {
     const dy = small ? j : j + 0.5 - fy,
       y = Y0 + j,
@@ -271,65 +272,21 @@ export function drawSphere(
         py = P3 * nx + P4 * ny + P5 * nz;
         pz = P6 * nx + P7 * ny + P8 * nz;
       }
-      const dv = dith(x, y);
-      sampleCube(cube, px, py, pz, Gf);
-      Of[ADD] = 0;
-      Of[LAND] = 0;
-      Of[SEA] = 0;
-      shade(px, py, pz, R, dv, G, O);
-      let L = nx * L0 + ny * L1 + nz * L2;
-      if (bumpK) {
-        const gx = (Gf[gi]! - 0.5) * gr,
-          gy = (Gf[gi + 1]! - 0.5) * gr,
-          gz = (Gf[gi + 2]! - 0.5) * gr,
-          vx = P0 * gx + P3 * gy + P6 * gz,
-          vy = P1 * gx + P4 * gy + P7 * gz,
-          vz = P2 * gx + P5 * gy + P8 * gz;
-        L -= (vx * L0 + vy * L1 + vz * L2) * bumpK;
-      } else if (R > 14) L += Of[ADD]! * 0.22 * nz;
-      if (
-        rings &&
-        L > 0 &&
-        Math.abs(dy + 0.24 * Math.sqrt(Math.max(0, R * R - dx * dx)) * 0.9 - R * 0.02) < R * 0.045
-      )
-        L -= 0.5;
-      const s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dv), 0, 3),
-        k = SHADES[s]!;
-      let r = Of[0]! * k,
-        g = Of[1]! * k,
-        b = Of[2]! * k;
-      if (s === 0) {
-        r += 3;
-        g += 4;
-        b += 12;
-        if (
-          lights &&
-          Of[LAND] &&
-          (cityNoise
-            ? Gf[5]! > 0.55 && hash(px * 900, py * 900, pz * 900) > 0.62
-            : hash(px * 34, py * 34, pz * 34) > 0.94)
-        ) {
-          r = CITY[0];
-          g = CITY[1];
-          b = CITY[2];
-        }
-      } else if (Of[SEA] && dv < ((L - GLINT_FROM) / (1 - GLINT_FROM)) * GLINT_COVER) {
-        r = mix(r, 255, 0.5);
-        g = mix(g, 255, 0.5);
-        b = mix(b, 255, 0.5);
-      }
-      if (atmo && R > 10 && !shape) {
-        const rim = clamp((rimW - nz) / rimW, 0, 1) * clamp(L * 2 + 0.8, 0, 1);
-        if (dv < rim * (atmo.rim ?? 0.8)) {
-          r = mix(r, atmo.c[0], 0.55);
-          g = mix(g, atmo.c[1], 0.55);
-          b = mix(b, atmo.c[2], 0.55);
-        }
-      }
-      D[q] = r;
-      D[q + 1] = g;
-      D[q + 2] = b;
-      D[q + 3] = 255;
+      SX[k] = px;
+      SY[k] = py;
+      SZ[k] = pz;
+      SL[k] = nx * L0 + ny * L1 + nz * L2;
+      SN[k] = nz;
+      SXS[k] = x;
+      if (rings)
+        SS[k] =
+          Math.abs(dy + 0.24 * Math.sqrt(Math.max(0, R * R - dx * dx)) * 0.9 - R * 0.02) < R * 0.045 ? 1 : 0;
+      k++;
+    }
+    if (k) {
+      sp.n = k;
+      shadeSpan(f, y, look, P, R, style);
+      k = 0;
     }
   }
   if (rings) drawRings(f, cx, cy, R, true);

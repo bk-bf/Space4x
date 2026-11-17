@@ -51,3 +51,10 @@ export const sphereState = (body: Body, look: Look, rot: number, lights?: boolea
   pitch: look.pitch,
   lights
 });
+
+const HOUR = 3600;
+
+export function turnAt(body: Body, elapsed: number): number {
+  const period = body.rotation ? body.rotation * HOUR : 0;
+  return period ? -2 * Math.PI * ((elapsed / period) % 1) : 0;
+}

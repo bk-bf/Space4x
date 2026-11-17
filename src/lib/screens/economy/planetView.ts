@@ -1,18 +1,19 @@
-import { drawSmallBody, smallReach, tickSeconds, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { RAD } from '#lib/gfx/bodies/looks/math.ts';
 import { PAL } from '#lib/gfx/palette.ts';
 import { familyId, lookById } from '#lib/gfx/bodies/looks/index.ts';
 import { drawSphere, sphereReach } from '#lib/gfx/bodies/sphere.ts';
-import { lookOf, sphereState } from '#lib/game/looks.ts';
+import { lookOf, sphereState, turnAt } from '#lib/game/looks.ts';
 import type { Body } from '#lib/game/types.ts';
 
 const TILT = 0.43;
 const MOON_REACH = 1.17;
+const LUNAR_MONTH = 27.32 * 86400;
 
 export function drawColonyPlanet(
   fb: FB,
-  t: number,
+  elapsed: number,
   body: Body | undefined,
   moon: boolean,
   small?: SmallBody
@@ -22,20 +23,20 @@ export function drawColonyPlanet(
   const cy = Math.floor(fb.h / 2);
   if (small) {
     const fit = Math.floor(Math.min(fb.w / 2, fb.h / 2) / smallReach(small)) - 6;
-    drawSmallBody(fb, small, cx, cy, Math.max(10, fit), tickSeconds(t));
+    drawSmallBody(fb, small, cx, cy, Math.max(10, fit), body ? turnAt(body, elapsed) : 0);
     fb.present();
     return;
   }
   const look = (body ? lookOf(body) : lookById('earth'))!,
     ratio = Math.max(moon ? MOON_REACH + 0.08 : 1, sphereReach(look, 100) / 100),
     radius = Math.max(10, Math.floor(Math.min(fb.w / 2 / ratio, fb.h / 2 / ratio)) - 6),
-    spin = t * 0.012 + (look.facing ?? 0) * RAD,
+    spin = (look.facing ?? 0) * RAD + (body ? turnAt(body, elapsed) : 0),
     state = {
       ...(body ? sphereState(body, look, spin, true) : { rot: spin, lights: true }),
       tilt: look.tilt ?? TILT
     };
   drawSphere(fb, look, state, cx, cy, radius);
-  const a = t * 0.004;
+  const a = (elapsed / LUNAR_MONTH) * Math.PI * 2;
   if (moon && (Math.sin(a) > -0.2 || Math.abs(Math.cos(a)) > 0.9))
     drawSphere(
       fb,

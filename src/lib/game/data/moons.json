@@ -50,6 +50,7 @@
     "period": 249.909,
     "diameter": 170.0,
     "mass": 2.271e18,
+    "rotation": 7.7819,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -65,6 +66,8 @@
     "diameter": 24.0,
     "mass": 1.086e16,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -80,6 +83,8 @@
     "diameter": 20.0,
     "mass": 6283000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -95,6 +100,8 @@
     "diameter": 30.0,
     "mass": 2.121e16,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -110,6 +117,8 @@
     "diameter": 36.0,
     "mass": 3.664e16,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -125,6 +134,8 @@
     "diameter": 28.0,
     "mass": 1.724e16,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -256,6 +267,7 @@
     "period": 550.30391,
     "diameter": 213.0,
     "mass": 8.312e18,
+    "rotation": 9.2735,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -444,6 +456,8 @@
     "diameter": 120.0,
     "mass": 1.357e18,
     "massEstimated": true,
+    "rotation": 11.45,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -459,6 +473,8 @@
     "diameter": 60.0,
     "mass": 1.696e17,
     "massEstimated": true,
+    "rotation": 11.45,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -632,6 +648,8 @@
     "diameter": 80.0,
     "mass": 4.021e17,
     "massEstimated": true,
+    "rotation": 11.45,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -731,6 +749,8 @@
     "diameterEstimated": true,
     "mass": 1.103e16,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -759,6 +779,8 @@
     "diameter": 10.0,
     "mass": 785400000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -775,6 +797,8 @@
     "diameterEstimated": true,
     "mass": 3181000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -791,6 +815,8 @@
     "diameterEstimated": true,
     "mass": 2771000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -807,6 +833,8 @@
     "diameterEstimated": true,
     "mass": 1594000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -823,6 +851,8 @@
     "diameterEstimated": true,
     "mass": 917400000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -839,6 +869,8 @@
     "diameterEstimated": true,
     "mass": 695900000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -855,6 +887,8 @@
     "diameterEstimated": true,
     "mass": 527900000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {
@@ -871,6 +905,8 @@
     "diameterEstimated": true,
     "mass": 230400000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/sats/phys_par/"
   },
   {

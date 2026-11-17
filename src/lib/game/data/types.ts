@@ -55,6 +55,8 @@ export interface AsteroidRecord {
   diameterEstimated?: boolean;
   mass: number;
   massEstimated?: boolean;
+  rotation: number;
+  rotationEstimated?: boolean;
   source: string;
 }
 
@@ -72,6 +74,8 @@ export interface MoonRecord {
   diameterEstimated?: boolean;
   mass: number;
   massEstimated?: boolean;
+  rotation?: number;
+  rotationEstimated?: boolean;
   source: string;
 }
 
@@ -84,6 +88,8 @@ export interface CometRecord {
   diameter: number;
   mass: number;
   massEstimated: true;
+  rotation: number;
+  rotationEstimated?: boolean;
   source: string;
 }
 

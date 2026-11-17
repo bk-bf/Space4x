@@ -1,10 +1,10 @@
 import { fleetClassId, shipClass, type Game, type Selection } from '#lib/game/index.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
-import { drawSmallBody, smallReach, tickSeconds } from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach } from '#lib/gfx/bodies/small/index.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { PAL, type RGB } from '#lib/gfx/palette.ts';
 import { drawSphere } from '#lib/gfx/bodies/sphere.ts';
-import { lookOf, sphereState } from '#lib/game/looks.ts';
+import { lookOf, sphereState, turnAt } from '#lib/game/looks.ts';
 import { RAD } from '#lib/gfx/bodies/looks/math.ts';
 import { stars } from '#lib/gfx/scenes.ts';
 import { ALIEN_SPECS } from '#lib/gfx/ships/specs.ts';
@@ -66,13 +66,13 @@ export function drawSelection(f: FB, game: Game, sel: Selection, t: number): voi
     const b = game.body(sel.id);
     f.start();
     const small = b ? smallBodyOf(b) : undefined;
-    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), tickSeconds(t));
+    if (b && small) drawSmallBody(f, small, 70, 36, fitSmall(smallReach(small)), turnAt(b, game.elapsed));
     else if (b) {
       const look = lookOf(b);
       drawSphere(
         f,
         look,
-        sphereState(b, look, t * 0.02 + (look.facing ?? 0) * RAD),
+        sphereState(b, look, (look.facing ?? 0) * RAD + turnAt(b, game.elapsed)),
         70,
         36,
         look.rings ? 19 : 30

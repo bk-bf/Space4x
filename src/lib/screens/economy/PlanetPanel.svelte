@@ -20,7 +20,7 @@
     draw={(fb, t) =>
       jump
         ? drawJumpPoint(fb, t, !!jump.stable)
-        : drawColonyPlanet(fb, t, body, site.body === 'earth', small)}
+        : drawColonyPlanet(fb, game.elapsed, body, site.body === 'earth', small)}
   />
   {#if jump}
     <div class="facts" id="siteFacts">

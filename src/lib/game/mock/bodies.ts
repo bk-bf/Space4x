@@ -12,6 +12,7 @@ export const mockBodies = (): Body[] => [
     angle: 2.2,
     angularSpeed: orbitRate(87.97),
     tilt: 0.05,
+    rotation: 1407.6,
     facts: {
       kind: 'Rocky',
       gravity: '0.38 g',
@@ -30,6 +31,7 @@ export const mockBodies = (): Body[] => [
     angle: 1.0,
     angularSpeed: orbitRate(224.7),
     tilt: 0.1,
+    rotation: -5832.5,
     facts: {
       kind: 'Rocky',
       gravity: '0.90 g',
@@ -49,6 +51,7 @@ export const mockBodies = (): Body[] => [
     angle: 4.2,
     angularSpeed: orbitRate(365.26),
     tilt: 0.4,
+    rotation: 23.9345,
     facts: {
       kind: 'Rocky',
       gravity: '1.00 g',
@@ -67,6 +70,7 @@ export const mockBodies = (): Body[] => [
     angle: 5.6,
     angularSpeed: orbitRate(686.98),
     tilt: 0.43,
+    rotation: 24.6229,
     facts: {
       kind: 'Rocky',
       gravity: '0.38 g',
@@ -85,6 +89,7 @@ export const mockBodies = (): Body[] => [
     angle: 0.28,
     angularSpeed: orbitRate(4332.6),
     tilt: 0.06,
+    rotation: 9.925,
     facts: {
       kind: 'Gas giant',
       gravity: '2.53 g',
@@ -103,6 +108,7 @@ export const mockBodies = (): Body[] => [
     angle: 2.6,
     angularSpeed: orbitRate(10759),
     rings: true,
+    rotation: 10.656,
     facts: {
       kind: 'Gas giant',
       gravity: '1.06 g',
@@ -121,6 +127,7 @@ export const mockBodies = (): Body[] => [
     angle: 3.9,
     angularSpeed: orbitRate(30687),
     tilt: 0.1,
+    rotation: -17.24,
     facts: {
       kind: 'Ice giant',
       gravity: '0.90 g',
@@ -139,6 +146,7 @@ export const mockBodies = (): Body[] => [
     angle: 5.1,
     angularSpeed: orbitRate(60190),
     tilt: 0.05,
+    rotation: 16.11,
     facts: {
       kind: 'Ice giant',
       gravity: '1.14 g',
@@ -157,6 +165,7 @@ export const mockBodies = (): Body[] => [
     orbit: 3.844e8,
     angle: 1,
     angularSpeed: orbitRate(27.32),
+    rotation: 655.72,
     facts: {
       kind: 'Moon',
       gravity: '0.16 g',
@@ -175,6 +184,7 @@ export const mockBodies = (): Body[] => [
     orbit: 6.709e8,
     angle: 2.2,
     angularSpeed: orbitRate(3.551),
+    rotation: 85.228,
     facts: {
       kind: 'Icy moon',
       gravity: '0.13 g',
@@ -193,6 +203,7 @@ export const mockBodies = (): Body[] => [
     orbit: 421700000.0,
     angle: 0.5,
     angularSpeed: orbitRate(1.769),
+    rotation: 42.459,
     facts: {
       kind: 'Moon',
       gravity: '0.18 g',
@@ -211,6 +222,7 @@ export const mockBodies = (): Body[] => [
     orbit: 1070400000.0,
     angle: 4.1,
     angularSpeed: orbitRate(7.155),
+    rotation: 171.709,
     facts: {
       kind: 'Icy moon',
       gravity: '0.15 g',
@@ -229,6 +241,7 @@ export const mockBodies = (): Body[] => [
     orbit: 1882700000.0,
     angle: 5.6,
     angularSpeed: orbitRate(16.689),
+    rotation: 400.536,
     facts: {
       kind: 'Icy moon',
       gravity: '0.13 g',
@@ -247,6 +260,7 @@ export const mockBodies = (): Body[] => [
     orbit: 1221870000.0,
     angle: 2.9,
     angularSpeed: orbitRate(15.945),
+    rotation: 382.69,
     facts: {
       kind: 'Moon',
       gravity: '0.14 g',
@@ -265,6 +279,7 @@ export const mockBodies = (): Body[] => [
     orbit: 238020000.0,
     angle: 0.3,
     angularSpeed: orbitRate(1.37),
+    rotation: 32.885,
     facts: {
       kind: 'Icy moon',
       gravity: '0.01 g',

@@ -425,8 +425,7 @@ export function smallBody(info: SmallInfo): SmallBody {
         ...(named.family === 'nucleus' && named.spec.lobes.length === 1 ? { waist: true } : {})
       },
       tilt: named.tilt ?? between(id, 5, -0.5, 0.5),
-      phase: between(id, 7, 0, Math.PI * 2),
-      dir: hash(seedOf(id), 9, 77) < 0.5 ? 1 : -1
+      phase: between(id, 7, 0, Math.PI * 2)
     };
     cache.set(id, b);
   }

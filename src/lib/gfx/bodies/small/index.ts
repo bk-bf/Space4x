@@ -4,9 +4,6 @@ export {
   smallLook,
   smallReach,
   smallReady,
-  spinClock,
-  tickSeconds,
-  turns,
   type ShapeFamily,
   type SmallBody,
   type SmallType

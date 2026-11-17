@@ -281,9 +281,14 @@ test('a jump point is selected by its label and says whether it is surveyed and 
   await expectCleanLayout(page);
 });
 
-for (const scale of [8000, 3000])
-  test(`a moon stays drawn at ${scale} m a pixel, where its planet would be a backdrop`, async ({ page }) => {
-    await open(page, `zoom=luna:${scale}`);
+for (const [moon, scale] of [
+  ['luna', 8000],
+  ['luna', 3000],
+  ['mimas', 1500],
+  ['mimas', 800]
+] as const)
+  test(`${moon} stays drawn at ${scale} m a pixel, in front of its planet's backdrop`, async ({ page }) => {
+    await open(page, `zoom=${moon}:${scale}`);
     const centre = await freeCentre(page);
     const lit = await page.evaluate(({ x, y }) => {
       const cv = document.querySelector<HTMLCanvasElement>('#mapCv')!;
@@ -296,5 +301,5 @@ for (const scale of [8000, 3000])
       for (let i = 0; i < d.length; i += 4) if (d[i]! > 60 && Math.abs(d[i]! - d[i + 2]!) < 30) n++;
       return n / (d.length / 4);
     }, centre);
-    expect(lit, 'the centre of the view is lunar surface').toBeGreaterThan(0.6);
+    expect(lit, `the centre of the view is the surface of ${moon}`).toBeGreaterThan(0.6);
   });

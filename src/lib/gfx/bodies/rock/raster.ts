@@ -10,30 +10,20 @@ import {
 } from '#lib/gfx/bodies/light.ts';
 import { want } from '#lib/gfx/bodies/looks/bake.ts';
 import type { Look } from '#lib/gfx/bodies/looks/types.ts';
-import { DETAIL_SIZE, detailMap } from './detail.ts';
-import { flatAt, icosphere, LEVELS, meshOf, normalsAt, type Mesh } from './mesh.ts';
-import { PAINT_CHANNELS, paintOf, type Paint } from './paint.ts';
+import type { Mat } from '#lib/gfx/bodies/looks/math.ts';
+import { PLAIN, shadeSpan, spanRoom } from '#lib/gfx/bodies/surface.ts';
+import { icosphere, LEVELS, meshOf, normalsAt, type Mesh } from './mesh.ts';
 
 const EDGE_PX = 6;
 const LEVEL_SLACK = 1.1;
 const UNBAKED_REACH = 1.45;
-const TEXEL_PX = 1.5;
-const DETAIL_FROM = 45;
-const DETAIL_RAMP = 110;
-const DETAIL_AMP = 0.55;
-const DETAIL_TONE = 1.6;
-const SHADOW: readonly [number, number, number] = [3, 4, 12];
-const MASK = DETAIL_SIZE - 1;
-const SHIFT = Math.log2(DETAIL_SIZE);
-const EMPTY = new Uint8ClampedArray(0);
-const EMPTY_F = new Float32Array(0);
 const EDGE_EPS = 1e-6;
-const STEEP_COLOUR = 0.35;
 
 let SX = new Float32Array(0);
 let SY = new Float32Array(0);
 let SZ = new Float32Array(0);
 let NL = new Float32Array(0);
+let NZ = new Float32Array(0);
 let depth = new Float32Array(0);
 let tri = new Int32Array(0);
 let wb = new Float32Array(0);
@@ -45,6 +35,7 @@ function room(verts: number, pixels: number): void {
     SY = new Float32Array(verts);
     SZ = new Float32Array(verts);
     NL = new Float32Array(verts);
+    NZ = new Float32Array(verts);
   }
   if (depth.length < pixels) {
     depth = new Float32Array(pixels);
@@ -59,7 +50,7 @@ export const levelFor = (R: number): number =>
 
 export const rockReach = (look: Look): number => meshOf(look)?.reach ?? UNBAKED_REACH;
 
-export const rockReady = (look: Look): boolean => look.ready && !!meshOf(look) && !!paintOf(look);
+export const rockReady = (look: Look): boolean => look.ready && !!meshOf(look);
 
 function disc(f: Pixels, look: Look, cx: number, cy: number, R: number): Box {
   const D = f.d,
@@ -126,7 +117,8 @@ function raster(f: Pixels, look: Look, mesh: Mesh, st: SphereState, cx: number, 
   const sx = SX,
     sy = SY,
     sz = SZ,
-    nl = NL;
+    nl = NL,
+    nzs = NZ;
   let bx0 = Infinity,
     by0 = Infinity,
     bx1 = -Infinity,
@@ -141,6 +133,7 @@ function raster(f: Pixels, look: Look, mesh: Mesh, st: SphereState, cx: number, 
     sy[v] = y;
     sz[v] = P2 * ox + P5 * oy + P8 * oz;
     nl[v] = N[o]! * lx + N[o + 1]! * ly + N[o + 2]! * lz;
+    nzs[v] = P2 * N[o]! + P5 * N[o + 1]! + P8 * N[o + 2]!;
     if (x < bx0) bx0 = x;
     if (x > bx1) bx1 = x;
     if (y < by0) by0 = y;
@@ -202,7 +195,7 @@ function raster(f: Pixels, look: Look, mesh: Mesh, st: SphereState, cx: number, 
       }
     }
   }
-  shadePass(f, look, mesh, list, X0, Y0, BW, BH, Rp, lx, ly, lz);
+  shadePass(f, look, mesh, list, P, X0, Y0, BW, BH, Rp);
   return box;
 }
 
@@ -211,47 +204,31 @@ function shadePass(
   look: Look,
   mesh: Mesh,
   list: Uint16Array,
+  P: Mat,
   X0: number,
   Y0: number,
   BW: number,
   BH: number,
-  Rp: number,
-  lx: number,
-  ly: number,
-  lz: number
+  Rp: number
 ): void {
   const pos = mesh.pos,
-    flat = flatAt(mesh, levelFor(Rp)),
     nl = NL,
+    nzs = NZ,
     T = tri,
     WB = wb,
     WC = wc,
     D = f.d,
     W = f.w,
-    paint: Paint | undefined = look.ready ? paintOf(look) : undefined,
-    PD = paint ? paint.data : EMPTY,
-    PF = paint?.face ?? 0,
-    PH = paint?.half ?? 0,
-    TOP = PF - 1,
-    bumpK = paint && look.bump && Rp > 8 ? look.bump : 0,
-    gk = ((look.gradRange * 2) / 255) * bumpK,
-    g0 = gk * 127.5,
+    ready = look.ready,
     tint = look.tint,
-    detailK = DETAIL_AMP * clamp((Rp - DETAIL_FROM) / DETAIL_RAMP, 0, 1),
-    det = detailK ? detailMap() : null,
-    GU = det ? det.gu : EMPTY_F,
-    GV = det ? det.gv : EMPTY_F,
-    TN = det ? det.tone : EMPTY_F,
-    octave = Math.log2(Rp / TEXEL_PX),
-    s0 = 2 ** Math.floor(octave),
-    s1 = s0 * 2,
-    w1d = (octave - Math.floor(octave)) * detailK,
-    w0d = detailK - w1d,
-    t0d = w0d * DETAIL_TONE,
-    t1d = w1d * DETAIL_TONE;
-  let cr = tint[0],
-    cg = tint[1],
-    cb = tint[2];
+    sp = spanRoom(BW),
+    SX = sp.px,
+    SY = sp.py,
+    SZ = sp.pz,
+    SL = sp.light,
+    SN = sp.nz,
+    SXS = sp.x;
+  let n = 0;
   for (let j = 0; j < BH; j++) {
     const y = Y0 + j,
       row = j * BW;
@@ -262,101 +239,40 @@ function shadePass(
       const va = list[k]!,
         vb = list[k + 1]!,
         vc = list[k + 2]!,
-        a = va * 3,
-        b = vb * 3,
-        c = vc * 3,
         u = WB[p]!,
         v = WC[p]!,
         w = 1 - u - v,
+        x = X0 + i,
+        q = (y * W + x) * 4,
+        dv = dith(x, y),
+        L = nl[va]! * w + nl[vb]! * u + nl[vc]! * v;
+      if (!ready) {
+        const kk = SHADES[clamp(Math.floor((L * 1.15 + 0.12) * 3 + dv), 0, 3)]!;
+        D[q] = tint[0] * kk;
+        D[q + 1] = tint[1] * kk;
+        D[q + 2] = tint[2] * kk;
+        D[q + 3] = 255;
+        continue;
+      }
+      const a = va * 3,
+        b = vb * 3,
+        c = vc * 3,
         ox = pos[a]! * w + pos[b]! * u + pos[c]! * v,
         oy = pos[a + 1]! * w + pos[b + 1]! * u + pos[c + 1]! * v,
         oz = pos[a + 2]! * w + pos[b + 2]! * u + pos[c + 2]! * v,
-        ax = ox < 0 ? -ox : ox,
-        ay = oy < 0 ? -oy : oy,
-        az = oz < 0 ? -oz : oz,
-        xs = ax >= ay && ax >= az,
-        ys = !xs && ay >= az;
-      let g = 0,
-        tone = 1;
-      if (paint) {
-        let face: number, fu: number, fv: number, m: number;
-        if (xs) {
-          face = ox > 0 ? 0 : 1;
-          m = ax;
-          fu = oz;
-          fv = oy;
-        } else if (ys) {
-          face = oy > 0 ? 2 : 3;
-          m = ay;
-          fu = ox;
-          fv = oz;
-        } else {
-          face = oz > 0 ? 4 : 5;
-          m = az;
-          fu = ox;
-          fv = oy;
-        }
-        const sc = PH / m;
-        fu = fu * sc + PH - 0.5;
-        fv = fv * sc + PH - 0.5;
-        fu = fu < 0 ? 0 : fu > TOP ? TOP : fu;
-        fv = fv < 0 ? 0 : fv > TOP ? TOP : fv;
-        const i0 = fu | 0,
-          j0 = fv | 0,
-          du = fu - i0,
-          dw = fv - j0,
-          base = (face * PF + j0) * PF + i0,
-          q00 = base * PAINT_CHANNELS,
-          q10 = i0 < TOP ? q00 + PAINT_CHANNELS : q00,
-          q01 = j0 < TOP ? q00 + PF * PAINT_CHANNELS : q00,
-          q11 = i0 < TOP ? q01 + PAINT_CHANNELS : q01,
-          w11 = du * dw,
-          w10 = du - w11,
-          w01 = dw - w11,
-          w00 = 1 - du - dw + w11;
-        cr = PD[q00]! * w00 + PD[q10]! * w10 + PD[q01]! * w01 + PD[q11]! * w11;
-        cg = PD[q00 + 1]! * w00 + PD[q10 + 1]! * w10 + PD[q01 + 1]! * w01 + PD[q11 + 1]! * w11;
-        cb = PD[q00 + 2]! * w00 + PD[q10 + 2]! * w10 + PD[q01 + 2]! * w01 + PD[q11 + 2]! * w11;
-        if (bumpK)
-          g =
-            ((PD[q00 + 3]! * w00 + PD[q10 + 3]! * w10 + PD[q01 + 3]! * w01 + PD[q11 + 3]! * w11) * gk - g0) *
-              lx +
-            ((PD[q00 + 4]! * w00 + PD[q10 + 4]! * w10 + PD[q01 + 4]! * w01 + PD[q11 + 4]! * w11) * gk - g0) *
-              ly +
-            ((PD[q00 + 5]! * w00 + PD[q10 + 5]! * w10 + PD[q01 + 5]! * w01 + PD[q11 + 5]! * w11) * gk - g0) *
-              lz;
-        const fl = flat[va]! * w + flat[vb]! * u + flat[vc]! * v,
-          keep = STEEP_COLOUR + (1 - STEEP_COLOUR) * fl;
-        g *= fl;
-        cr = tint[0] + (cr - tint[0]) * keep;
-        cg = tint[1] + (cg - tint[1]) * keep;
-        cb = tint[2] + (cb - tint[2]) * keep;
-      }
-      if (det) {
-        const su = xs ? oy : ox,
-          sv = xs || ys ? oz : oy,
-          q0 = ((Math.floor(sv * s0) & MASK) << SHIFT) | (Math.floor(su * s0) & MASK),
-          q1 = ((Math.floor(sv * s1 + 97) & MASK) << SHIFT) | (Math.floor(su * s1 + 61) & MASK),
-          du = GU[q0]! * w0d + GU[q1]! * w1d,
-          dw = GV[q0]! * w0d + GV[q1]! * w1d;
-        g += xs ? du * ly + dw * lz : ys ? du * lx + dw * lz : du * lx + dw * ly;
-        tone = 1 + TN[q0]! * t0d + TN[q1]! * t1d;
-      }
-      const x = X0 + i,
-        L = nl[va]! * w + nl[vb]! * u + nl[vc]! * v - g,
-        s = clamp(Math.floor((L * 1.15 + 0.12) * 3 + dith(x, y)), 0, 3),
-        kk = SHADES[s]! * tone,
-        q = (y * W + x) * 4;
-      if (s === 0) {
-        D[q] = cr * kk + SHADOW[0];
-        D[q + 1] = cg * kk + SHADOW[1];
-        D[q + 2] = cb * kk + SHADOW[2];
-      } else {
-        D[q] = cr * kk;
-        D[q + 1] = cg * kk;
-        D[q + 2] = cb * kk;
-      }
-      D[q + 3] = 255;
+        il = 1 / Math.sqrt(ox * ox + oy * oy + oz * oz);
+      SX[n] = ox * il;
+      SY[n] = oy * il;
+      SZ[n] = oz * il;
+      SL[n] = L;
+      SN[n] = nzs[va]! * w + nzs[vb]! * u + nzs[vc]! * v;
+      SXS[n] = x;
+      n++;
+    }
+    if (n) {
+      sp.n = n;
+      shadeSpan(f, y, look, P, Rp, PLAIN);
+      n = 0;
     }
   }
 }

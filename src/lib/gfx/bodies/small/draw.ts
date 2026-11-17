@@ -7,8 +7,7 @@ import { toward, type Stops } from '#lib/gfx/bodies/looks/colour.ts';
 import { craterLook, type Lumpy } from '#lib/gfx/bodies/looks/cratered.ts';
 import { clamp, fbm, smoothstep } from '#lib/gfx/bodies/looks/terrain.ts';
 import type { Look } from '#lib/gfx/bodies/looks/types.ts';
-import { dropMesh, meshBytes, meshOf } from '#lib/gfx/bodies/rock/mesh.ts';
-import { dropPaint, paintOf } from '#lib/gfx/bodies/rock/paint.ts';
+import { meshBytes, meshOf } from '#lib/gfx/bodies/rock/mesh.ts';
 import { drawRock, rockReady, rockReach } from '#lib/gfx/bodies/rock/raster.ts';
 import { basinRelief, macroRadius, shapeReach, type ShapeSpec } from './shape.ts';
 
@@ -25,11 +24,8 @@ export interface SmallBody {
   readonly rock: Lumpy;
   readonly tilt: number;
   readonly phase: number;
-  readonly dir: 1 | -1;
 }
 
-export const SPIN_RATE = 0.12;
-export const SPIN_FROM = 6;
 const FACE = 192;
 const BUDGET_BYTES = 48 * 1024 * 1024;
 const LUMP_NORM = 0.6;
@@ -132,7 +128,7 @@ const looks = new Map<string, Look>();
 
 function lookBytes(look: Look): number {
   const mesh = meshOf(look);
-  return look.cube.data.length + (paintOf(look)?.data.length ?? 0) + (mesh ? meshBytes(mesh) : 0);
+  return look.cube.data.length + (mesh ? meshBytes(mesh) : 0);
 }
 
 function release(keep: Look): void {
@@ -143,8 +139,6 @@ function release(keep: Look): void {
     if (l === keep) continue;
     total -= lookBytes(l);
     forget(l);
-    dropMesh(l);
-    dropPaint(l);
     looks.delete(key);
   }
 }
@@ -174,17 +168,6 @@ export const smallReach = (body: SmallBody): number => {
     ? rockReach(look)
     : (shapeReach(body.spec) * (1 + body.rock.amp)) / (1 + LUMP_NORM * body.rock.amp);
 };
-
-export const spinAngle = (body: SmallBody, seconds: number): number =>
-  body.phase + body.dir * SPIN_RATE * seconds;
-
-export const turns = (radius: number): boolean => radius >= SPIN_FROM;
-
-const TICKS_PER_SECOND = 10;
-
-export const tickSeconds = (t: number): number => t / TICKS_PER_SECOND;
-
-export const spinClock = (): number => performance.now() / 1000;
 
 const TAIL_ION: RGB = [150, 200, 240];
 const TAIL_DUST: RGB = [220, 196, 150];
@@ -243,7 +226,7 @@ export function drawSmallBody(
   cx: number,
   cy: number,
   radius: number,
-  seconds: number
+  turn: number
 ): Box | undefined {
   const r = Math.max(2, radius),
     reach = smallReach(body) * (r + 0.5) + 2;
@@ -251,5 +234,5 @@ export function drawSmallBody(
   if (body.type === 'comet' && r >= TAIL_FROM && r <= TAIL_UNTIL) drawTail(f, cx, cy, r);
   const look = smallLook(body);
   release(look);
-  return drawRock(f, look, { rot: spinAngle(body, turns(r) ? seconds : 0), tilt: body.tilt }, cx, cy, r);
+  return drawRock(f, look, { rot: body.phase + turn, tilt: body.tilt }, cx, cy, r);
 }

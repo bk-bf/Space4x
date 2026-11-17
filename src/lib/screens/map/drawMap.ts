@@ -14,17 +14,10 @@ import { economy } from '#lib/game/economy/index.ts';
 import { positionAt } from '#lib/game/flight/index.ts';
 import { smallBodyOf } from '#lib/game/smallBodies.ts';
 import { stateOf, tripOptionOf, vesselById, vesselState, ships } from '#lib/game/ships/index.ts';
-import {
-  drawSmallBody,
-  smallReach,
-  smallReady,
-  spinClock,
-  turns,
-  type SmallBody
-} from '#lib/gfx/bodies/small/index.ts';
+import { drawSmallBody, smallReach, smallReady, type SmallBody } from '#lib/gfx/bodies/small/index.ts';
 import { drawSphere, sphereReach, type Box, type SphereState } from '#lib/gfx/bodies/sphere.ts';
 import type { Look } from '#lib/gfx/bodies/looks/types.ts';
-import { lookOf, sphereState, staticRot } from '#lib/game/looks.ts';
+import { lookOf, sphereState, staticRot, turnAt } from '#lib/game/looks.ts';
 import { drawStar, starReach } from '#lib/gfx/bodies/star.ts';
 import type { FB } from '#lib/gfx/framebuffer.ts';
 import { clamp, hash, mix } from '#lib/gfx/math.ts';
@@ -68,9 +61,6 @@ const CAP_WIDTHS = 1.25;
 const CAP_EASE = 0.45;
 const BIG_LABEL = 110;
 const BESIDE = 0.85;
-const SPIN_FRAME_S = 1 / 30;
-const PAINT_SHARE = 2;
-const SPIN_SLACK_S = 0.01;
 const UNDER_MARK = 6;
 const UNDER_DISC = 13;
 const TRAIL_M = 0.6 * AU;
@@ -130,6 +120,8 @@ interface MapBody {
   state?: SphereState;
   small?: SmallBody;
   box?: Box;
+  rot0: number;
+  turn: number;
   col: RGB;
   p: Point;
   R: number;
@@ -171,7 +163,17 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
     id = game.world.system;
   if (statics && statics.source === source && statics.length === source.length && statics.system === id)
     return statics.value;
-  const blank = { p: [0, 0] as Point, R: 0, mk: false, capped: false, hide: false, cull: false, named: true };
+  const blank = {
+    p: [0, 0] as Point,
+    R: 0,
+    rot0: 0,
+    turn: 0,
+    mk: false,
+    capped: false,
+    hide: false,
+    cull: false,
+    named: true
+  };
   const stars: MapBody[] = (system?.stars ?? []).map((s, i) => ({
     ...blank,
     list: [],
@@ -199,7 +201,8 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
   const planets: MapBody[] = ordered.map((b) => {
     const kind = minorOf(b.id),
       small = smallBodyOf(b),
-      look = small ? undefined : lookOf(b);
+      look = small ? undefined : lookOf(b),
+      rot0 = look ? staticRot(look, (b.orbit % 1e11) * 1e-11 + 0.6) : 0;
     return {
       ...blank,
       list: [],
@@ -220,12 +223,8 @@ function staticBodies(game: Game, system: StarSystem | undefined): Statics {
       ...(look
         ? {
             look,
-            state: sphereState(
-              b,
-              look,
-              staticRot(look, (b.orbit % 1e11) * 1e-11 + 0.6),
-              b.colony && b.type === 'terran'
-            )
+            rot0,
+            state: sphereState(b, look, rot0, b.colony && b.type === 'terran')
           }
         : {}),
       ...(kind.minor ? { minor: kind.minor } : {}),
@@ -256,7 +255,11 @@ function mapBodies(game: Game, system: StarSystem | undefined): MapBody[] {
     m.wx = at.wx + Math.cos(a) * m.orbit;
     m.wy = at.wy + Math.sin(a) * m.orbit;
     m.list.length = 0;
-    if (m.state && m.type === 'terran') m.state.lights = !!moving[i]!.colony;
+    m.turn = turnAt(moving[i]!, elapsed);
+    if (m.state) {
+      m.state.rot = m.rot0 + m.turn;
+      if (m.type === 'terran') m.state.lights = !!moving[i]!.colony;
+    }
   }
   return bodies;
 }
@@ -303,8 +306,6 @@ function trail(c: Contact): Point[] {
 
 let cacheKey = '';
 let lastKey = '';
-let spinShown = 0;
-let spinDue = 0;
 let cache: Uint8ClampedArray | null = null;
 let useCache = true;
 
@@ -318,7 +319,6 @@ export interface MapFrame {
   marks: Anchor[];
   ships: ShipTally;
   live: string[];
-  spinning: boolean;
 }
 
 export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
@@ -379,7 +379,8 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     b.R = R;
     if (b.parent) {
       const P = byId.get(b.parent);
-      if (!P || P.cull || P.mk || Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4) b.hide = true;
+      if (!P || P.cull || P.mk || (!P.capped && Math.hypot(p[0] - P.p[0], p[1] - P.p[1]) < P.R + R + 4))
+        b.hide = true;
     }
     if (b.minor && b.mk && !vis(p, OFF_SCREEN) && aim !== b.key && !(sel.kind === 'body' && sel.id === b.id))
       b.cull = true;
@@ -392,9 +393,6 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
         !b.star &&
         (b.small ? vis(b.p, smallReach(b.small) * b.R + 4) : !!b.look && vis(b.p, sphereReach(b.look, b.R)))
     ),
-    spin = drawn.some((b) => b.small && turns(b.R)),
-    now = spinClock(),
-    clock = spin ? (now >= spinDue ? (spinShown = now) : spinShown) : 0,
     ready = drawn.filter((b) => (b.small ? smallReady(b.small) : b.look?.ready)).length;
   const key = [
     ccx,
@@ -410,12 +408,10 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     layers.Asteroids,
     sel.kind === 'body' ? sel.id : '',
     aim ?? '',
-    spin ? clock : '',
     `${drawn.length}:${ready}`
   ].join('|');
   if (useCache && !liveStar && key === cacheKey && cache) f.d.set(cache);
   else {
-    const paintFrom = spinClock();
     f.start();
     if (layers.Orbits)
       for (const b of shown)
@@ -441,16 +437,14 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
       } else if (b.star) drawStar(f, b.p[0], b.p[1], b.R, t, b.tint);
       else if (b.small) {
         b.box = vis(b.p, smallReach(b.small) * b.R + 4)
-          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, clock)
+          ? drawSmallBody(f, b.small, b.p[0], b.p[1], b.R, b.turn)
           : undefined;
       } else if (b.look && b.state)
         b.box = vis(b.p, sphereReach(b.look, b.R))
           ? drawSphere(f, b.look, b.state, b.p[0], b.p[1], b.R)
           : undefined;
     }
-    if (spin && clock === now)
-      spinDue = now + Math.max(SPIN_FRAME_S, (spinClock() - paintFrom) * PAINT_SHARE) - SPIN_SLACK_S;
-    if (useCache && !liveStar && (key === lastKey || spin)) {
+    if (useCache && !liveStar && key === lastKey) {
       cache = cache && cache.length === f.d.length ? cache : new Uint8ClampedArray(f.d.length);
       cache.set(f.d);
       cacheKey = key;
@@ -826,7 +820,7 @@ export function drawMap(f: FB, game: Game, t: number, dt = 0): MapFrame {
     }
   }
   f.present();
-  return { anchors: an, marks, ships: tally, live: live.map((x) => x.site.id), spinning: spin };
+  return { anchors: an, marks, ships: tally, live: live.map((x) => x.site.id) };
 }
 
 function drawBelt(

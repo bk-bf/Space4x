@@ -8,6 +8,8 @@
     "diameter": 60.0,
     "mass": 5.655e16,
     "massEstimated": true,
+    "rotation": 11.45,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1995%20O1"
   },
   {
@@ -19,6 +21,8 @@
     "diameter": 26.0,
     "mass": 4601000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=109P"
   },
   {
@@ -30,6 +34,8 @@
     "diameter": 21.4,
     "mass": 2566000000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=28P"
   },
   {
@@ -41,6 +47,8 @@
     "diameter": 6.66,
     "mass": 77340000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=53P"
   },
   {
@@ -52,6 +60,8 @@
     "diameter": 11.0,
     "mass": 348500000000000.0,
     "massEstimated": true,
+    "rotation": 10.18,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=1P"
   },
   {
@@ -63,6 +73,7 @@
     "diameter": 6.0,
     "mass": 56550000000000.0,
     "massEstimated": true,
+    "rotation": 40.7,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=9P"
   },
   {
@@ -74,6 +85,8 @@
     "diameter": 4.8,
     "mass": 28950000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=19P"
   },
   {
@@ -85,6 +98,8 @@
     "diameter": 4.0,
     "mass": 16760000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=81P"
   },
   {
@@ -96,6 +111,7 @@
     "diameter": 4.8,
     "mass": 28950000000000.0,
     "massEstimated": true,
+    "rotation": 11.083,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2P"
   },
   {
@@ -107,6 +123,8 @@
     "diameter": 3.54,
     "mass": 11610000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=4P"
   },
   {
@@ -118,6 +136,7 @@
     "diameter": 4.66,
     "mass": 26490000000000.0,
     "massEstimated": true,
+    "rotation": 9.02,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=14P"
   },
   {
@@ -129,6 +148,8 @@
     "diameter": 2.6,
     "mass": 4601000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=24P"
   },
   {
@@ -140,6 +161,8 @@
     "diameter": 7.8,
     "mass": 124200000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=30P"
   },
   {
@@ -151,6 +174,8 @@
     "diameter": 8.4,
     "mass": 155200000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=32P"
   },
   {
@@ -162,6 +187,8 @@
     "diameter": 4.56,
     "mass": 24820000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=36P"
   },
   {
@@ -173,6 +200,8 @@
     "diameter": 3.6,
     "mass": 12210000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=43P"
   },
   {
@@ -184,6 +213,8 @@
     "diameter": 3.6,
     "mass": 12210000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=55P"
   },
   {
@@ -195,6 +226,8 @@
     "diameter": 6.4,
     "mass": 68630000000000.0,
     "massEstimated": true,
+    "rotation": 11.08,
+    "rotationEstimated": true,
     "source": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=96P"
   }
 ]

@@ -4,6 +4,7 @@ import { Game } from '#lib/game/index.ts';
 import { flightSystem, FLYABLE, LANDABLE } from '#lib/game/ships/world.ts';
 import { planTrip } from '#lib/game/flight/index.ts';
 import { DAY } from '#lib/game/clock.ts';
+import { turnAt } from '#lib/game/looks.ts';
 
 const g = new Game();
 const bodies = g.world.bodies;
@@ -26,6 +27,21 @@ describe('the Sol catalogue in the world', () => {
       expect(m.period / kepler, m.id).toBeGreaterThan(0.9);
       expect(m.period / kepler, m.id).toBeLessThan(1.1);
     }
+  });
+
+  it('turns every body once a rotation period of game time, prograde unless the period is negative', () => {
+    for (const b of bodies) {
+      expect(b.rotation, b.id).toBeDefined();
+      const period = Math.abs(b.rotation!) * 3600;
+      expect(turnAt(b, 0), b.id).toBeCloseTo(0, 9);
+      expect(Math.cos(turnAt(b, period)), b.id).toBeCloseTo(1, 6);
+      expect(Math.sign(turnAt(b, period / 4)), b.id).toBe(b.rotation! > 0 ? -1 : 1);
+    }
+    const earth = g.body('earth')!,
+      moon = moons.find((m) => m.id === 'phobos')!;
+    expect(earth.rotation).toBeCloseTo(23.93, 2);
+    expect(g.body('phobos')!.rotation).toBeCloseTo(moon.period * 24, 6);
+    expect(g.body('bennu')!.rotation).toBeCloseTo(4.296, 3);
   });
 
   it('gives every body a flight body with mass and size, and makes all of them flyable', () => {
