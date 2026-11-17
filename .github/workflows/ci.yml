@@ -109,11 +109,5 @@ jobs:
             test-results/
             playwright-report/
           if-no-files-found: ignore
-      - uses: bk-bf/ci-artifacts@v1
+      - run: gh-issue artifact put layout-results test-results/ playwright-report/ --if-no-files-found ignore
         if: failure() && runner.environment == 'self-hosted'
-        with:
-          name: layout-results
-          path: |
-            test-results/
-            playwright-report/
-          if-no-files-found: ignore
