@@ -13,6 +13,7 @@ export default defineConfig({
   ],
   server: {
     port: Number(process.env.PORT) || 5194,
-    allowedHosts: ['ubuntu', 'ubuntuserver']
+    allowedHosts: ['ubuntu', 'ubuntuserver'],
+    watch: { ignored: ['**/.ci/**'] }
   }
 });

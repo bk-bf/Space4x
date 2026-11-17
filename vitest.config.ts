@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [sveltekit()],
+  server: { watch: { ignored: ['**/.ci/**'] } },
   test: {
     environment: 'node',
     env: { VITE_SPACE4X_GALLERY: '1' },

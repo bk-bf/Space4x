@@ -25,7 +25,15 @@ jobs:
       - run: pnpm check:all
       - run: pnpm build
       - uses: actions/upload-artifact@v7.0.2
-        if: failure()
+        if: failure() && runner.environment == 'github-hosted'
+        with:
+          name: layout-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+      - uses: bk-bf/ci-artifacts@v1
+        if: failure() && runner.environment == 'self-hosted'
         with:
           name: layout-results
           path: |

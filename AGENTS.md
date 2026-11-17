@@ -385,7 +385,7 @@ For a change to layout or behaviour, also look at the result: `SHOTS=<dir> pnpm 
 
 ### The dev build
 
-`install.sh` installs the user units of `deploy/` for the checkout it is run from, which must be on `dev` (`HOST` overrides the machine's Tailscale address, `PORT` overrides `8800`). It does not touch `deploy/runner/`, which `deploy/runner/setup.sh` owns.
+`install.sh` installs the user units of `deploy/` for the checkout it is run from, which must be on `dev` (`HOST` overrides the machine's Tailscale address, `PORT` overrides `8800`). It does not touch `deploy/runner/`, which `deploy/runner/setup.sh` owns: it registers runner n in `.ci/runners/<n>` of the checkout it is run from, and a failed `layout` or `candidate` job on that runner keeps `layout-results` in `.ci/artifacts/<run id>/`, served at `http://ubuntuserver:8801/Space4x/<run id>/` and linked from the job summary. `.ci/` is ignored globally; never `git clean -x` without `-e .ci`.
 
 - `space4x-serve.service` serves `build/` with `tools/serve.mjs` (a static server with a single-page fallback) on the machine's Tailscale address, port 8800; Caddy publishes it as https://space4x.callmedaddy.dedyn.io/. Before it starts, `deploy/build --if-stale` runs `pnpm install --frozen-lockfile` and `pnpm build` unless `build/.built-head` already names `HEAD`.
 - `space4x-update.path` fires `space4x-update.service` when `.git/refs/heads/dev` or `.git/refs/remotes/origin/dev` changes. `deploy/update` does nothing unless the checkout is on `dev`; with a clean tree it fast-forwards `dev` from `origin/dev`, and when `HEAD` is not what `build/` was built from it rebuilds and restarts the server (or re-runs `install.sh` first when `deploy/` or `install.sh` changed).

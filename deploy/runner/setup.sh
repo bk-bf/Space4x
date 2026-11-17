@@ -8,10 +8,11 @@ tarball=$HOME/.cache/actions-runner-$version.tar.gz
 [ -f "$tarball" ] || curl -fsSL -o "$tarball" "https://github.com/actions/runner/releases/download/v$version/actions-runner-linux-x64-$version.tar.gz"
 unit_dir=$HOME/.config/systemd/user
 mkdir -p "$unit_dir"
-cp "$here/gha-space4x@.service" "$unit_dir/"
+repo_dir=$(cd "$here/../.." && pwd)
+sed -e "s#@REPO@#$repo_dir#" "$here/gha-space4x@.service" > "$unit_dir/gha-space4x@.service"
 systemctl --user daemon-reload
 for i in $(seq 1 "$count"); do
-  dir=$HOME/actions-runner-space4x-$i
+  dir=$repo_dir/.ci/runners/$i
   mkdir -p "$dir/home" "$dir/tmp"
   install -m 755 "$here/gate.sh" "$dir/gate.sh"
   if [ ! -f "$dir/.runner" ]; then

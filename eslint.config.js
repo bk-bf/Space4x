@@ -10,7 +10,7 @@ const GITIGNORED = includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.
 
 export default ts.config(
   GITIGNORED,
-  { ignores: ['static/**', 'mockup/**', '.claude/**', '**/*.json'] },
+  { ignores: ['static/**', 'mockup/**', '.claude/**', '.ci/**', '**/*.json'] },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
