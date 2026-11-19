@@ -5,6 +5,7 @@ import {
   materials,
   milestones,
   opensTags,
+  recipesProducing,
   prerequisitesOf,
   recipes,
   region,
@@ -34,6 +35,16 @@ import {
 import { game } from '#lib/game/index.ts';
 import type { IconRef } from '#lib/gfx/icons/index.ts';
 import * as fmt from '#lib/ui/format.ts';
+
+export function makersOf(eco: Economy, site: Site, id: string): string[] {
+  const made = recipesProducing(id)
+    .filter((r) => isUnlocked(eco, r) && building(r.building).where.includes(site.body))
+    .map((r) => r.building);
+  const mined = (material(id).sources ?? [])
+    .filter((s) => s.body === site.body && isUnlocked(eco, building(s.building)))
+    .map((s) => s.building);
+  return [...new Set([...mined, ...made])];
+}
 
 export interface BillRow {
   id: string;
@@ -232,8 +243,6 @@ const PLACE_WORDS: Record<SitePlace, string> = {
   point: 'At a jump point'
 };
 
-export const bodyWords = (b: Body): string => BODY_WORDS[b];
-export const placeWords = (p: SitePlace): string => PLACE_WORDS[p];
 export const worldName = (id: string): string => game.placeName(id) ?? 'an unknown place';
 export const regionName = (id: string): string => region(id)?.name ?? 'an unknown region';
 

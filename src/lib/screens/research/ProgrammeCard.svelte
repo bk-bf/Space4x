@@ -27,26 +27,31 @@
     fmt,
     materialName,
     materialTip,
+    shell,
     tipText,
-    tooltip,
     warn,
     type Chip,
     type IconItem
   } from '#lib/ui/index.ts';
-  import { go } from './go.ts';
-  import { liveWorld, stepFor, waysToMake } from './next.ts';
-  import { checkFor, milestoneIcon, openedBy, openedCount, statusOf, type BillRow } from './programme.ts';
+  import { ui } from '#lib/screens/economy/state.svelte.ts';
+  import {
+    checkFor,
+    makersOf,
+    milestoneIcon,
+    openedBy,
+    openedCount,
+    statusOf,
+    type BillRow
+  } from './programme.ts';
   import { research } from './research.svelte.ts';
 
   const site = $derived(homeSite());
   const flows = $derived(flowsOf(site));
-  const world = $derived(liveWorld(economy, site, flowsOf));
   const m = $derived(milestone(research.selected));
   const status = $derived(statusOf(economy, site, m));
   const running = $derived(runningProgramme(economy, m.number));
   const check = $derived(checkFor(economy, site, m, flows));
   const missing = $derived(missingFor(economy, site, m));
-  const step = $derived(missing[0] ? stepFor(world, m, missing[0]) : undefined);
   const opened = $derived(openedBy(m.number));
   const opens = $derived(openedCount(opened));
   const compute = $derived(programmeCompute(m));
@@ -80,6 +85,14 @@
     }
   ]);
 
+  function openStockpile(id: string): void {
+    ui.site = site.id;
+    ui.tab = 'stockpiles';
+    ui.category = 'all';
+    ui.material = id;
+    shell.setScreen('economy');
+  }
+
   const eta = (r: BillRow): string => {
     if (r.ok) return 'in store';
     if (r.days !== undefined && Number.isFinite(r.days)) return fmt.days(r.days);
@@ -87,7 +100,7 @@
   };
 
   const makers = (id: string): string => {
-    const names = [...new Set(waysToMake(world, site, id).map((w) => buildingName(w.building)))];
+    const names = makersOf(economy, site, id).map(buildingName);
     return names.length ? `Made by ${names.join(', ')}` : 'Nothing open makes it at home';
   };
 
@@ -110,7 +123,7 @@
         dim(makers(r.id)),
         dim('Click to open its stockpile card')
       ),
-      onpick: () => go({ kind: 'stockpiles', site: site.id, material: r.id })
+      onpick: () => openStockpile(r.id)
     }))
   );
 
@@ -176,16 +189,6 @@
       {/if}
     {/if}
   </div>
-  {#if step && status !== 'running' && status !== 'done'}
-    <button
-      id="programmeNext"
-      class="next"
-      data-place={step.place.kind}
-      onclick={() => go(step.place)}
-      use:tooltip={tipText(reason, dim('Opens the place where it is done'))}
-      ><Icon name="arrowR" class="sm" /><span>{step.text}</span></button
-    >
-  {/if}
 
   <CardSection label="Bill, have / need">
     {#if billItems.length}
@@ -281,16 +284,6 @@
     flex-direction: column;
     gap: 4px;
     margin-top: 6px;
-  }
-  .next {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin: 4px 0 0;
-    max-width: 100%;
-    color: var(--cool);
-    text-align: left;
-    line-height: 1.05;
   }
   .site {
     display: flex;
