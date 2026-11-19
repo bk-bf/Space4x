@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { FB } from '#lib/gfx/framebuffer.ts';
-  import { CanvasView, requestRender } from '#lib/ui/index.ts';
+  import { CanvasView, requestRender, tooltip } from '#lib/ui/index.ts';
   import { ground } from './ground.svelte.ts';
   import { fitView, invasionFor, type Placed } from './invasion.ts';
 
@@ -49,7 +49,7 @@
         class="hit"
         data-unit={p.unit.name}
         aria-label={p.unit.name}
-        title={p.unit.name}
+        use:tooltip={p.unit.name}
         tabindex="-1"
         style:left="{Math.max(0, p.x) * f.scale}px"
         style:top="{Math.max(0, p.y) * f.scale}px"

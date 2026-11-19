@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DefList, Panel, ScreenGrid, Stack, Table, requestRender } from '#lib/ui/index.ts';
+  import { DefList, Panel, ScreenGrid, Stack, Table, requestRender, tooltip } from '#lib/ui/index.ts';
   import { jumpSummary, systemCounts } from './counts.ts';
   import { galaxy } from './galaxy.svelte.ts';
   import GalaxyView from './GalaxyView.svelte';
@@ -39,11 +39,14 @@
     <Panel title={system.name}>
       <DefList {rows} />
       <div class="add">
-        <button
-          data-act="open-map"
-          disabled={!galaxy.canOpenOnMap(system.id)}
-          title={galaxy.canOpenOnMap(system.id) ? '' : 'The system map has no data for this system'}
-          onclick={act(() => galaxy.openOnMap(system.id))}>Open on system map</button
+        <span
+          class="tipwrap"
+          use:tooltip={!galaxy.canOpenOnMap(system.id) && 'The system map has no data for this system'}
+          ><button
+            data-act="open-map"
+            disabled={!galaxy.canOpenOnMap(system.id)}
+            onclick={act(() => galaxy.openOnMap(system.id))}>Open on system map</button
+          ></span
         >
       </div>
     </Panel>

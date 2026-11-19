@@ -13,7 +13,8 @@
     TileGrid,
     fmt,
     materialName,
-    type FilterItem
+    type FilterItem,
+    tooltip
   } from '#lib/ui/index.ts';
   import { PERIODS } from '#lib/ui/format.ts';
   import Facts from './Facts.svelte';
@@ -77,7 +78,7 @@
         type="button"
         class:on={ui.showEmpty}
         aria-pressed={ui.showEmpty}
-        title="Also list materials with no stock and no flow, to see the whole catalogue"
+        use:tooltip={'Also list materials with no stock and no flow, to see the whole catalogue'}
         onclick={() => (ui.showEmpty = !ui.showEmpty)}><Icon name="filter" class="sm" />Show empty</button
       >
     </div>

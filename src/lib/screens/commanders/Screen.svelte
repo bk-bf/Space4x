@@ -14,7 +14,8 @@
     tipText,
     warn,
     type FilterItem,
-    type Tab
+    type Tab,
+    tooltip
   } from '#lib/ui/index.ts';
   import OfficerCard from './OfficerCard.svelte';
   import {
@@ -87,12 +88,12 @@
     {#snippet tools()}
       {#if roster.tab === 'officers'}
         <span class="sorts">
-          <select id="sortBy" title="Sort by" bind:value={roster.sort} aria-label="Sort by">
+          <select id="sortBy" use:tooltip={'Sort by'} bind:value={roster.sort} aria-label="Sort by">
             {#each SORTS as s (s.id)}<option value={s.id satisfies SortKey}>Sort: {s.label}</option>{/each}
           </select>
           <select
             id="sortDir"
-            title="Direction"
+            use:tooltip={'Direction'}
             aria-label="Direction"
             value={roster.descending ? 'desc' : 'asc'}
             onchange={(e) => (roster.descending = e.currentTarget.value === 'desc')}
@@ -100,7 +101,7 @@
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
-          <select id="rankFilter" title="Rank" aria-label="Rank" bind:value={roster.rank}>
+          <select id="rankFilter" use:tooltip={'Rank'} aria-label="Rank" bind:value={roster.rank}>
             <option value="all">All ranks</option>
             {#each RANKS as r (r.id)}<option value={r.id satisfies RankId}>{r.label}</option>{/each}
           </select>

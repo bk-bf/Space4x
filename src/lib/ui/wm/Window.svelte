@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
   import Icon from '../Icon.svelte';
+  import { tooltip } from '../primitives/tooltip.ts';
   import { wm, type WindowSpec } from './wm.svelte';
 
   interface Props extends WindowSpec {
@@ -47,10 +48,16 @@
   <h2 class="tb" onpointerdown={(e) => wm.startDrag(win, e)}>
     <Icon name={win.icon} /><span>{heading ?? win.title}</span>
     {#if tools}{@render tools()}{/if}
-    <button data-wm="min" title="Minimise" onclick={() => wm.toggleMin(win)}>_</button>
-    {#if win.home}<button data-wm="dock" title="Dock or float" onclick={() => wm.toggleDock(win)}>^</button
+    <button data-wm="min" aria-label="Minimise" use:tooltip={'Minimise'} onclick={() => wm.toggleMin(win)}
+      >_</button
+    >
+    {#if win.home}<button
+        data-wm="dock"
+        aria-label="Dock or float"
+        use:tooltip={'Dock or float'}
+        onclick={() => wm.toggleDock(win)}>^</button
       >{/if}
-    <button data-wm="close" title="Close" onclick={() => wm.close(win)}>x</button>
+    <button data-wm="close" aria-label="Close" use:tooltip={'Close'} onclick={() => wm.close(win)}>x</button>
   </h2>
   <div class="wb" bind:this={body}>{@render children()}</div>
 </section>

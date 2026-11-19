@@ -12,7 +12,8 @@
     fmt,
     materialTip,
     requestRender,
-    type IconItem
+    type IconItem,
+    tooltip
   } from '#lib/ui/index.ts';
   import ClassBar from './ClassBar.svelte';
   import { designer } from './designer.svelte.ts';
@@ -91,17 +92,17 @@
           ><Icon name="plus" class="sm" />New</button
         >
         <button data-act="copy" disabled={!design} onclick={act(() => designer.copy())}>Copy</button>
-        <button
-          data-act="lock"
-          disabled={!designer.canLock}
-          title={design && !designer.canLock && !design.locked ? 'Resolve the errors first' : ''}
-          onclick={act(() => designer.lockIt())}><Icon name="lock" class="sm" />Lock</button
+        <span
+          class="tipwrap"
+          use:tooltip={design && !designer.canLock && !design.locked && 'Resolve the errors first'}
+          ><button data-act="lock" disabled={!designer.canLock} onclick={act(() => designer.lockIt())}
+            ><Icon name="lock" class="sm" />Lock</button
+          ></span
         >
-        <button
-          data-act="delete"
-          disabled={!designer.canDelete}
-          title={designer.inService ? 'A fleet is using this class' : ''}
-          onclick={act(() => designer.remove())}><Icon name="trash" class="sm" />Delete</button
+        <span class="tipwrap" use:tooltip={designer.inService && 'A fleet is using this class'}
+          ><button data-act="delete" disabled={!designer.canDelete} onclick={act(() => designer.remove())}
+            ><Icon name="trash" class="sm" />Delete</button
+          ></span
         >
       {/snippet}
       <ClassBar />

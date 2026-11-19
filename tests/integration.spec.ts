@@ -9,7 +9,7 @@ async function open(page: Page, query = '') {
 }
 
 const goTo = (page: Page, screen: string) => page.locator(`[data-nav="${screen}"]`).click();
-const chip = (page: Page, title: string) => page.locator(`#chips .chip[title="${title}"]`);
+const chip = (page: Page, title: string) => page.locator(`#chips .chip[aria-label="${title}"]`);
 const mapLabel = (page: Page, text: string) =>
   page.locator('#mapLabels span').filter({ hasText: new RegExp(`^${text}( ×\\d+)?$`) });
 const term = (page: Page, text: RegExp): Locator =>

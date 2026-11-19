@@ -28,7 +28,8 @@
     materialTip,
     tipText,
     type FilterItem,
-    type IconItem
+    type IconItem,
+    tooltip
   } from '#lib/ui/index.ts';
   import GroupTile from './GroupTile.svelte';
   import Field from './Field.svelte';
@@ -215,7 +216,7 @@
                 >
                 <button
                   id="recipeAll"
-                  title="All of them"
+                  use:tooltip={'All of them'}
                   onclick={() => (ui.switchCount = chosen.group.count)}>all</button
                 >
               </div>

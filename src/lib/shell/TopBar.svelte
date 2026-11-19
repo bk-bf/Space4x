@@ -4,7 +4,7 @@
   import { gallery } from './mode.ts';
   import PauseMenu from './PauseMenu.svelte';
   import { openPauseMenu, session } from './session.svelte.ts';
-  import { Icon, requestRender, shell, wm } from '#lib/ui/index.ts';
+  import { Icon, requestRender, shell, tooltip, wm } from '#lib/ui/index.ts';
   import { SETTINGS_ID } from '#lib/ui/wm/wm.svelte.ts';
 
   function pickStep(seconds: number) {
@@ -22,17 +22,15 @@
   >{#if gallery}<title>Space4x gallery</title>{/if}</svelte:head
 >
 
-<header
-  id="top"
-  data-ready={session.ready}
-  class:gallery
-  title={gallery ? 'Gallery build: includes mock screens and scenes' : undefined}
->
-  <span class="brand"><Icon name="logo" /><b>Space4x</b></span>
+<header id="top" data-ready={session.ready} class:gallery>
+  <span class="brand" use:tooltip={gallery && 'Gallery build: includes mock screens and scenes'}
+    ><Icon name="logo" /><b>Space4x</b></span
+  >
   <nav id="nav">
     {#each SCREENS as s (s.id)}<button
         data-nav={s.id}
-        title="{s.title} ({s.key})"
+        aria-label={s.title}
+        use:tooltip={`${s.title} (${s.key})`}
         class:on={shell.screen === s.id}
         onclick={() => shell.setScreen(s.id)}><Icon name={s.icon} /></button
       >{/each}
@@ -40,11 +38,14 @@
   <div id="time">
     <span class="clock" id="clock">{formatClock(game.time)}</span><button
       id="bPause"
-      title="Pause (space)"
+      use:tooltip={'Pause (space)'}
       class:on={!game.running}
       onclick={() => game.pause()}><Icon name="pause" /></button
-    ><button id="bPlay" title="Run continuously (space)" class:on={game.running} onclick={() => game.run()}
-      ><Icon name="play" /></button
+    ><button
+      id="bPlay"
+      use:tooltip={'Run continuously (space)'}
+      class:on={game.running}
+      onclick={() => game.run()}><Icon name="play" /></button
     ><span id="steps"
       >{#each STEPS as s (s.seconds)}<button
           data-step={s.seconds}
@@ -54,12 +55,18 @@
     >
   </div>
   <div id="chips">
-    {#each game.status as c (c.id)}<span class="chip" class:warn={c.warn} title={c.title}
-        ><Icon name={c.icon} />{c.value}</span
+    {#each game.status as c (c.id)}<span
+        class="chip"
+        class:warn={c.warn}
+        aria-label={c.title}
+        use:tooltip={c.title}><Icon name={c.icon} />{c.value}</span
       >{/each}
   </div>
-  <button id="bSet" title="Menu: save, load, new game, panels (Esc)" onclick={openPauseMenu}
-    ><Icon name="gear" /></button
+  <button
+    id="bSet"
+    aria-label="Menu"
+    use:tooltip={'Menu: save, load, new game, panels (Esc)'}
+    onclick={openPauseMenu}><Icon name="gear" /></button
   >
 </header>
 

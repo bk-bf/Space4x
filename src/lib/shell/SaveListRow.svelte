@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatDay } from '#lib/game/index.ts';
-  import { Icon, Pill } from '#lib/ui/index.ts';
+  import { Icon, Pill, tooltip } from '#lib/ui/index.ts';
   import type { SaveEntry } from './saveManager.ts';
 
   let {
@@ -45,9 +45,9 @@
       />
     </span>
     <span class="sub">
-      <span title="Milestones reached"><Icon name="flask" class="sm" />{save.meta.milestones}</span>
-      <span title="Sites"><Icon name="dome" class="sm" />{save.meta.sites}</span>
-      <span title="Ships"><Icon name="ship" class="sm" />{save.meta.ships}</span>
+      <span use:tooltip={'Milestones reached'}><Icon name="flask" class="sm" />{save.meta.milestones}</span>
+      <span use:tooltip={'Sites'}><Icon name="dome" class="sm" />{save.meta.sites}</span>
+      <span use:tooltip={'Ships'}><Icon name="ship" class="sm" />{save.meta.ships}</span>
     </span>
     <span class="when">{fmtWhen(save.meta.savedAt)}</span>
   </button>
@@ -68,8 +68,11 @@
       <button aria-label="No" onclick={() => (confirm = 'none')}><Icon name="cross" class="sm" /></button>
     </span>
   {:else}
-    <button class="del" aria-label="Delete save" title="Delete save" onclick={() => (confirm = 'delete')}
-      ><Icon name="trash" class="sm" /></button
+    <button
+      class="del"
+      aria-label="Delete save"
+      use:tooltip={'Delete save'}
+      onclick={() => (confirm = 'delete')}><Icon name="trash" class="sm" /></button
     >
   {/if}
 </div>

@@ -1278,6 +1278,12 @@ div.ui-tile {
   font-size: 18px;
   line-height: 1.15;
 }
+.tipwrap {
+  display: inline-flex;
+}
+.tipwrap > button:disabled {
+  pointer-events: none;
+}
 .ui-tip[hidden] {
   display: none;
 }
