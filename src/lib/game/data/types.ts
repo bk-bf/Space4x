@@ -135,6 +135,7 @@ export interface Recipe {
   power: number;
   hours: number;
   generates?: number;
+  product?: string;
   reaction?: string;
   source?: string;
 }

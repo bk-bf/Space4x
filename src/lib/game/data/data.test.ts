@@ -266,6 +266,11 @@ describe('recipes', () => {
     }
   });
 
+  it('name their product among their outputs', () => {
+    for (const r of recipes.filter((x) => x.product !== undefined))
+      expect(Object.keys(r.outputs), r.id).toContain(r.product);
+  });
+
   it('produce something, or generate power', () => {
     for (const r of recipes)
       expect(Object.keys(r.outputs).length > 0 || (r.generates ?? 0) > 0, r.id).toBe(true);

@@ -2,6 +2,7 @@
   {
     "id": "uranium_enrichment_haleu",
     "building": "enrichment_plant",
+    "product": "haleu",
     "milestone": 7,
     "thin": true,
     "estimated": false,
@@ -15,6 +16,7 @@
   {
     "id": "uranium_enrichment_heu",
     "building": "enrichment_plant",
+    "product": "heu",
     "milestone": 7,
     "estimated": false,
     "inputs": { "uranium": 2012.0 },
@@ -100,6 +102,7 @@
   {
     "id": "lithium6_separation",
     "building": "isotope_separator",
+    "product": "lithium6",
     "milestone": 22,
     "thin": true,
     "estimated": false,
@@ -113,6 +116,7 @@
   {
     "id": "deuterium_separation",
     "building": "isotope_separator",
+    "product": "deuterium",
     "milestone": 22,
     "thin": true,
     "estimated": false,

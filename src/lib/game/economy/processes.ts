@@ -68,6 +68,8 @@ const mainOutput = (r: Recipe): string | undefined =>
     undefined
   );
 
+const leadOutput = (r: Recipe): string | undefined => r.product ?? mainOutput(r);
+
 const largestInput = (r: Recipe): string | undefined =>
   Object.keys(r.inputs).reduce<string | undefined>(
     (best, id) => (best === undefined || (r.inputs[id] ?? 0) > (r.inputs[best] ?? 0) ? id : best),
@@ -80,17 +82,19 @@ function processName(r: Recipe): string {
     const ins = Object.keys(r.inputs);
     return ins.length ? `Power from ${names(ins)}` : 'Generate power';
   }
-  const main = mainOutput(r);
+  const main = leadOutput(r);
   if (!main) return 'Process';
   if (main in r.inputs) return `Recycle ${material(main).name}`;
   const total = Object.values(r.outputs).reduce((a, v) => a + v, 0);
-  const products = Object.entries(r.outputs)
-    .filter(([, v]) => v >= total * 0.1)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 2)
-    .map(([m]) => material(m).name);
+  const products = r.product
+    ? [material(r.product).name]
+    : Object.entries(r.outputs)
+        .filter(([, v]) => v >= total * 0.1)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([m]) => material(m).name);
   const name = products.join(' and ');
-  const twin = recipesAt(r.building).some((o) => o.id !== r.id && mainOutput(o) === main);
+  const twin = recipesAt(r.building).some((o) => o.id !== r.id && leadOutput(o) === main);
   const from = largestInput(r);
   return twin && from ? `${name} from ${material(from).name}` : name;
 }
