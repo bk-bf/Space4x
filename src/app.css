@@ -67,6 +67,24 @@ select {
   box-shadow: var(--edge);
   margin: 2px;
 }
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 4' shape-rendering='crispEdges'%3E%3Cpath fill='%23948fc0' d='M0 0h7v1H0zM1 1h5v1H1zM2 2h3v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 14px 8px;
+  image-rendering: pixelated;
+}
+select:hover:not(:disabled) {
+  background-color: var(--line);
+}
+option,
+optgroup {
+  background: var(--panel);
+  color: var(--text);
+}
 button:hover {
   background: var(--line);
 }
@@ -286,8 +304,9 @@ canvas {
   font-size: 16px;
   padding: 0 4px;
   margin: 0 4px;
+  padding-right: 24px;
   box-shadow: none;
-  background: var(--panel);
+  background-color: var(--panel);
   flex: 0 1 auto;
   min-width: 0;
 }
