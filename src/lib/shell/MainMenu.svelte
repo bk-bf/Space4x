@@ -1,13 +1,14 @@
 <script lang="ts">
   import { formatDay, game } from '#lib/game/index.ts';
-  import { CanvasView, Icon } from '#lib/ui/index.ts';
+  import { Icon } from '#lib/ui/index.ts';
+  import { paintBackdrop } from './backdrop';
   import { isDesktop, quitDesktop } from './desktop';
-  import { MenuScene } from './menuScene';
+  import solStation from './sol-station.png';
   import { hasSave } from './saveManager.ts';
   import SaveListMenu from './SaveListMenu.svelte';
   import { continueGame, session, startGame } from './session.svelte.ts';
 
-  const scene = new MenuScene();
+  let backdrop: HTMLCanvasElement;
   const desktop = isDesktop();
   let canLoad = $state(false);
   let loading = $state(false);
@@ -18,15 +19,37 @@
   }
 
   $effect(() => {
+    const img = new Image();
+    const paint = () => paintBackdrop(backdrop, img, devicePixelRatio || 1);
+    const resize = new ResizeObserver(paint);
+    img.onload = () => {
+      paint();
+      resize.observe(backdrop);
+    };
+    img.src = solStation;
+    return () => resize.disconnect();
+  });
+
+  $effect(() => {
     void session.revision;
     void hasSave().then((has) => (canLoad = has));
   });
 </script>
 
 <div id="title" role="dialog" aria-modal="true" aria-label="Space4x">
-  <div class="scene"><CanvasView scale={2} vignette={0.55} bg="stars" draw={(fb) => scene.draw(fb)} /></div>
+  <canvas class="scene" bind:this={backdrop}></canvas>
   <div class="content">
-    <h1>SPACE4X</h1>
+    <h1 aria-label="Space4x">
+      <span aria-hidden="true"
+        >SPA<svg class="c" viewBox="0 0 193 259"
+          >{#each [[0, 15], [12, 12], [-12, 12], [12, -6], [-12, -6], [0, 0]] as [dx, dy], i (i)}<path
+              transform="translate({dx} {dy})"
+              fill={i === 5 ? 'currentColor' : '#000'}
+              d="M36 0h121v35H36zM0 35h193v20H0zM0 55h51v150H0zM142 55h51v35h-51zM142 170h51v35h-51zM0 205h193v20H0zM36 225h121v34H36z"
+            />{/each}</svg
+        >E<em>4X</em></span
+      >
+    </h1>
     <nav>
       {#if session.resumable}
         <button id="titleContinue" onclick={continueGame}
@@ -59,10 +82,8 @@
   .scene {
     position: absolute;
     inset: 0;
-    display: flex;
-  }
-  .scene > :global(.view) {
-    flex: 1;
+    width: 100%;
+    height: 100%;
   }
   .content {
     position: absolute;
@@ -75,13 +96,27 @@
   h1 {
     margin: 0;
     font:
-      700 clamp(64px, 9vw, 132px) / 0.9 'Pixelify',
+      700 clamp(64px, 9vw, 132px) / 0.95 'Pixelify',
       sans-serif;
-    letter-spacing: 0.06em;
-    color: var(--accent);
+    letter-spacing: 0.01em;
+    color: #fff;
     text-shadow:
-      0 4px 0 var(--bg),
-      0 0 24px rgba(242, 179, 93, 0.25);
+      0 0.038em 0 #000,
+      0.031em 0.031em 0 #000,
+      -0.031em 0.031em 0 #000,
+      0.031em -0.015em 0 #000,
+      -0.031em -0.015em 0 #000;
+  }
+  h1 em {
+    font-style: normal;
+    color: #ffb43b;
+  }
+  .c {
+    width: 0.4825em;
+    height: 0.6475em;
+    margin: 0 0.07em 0 0.06em;
+    overflow: visible;
+    vertical-align: -0.01em;
   }
   nav {
     display: flex;
