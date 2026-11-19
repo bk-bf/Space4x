@@ -10,7 +10,18 @@ The interface is a SvelteKit app built from the approved mockup. The game starts
 
 ## Running
 
-Needs Node 24 or newer and pnpm (the version is pinned in `package.json`).
+The game is a Tauri 2 desktop app. It needs Node 24 or newer, pnpm (the version is pinned in `package.json`), Rust, and on Linux WebKitGTK 4.1 and libsoup 3.
+
+```sh
+./launch.sh             # build if anything changed, then open the game in its own window
+./launch.sh --dev       # the same window on the vite dev server, reloading on every change
+./launch.sh --gallery   # the gallery build in the same shell
+./launch.sh --stop      # close it
+```
+
+The window runs as the user unit `space4x-window`, so it outlives the terminal; closing it stops the game. F11 toggles full screen. `journalctl --user -u space4x-window` is its log. `pnpm tauri:build` makes the release binary alone, `src-tauri/target/release/space4x`; installers are configured in `src-tauri/tauri.conf.json` and switched off.
+
+`pnpm dev` runs the game in a browser:
 
 ```sh
 pnpm install
@@ -27,10 +38,10 @@ The URL query selects a state, the same as in the mockup: `?screen=economy`, `?s
 
 One codebase, two builds, switched by `VITE_SPACE4X_GALLERY` (read only in `src/lib/shell/mode.ts`).
 
-- **game** (the default, https://space4x.callmedaddy.dedyn.io/): the top bar lists only real screens, the map has no sites, and a URL naming a mock screen opens the map.
-- **gallery** (`VITE_SPACE4X_GALLERY=1`): every screen and mock scene, with a hot-coloured underline on the top bar and the page title "Space4x gallery" (a tag beside the name does not fit at 1440 px once the chips grow). Served by the mockups server (see the `mockups` skill) at `/space4x-gallery/`, from `~/mockups/space4x-gallery/`.
+- **game** (the default, `./launch.sh`): the top bar lists only real screens, the map has no sites, and a URL naming a mock screen opens the map.
+- **gallery** (`VITE_SPACE4X_GALLERY=1`): every screen and mock scene, with a hot-coloured underline on the top bar and the page title "Space4x gallery" (a tag beside the name does not fit at 1440 px once the chips grow). `./launch.sh --gallery` opens it in the desktop shell, with storage of its own.
 
-`deploy/build` makes both: the game into `build/`, then the gallery with `SPACE4X_BASE=/space4x-gallery` copied to `~/mockups/space4x-gallery/` when `~/mockups` exists (`GALLERY_DIR` overrides the path). `deploy/update` runs it whenever `dev` moves. `SPACE4X_OUT` overrides the output directory of a single `pnpm build`.
+`SPACE4X_OUT` overrides the output directory of a single `pnpm build`; the gallery shell is built from `build-gallery/`.
 
 `pnpm dev` runs the game; `VITE_SPACE4X_GALLERY=1 pnpm dev` runs the gallery.
 
@@ -38,8 +49,8 @@ One codebase, two builds, switched by `VITE_SPACE4X_GALLERY` (read only in `src/
 
 | Command            | What it runs                                                                                                                                                                                                           |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm check`       | the legs the change needs (see below), in the order `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout`                                                                                               |
-| `pnpm check:all`   | every one of those six legs                                                                                                                                                                                            |
+| `pnpm check`       | the legs the change needs (see below), in the order `check:types`, `lint`, `knip`, `format:check`, `test`, `test:layout`, `check:tauri`                                                                                |
+| `pnpm check:all`   | every one of those seven legs                                                                                                                                                                                          |
 | `pnpm test`        | the vitest unit tests                                                                                                                                                                                                  |
 | `pnpm test:layout` | the Playwright tests in two projects: `gallery` runs every layout state and the interaction tests, `game` runs the layout states of real screens and `tests/game.spec.ts`, which checks that nothing mock is reachable |
 
@@ -51,15 +62,13 @@ The layout test loads each state at 1440x900. `SIZE=1100,700 pnpm test:layout` u
 
 ## Branches and promotion
 
-Work lands on `dev`, the default branch; `main` is what has been playtested. The dev build runs at https://space4x.callmedaddy.dedyn.io/ and follows `dev` on its own. `main` moves only through `pnpm promote`, which merges `dev` onto `main` as the candidate branch `promote/main`, waits for the `promote` workflow (`pnpm check:all` and `pnpm build`) and leaves a worktree to playtest with `pnpm dev`; `pnpm promote --push` then pushes it to `main`, and `pnpm promote --list` shows what is waiting.
+Work lands on `dev`, the default branch; `main` is what has been playtested. `main` moves only through `pnpm promote`, which merges `dev` onto `main` as the candidate branch `promote/main`, waits for the `promote` workflow (`pnpm check:all` and `pnpm build`) and leaves a worktree to playtest with `./launch.sh`; `pnpm promote --push` then pushes it to `main`, and `pnpm promote --list` shows what is waiting.
 
 | Command               | What it does                                                    |
 | --------------------- | --------------------------------------------------------------- |
 | `pnpm promote --list` | the commits and merged pull requests on `dev` that `main` lacks |
 | `pnpm promote`        | builds and verifies the candidate, then points at the playtest  |
 | `pnpm promote --push` | pushes the verified candidate to `main`                         |
-
-`./install.sh`, run in a checkout that is on `dev`, installs the user units in `deploy/`: `space4x-serve.service` serves the static build on the machine's Tailscale address, port 8800, and `space4x-update.path` rebuilds it when `dev` or `origin/dev` moves, which `git-autofetch` keeps current.
 
 ## Screenshots
 
