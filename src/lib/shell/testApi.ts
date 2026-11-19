@@ -2,6 +2,7 @@ import { DAY, game } from '#lib/game/index.ts';
 import type { PlayReport } from '#lib/game/play.ts';
 import { PathPlayer } from '#lib/game/playPath.ts';
 import { economy, homeSite, startProgramme } from '#lib/game/economy/index.ts';
+import { serialise } from '#lib/game/save.ts';
 import { ships } from '#lib/game/ships/index.ts';
 
 export interface TestApi {
@@ -10,6 +11,7 @@ export interface TestApi {
   crewedStation(): boolean;
   startProgramme(number: number): boolean;
   state(): { done: number[]; sites: string[]; ships: number; launches: number; time: number };
+  snapshot(): string;
 }
 
 declare global {
@@ -35,6 +37,7 @@ export function installTestApi(params: URLSearchParams): void {
       ships: ships.vessels.length,
       launches: ships.launches.length,
       time: game.time
-    })
+    }),
+    snapshot: () => JSON.stringify(serialise(game))
   };
 }

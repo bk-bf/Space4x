@@ -32,6 +32,8 @@ export interface SupplyRow {
 const cache = new Map<string, Omit<ImportOption, 'from' | 'fromName' | 'stock'>>();
 const EPOCH = 30 * DAY;
 
+export const clearSupplyCache = (): void => cache.clear();
+
 function placeFor(site: Site) {
   return hangsInOrbit(site)
     ? ({ kind: 'orbit', body: site.worldBody, angle: site.angle } as const)

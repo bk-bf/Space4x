@@ -37,12 +37,12 @@ export default defineConfig({
   projects: [
     {
       name: 'game',
-      testMatch: ['layout.spec.ts', 'game.spec.ts', 'belt.spec.ts'],
+      testMatch: ['layout.spec.ts', 'game.spec.ts', 'belt.spec.ts', 'save.spec.ts'],
       use: { baseURL: `http://127.0.0.1:${GAME_PORT}` }
     },
     {
       name: 'gallery',
-      testIgnore: ['game.spec.ts', 'belt.spec.ts'],
+      testIgnore: ['game.spec.ts', 'belt.spec.ts', 'save.spec.ts'],
       use: { baseURL: `http://127.0.0.1:${GALLERY_PORT}` }
     }
   ],

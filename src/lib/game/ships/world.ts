@@ -160,6 +160,9 @@ const options = new Map<string, TripOption>();
 export const tripOptionOf = (id: string): TripOption | undefined => options.get(id);
 export const setTripOption = (id: string, option: TripOption): void => void options.set(id, option);
 export const clearTripOption = (id: string): void => void options.delete(id);
+export const tripOptionEntries = (): [string, TripOption][] => [...options];
+export const clearTripOptions = (): void => options.clear();
+export const forgetFlightSystem = (game: Game): void => void systems.delete(game);
 
 export function vesselState(game: Game, v: Vessel, t = game.elapsed): State | undefined {
   if (v.trip) {

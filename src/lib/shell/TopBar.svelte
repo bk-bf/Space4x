@@ -2,6 +2,8 @@
   import { formatClock, game, STEPS } from '#lib/game/index.ts';
   import { SCREENS } from '#lib/screens/list.ts';
   import { gallery } from './mode.ts';
+  import PauseMenu from './PauseMenu.svelte';
+  import { openPauseMenu, session } from './session.svelte.ts';
   import { Icon, requestRender, shell, wm } from '#lib/ui/index.ts';
   import { SETTINGS_ID } from '#lib/ui/wm/wm.svelte.ts';
 
@@ -22,6 +24,7 @@
 
 <header
   id="top"
+  data-ready={session.ready}
   class:gallery
   title={gallery ? 'Gallery build: includes mock screens and scenes' : undefined}
 >
@@ -55,5 +58,11 @@
         ><Icon name={c.icon} />{c.value}</span
       >{/each}
   </div>
-  <button id="bSet" title="Panel settings" onclick={togglePanels}><Icon name="gear" /></button>
+  <button id="bSet" title="Menu: save, load, new game, panels (Esc)" onclick={openPauseMenu}
+    ><Icon name="gear" /></button
+  >
 </header>
+
+{#if session.menu}
+  <PauseMenu onPanels={togglePanels} />
+{/if}

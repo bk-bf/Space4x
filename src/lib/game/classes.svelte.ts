@@ -26,7 +26,7 @@ export function specFor(design: ShipDesign): ShipClass {
 
 export class ClassRegistry {
   saved = $state.raw<readonly ShipDesign[]>([]);
-  private counter = 0;
+  counter = 0;
 
   find(id: string): ShipDesign | undefined {
     return this.saved.find((c) => c.id === id);

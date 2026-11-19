@@ -144,6 +144,7 @@ test('the Panels popup switches arrangement, shows and hides panels, and resets'
   const settings = win(page, 'settings');
   await expect(settings).toBeHidden();
   await page.locator('#bSet').click();
+  await page.locator('#menuPanels').click();
   await expect(settings).toBeVisible();
 
   await settings.locator('[data-set="float"]').click();
@@ -173,6 +174,7 @@ test('the Panels popup switches arrangement, shows and hides panels, and resets'
 
   await page.locator('[data-nav="research"]').click();
   await page.locator('#bSet').click();
+  await page.locator('#menuPanels').click();
   await expect(page.locator('#desk')).toBeVisible();
 });
 

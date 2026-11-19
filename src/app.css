@@ -122,6 +122,7 @@ summary:focus-visible {
 }
 #nav button,
 #time > button,
+#bSave,
 #bSet {
   padding: 2px 3px;
 }

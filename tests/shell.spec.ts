@@ -50,6 +50,7 @@ test('a reload keeps the window layout, and Reset brings the default back', asyn
   expect(Math.abs(kept!.x - floated!.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(kept!.y - floated!.y)).toBeLessThanOrEqual(1);
   await page.locator('#bSet').click();
+  await page.locator('#menuPanels').click();
   await page.locator('#w-settings [data-set="reset"]').click();
   await page.reload();
   await expect(page.locator('#check')).toBeAttached({ timeout: 20_000 });

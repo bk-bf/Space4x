@@ -8,12 +8,18 @@
   import { applyQuery } from './applyQuery';
   import { startDesktop } from './desktop';
   import { parseQuery } from './query';
+  import { openPauseMenu, session, startSession } from './session.svelte.ts';
   import TopBar from './TopBar.svelte';
 
   const CHECK_DELAY_MS = 900;
 
   function onKey(e: KeyboardEvent) {
     if (e.defaultPrevented) return;
+    if (e.key === 'Escape' && !session.menu && !(e.target as Element).closest?.('input,select,textarea')) {
+      e.preventDefault();
+      openPauseMenu();
+      return;
+    }
     const plain = !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey;
     const screen = plain ? SCREENS.find((s) => s.key === e.key) : undefined;
     if (screen) {
@@ -35,9 +41,12 @@
     const query = parseQuery(params);
     const slow = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let stop = () => {};
+    let stopSaving = () => {};
     let cancelled = false;
-    document.fonts.ready.then(() => {
+    document.fonts.ready.then(async () => {
       if (cancelled) return;
+      stopSaving = await startSession(params);
+      if (cancelled) return stopSaving();
       applyQuery(query, params);
       startRendering();
       stop = startLoop(game, frameTick, { intervalMs: slow ? 1000 : 100 });
@@ -48,6 +57,7 @@
     return () => {
       cancelled = true;
       stop();
+      stopSaving();
     };
   });
 </script>
