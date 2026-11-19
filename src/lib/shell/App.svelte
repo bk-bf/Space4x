@@ -6,6 +6,7 @@
   import { frameTick, startRendering } from '#lib/ui/frame.ts';
   import { layoutCheck, reportLayout } from '#lib/ui/layoutCheck.ts';
   import { applyQuery } from './applyQuery';
+  import MainMenu from './MainMenu.svelte';
   import { startDesktop } from './desktop';
   import { parseQuery } from './query';
   import { openPauseMenu, session, startSession } from './session.svelte.ts';
@@ -15,7 +16,7 @@
   const CHECK_DELAY_MS = 900;
 
   function onKey(e: KeyboardEvent) {
-    if (e.defaultPrevented) return;
+    if (e.defaultPrevented || session.title) return;
     if (e.key === 'Escape' && !session.menu && !(e.target as Element).closest?.('input,select,textarea')) {
       e.preventDefault();
       openPauseMenu();
@@ -64,6 +65,8 @@
 </script>
 
 <svelte:window onkeydown={onKey} />
+
+{#if session.title}<MainMenu />{/if}
 
 <TopBar />
 <div id="stage">

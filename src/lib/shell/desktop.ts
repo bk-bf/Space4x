@@ -42,6 +42,14 @@ export function connectDesktop(invoke: Invoke, page: Page): void {
   report('info', `loaded ${page.location.href}`);
 }
 
+export const isDesktop = (): boolean => internals() !== undefined;
+
+export function quitDesktop(): void {
+  void internals()
+    ?.invoke('quit')
+    .catch(() => {});
+}
+
 export function startDesktop(): void {
   const tauri = internals();
   if (tauri) connectDesktop(tauri.invoke, window);

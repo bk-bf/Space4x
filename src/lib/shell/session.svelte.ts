@@ -45,6 +45,8 @@ export const session = $state({
   autoload: false,
   ready: false,
   menu: false,
+  title: false,
+  resumable: false,
   dialog: null as SaveDialog | null,
   savedAt: 0,
   revision: 0
@@ -156,6 +158,7 @@ export async function startGame(mode: 'new' | 'load', entry?: SaveEntry): Promis
   await flushSave();
   session.dialog = null;
   session.menu = false;
+  session.title = false;
   wasPausedBeforeMenu = true;
   if (mode === 'load' && entry && (await load(entry))) return;
   if (mode === 'load' && entry) return;
@@ -166,6 +169,20 @@ export async function startGame(mode: 'new' | 'load', entry?: SaveEntry): Promis
     await saveGameNow(game, uiState());
   }
   changed();
+}
+
+export function continueGame(): void {
+  session.title = false;
+}
+
+export async function openTitle(): Promise<void> {
+  game.pause();
+  wasPausedBeforeMenu = true;
+  await flushSave();
+  session.dialog = null;
+  session.menu = false;
+  session.resumable = true;
+  session.title = true;
 }
 
 export async function saveGame(): Promise<void> {
@@ -209,12 +226,15 @@ function tick(): void {
 export async function startSession(params: URLSearchParams): Promise<() => void> {
   if (isTestUrl(params)) {
     freshGame();
+    session.title = params.has('menu');
     session.ready = true;
     return () => {};
   }
   session.autoload = true;
   const latest = (await listSaves())[0];
-  if (!latest || !(await load(latest))) freshGame();
+  session.resumable = !!latest && (await load(latest));
+  if (!session.resumable) freshGame();
+  session.title = true;
   const timer = setInterval(tick, POLL_MS);
   const onHide = () => void flushSave();
   const onHidden = () => {

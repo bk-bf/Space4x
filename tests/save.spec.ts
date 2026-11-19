@@ -5,6 +5,10 @@ const MONTH = '[data-step="2592000"]';
 async function boot(page: Page, url = '/') {
   if (url) await page.goto(url);
   await expect(page.locator('#top[data-ready="true"]')).toBeAttached({ timeout: 20_000 });
+  if (!(await page.locator('#title').count())) return;
+  const resume = page.locator('#titleContinue');
+  await ((await resume.count()) ? resume : page.locator('#titleNew')).click();
+  await expect(page.locator('#title')).toHaveCount(0);
 }
 
 async function reload(page: Page) {
@@ -18,6 +22,27 @@ async function menu(page: Page, item: string) {
   if (!(await page.locator('#menu').isVisible())) await page.locator('#bSet').click();
   await page.locator(`#${item}`).click();
 }
+
+test('the game opens on the main menu, and the pause menu goes back to it', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#title')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#titleContinue')).toHaveCount(0);
+  await expect(page.locator('#titleLoad')).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#menu')).toHaveCount(0);
+  await page.locator('#titleNew').click();
+  await expect(page.locator('#title')).toHaveCount(0);
+  const start = await clock(page);
+  await page.locator(MONTH).click();
+  await page.keyboard.press('Escape');
+  await page.locator('#menuTitle').click();
+  await expect(page.locator('#title')).toBeVisible();
+  await expect(page.locator('#menu')).toHaveCount(0);
+  await expect(page.locator('#titleLoad')).toBeEnabled();
+  await page.locator('#titleContinue').click();
+  await expect(page.locator('#title')).toHaveCount(0);
+  await expect(page.locator('#clock')).not.toHaveText(start);
+});
 
 test('Escape opens the menu paused and Resume runs the game again', async ({ page }) => {
   await boot(page);

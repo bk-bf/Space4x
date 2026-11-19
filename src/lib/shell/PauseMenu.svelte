@@ -3,7 +3,7 @@
   import { Icon } from '#lib/ui/index.ts';
   import { hasSave } from './saveManager.ts';
   import SaveListMenu from './SaveListMenu.svelte';
-  import { closePauseMenu, session, startGame } from './session.svelte.ts';
+  import { closePauseMenu, openTitle, session, startGame } from './session.svelte.ts';
   import { prefs, setAutosave } from './uiPrefs.svelte.ts';
 
   let { onPanels }: { onPanels: () => void } = $props();
@@ -75,6 +75,8 @@
     >
     <span id="autosaveStatus">{prefs.autosave ? status : 'Saves only when asked'}</span>
     <button id="menuPanels" onclick={panels}><Icon name="gear" class="sm" />Panels</button>
+    <button id="menuTitle" onclick={() => void openTitle()}><Icon name="arrowR" class="sm" />Main menu</button
+    >
   </nav>
 </dialog>
 

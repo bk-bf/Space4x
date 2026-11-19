@@ -11,6 +11,7 @@ export interface LayoutState {
 
 const QUERIES = [
   '',
+  'menu',
   'arr=float',
   'sel=body:mars',
   'sel=body:earth',
