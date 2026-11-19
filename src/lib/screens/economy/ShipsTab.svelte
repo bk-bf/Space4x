@@ -56,6 +56,7 @@
     type FilterItem
   } from '#lib/ui/index.ts';
   import Field from './Field.svelte';
+  import FoundPlan from './FoundPlan.svelte';
   import ShipArt from './ShipArt.svelte';
   import ShipTile from './ShipTile.svelte';
   import TabBody from './TabBody.svelte';
@@ -398,6 +399,8 @@
   {:else}
     <p class="dim" id="noVessels">No ships yet. Build one on the Shipyard tab.</p>
   {/if}
+  <h3><Icon name="dome" class="sm" />Plan a site</h3>
+  <FoundPlan />
 {/snippet}
 
 {#snippet side()}

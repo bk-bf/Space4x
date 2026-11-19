@@ -124,3 +124,57 @@ test('a bill item on the programme card opens its stockpile card even with no st
   await expect(page.locator('[data-screen="economy"] .ui-card .ttl').first()).toContainText('GRCop');
   await expect(page.locator('#stockpiles .ui-tile[aria-pressed="true"]')).toHaveCount(1);
 });
+
+async function designStage(page: Page, name: string, parts: [string, number][]) {
+  await page.locator('[data-act="new"]').click();
+  await page.locator('#clsName').fill(name);
+  for (const [id, n] of parts) {
+    await page.locator(`[data-part="${id}"] button`).click();
+    const input = page.locator(`[data-count="${id}"]`);
+    await input.fill(String(n));
+    await input.press('Tab');
+  }
+}
+
+test('a two-stage stack is tried in the designer and a site is planned before anything is built', async ({
+  page
+}) => {
+  await open(page, 'screen=classes');
+  await designStage(page, 'Booster', [
+    ['chemical_engine_methalox', 3],
+    ['propellant_tank', 25],
+    ['structure_truss', 1],
+    ['landing_legs', 1]
+  ]);
+  await designStage(page, 'Orbiter', [
+    ['chemical_engine_methalox', 1],
+    ['propellant_tank', 6],
+    ['structure_truss', 1],
+    ['cargo_bay', 2]
+  ]);
+  await expect(page.locator('#stackStages [data-stage]')).toHaveCount(1);
+  await page.locator('#stackAdd').selectOption({ label: 'Booster' });
+  await expect(page.locator('#stackStages [data-stage]')).toHaveCount(2);
+  await expect(page.locator('#stackStages [data-stage="1"]')).toContainText('Booster');
+  await expect(page.locator('#stackStages [data-stage="2"]')).toContainText('reaches orbit');
+  await expect(page.locator('#stackVerdict')).toContainText('Reaches orbit');
+  const ceiling = Number(await page.locator('#stackCeiling').getAttribute('data-ceiling'));
+  expect(ceiling).toBeGreaterThan(1000);
+  await page.locator('#stackPayload').fill(String(Math.ceil(ceiling / 1000) + 1));
+  await page.locator('#stackPayload').press('Tab');
+  await expect(page.locator('#stackVerdict')).toContainText('km/s of delta-v');
+  await expect(page.locator('[data-screen="classes"] [data-act="lock"]')).toBeEnabled();
+
+  await page.locator('[data-nav="economy"]').click();
+  await page.locator('[data-tab="ships"]').click();
+  await page.locator('#planGroup').selectOption('Planets');
+  await page.locator('#planPlace').selectOption('orbit:earth');
+  await expect(page.locator('#planBuildings .ui-tile')).not.toHaveCount(0);
+  await page.locator('#planBuildings .ui-tile', { hasText: 'Alloy works' }).click();
+  await expect(page.locator('#planCost')).toHaveText('costs 2.7 t');
+  await expect(page.locator('#planHave .short')).toHaveCount(2);
+  await page.locator('#planGroup').selectOption('Moons of Earth');
+  await page.locator('#planPlace').selectOption('surface:luna');
+  await expect(page.locator('#planRegion')).toBeVisible();
+  await expect(page.locator('#planBuildings .ui-tile')).not.toHaveCount(0);
+});

@@ -7,7 +7,7 @@ import {
   componentKindName,
   type IconRef
 } from '#lib/gfx/icons/index.ts';
-import { thrust } from '../format.ts';
+import { mass, thrust } from '../format.ts';
 import { dim, tipText } from './tooltip.ts';
 
 const byId = <T extends { id: string }>(items: readonly T[]) => new Map(items.map((i) => [i.id, i]));
@@ -65,9 +65,22 @@ export function materialTip(id: string, ...extra: (string | false | null | undef
   return tipText(materialName(id), m ? categoryName(m.category) : '', m ? dim(m.why) : '', extra);
 }
 
+export function buildingCost(id: string): string {
+  const cost = Object.entries(buildingById.get(id)?.cost ?? {}).sort((a, b) => b[1] - a[1]);
+  return cost.length
+    ? `Build cost: ${cost.map(([m, kg]) => `${mass(kg)} ${materialName(m).toLowerCase()}`).join(', ')}`
+    : '';
+}
+
 export function buildingTip(id: string, ...extra: (string | false | null | undefined)[]): string {
   const b = buildingById.get(id);
-  return tipText(buildingName(id), b ? buildingKindName(b.kind) : '', dim(buildingDescription(id)), extra);
+  return tipText(
+    buildingName(id),
+    b ? buildingKindName(b.kind) : '',
+    dim(buildingDescription(id)),
+    buildingCost(id),
+    extra
+  );
 }
 
 export function componentTip(id: string, ...extra: (string | false | null | undefined)[]): string {

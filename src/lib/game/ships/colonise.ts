@@ -7,7 +7,8 @@ import {
   siteIn,
   standFirst,
   touch,
-  type Site
+  type Site,
+  type SitePlace
 } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { knownRegions } from '#lib/game/survey.svelte.ts';
@@ -23,41 +24,62 @@ export interface FoundOption {
   missing: { id: string; need: number; have: number }[];
 }
 
-function placeFor(
-  v: Vessel
-): { worldBody: string; place: 'surface' | 'orbit' | 'point'; angle: number } | undefined {
+export interface Placement {
+  worldBody: string;
+  place: SitePlace;
+}
+
+export function placement(kind: 'orbit' | 'surface', worldBody: string): Placement {
+  if (kind === 'surface') return { worldBody, place: 'surface' };
+  return {
+    worldBody,
+    place: isJump(worldBody) ? 'point' : NO_SURFACE.includes(worldBody) ? 'surface' : 'orbit'
+  };
+}
+
+function placeFor(v: Vessel): (Placement & { angle: number }) | undefined {
   if (v.trip) return undefined;
-  if (v.at.kind === 'orbit')
-    return {
-      worldBody: v.at.body,
-      place: isJump(v.at.body) ? 'point' : NO_SURFACE.includes(v.at.body) ? 'surface' : 'orbit',
-      angle: v.at.angle
-    };
-  if (v.at.kind === 'surface') return { worldBody: v.at.body, place: 'surface', angle: 0 };
+  if (v.at.kind === 'orbit') return { ...placement('orbit', v.at.body), angle: v.at.angle };
+  if (v.at.kind === 'surface') return { ...placement('surface', v.at.body), angle: 0 };
   return undefined;
+}
+
+export function regionsAt(p: Placement): Region[] {
+  if (p.place !== 'surface') return [];
+  return knownRegions(p.worldBody).filter((r) => !siteIn(economy, p.worldBody, 'surface', r.id));
+}
+
+export const placeNeedsRegion = (p: Placement): boolean =>
+  p.place === 'surface' && regionsOf(p.worldBody).length > 0;
+
+export function foundOptionsAt(
+  p: Placement,
+  cargo: Readonly<Record<string, number>>,
+  region: string | null = null
+): FoundOption[] {
+  if (siteIn(economy, p.worldBody, p.place, p.place === 'surface' ? region : null)) return [];
+  if (placeNeedsRegion(p) && !region) return [];
+  return firstBuildings(economy, p.worldBody, p.place, region).map((b) => ({
+    building: b,
+    missing: Object.entries(b.cost)
+      .filter(([m, need]) => (cargo[m] ?? 0) + 1e-9 < need)
+      .map(([id, need]) => ({ id, need, have: cargo[id] ?? 0 }))
+  }));
 }
 
 export function foundRegions(v: Vessel): Region[] {
   const p = placeFor(v);
-  if (!p || p.place !== 'surface') return [];
-  return knownRegions(p.worldBody).filter((r) => !siteIn(economy, p.worldBody, 'surface', r.id));
+  return p ? regionsAt(p) : [];
 }
 
 export function needsRegion(v: Vessel): boolean {
   const p = placeFor(v);
-  return !!p && p.place === 'surface' && regionsOf(p.worldBody).length > 0;
+  return !!p && placeNeedsRegion(p);
 }
 
 export function foundOptions(v: Vessel, region: string | null = null): FoundOption[] {
   const p = placeFor(v);
-  if (!p || siteIn(economy, p.worldBody, p.place, p.place === 'surface' ? region : null)) return [];
-  if (needsRegion(v) && !region) return [];
-  return firstBuildings(economy, p.worldBody, p.place, region).map((b) => ({
-    building: b,
-    missing: Object.entries(b.cost)
-      .filter(([m, need]) => (v.cargo[m] ?? 0) + 1e-9 < need)
-      .map(([id, need]) => ({ id, need, have: v.cargo[id] ?? 0 }))
-  }));
+  return p ? foundOptionsAt(p, v.cargo, region) : [];
 }
 
 function absorb(site: Site, v: Vessel): void {
