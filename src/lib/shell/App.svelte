@@ -6,6 +6,7 @@
   import { frameTick, startRendering } from '#lib/ui/frame.ts';
   import { layoutCheck, reportLayout } from '#lib/ui/layoutCheck.ts';
   import { applyQuery } from './applyQuery';
+  import { startDesktop } from './desktop';
   import { parseQuery } from './query';
   import TopBar from './TopBar.svelte';
 
@@ -29,6 +30,7 @@
   }
 
   onMount(() => {
+    startDesktop();
     const params = new URLSearchParams(location.search);
     const query = parseQuery(params);
     const slow = matchMedia('(prefers-reduced-motion: reduce)').matches;
