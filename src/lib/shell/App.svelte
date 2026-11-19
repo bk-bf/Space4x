@@ -10,7 +10,6 @@
   import { startDesktop } from './desktop';
   import { parseQuery } from './query';
   import { openPauseMenu, session, startSession } from './session.svelte.ts';
-  import GoalBar from './GoalBar.svelte';
   import TopBar from './TopBar.svelte';
 
   const CHECK_DELAY_MS = 900;
@@ -74,4 +73,3 @@
     {#if s.id === 'map' || s.id === shell.screen}<s.component />{/if}
   {/each}
 </div>
-<GoalBar />

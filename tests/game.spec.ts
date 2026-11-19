@@ -61,9 +61,9 @@ test('the game build counts food in calories and the top bar agrees with the Sum
     'kcal a person a day made against 2,800 needed'
   );
   const balance = (await page.locator('#summaryStats .ui-kpi').nth(1).locator('.big').textContent())!;
-  await expect(page.locator('#chips .chip[title="Food: calories made against calories needed"]')).toHaveText(
-    balance
-  );
+  await expect(
+    page.locator('#chips .chip[aria-label="Food: calories made against calories needed"]')
+  ).toHaveText(balance);
 });
 
 test('a milestone in the game build lists the site it needs', async ({ page }) => {
@@ -72,18 +72,14 @@ test('a milestone in the game build lists the site it needs', async ({ page }) =
   await expect(need).toHaveAttribute('data-site-need', 'missing');
 });
 
-test('the goal bar leads from the start state to the recipe switch that unblocks milestone 1', async ({
+test('the programme card leads from the start state to the recipe switch that unblocks milestone 1', async ({
   page
 }) => {
-  await open(page);
-  const goal = page.locator('#goal');
-  await expect(goal).toHaveAttribute('data-milestone', '1');
-  await expect(goal).toHaveAttribute('data-status', 'waiting');
-  await expect(page.locator('#goalMilestone')).toContainText('1. Orbital launch');
-  await expect(page.locator('#goalWhy')).toContainText('GRCop');
-  await expect(page.locator('#goalStep')).toContainText('Switch an Alloy works to GRCop');
+  await open(page, 'screen=research&milestone=1');
+  const next = page.locator('#programmeNext');
+  await expect(next).toContainText('Switch an Alloy works to GRCop');
 
-  await page.locator('#goalStep').click();
+  await next.click();
   const economy = page.locator('[data-screen="economy"]');
   await expect(economy).toBeVisible();
   await expect(page.locator('[data-tab="production"]')).toHaveClass(/on/);
@@ -92,25 +88,16 @@ test('the goal bar leads from the start state to the recipe switch that unblocks
   await expect(page.locator('#recipeSwitch')).toContainText('Switch 1');
   await page.locator('#recipeSwitch').click();
 
-  await expect(page.locator('#goalStep')).toContainText('at the current rate');
-  await page.locator('#goalStep').click();
+  await page.locator('[data-nav="research"]').click();
+  await expect(next).toContainText('at the current rate');
+  await next.click();
   await expect(page.locator('[data-tab="stockpiles"]')).toHaveClass(/on/);
   await expect(economy.locator('.ui-card .ttl').first()).toContainText('GRCop');
-
-  await page.locator('#goalMilestone').click();
-  const research = page.locator('[data-screen="research"]');
-  await expect(research).toBeVisible();
-  await expect(research.locator('.ui-card .ttl').first()).toContainText('1. Reusable orbital launch');
-  await expect(page.locator('#programmeNext')).toContainText('at the current rate');
 });
 
-test('after milestone 1 the goal is the propellant depot, which starts at the Ship classes screen', async ({
-  page
-}) => {
-  await open(page, 'reached=1');
-  await expect(page.locator('#goal')).toHaveAttribute('data-milestone', '2');
-  await expect(page.locator('#goalWhy')).toContainText('No Propellant depot standing');
-  await page.locator('#goalStep').click();
+test('after milestone 1 the propellant depot starts at the Ship classes screen', async ({ page }) => {
+  await open(page, 'screen=research&milestone=2&reached=1');
+  await page.locator('#programmeNext').click();
   await expect(page.locator('[data-screen="classes"]')).toBeVisible();
 });
 
