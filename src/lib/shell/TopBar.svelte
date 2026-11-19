@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { formatClock, game, STEPS } from '#lib/game/index.ts';
+  import { formatClock, game, STEPS, type StatusValue } from '#lib/game/index.ts';
+  import { ui } from '#lib/screens/economy/state.svelte.ts';
   import { SCREENS } from '#lib/screens/list.ts';
   import { gallery } from './mode.ts';
   import PauseMenu from './PauseMenu.svelte';
@@ -11,6 +12,26 @@
     game.setStep(seconds);
     requestRender();
   }
+
+  function openChip(c: StatusValue) {
+    if (!c.open) return;
+    const { site, material } = c.open;
+    ui.site = site;
+    if (material) {
+      ui.tab = 'stockpiles';
+      ui.category = 'all';
+      ui.material = material;
+    } else ui.tab = 'summary';
+    shell.setScreen('economy');
+  }
+
+  function chipKey(e: KeyboardEvent, c: StatusValue) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    openChip(c);
+  }
+
+  const pauseTitle = $derived(game.pausedBy ? `Paused by: ${game.pausedBy.text}` : 'Pause (space)');
 
   function togglePanels() {
     if (shell.screen !== 'map') shell.setScreen('map');
@@ -38,7 +59,8 @@
   <div id="time">
     <span class="clock" id="clock">{formatClock(game.time)}</span><button
       id="bPause"
-      use:tooltip={'Pause (space)'}
+      aria-label={pauseTitle}
+      use:tooltip={pauseTitle}
       class:on={!game.running}
       onclick={() => game.pause()}><Icon name="pause" /></button
     ><button
@@ -55,12 +77,24 @@
     >
   </div>
   <div id="chips">
-    {#each game.status as c (c.id)}<span
-        class="chip"
-        class:warn={c.warn}
-        aria-label={c.title}
-        use:tooltip={c.title}><Icon name={c.icon} />{c.value}</span
-      >{/each}
+    {#each game.status as c (c.id)}{#if c.open}<span
+          class="chip open"
+          class:warn={c.warn}
+          data-chip={c.id}
+          data-site={c.open.site}
+          aria-label={c.title}
+          use:tooltip={c.title}
+          role="button"
+          tabindex="0"
+          onclick={() => openChip(c)}
+          onkeydown={(e) => chipKey(e, c)}><Icon name={c.icon} />{c.value}</span
+        >{:else}<span
+          class="chip"
+          class:warn={c.warn}
+          data-chip={c.id}
+          aria-label={c.title}
+          use:tooltip={c.title}><Icon name={c.icon} />{c.value}</span
+        >{/if}{/each}
   </div>
   <button
     id="bSet"
@@ -73,3 +107,9 @@
 {#if session.menu}
   <PauseMenu onPanels={togglePanels} />
 {/if}
+
+<style>
+  .chip.open {
+    cursor: pointer;
+  }
+</style>

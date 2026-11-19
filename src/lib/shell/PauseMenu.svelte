@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { game, PAUSE_KINDS, WARN_DAY_CHOICES } from '#lib/game/index.ts';
   import { Icon } from '#lib/ui/index.ts';
   import { hasSave } from './saveManager.ts';
   import SaveListMenu from './SaveListMenu.svelte';
@@ -78,6 +79,21 @@
     <button id="menuTitle" onclick={() => void openTitle()}><Icon name="arrowR" class="sm" />Main menu</button
     >
   </nav>
+  <h3>Pause on</h3>
+  <nav id="pauseOn">
+    {#each PAUSE_KINDS as k (k.id)}<button
+        data-kind={k.id}
+        aria-pressed={game.pauseOn[k.id]}
+        onclick={() => (game.pauseOn[k.id] = !game.pauseOn[k.id])}
+        ><Icon name={game.pauseOn[k.id] ? 'check' : 'cross'} class="sm" />{k.label}</button
+      >{/each}
+    <label id="warnDays"
+      >Warn before a site runs out
+      <select bind:value={game.warnDays}>
+        {#each WARN_DAY_CHOICES as d (d)}<option value={d}>{d} days ahead</option>{/each}
+      </select></label
+    >
+  </nav>
 </dialog>
 
 {#if session.dialog}
@@ -124,10 +140,32 @@
     opacity: 0.5;
     cursor: default;
   }
-  #menuAutosave[aria-pressed='true'] :global(.ic) {
+  #menuAutosave[aria-pressed='true'] :global(.ic),
+  #pauseOn button[aria-pressed='true'] :global(.ic) {
     color: var(--cool);
+  }
+  #menuAutosave[aria-pressed='false'] :global(.ic),
+  #pauseOn button[aria-pressed='false'] :global(.ic) {
+    color: var(--dim);
   }
   #menuAutosave[aria-pressed='false'] :global(.ic) {
     color: var(--hot);
+  }
+  h3 {
+    margin: 14px 0 6px;
+    color: var(--dim);
+    font-size: 16px;
+    font-weight: normal;
+  }
+  #pauseOn button {
+    padding: 3px 10px;
+  }
+  #warnDays {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 2px;
+    color: var(--dim);
+    font-size: 16px;
   }
 </style>

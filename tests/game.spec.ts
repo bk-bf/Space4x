@@ -136,3 +136,55 @@ test('a two-stage stack is tried in the designer and a site is planned before an
   await expect(page.locator('#planRegion')).toBeVisible();
   await expect(page.locator('#planBuildings .ui-tile')).not.toHaveCount(0);
 });
+
+const MONTH_STEP = '[data-step="2592000"]';
+
+test('running at a month a second pauses at a milestone, which shows from Economy', async ({ page }) => {
+  await page.goto('/?test&screen=economy');
+  await expect(page.locator('#top[data-ready="true"]')).toBeAttached({ timeout: 20_000 });
+  const started = await page.evaluate(() => {
+    const t = window.space4xTest!;
+    t.stock('grcop', 1e9);
+    return t.startProgramme(1);
+  });
+  expect(started).toBe(true);
+  await page.locator(MONTH_STEP).click();
+  await expect(page.locator('#bPause')).toHaveClass(/on/);
+  await page.locator('#bPlay').click();
+  await expect(page.locator('#bPause')).toHaveAttribute(
+    'aria-label',
+    'Paused by: Milestone 1 reached: Reusable orbital launch.',
+    { timeout: 60_000 }
+  );
+  await expect(page.locator('#bPlay')).not.toHaveClass(/on/);
+  await expect(page.locator('[data-screen="economy"]')).toBeVisible();
+  const clock = await page.locator('#clock').innerText();
+  await page.waitForTimeout(400);
+  await expect(page.locator('#clock')).toHaveText(clock);
+  await page.locator('[data-nav="map"]').click();
+  await expect(page.locator('#events .ev.paused')).toContainText('Milestone 1 reached');
+});
+
+test('a station running out of food pauses the game and warns in the top bar, which opens it', async ({
+  page
+}) => {
+  await page.goto('/?test&screen=research');
+  await expect(page.locator('#top[data-ready="true"]')).toBeAttached({ timeout: 20_000 });
+  const id = await page.evaluate(() => window.space4xTest!.station(6, 40));
+  const food = page.locator('#chips [data-chip="food"]');
+  await expect(food).not.toHaveClass(/warn/);
+  await page.locator(MONTH_STEP).click();
+  await expect(page.locator('#bPause')).toHaveAttribute(
+    'aria-label',
+    'Paused by: Luna orbital station runs out of food in 30 days.'
+  );
+  await expect(food).toHaveClass(/warn/);
+  await expect(food).toHaveAttribute('data-site', id);
+  await expect(food).toHaveAttribute('aria-label', /Luna orbital station: food runs out in 30 d/);
+  await food.click();
+  await expect(page.locator('[data-screen="economy"]')).toBeVisible();
+  await expect(page.locator(`[data-screen="economy"] [data-site="${id}"]`)).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+});

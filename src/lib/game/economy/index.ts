@@ -5,6 +5,7 @@ export * from './deposits.ts';
 export * from './yard.ts';
 export * from './found.ts';
 export * from './flows.ts';
+export * from './forecast.ts';
 export * from './processes.ts';
 export * from './needs.ts';
 export * from './programmes.ts';

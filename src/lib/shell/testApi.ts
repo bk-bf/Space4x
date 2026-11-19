@@ -1,7 +1,7 @@
 import { DAY, game } from '#lib/game/index.ts';
 import type { PlayReport } from '#lib/game/play.ts';
 import { PathPlayer } from '#lib/game/playPath.ts';
-import { economy, homeSite, startProgramme } from '#lib/game/economy/index.ts';
+import { economy, homeSite, newSite, startProgramme, touch } from '#lib/game/economy/index.ts';
 import { serialise } from '#lib/game/save.ts';
 import { ships } from '#lib/game/ships/index.ts';
 
@@ -10,6 +10,8 @@ export interface TestApi {
   play(milestone: number): PlayReport;
   crewedStation(): boolean;
   startProgramme(number: number): boolean;
+  stock(material: string, kg: number): void;
+  station(people: number, foodDays: number): string;
   state(): { done: number[]; sites: string[]; ships: number; launches: number; time: number };
   snapshot(): string;
 }
@@ -31,6 +33,17 @@ export function installTestApi(params: URLSearchParams): void {
     },
     crewedStation: () => player.crewedStation(),
     startProgramme: (number) => startProgramme(economy, homeSite(), number),
+    stock: (material, kg) => {
+      homeSite().stock[material] = kg;
+      touch();
+    },
+    station: (people, foodDays) => {
+      const site = newSite(economy, { worldBody: 'luna', bodyName: 'Luna', place: 'orbit', angle: 0 })!;
+      site.population = people;
+      site.stock = { wheat: (people * site.kcalPerPersonDay * foodDays) / 3270 };
+      touch();
+      return site.id;
+    },
     state: () => ({
       done: [...economy.done],
       sites: economy.sites.map((s) => s.id),

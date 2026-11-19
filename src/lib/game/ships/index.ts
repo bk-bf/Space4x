@@ -9,7 +9,7 @@ registerClassUse(
 );
 
 export { ships, resetShips, vesselById } from './state.svelte.ts';
-export { advanceShips, spawnDeliveries } from './advance.ts';
+export { advanceShips, shipsHorizon, spawnDeliveries } from './advance.ts';
 export * from './build.ts';
 export * from './cargo.ts';
 export * from './colonise.ts';

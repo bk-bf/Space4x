@@ -14,6 +14,8 @@
   let filter = $state<EventCategory | ''>('');
 
   const known = (e: GameEvent) => !!e.subject && !!game.systemOf(e.subject);
+  const pausedBy = (e: GameEvent) =>
+    !!game.pausedBy && game.pausedBy.at === e.at && game.pausedBy.text === e.text;
 
   function open(e: GameEvent) {
     if (e.subject && known(e)) focus(e.subject);
@@ -46,6 +48,8 @@
         <div
           class="ev pick"
           class:w={e.warn}
+          class:paused={pausedBy(e)}
+          data-kind={e.kind ?? ''}
           data-cat={e.category}
           data-sel="{e.subject!.kind}:{e.subject!.id}"
           hidden={!!filter && e.category !== filter}
@@ -57,7 +61,14 @@
           <time>{formatEventTime(e.at, game.time)}</time><Icon name={e.category} /><span>{e.text}</span>
         </div>
       {:else}
-        <div class="ev" class:w={e.warn} data-cat={e.category} hidden={!!filter && e.category !== filter}>
+        <div
+          class="ev"
+          class:w={e.warn}
+          class:paused={pausedBy(e)}
+          data-kind={e.kind ?? ''}
+          data-cat={e.category}
+          hidden={!!filter && e.category !== filter}
+        >
           <time>{formatEventTime(e.at, game.time)}</time><Icon name={e.category} /><span>{e.text}</span>
         </div>
       {/if}
@@ -69,7 +80,11 @@
   .pick {
     cursor: pointer;
   }
-  .pick:hover {
+  .pick:hover,
+  .paused {
     background: var(--panel2);
+  }
+  .paused span {
+    color: var(--accent);
   }
 </style>

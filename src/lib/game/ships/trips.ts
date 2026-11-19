@@ -129,7 +129,8 @@ export function finishTrip(game: Game, v: Vessel, t: number): void {
   const name = body ? (game.body(body)?.name ?? game.jump(body)?.point.name ?? body) : 'its destination';
   game.log('ship', `${v.name} arrived at ${name}.`, false, {
     at: clockAt(t),
-    subject: { kind: 'ship', id: v.id }
+    subject: { kind: 'ship', id: v.id },
+    kind: 'arrival'
   });
 }
 

@@ -1,12 +1,14 @@
+import { defaultPauses, WARN_DAYS, type PauseKinds } from './alerts';
 import { DAY, START_TIME } from './clock';
 import { mockEvents } from './mock/events';
 import { mockWorld } from './mock/world';
 import { statusValues } from './status';
-import { runSystems } from './systems';
+import { nextHorizon, runSystems } from './systems';
 import type {
   Body,
   Contact,
   EventCategory,
+  EventKind,
   Fleet,
   GameEvent,
   JumpPoint,
@@ -20,9 +22,15 @@ import type {
 export interface EventDetails {
   at?: number;
   subject?: Selection;
+  kind?: EventKind;
+  site?: string;
+  milestone?: number;
+  material?: string;
 }
 
 const EVENT_LIMIT = 500;
+const MIN_CHUNK = 1e-3;
+const MAX_CHUNKS = 20_000;
 
 export class Game {
   time = $state(START_TIME);
@@ -31,7 +39,11 @@ export class Game {
   selection = $state<Selection>({ kind: 'body', id: 'earth' });
   world = $state<World>(mockWorld());
   events = $state<GameEvent[]>(mockEvents());
+  pauseOn = $state<PauseKinds>(defaultPauses());
+  warnDays = $state(WARN_DAYS);
+  pausedBy = $state<GameEvent | null>(null);
   readonly mock = true;
+  private halted = false;
 
   get status(): StatusValue[] {
     return statusValues();
@@ -47,13 +59,29 @@ export class Game {
     runSystems(this, seconds);
   }
 
+  tick(seconds: number): void {
+    if (!(seconds > 0)) return;
+    this.halted = false;
+    if (!Object.values(this.pauseOn).some(Boolean)) return this.advance(seconds);
+    let left = seconds;
+    for (let i = 0; left > 1e-6 && i < MAX_CHUNKS; i++) {
+      runSystems(this, 0);
+      if (this.halted) return;
+      const dt = Math.min(left, Math.max(MIN_CHUNK, nextHorizon(this)));
+      this.advance(dt);
+      left -= dt;
+      if (this.halted) return;
+    }
+  }
+
   setStep(seconds: number): void {
     this.step = seconds;
-    if (!this.running) this.advance(seconds);
+    if (!this.running) this.tick(seconds);
   }
 
   run(): void {
     this.running = true;
+    this.pausedBy = null;
   }
 
   pause(): void {
@@ -61,7 +89,8 @@ export class Game {
   }
 
   toggleRunning(): void {
-    this.running = !this.running;
+    if (this.running) this.pause();
+    else this.run();
   }
 
   select(selection: Selection): void {
@@ -72,9 +101,20 @@ export class Game {
     const at = details.at ?? this.time;
     const e: GameEvent = { at, category, text, ...(warn ? { warn } : {}) };
     if (details.subject) e.subject = details.subject;
+    if (details.kind) e.kind = details.kind;
+    if (details.site) e.site = details.site;
+    if (details.milestone !== undefined) e.milestone = details.milestone;
+    if (details.material) e.material = details.material;
     const i = this.events.findIndex((x) => x.at <= at);
     this.events.splice(i < 0 ? this.events.length : i, 0, e);
     if (this.events.length > EVENT_LIMIT) this.events.length = EVENT_LIMIT;
+    if (details.kind && this.pauseOn[details.kind]) this.halt(e);
+  }
+
+  private halt(e: GameEvent): void {
+    if (!this.halted || !this.pausedBy || e.at < this.pausedBy.at) this.pausedBy = e;
+    this.halted = true;
+    this.running = false;
   }
 
   body(id: string): Body | undefined {

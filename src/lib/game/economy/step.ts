@@ -1,8 +1,10 @@
+import { WARN_DAYS } from '#lib/game/alerts.ts';
 import { building, depletableRecord, material, milestone } from '#lib/game/data/index.ts';
 import { DEPLETED_EPS, remainingMass } from './deposits.ts';
 import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
+import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
 
 export const SEGMENT_HOURS = 24;
@@ -11,8 +13,8 @@ const MIN_HOURS = 1e-9;
 
 const noLog: LogFn = () => {};
 
-function nextEvent(eco: Economy, site: Site, flows: SiteFlows): number {
-  let t = Infinity;
+function nextEvent(eco: Economy, site: Site, flows: SiteFlows, warnDays: number): number {
+  let t = nextWarning(site, flows, warnDays);
   for (const [m, rate] of Object.entries(flows.net)) {
     if (isStockless(m) || rate >= 0) continue;
     const stock = site.stock[m] ?? 0;
@@ -55,7 +57,9 @@ function applySegment(
     eco.mined[site.worldBody] = body.mass - total <= DEPLETED_EPS ? body.mass : total;
     if (body.mass - total <= DEPLETED_EPS && !eco.exhausted.includes(site.worldBody)) {
       eco.exhausted.push(site.worldBody);
-      log(`${body.name} has been mined out; ${site.name} has nothing left to extract.`, true, at, site.id);
+      log(`${body.name} has been mined out; ${site.name} has nothing left to extract.`, true, at, site.id, {
+        kind: 'shortage'
+      });
     }
   }
   eco.ledger.lost += flows.lostMass * hours;
@@ -86,7 +90,9 @@ function applySegment(
       if (o.done >= 1 - 1e-9) {
         site.queue.splice(site.queue.indexOf(o), 1);
         placeBuilding(eco, site, o);
-        log(`${site.name} finished a ${building(o.building).name}.`, false, at, site.id);
+        log(`${site.name} finished a ${building(o.building).name}.`, false, at, site.id, {
+          kind: 'finished'
+        });
       }
     }
     if (a.kind === 'yard') {
@@ -100,7 +106,7 @@ function applySegment(
         site.yard.splice(site.yard.indexOf(o), 1);
         eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
         site.built++;
-        log(`${site.name} finished a ${o.name}.`, false, at, site.id);
+        log(`${site.name} finished a ${o.name}.`, false, at, site.id, { kind: 'finished' });
       }
     }
     if (a.kind === 'programme') {
@@ -110,18 +116,24 @@ function applySegment(
       if (p.progress >= 1 - 1e-9) {
         eco.running.splice(eco.running.indexOf(p), 1);
         eco.done.push(p.number);
-        log(`Milestone ${p.number} reached: ${m.name}.`, false, at, site.id);
+        log(`Milestone ${p.number} reached: ${m.name}.`, false, at, site.id, {
+          kind: 'milestone',
+          milestone: p.number
+        });
       }
     }
   }
+}
 
+function checkAlerts(site: Site, flows: SiteFlows, at: number, log: LogFn, warnDays: number): void {
   const hungry = flows.food.cover < 1 - 1e-9;
   if (hungry !== site.alerts.food)
     log(
       hungry ? `${site.name} is short of food; its population is shrinking.` : `${site.name} is fed again.`,
       hungry,
       at,
-      site.id
+      site.id,
+      hungry ? { kind: 'shortage' } : undefined
     );
   site.alerts.food = hungry;
   const dark = flows.power.demand > flows.power.supply * (1 + 1e-9);
@@ -132,12 +144,27 @@ function applySegment(
         : `${site.name} has enough power again.`,
       dark,
       at,
-      site.id
+      site.id,
+      dark ? { kind: 'shortage' } : undefined
     );
   site.alerts.power = dark;
+  forecast(site, flows, at, log, warnDays);
 }
 
-function depletionEvent(eco: Economy, all: { site: Site; flows: SiteFlows }[]): number {
+function forecast(site: Site, flows: SiteFlows, at: number, log: LogFn, warnDays: number): void {
+  const soon = supplyWarnings(site, flows, warnDays).filter((s) => s.days > 1e-6);
+  const before = new Set(site.alerts.soon ?? []);
+  for (const s of soon)
+    if (!before.has(s.key))
+      log(supplyText(site, s), true, at, site.id, {
+        kind: 'shortage',
+        ...(s.material ? { material: s.material } : {})
+      });
+  const keys = soon.map((s) => s.key);
+  if (keys.length || site.alerts.soon) site.alerts.soon = keys;
+}
+
+function depletionEvent(eco: Economy, all: SiteState[]): number {
   let t = Infinity;
   const rate: Record<string, number> = {};
   for (const { site, flows } of all)
@@ -147,17 +174,40 @@ function depletionEvent(eco: Economy, all: { site: Site; flows: SiteFlows }[]): 
   return t;
 }
 
-export function advanceEconomy(eco: Economy, seconds: number, log: LogFn = noLog): void {
+type SiteState = { site: Site; flows: SiteFlows };
+
+function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: number): number {
+  const now = eco.elapsed / 3600;
+  const boundary = (Math.floor(now / SEGMENT_HOURS + 1e-9) + 1) * SEGMENT_HOURS - now;
+  let hours = Math.min(left, boundary);
+  for (const { site, flows } of all) hours = Math.min(hours, nextEvent(eco, site, flows, warnDays));
+  hours = Math.min(hours, depletionEvent(eco, all));
+  return Math.max(hours, 0);
+}
+
+const statesOf = (eco: Economy): SiteState[] =>
+  eco.sites.map((site) => ({ site, flows: siteFlows(eco, site) }));
+
+export function economyHorizon(eco: Economy, warnDays = WARN_DAYS): number {
+  return segmentHours(eco, statesOf(eco), Infinity, warnDays) * 3600;
+}
+
+export function advanceEconomy(
+  eco: Economy,
+  seconds: number,
+  log: LogFn = noLog,
+  warnDays = WARN_DAYS
+): void {
   let left = seconds / 3600;
   let segments = 0;
+  let all = statesOf(eco);
+  for (const { site, flows } of all) checkAlerts(site, flows, eco.elapsed, log, warnDays);
   while (left > MIN_HOURS && segments++ < MAX_SEGMENTS) {
-    const now = eco.elapsed / 3600;
-    const boundary = (Math.floor(now / SEGMENT_HOURS + 1e-9) + 1) * SEGMENT_HOURS - now;
-    let hours = Math.min(left, boundary);
-    const all = eco.sites.map((site) => ({ site, flows: siteFlows(eco, site) }));
-    for (const { site, flows } of all) hours = Math.min(hours, nextEvent(eco, site, flows));
-    hours = Math.min(hours, depletionEvent(eco, all));
-    hours = Math.max(hours, 0);
+    if (segments > 1) {
+      all = statesOf(eco);
+      for (const { site, flows } of all) checkAlerts(site, flows, eco.elapsed, log, warnDays);
+    }
+    const hours = segmentHours(eco, all, left, warnDays);
     const at = eco.elapsed + hours * 3600;
     for (const { site, flows } of all) applySegment(eco, site, flows, hours, at, log);
     eco.elapsed = at;

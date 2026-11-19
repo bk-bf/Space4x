@@ -14,7 +14,7 @@ export function startLoop(game: Game, onTick: () => void, options: LoopOptions =
     isHidden = options.isHidden ?? documentHidden;
   const id = setInterval(() => {
     if (isHidden()) return;
-    if (game.running) game.advance((game.step * intervalMs) / 1000);
+    if (game.running) game.tick((game.step * intervalMs) / 1000);
     onTick();
   }, intervalMs);
   return () => clearInterval(id);

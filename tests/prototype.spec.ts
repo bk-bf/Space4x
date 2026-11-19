@@ -133,6 +133,10 @@ test.describe('the prototype on present-day Earth', () => {
     await expect(page.locator('.chip[aria-label^="Food"]')).toContainText('fed');
     await expect(page.locator('#summaryStats .ui-kpi').first().locator('small')).toContainText('-');
     const before = await people.textContent();
+    const clock = await page.locator('#clock').innerText();
+    await page.locator(MONTH).click();
+    await expect(page.locator('#bPause')).toHaveAttribute('aria-label', /^Paused by: Earth is short of food/);
+    await expect(page.locator('#clock')).toHaveText(clock);
     await page.locator(MONTH).click();
     await expect(people).not.toHaveText(before ?? '');
     expect(numeric(await people.textContent())).toBeLessThan(numeric(before));

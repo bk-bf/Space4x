@@ -1,4 +1,5 @@
 import type { Amounts, Site as Where } from '#lib/game/data/index.ts';
+import type { EventKind } from '#lib/game/types.ts';
 
 export interface Group {
   id: number;
@@ -41,6 +42,7 @@ export type SitePlace = 'surface' | 'orbit' | 'point';
 export interface Alerts {
   food: boolean;
   power: boolean;
+  soon?: string[];
 }
 
 export interface Site {
@@ -96,4 +98,10 @@ export interface Economy {
   ledger: Ledger;
 }
 
-export type LogFn = (text: string, warn: boolean, atSeconds: number, site?: string) => void;
+export interface LogTag {
+  kind: EventKind;
+  milestone?: number;
+  material?: string;
+}
+
+export type LogFn = (text: string, warn: boolean, atSeconds: number, site?: string, tag?: LogTag) => void;

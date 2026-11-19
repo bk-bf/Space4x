@@ -102,12 +102,18 @@ export interface Contact {
 
 export type EventCategory = 'ship' | 'eye' | 'factory' | 'flask';
 
+export type EventKind = 'arrival' | 'blocked' | 'finished' | 'milestone' | 'shortage';
+
 export interface GameEvent {
   at: number;
   category: EventCategory;
   text: string;
   warn?: boolean;
   subject?: Selection;
+  kind?: EventKind;
+  site?: string;
+  milestone?: number;
+  material?: string;
 }
 
 export interface StatusValue {
@@ -116,6 +122,7 @@ export interface StatusValue {
   value: string;
   title: string;
   warn?: boolean;
+  open?: { site: string; material?: string };
 }
 
 export interface Star {

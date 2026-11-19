@@ -1,3 +1,4 @@
+import { defaultPauses, isWarnDays, PAUSE_KINDS, WARN_DAYS, type PauseKinds } from './alerts.ts';
 import { classes } from './classes.svelte.ts';
 import { DAY, START_TIME } from './clock.ts';
 import { economy, resetEconomy, touch, type Economy } from './economy/index.ts';
@@ -41,6 +42,7 @@ export interface SaveData {
   trips: [string, SavedTrip][];
   classes: { saved: readonly ShipDesign[]; counter: number };
   survey: Record<string, number>;
+  alerts?: { pauseOn: PauseKinds; warnDays: number };
 }
 
 const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -67,7 +69,8 @@ export function serialise(game: Game): SaveData {
     systems: systems.map((s) => s.bodies.map((b) => b.angle)),
     trips,
     classes: { saved: classes.saved, counter: classes.counter },
-    survey: survey.levels
+    survey: survey.levels,
+    alerts: { pauseOn: game.pauseOn, warnDays: game.warnDays }
   });
 }
 
@@ -93,6 +96,9 @@ export function resetGame(game: Game): void {
   game.time = START_TIME;
   game.step = DAY;
   game.events = mockEvents();
+  game.pauseOn = defaultPauses();
+  game.warnDays = WARN_DAYS;
+  game.pausedBy = null;
   forgetFlightSystem(game);
   touch();
 }
@@ -126,6 +132,16 @@ export function checkSave(raw: unknown, game: Game): string | null {
   return null;
 }
 
+function restoreAlerts(game: Game, alerts: SaveData['alerts']): void {
+  if (!isObject(alerts)) return;
+  const on: Record<string, unknown> = isObject(alerts.pauseOn) ? alerts.pauseOn : {};
+  for (const k of PAUSE_KINDS) {
+    const v = on[k.id];
+    if (typeof v === 'boolean') game.pauseOn[k.id] = v;
+  }
+  if (isWarnDays(alerts.warnDays)) game.warnDays = alerts.warnDays;
+}
+
 function restoreSystem(game: Game, angles: number[] | undefined): FlightSystem | undefined {
   const base = flightSystem(game);
   if (!angles || angles.length !== base.bodies.length) return undefined;
@@ -153,6 +169,7 @@ export function restore(game: Game, data: SaveData): void {
   classes.saved = saved.classes.saved;
   classes.counter = saved.classes.counter;
   survey.levels = saved.survey;
+  restoreAlerts(game, saved.alerts);
   forgetFlightSystem(game);
   const systems = saved.systems.map((angles) => restoreSystem(game, angles));
   for (const [id, trip] of saved.trips) {

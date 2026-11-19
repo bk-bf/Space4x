@@ -11,7 +11,7 @@ import {
   JUMP_SURVEY_DAYS,
   surveyDays
 } from '#lib/game/survey.svelte.ts';
-import { burnHop, planHop, surfaceBodyOf, type HopKind } from './hop.ts';
+import { burnHop, HOP_SECONDS, planHop, surfaceBodyOf, type HopKind } from './hop.ts';
 import { canSample, canSurvey, cargoRoom, designOf, mainKind } from './model.ts';
 import { SAMPLE_DAYS, SAMPLE_KG, sampleMaterial } from './sample.ts';
 import { cycleOrders } from './run.ts';
@@ -28,13 +28,19 @@ import {
   type Destination
 } from './trips.ts';
 import type { Order, Vessel } from './types.ts';
+import type { EventKind } from '#lib/game/types.ts';
 import { bodyOfWhereabouts, hangsInOrbit, isJump, tripOptionOf } from './world.ts';
 import { lineText, siteOf } from './orders.ts';
 
 const MAX_STEPS = 256;
+const SLACK = 1e-3;
 
-function say(game: Game, v: Vessel, text: string, t: number, warn = false): void {
-  game.log('ship', text, warn, { at: clockAt(t), subject: { kind: 'ship', id: v.id } });
+function say(game: Game, v: Vessel, text: string, t: number, warn = false, kind?: EventKind): void {
+  game.log('ship', text, warn, {
+    at: clockAt(t),
+    subject: { kind: 'ship', id: v.id },
+    ...(kind ? { kind } : {})
+  });
 }
 
 export function spawnDeliveries(game: Game): void {
@@ -67,7 +73,7 @@ export function spawnDeliveries(game: Game): void {
 function work(v: Vessel, seconds: number, cursor: { t: number }, end: number): boolean {
   const need = seconds - v.progress;
   const avail = end - cursor.t;
-  if (avail + 1e-9 >= need) {
+  if (avail + SLACK >= need) {
     cursor.t += Math.max(0, need);
     v.progress = 0;
     return true;
@@ -85,8 +91,10 @@ function sameOrbit(v: Vessel, d: Destination): boolean {
   return !!s && (hangsInOrbit(s) || s.place === 'point') && s.worldBody === d.body;
 }
 
-function block(v: Vessel, reason: string): void {
+function block(game: Game, v: Vessel, reason: string, t: number): void {
+  if (v.blocked === reason) return;
   v.blocked = reason;
+  say(game, v, reason.startsWith(v.name) ? reason : `${v.name} is held up: ${reason}`, t, true, 'blocked');
 }
 
 function hopKind(v: Vessel, o: Order & { type: 'fly' | 'land' }): HopKind | null {
@@ -106,7 +114,7 @@ function hop(
   const dest = destinationOf(o)!;
   const plan = planHop(game, v, kind, o.body);
   if (typeof plan === 'string') {
-    block(v, plan);
+    block(game, v, plan, cursor.t);
     return false;
   }
   if (!work(v, plan.seconds, cursor, end)) return false;
@@ -119,7 +127,9 @@ function hop(
     game,
     v,
     kind === 'descent' ? `${v.name} landed on ${name}.` : `${v.name} reached orbit of ${name}.`,
-    cursor.t
+    cursor.t,
+    false,
+    'arrival'
   );
   return true;
 }
@@ -134,7 +144,7 @@ function fly(game: Game, v: Vessel, o: Order & { type: 'fly' | 'land' }, t: numb
   const plan = planVessel(game, v, dest, t, o.profile === 'cheapest' ? 'cheapest' : undefined);
   const option = pickOption(plan.options, o.profile);
   if (!option) {
-    block(v, plan.reasons[0] ?? 'No trip is possible.');
+    block(game, v, plan.reasons[0] ?? 'No trip is possible.', t);
     return false;
   }
   commitTrip(game, v, dest, option);
@@ -161,7 +171,7 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
   }
   if (order.type === 'fly' || order.type === 'land') {
     if (needsLaunchStack(game, v.at)) {
-      block(v, 'A ship on Earth leaves by launch stack, not by trip.');
+      block(game, v, 'A ship on Earth leaves by launch stack, not by trip.', cursor.t);
       return 'stop';
     }
     const local = hopKind(v, order);
@@ -180,11 +190,11 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
       return 'next';
     }
     if (!canSurvey(designOf(v))) {
-      block(v, `${v.name} carries no survey instruments.`);
+      block(game, v, `${v.name} carries no survey instruments.`, cursor.t);
       return 'stop';
     }
     if (!sameOrbit(v, { kind: 'orbit', body: jump.point.id, angle: 0 })) {
-      block(v, `${v.name} must be at ${jump.point.name} to survey it.`);
+      block(game, v, `${v.name} must be at ${jump.point.name} to survey it.`, cursor.t);
       return 'stop';
     }
     v.blocked = null;
@@ -204,11 +214,11 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
       return 'next';
     }
     if (!canSurvey(designOf(v))) {
-      block(v, `${v.name} carries no survey instruments.`);
+      block(game, v, `${v.name} carries no survey instruments.`, cursor.t);
       return 'stop';
     }
     if (!sameOrbit(v, { kind: 'orbit', body: world, angle: 0 })) {
-      block(v, `${v.name} must be in orbit of ${name} to survey it.`);
+      block(game, v, `${v.name} must be in orbit of ${name} to survey it.`, cursor.t);
       return 'stop';
     }
     v.blocked = null;
@@ -223,15 +233,15 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     const world = bodyOfWhereabouts(v.at);
     const found = world ? sampleMaterial(world) : undefined;
     if (!world || !found) {
-      block(v, `${v.name} is not at an asteroid.`);
+      block(game, v, `${v.name} is not at an asteroid.`, cursor.t);
       return 'stop';
     }
     if (!canSample(designOf(v))) {
-      block(v, `${v.name} carries no sampling arm.`);
+      block(game, v, `${v.name} carries no sampling arm.`, cursor.t);
       return 'stop';
     }
     if (cargoRoom(v) <= 0) {
-      block(v, `${v.name} has no room for a sample.`);
+      block(game, v, `${v.name} has no room for a sample.`, cursor.t);
       return 'stop';
     }
     v.blocked = null;
@@ -256,7 +266,7 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     const inOrbit =
       v.at.kind === 'orbit' && (hangsInOrbit(site) || site.place === 'point') && v.at.body === site.worldBody;
     if (!sameSite && !inOrbit) {
-      block(v, `${v.name} is not at ${site.name}.`);
+      block(game, v, `${v.name} is not at ${site.name}.`, cursor.t);
       return 'stop';
     }
     if (!work(v, DOCK_SECONDS, cursor, end)) return 'stop';
@@ -266,7 +276,7 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     return 'next';
   }
   if (v.at.kind !== 'site') {
-    block(v, `${v.name} must be docked or landed at a site to move cargo.`);
+    block(game, v, `${v.name} must be docked or landed at a site to move cargo.`, cursor.t);
     return 'stop';
   }
   const site = siteOf(v.at.site);
@@ -305,7 +315,7 @@ function run(game: Game, v: Vessel, start: number, end: number): void {
   for (let i = 0; i < MAX_STEPS; i++) {
     if (v.trip) {
       const option = tripOptionOf(v.id);
-      if (!option || v.trip.arrival <= end + 1e-9) {
+      if (!option || v.trip.arrival <= end + SLACK) {
         cursor.t = Math.max(cursor.t, v.trip.arrival);
         finishTrip(game, v, cursor.t);
         continue;
@@ -321,4 +331,38 @@ export function advanceShips(game: Game, dt: number): void {
   const end = game.elapsed;
   for (const v of [...ships.vessels]) run(game, v, end - dt, end);
   settleJumps(game);
+}
+
+function orderSeconds(v: Vessel, o: Order): number {
+  switch (o.type) {
+    case 'fly':
+    case 'land':
+      return hopKind(v, o) ? HOP_SECONDS : 0;
+    case 'survey':
+      return isJump(o.body) ? JUMP_SURVEY_DAYS * DAY : surveyDays(o.body) * DAY;
+    case 'sample':
+      return SAMPLE_DAYS * DAY;
+    case 'wait':
+      return o.seconds;
+    case 'dock':
+      return DOCK_SECONDS;
+    default:
+      return HANDLING_SECONDS;
+  }
+}
+
+export function shipsHorizon(game: Game): number {
+  const now = game.elapsed;
+  let t = Infinity;
+  for (const v of ships.vessels) {
+    if (v.trip) {
+      if (v.trip.arrival > now + SLACK) t = Math.min(t, v.trip.arrival - now);
+      continue;
+    }
+    const o = v.orders[0];
+    if (!o || v.blocked) continue;
+    const left = orderSeconds(v, o) - v.progress;
+    if (left > SLACK) t = Math.min(t, left);
+  }
+  return t;
 }
