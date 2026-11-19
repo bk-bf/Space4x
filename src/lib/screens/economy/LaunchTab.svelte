@@ -3,6 +3,7 @@
   import { isMass, standing, touch, type Site } from '#lib/game/economy/index.ts';
   import { formatEventTime, game } from '#lib/game/index.ts';
   import {
+    designOf,
     freePads,
     launch,
     planStack,
@@ -28,10 +29,11 @@
     tipText
   } from '#lib/ui/index.ts';
   import Field from './Field.svelte';
+  import ShipArt from './ShipArt.svelte';
   import ShipTile from './ShipTile.svelte';
   import TabBody from './TabBody.svelte';
   import { launchUi, stackOf } from './launchState.svelte.ts';
-  import { kms, vesselIcon } from './shipTiles.ts';
+  import { kms } from './shipTiles.ts';
 
   let { site }: { site: Site } = $props();
 
@@ -101,7 +103,6 @@
             {@const v = stageVessel(s.vessel)}
             <Tile
               variant="q"
-              icons={v ? [vesselIcon(v)] : []}
               name={s.name}
               corner={String(i + 1)}
               mark={s.fate ? FATE[s.fate].mark : undefined}
@@ -117,7 +118,9 @@
                 s.fate && `Ignition mass ${fmt.mass(s.mass0)}`,
                 s.fate && `Delta-v ${kms(s.dv)}`
               )}
-            />
+            >
+              {#snippet art()}{#if v}<ShipArt design={designOf(v)} />{/if}{/snippet}
+            </Tile>
           {/each}
         </TileGrid>
       </div>
@@ -238,8 +241,8 @@
     <Card
       title="Launch plan"
       subtitle={plan ? `${stages.length} ${stages.length === 1 ? 'stage' : 'stages'}` : 'no stack yet'}
-      icon={stages[0] ? vesselIcon(stages[0]) : undefined}
     >
+      {#snippet art()}{#if stages[0]}<ShipArt design={designOf(stages[0])} size="card" />{/if}{/snippet}
       {#if plan}
         <div id="launchPlan">
           <CardSection label="Delta-v, against what orbit needs">

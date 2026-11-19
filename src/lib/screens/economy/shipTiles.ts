@@ -2,7 +2,7 @@ import { shipComponents } from '#lib/game/data/records.ts';
 import { DAY } from '#lib/game/clock.ts';
 import { className, game } from '#lib/game/index.ts';
 import { PROPELLANTS, type PropellantKind, type ShipDesign } from '#lib/game/shipdesign/index.ts';
-import { cargoMass, designOf, propellantMass, statsOf, type Vessel } from '#lib/game/ships/index.ts';
+import { cargoMass, propellantMass, statsOf, type Vessel } from '#lib/game/ships/index.ts';
 import type { IconRef } from '#lib/gfx/icons/index.ts';
 import { dim, fmt, tipText, warn } from '#lib/ui/index.ts';
 import { cargoText, propellantText, vesselWhere, whereabouts } from './shipsView.ts';
@@ -25,8 +25,6 @@ export function designIcon(design: ShipDesign | undefined): IconRef {
     design?.parts.find((p) => kindOf(p.component) === 'propulsion') ?? design?.parts[0] ?? undefined;
   return { kind: 'component', id: part?.component ?? 'structure_truss' };
 }
-
-export const vesselIcon = (v: Vessel): IconRef => designIcon(designOf(v));
 
 export function propellantIcon(kind: PropellantKind): IconRef {
   const mix = Object.entries(PROPELLANTS[kind].mix).sort((a, b) => b[1] - a[1]);

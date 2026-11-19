@@ -7,6 +7,7 @@
     addOrder,
     advanceShips,
     clearOrders,
+    designOf,
     FLYABLE,
     foundOptions,
     foundRegions,
@@ -49,11 +50,12 @@
     type FilterItem
   } from '#lib/ui/index.ts';
   import Field from './Field.svelte';
+  import ShipArt from './ShipArt.svelte';
   import ShipTile from './ShipTile.svelte';
   import TabBody from './TabBody.svelte';
   import { bodyGrouper, orderedGroups } from './bodyGroups.ts';
   import { bodyName, vesselWhere, whereabouts } from './shipsView.ts';
-  import { daysText, kms, propellantIcon, propellantName, vesselIcon } from './shipTiles.ts';
+  import { daysText, kms, propellantIcon, propellantName } from './shipTiles.ts';
   import { ui } from './state.svelte.ts';
 
   const vessels = $derived(ships.vessels);
@@ -359,7 +361,6 @@
     <Card
       title={vessel.name}
       subtitle="{className(vessel.design)}, {vesselWhere(vessel)}"
-      icon={vesselIcon(vessel)}
       chips={[
         ...(stats?.main
           ? [{ icon: 'rocket' as const, text: kms(stats.main.deltaV), tip: 'Delta-v at design load' }]
@@ -368,6 +369,7 @@
         { icon: 'box', text: fmt.mass(stats?.dryMass ?? 0), tip: 'Dry mass' }
       ]}
     >
+      {#snippet art()}<ShipArt design={designOf(vessel)} size="card" />{/snippet}
       {#if vessel.blocked}<p class="hot" id="vesselBlocked">{vessel.blocked}</p>{/if}
       <CardSection label="Propellant">
         {#if propellants.length}

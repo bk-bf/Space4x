@@ -9,6 +9,7 @@
     title: string;
     subtitle?: string;
     icon?: IconRef;
+    art?: Snippet;
     iconSize?: 16 | 32 | 48;
     chips?: readonly Chip[];
     aside?: Snippet;
@@ -20,6 +21,7 @@
     title,
     subtitle,
     icon,
+    art,
     iconSize = 32,
     chips = [],
     aside,
@@ -30,7 +32,12 @@
 
 <section class="ui-card {extra}">
   <header>
-    {#if icon}<PixIcon kind={icon.kind} id={icon.id} size={iconSize} tip={false} />{/if}
+    {#if art}{@render art()}{:else if icon}<PixIcon
+        kind={icon.kind}
+        id={icon.id}
+        size={iconSize}
+        tip={false}
+      />{/if}
     <div class="ttl">
       <div class="t">{title}</div>
       {#if subtitle}<div class="s">{subtitle}</div>{/if}

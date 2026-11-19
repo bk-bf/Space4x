@@ -1,8 +1,9 @@
 <script lang="ts">
   import { className } from '#lib/game/index.ts';
-  import type { Vessel } from '#lib/game/ships/index.ts';
+  import { designOf, type Vessel } from '#lib/game/ships/index.ts';
   import { Tile } from '#lib/ui/index.ts';
-  import { tankFill, tileWhere, vesselIcon, vesselTip } from './shipTiles.ts';
+  import ShipArt from './ShipArt.svelte';
+  import { tankFill, tileWhere, vesselTip } from './shipTiles.ts';
 
   let {
     vessel,
@@ -11,9 +12,11 @@
   }: { vessel: Vessel; selected?: boolean; onselect?: () => void } = $props();
 </script>
 
+{#snippet art()}<ShipArt design={designOf(vessel)} />{/snippet}
+
 <Tile
   variant="q"
-  icons={[vesselIcon(vessel)]}
+  {art}
   name={vessel.name}
   sub={className(vessel.design)}
   note={tileWhere(vessel)}

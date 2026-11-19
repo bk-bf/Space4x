@@ -29,7 +29,8 @@
   import Field from './Field.svelte';
   import TabBody from './TabBody.svelte';
   import { ui } from './state.svelte.ts';
-  import { designIcon, kms } from './shipTiles.ts';
+  import ShipArt from './ShipArt.svelte';
+  import { kms } from './shipTiles.ts';
   import { limitText } from './view.ts';
 
   let { site }: { site: Site } = $props();
@@ -123,7 +124,6 @@
           {@const st = status(o)}
           <Tile
             variant="q"
-            icons={[designIcon(designOfOrder(o))]}
             name={o.name}
             corner={String(i + 1)}
             mark={st.mark}
@@ -141,7 +141,9 @@
               left(o)
             )}
             onselect={() => (ui.yardOrder = o.id)}
-          />
+          >
+            {#snippet art()}<ShipArt design={designOfOrder(o)} />{/snippet}
+          </Tile>
         {/each}
       </TileGrid>
     </div>
@@ -165,7 +167,6 @@
           {@const costs = Object.entries(s.cost).sort((a, b) => b[1] - a[1])}
           <Tile
             variant="bld"
-            icons={[designIcon(d)]}
             name={d.name}
             corner={role(d.role)}
             minis={costs.slice(0, 3).map(([m]) => ({ kind: 'material' as const, id: m }))}
@@ -178,7 +179,9 @@
               s.main ? `Delta-v ${kms(s.main.deltaV)} at design load` : warn('No drive')
             )}
             onselect={() => (choice = d.id)}
-          />
+          >
+            {#snippet art()}<ShipArt design={d} />{/snippet}
+          </Tile>
         {/each}
       </TileGrid>
     </div>
@@ -193,12 +196,12 @@
     <Card
       title={sel.name}
       subtitle="order {selIndex + 1}, {st.text.toLowerCase()}"
-      icon={designIcon(designOfOrder(sel))}
       chips={[
         { icon: 'yard', text: yardName(sel.yard as 'rocket_factory') },
         { icon: 'clock', text: left(sel) || '-', tip: 'Time left' }
       ]}
     >
+      {#snippet art()}<ShipArt design={designOfOrder(sel)} size="card" />{/snippet}
       <Bar value={sel.done} thick full tone={st.hot ? 'hot' : 'accent'} />
       <div class="btns">
         <button id="yardUp" disabled={selIndex <= 0} onclick={() => act((s, id) => moveShipOrder(s, id, -1))}
@@ -220,7 +223,6 @@
     <Card
       title={design.name}
       subtitle={yardName(design.yard)}
-      icon={designIcon(design)}
       chips={[
         { icon: 'box', text: fmt.mass(stats.dryMass), tip: 'Dry mass' },
         ...(stats.main
@@ -234,6 +236,7 @@
         }
       ]}
     >
+      {#snippet art()}<ShipArt {design} size="card" />{/snippet}
       <CardSection label="Cost for one, have / need">
         <IconList variant="have" items={costItems} size={16} />
       </CardSection>
