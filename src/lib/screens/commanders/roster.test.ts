@@ -23,6 +23,20 @@ describe('Roster', () => {
     expect(postOptions('governor', g).map((p) => p.label)).toEqual(['Governor, Earth']);
   });
 
+  it('posts every governor officer to a colonised body, and the label names it', () => {
+    for (const g of [new Game(), withFixture(new Game())]) {
+      const r = new Roster();
+      const governors = r.officers.filter((o) => o.post.kind === 'governor');
+      expect(governors.length).toBeGreaterThan(0);
+      for (const o of governors) {
+        const body = g.body(o.post.ref);
+        expect(body?.colony).toBe(true);
+        expect(postLabel(o.post, g)).toBe(`Governor, ${body!.name}`);
+        expect(r.holder('governor', body!.id)).toBe(o);
+      }
+    }
+  });
+
   it('lists posts from the fleets, ships and colonies of the game state', () => {
     const g = withFixture(new Game());
     const fleets = g.world.fleets.map((f) => f.name);

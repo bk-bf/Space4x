@@ -83,8 +83,6 @@ export const KINDS: Record<UnitKind, KindInfo> = {
 
 export const KIND_ORDER: readonly UnitKind[] = ['hq', 'inf', 'tank', 'art', 'aa'];
 
-export const PLACES = ['Earth'] as const;
-
 export const STANCE_USE: Record<Stance, number> = {
   'Dug in': 0.45,
   Advance: 1.4,
@@ -93,7 +91,7 @@ export const STANCE_USE: Record<Stance, number> = {
 };
 export const STANCE_MORALE: Record<Stance, number> = { 'Dug in': 8, Advance: -4, Reserve: 10, Support: 6 };
 
-export const PLACE_SUPPLY: Record<string, number> = { Earth: 4 };
+export const PLACE_SUPPLY: Record<string, number> = { earth: 4 };
 
 const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 
@@ -117,7 +115,7 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
     id: 'home-guard',
     name: 'Home guard',
-    place: 'Earth',
+    place: 'earth',
     units: [
       ['hq', 1, 'Dug in', 100, 92, 80],
       ['inf', 6, 'Dug in', 94, 88, 76],
@@ -129,7 +127,7 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
     id: 'capital-guard',
     name: 'Capital guard',
-    place: 'Earth',
+    place: 'earth',
     units: [
       ['hq', 1, 'Dug in', 100, 90, 96],
       ['inf', 3, 'Dug in', 97, 91, 94],
@@ -139,7 +137,7 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
     id: 'spaceport-guard',
     name: 'Spaceport guard',
-    place: 'Earth',
+    place: 'earth',
     units: [
       ['inf', 2, 'Dug in', 95, 86, 88],
       ['aa', 2, 'Support', 100, 84, 90]
@@ -148,7 +146,7 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
     id: 'strategic-reserve',
     name: 'Strategic reserve',
-    place: 'Earth',
+    place: 'earth',
     units: [
       ['hq', 1, 'Reserve', 100, 88, 85],
       ['tank', 2, 'Reserve', 92, 89, 83],
@@ -158,7 +156,7 @@ const FORMATION_SEEDS: readonly FormationSeed[] = [
   {
     id: 'coastal-guard',
     name: 'Coastal guard',
-    place: 'Earth',
+    place: 'earth',
     units: [
       ['hq', 1, 'Dug in', 100, 85, 72],
       ['inf', 2, 'Dug in', 90, 82, 68],
@@ -194,7 +192,7 @@ export function mockUnits(): Unit[] {
           morale: bound(morale + jitter(n, 2, 6)),
           supply: bound(supply + jitter(n, 3, 8)),
           stance,
-          trainedAt: 'Earth'
+          trainedAt: 'earth'
         });
       }
   }

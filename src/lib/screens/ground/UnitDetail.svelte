@@ -3,6 +3,7 @@
   import { ground } from './ground.svelte.ts';
   import { KINDS, STANCES, menOf, supplyUseOf } from './model.ts';
   import { drawUnitPicture } from './invasion.ts';
+  import { placeName } from './places.ts';
 
   const unit = $derived(ground.unit);
   const info = $derived(unit ? KINDS[unit.kind] : undefined);
@@ -22,7 +23,7 @@
       ['Defence', info.defence],
       ['Supply use', `${supplyUseOf(unit)} a day`],
       ['Transport size', `${info.transport.toLocaleString('en')} t`],
-      ['Trained at', unit.trainedAt]
+      ['Trained at', placeName(unit.trainedAt)]
     ]}
   />
   <div>
@@ -47,7 +48,8 @@
           requestRender();
         }}
       >
-        {#each ground.formations as f (f.id)}<option value={f.id}>{f.name}, {f.place}</option>{/each}
+        {#each ground.formations as f (f.id)}<option value={f.id}>{f.name}, {placeName(f.place)}</option
+          >{/each}
       </select>
     </div>
   </div>

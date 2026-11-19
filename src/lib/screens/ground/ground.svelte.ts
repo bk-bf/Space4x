@@ -1,3 +1,4 @@
+import { placeName } from './places.ts';
 import { KIND_ORDER, mockFormations, mockUnits, type Formation, type Stance, type Unit } from './model.ts';
 
 class Ground {
@@ -5,7 +6,7 @@ class Ground {
   units = $state<Unit[]>(mockUnits());
   formationId = $state('home-guard');
   unitId = $state<string | null>(null);
-  open = $state<Record<string, boolean>>({ Earth: true, 'home-guard': true });
+  open = $state<Record<string, boolean>>({ earth: true, 'home-guard': true });
   private counter = 0;
 
   constructor() {
@@ -61,7 +62,7 @@ class Ground {
   create(place: string): string {
     const id = `f-${++this.counter}`;
     const same = this.formationsAt(place).length + 1;
-    this.formations.push({ id, name: `${place} formation ${same}`, place });
+    this.formations.push({ id, name: `${placeName(place)} formation ${same}`, place });
     this.open[place] = true;
     this.formationId = id;
     this.unitId = null;

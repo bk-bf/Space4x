@@ -30,11 +30,11 @@ const unit = (over: Partial<Unit> = {}): Unit => ({
   morale: 70,
   supply: 50,
   stance: 'Dug in',
-  trainedAt: 'Earth',
+  trainedAt: 'earth',
   ...over
 });
 
-const camp: Formation = { id: 'f', name: 'Camp', place: 'Mars' };
+const camp: Formation = { id: 'f', name: 'Camp', place: 'mars' };
 
 describe('supply', () => {
   it('drifts by the intake minus the kind use times the stance multiplier', () => {
@@ -136,8 +136,8 @@ describe('advanceGround', () => {
     const near = [unit({ formation: 'near', supply: 40 })],
       far = [unit({ formation: 'far', supply: 40 })];
     const places: Formation[] = [
-      { id: 'near', name: 'Home', place: 'Earth' },
-      { id: 'far', name: 'Outpost', place: 'Mars' }
+      { id: 'near', name: 'Home', place: 'earth' },
+      { id: 'far', name: 'Outpost', place: 'mars' }
     ];
     advanceGround([...near, ...far], places, 10 * DAY);
     expect(near[0]!.supply).toBeGreaterThan(far[0]!.supply);
@@ -180,7 +180,7 @@ describe('the mock forces', () => {
     const guard = units.filter((u) => u.formation === 'home-guard');
     expect(guard).toHaveLength(13);
     expect(guard.filter((u) => u.kind === 'inf')).toHaveLength(6);
-    expect(formations.filter((f) => f.place === 'Earth')).toHaveLength(formations.length);
+    expect(formations.filter((f) => f.place === 'earth')).toHaveLength(formations.length);
     for (const u of units) expect(formations.some((f) => f.id === u.formation)).toBe(true);
     expect(new Set(units.map((u) => u.id)).size).toBe(units.length);
   });
@@ -226,16 +226,16 @@ describe('the ground store', () => {
   });
 
   it('creates a formation, moves a unit into it and disbands it into a sibling', () => {
-    const before = ground.formationsAt('Earth').length;
-    const id = ground.create('Earth');
-    expect(ground.formationsAt('Earth')).toHaveLength(before + 1);
+    const before = ground.formationsAt('earth').length;
+    const id = ground.create('earth');
+    expect(ground.formationsAt('earth')).toHaveLength(before + 1);
     expect(ground.formationId).toBe(id);
     const u = ground.unitsOf('home-guard')[0]!;
     ground.moveUnit(u.id, id);
     expect(ground.unitsOf(id)).toHaveLength(1);
     expect(ground.disbandable(id)).toBe(true);
     ground.disband(id);
-    expect(ground.formationsAt('Earth')).toHaveLength(before);
+    expect(ground.formationsAt('earth')).toHaveLength(before);
     expect(ground.units.find((x) => x.id === u.id)!.formation).toBe('home-guard');
     expect(ground.formationId).toBe('home-guard');
   });

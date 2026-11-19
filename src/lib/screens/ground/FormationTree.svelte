@@ -1,21 +1,25 @@
 <script lang="ts">
   import { requestRender } from '#lib/ui/index.ts';
   import { ground } from './ground.svelte.ts';
-  import { KINDS, KIND_ORDER, PLACES, plural } from './model.ts';
+  import { KINDS, KIND_ORDER, plural } from './model.ts';
+  import { placesOf } from './places.ts';
 
   const act = (fn: () => void) => () => {
     fn();
     requestRender();
   };
 
-  const place = $derived(ground.formation?.place ?? PLACES[0]);
+  const places = $derived(placesOf());
+  const place = $derived(ground.formation?.place ?? places[0]?.id);
 </script>
 
 <div id="formations">
-  {#each PLACES as p (p)}
-    {@const here = ground.formationsAt(p)}
-    <details bind:open={ground.open[p]}>
-      <summary data-place={p}><span>{p}</span><small>{plural(here.length, 'formation')}</small></summary>
+  {#each places as p (p.id)}
+    {@const here = ground.formationsAt(p.id)}
+    <details bind:open={ground.open[p.id]}>
+      <summary data-place={p.name}
+        ><span>{p.name}</span><small>{plural(here.length, 'formation')}</small></summary
+      >
       {#each here as f (f.id)}
         {@const units = ground.unitsOf(f.id)}
         <details bind:open={ground.open[f.id]}>
@@ -35,7 +39,7 @@
   {/each}
 </div>
 <div class="add">
-  <button data-act="create" onclick={act(() => ground.create(place ?? 'Earth'))}>New formation</button>
+  <button data-act="create" onclick={act(() => place && ground.create(place))}>New formation</button>
   <button
     data-act="disband"
     disabled={!ground.formation || !ground.disbandable(ground.formationId)}
