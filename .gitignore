@@ -6,3 +6,6 @@ node_modules/
 .claude/worktrees/
 /test-results/
 /playwright-report/
+/build-gallery/
+/src-tauri/target/
+/src-tauri/gen/

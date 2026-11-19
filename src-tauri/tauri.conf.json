@@ -1,0 +1,41 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Space4x",
+  "mainBinaryName": "space4x",
+  "version": "0.0.1",
+  "identifier": "io.github.bkbf.space4x",
+  "build": {
+    "frontendDist": "../build",
+    "devUrl": "http://127.0.0.1:5194",
+    "beforeDevCommand": "pnpm exec vite dev --host 127.0.0.1 --port 5194 --strictPort",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "Space4x",
+        "width": 1600,
+        "height": 1000,
+        "minWidth": 1100,
+        "minHeight": 700,
+        "resizable": true,
+        "decorations": false,
+        "center": true,
+        "backgroundColor": "#14112a",
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": ["appimage", "deb"],
+    "category": "StrategyGame",
+    "shortDescription": "A space 4X game",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png"]
+  }
+}
