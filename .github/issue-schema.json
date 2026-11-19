@@ -1,26 +1,15 @@
 {
   "labels": {
-    "required": [
-      "type",
-      "severity"
-    ],
+    "required": ["type", "severity"],
     "groups": {
-      "type": [
-        "bug",
-        "feature",
-        "chore",
-        "decision"
-      ],
-      "severity": [
-        "critical",
-        "high",
-        "medium",
-        "low"
-      ]
+      "type": ["bug", "feature", "chore", "decision"],
+      "severity": ["critical", "high", "medium", "low"],
+      "status": ["playtest"]
     },
     "colors": {
       "type": "1d76db",
-      "severity": "d93f0b"
+      "severity": "d93f0b",
+      "status": "0e8a16"
     }
   },
   "templates": {
@@ -33,9 +22,7 @@
     "minProse": 240,
     "citation": true,
     "checkbox": true,
-    "checkboxExempt": [
-      "decision"
-    ]
+    "checkboxExempt": ["decision"]
   },
   "milestones": {
     "required": false
