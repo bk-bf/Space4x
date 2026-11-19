@@ -4,7 +4,7 @@
     "groups": {
       "type": ["bug", "feature", "chore", "decision"],
       "severity": ["critical", "high", "medium", "low"],
-      "status": ["playtest"]
+      "status": ["playtest", "blocked"]
     },
     "colors": {
       "type": "1d76db",
