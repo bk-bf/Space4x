@@ -233,8 +233,7 @@ export class Player {
       const st = this.orbital();
       if (st) {
         addOrder(v, { type: 'dock', site: st.id });
-        for (const m of Object.keys(cargo))
-          addOrder(v, { type: 'unload', item: { kind: 'cargo', id: m }, amount: null });
+        addOrder(v, { type: 'unload', item: { kind: 'all-cargo' }, amount: null });
         this.days(1);
       }
     }
@@ -327,8 +326,13 @@ export class Player {
       this.days(2);
     }
     const mod = here(habitat.id)[0]!;
-    addOrder(mod, { type: 'load', item: { kind: 'crew' }, amount: crew });
-    addOrder(mod, { type: 'load', item: { kind: 'cargo', id: 'food_ration' }, amount: 3000 });
+    addOrder(mod, {
+      type: 'manifest',
+      lines: [
+        { item: { kind: 'crew' }, amount: crew },
+        { item: { kind: 'cargo', id: 'food_ration' }, amount: 3000 }
+      ]
+    });
     this.days(1);
     const stack: Stack = {
       stages: [here(booster.id)[0]!.id, here(orbiter.id)[0]!.id],

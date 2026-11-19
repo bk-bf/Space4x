@@ -167,11 +167,79 @@ test.describe('ships and supply tabs', () => {
     await expectCleanLayout(page);
   });
 
+  test('the Ships tab loads a manifest in one order and unloads all cargo', async ({ page }) => {
+    await open(page, 'screen=economy&tab=ships&scenario=travel');
+    await page.locator('#vessels button', { hasText: /Tug 5Tug/ }).click();
+    await page.locator('#orderType [data-filter="load"]').click();
+    await page.locator('#orderAll').uncheck();
+    await page.locator('#orderItem').selectOption('cargo:stainless_steel');
+    await page.locator('input[name="orderAmount"]').fill('500');
+    await expect(page.locator('#loadPreview li')).toHaveCount(1);
+    await expect(page.locator('#loadPreview')).toContainText('takes 0.5 t');
+    await page.locator('#manifestAdd').click();
+    await page.locator('#orderItem').selectOption('cargo:food_ration');
+    await page.locator('input[name="orderAmount"]').fill('100000');
+    await page.locator('#manifestAdd').click();
+    await expect(page.locator('#loadPreview li')).toHaveCount(2);
+    await expect(page.locator('#loadPreview li').nth(1)).toContainText('of 100 t');
+    await page.locator('#loadPreview [data-manifest-drop="0"]').click();
+    await expect(page.locator('#loadPreview li')).toHaveCount(1);
+    await page.locator('#orderItem').selectOption('cargo:stainless_steel');
+    await page.locator('#manifestAdd').click();
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders .ord')).toHaveCount(1);
+    await expect(page.locator('#vesselOrders')).toContainText('Load 2 items');
+    await page.locator('#vesselOrders .ord').hover();
+    await expect(page.locator('#ui-tip')).toContainText('Food ration');
+    await expect(page.locator('#ui-tip')).toContainText('Stainless steel');
+    await page.locator('#orderType [data-filter="unload"]').click();
+    await expect(page.locator('#orderItem option').first()).toHaveText('All cargo');
+    await page.locator('#orderItem').selectOption('all-cargo');
+    await expect(page.locator('input[name="orderAmount"]')).toHaveCount(0);
+    await page.locator('#orderAdd').click();
+    await expect(page.locator('#vesselOrders .ord')).toHaveCount(2);
+    await expect(page.locator('#vesselOrders .ord').nth(1)).toContainText('Unload all cargo');
+    await expectCleanLayout(page);
+  });
+
+  test('the Supply tab shows what propellant a station can load and runs several materials', async ({
+    page
+  }) => {
+    await open(page, 'screen=economy&tab=supply&colony=orbit-earth&scenario=travel');
+    await expect(page.locator('#propellantLoad .ui-tile')).toHaveCount(3);
+    const methalox = page.locator('#propellantLoad .ui-tile', { hasText: 'Methane and oxygen' });
+    await expect(methalox).toContainText('549 t');
+    await methalox.hover();
+    await expect(page.locator('#ui-tip')).toContainText('liquid methane and liquid oxygen, 1 : 3.6 by mass');
+    const kerolox = page.locator('#propellantLoad .ui-tile', { hasText: 'Kerosene' });
+    await expect(kerolox).toContainText('Cannot load');
+    await kerolox.hover();
+    await expect(page.locator('#ui-tip')).toContainText('Short of rp-1 kerosene');
+    await page.locator('#supplyTable button', { hasText: 'Stainless steel' }).click();
+    await page.locator('#supplySource').selectOption({ label: 'Luna orbital station' });
+    await page.locator('#supplyShip button').first().click();
+    await page.locator('input[name="supplyAmount"]').fill('1000');
+    await page.locator('#supplyAdd').click();
+    await page.locator('#supplyTable button', { hasText: 'Food ration' }).click();
+    await expect(page.locator('#supplySource')).toBeDisabled();
+    await page.locator('input[name="supplyAmount"]').fill('200');
+    await page.locator('#supplyAdd').click();
+    await expect(page.locator('#supplyManifest li')).toHaveCount(2);
+    await expect(page.locator('#supplyHold')).toContainText('1.2 t of');
+    await page.locator('#supplyStart').click();
+    await expect(page.locator('#supplyMessage')).toHaveCount(0);
+    await expect(page.locator('#supplyRuns button.stop')).toHaveCount(1);
+    await expect(page.locator('#supplyRuns')).toContainText('and 1 more');
+    await expect(page.locator('#supplyRuns')).toContainText('1.2 t');
+    await expect(page.locator('#supplyManifest')).toHaveCount(0);
+    await expectCleanLayout(page);
+  });
+
   test('the Supply tab lists what a station needs and refuses a run from a launch site', async ({ page }) => {
     await open(page, 'screen=economy&tab=supply&colony=orbit-earth&scenario=travel');
     await expect(page.locator('#supplyTable button')).toHaveCount(4);
     await page.locator('#supplyTable button', { hasText: 'Stainless steel' }).click();
-    await expect(page.locator('#supplySource option')).toHaveText(['Earth']);
+    await expect(page.locator('#supplySource option')).toHaveText(['Earth', 'Luna orbital station']);
     await expect(page.locator('#supplyShip button')).toHaveCount(4);
     await page.locator('#supplyShip button').first().click();
     await page.locator('#supplyStart').click();

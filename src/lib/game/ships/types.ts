@@ -9,6 +9,20 @@ export type Whereabouts =
 export type Item =
   { kind: 'cargo'; id: string } | { kind: 'propellant'; id: PropellantKind } | { kind: 'crew' };
 
+export interface AllCargo {
+  kind: 'all-cargo';
+}
+
+export interface ManifestLine {
+  item: Item;
+  amount: number | null;
+}
+
+export interface RunLine {
+  material: string;
+  amount: number;
+}
+
 export type Order =
   | { id: number; type: 'fly'; body: string; angle: number; profile: Profile }
   | { id: number; type: 'land'; body: string; profile: Profile; region?: string }
@@ -16,7 +30,8 @@ export type Order =
   | { id: number; type: 'sample' }
   | { id: number; type: 'dock'; site: string }
   | { id: number; type: 'load'; item: Item; amount: number | null }
-  | { id: number; type: 'unload'; item: Item; amount: number | null }
+  | { id: number; type: 'unload'; item: Item | AllCargo; amount: number | null }
+  | { id: number; type: 'manifest'; lines: ManifestLine[] }
   | { id: number; type: 'wait'; seconds: number };
 
 export type OrderType = Order['type'];
@@ -31,8 +46,7 @@ export interface Trip {
 }
 
 export interface SupplyRun {
-  item: string;
-  amount: number;
+  manifest: RunLine[];
   from: string;
   to: string;
 }

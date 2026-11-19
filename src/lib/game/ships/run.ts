@@ -1,26 +1,32 @@
 import { economy } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { mainKind } from './model.ts';
-import { legOrders, makeOrder, projectedPlace } from './orders.ts';
+import { mainKind, statsOf } from './model.ts';
+import { legOrders, makeOrder, projectedPlace, type NewOrder } from './orders.ts';
+import type { PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { needsLaunchStack } from './trips.ts';
-import type { Order, SupplyRun, Vessel } from './types.ts';
+import type { ManifestLine, Order, SupplyRun, Vessel } from './types.ts';
 
-export function cycleOrders(run: SupplyRun, kind: string | undefined): Order[] | undefined {
+export function cycleOrders(run: SupplyRun, kind: PropellantKind | undefined): Order[] | undefined {
   const from = economy.sites.find((s) => s.id === run.from);
   const to = economy.sites.find((s) => s.id === run.to);
   if (!from || !to) return undefined;
   const out = legOrders({ kind: 'site', site: from.id }, to);
   const back = legOrders({ kind: 'site', site: to.id }, from);
-  return [
-    ...(kind
-      ? [{ type: 'load' as const, item: { kind: 'propellant' as const, id: kind }, amount: null }]
-      : []),
-    { type: 'load' as const, item: { kind: 'cargo' as const, id: run.item }, amount: run.amount },
+  const lines: ManifestLine[] = run.manifest.map((l) => ({
+    item: { kind: 'cargo', id: l.material },
+    amount: l.amount
+  }));
+  const cycle: NewOrder[] = [
+    ...(kind ? [{ type: 'load', item: { kind: 'propellant', id: kind }, amount: null } as const] : []),
+    { type: 'manifest', lines },
     ...out,
-    { type: 'unload' as const, item: { kind: 'cargo' as const, id: run.item }, amount: null },
+    { type: 'unload', item: { kind: 'all-cargo' }, amount: null },
     ...back
-  ].map((o) => makeOrder(o as Parameters<typeof makeOrder>[0]));
+  ];
+  return cycle.map(makeOrder);
 }
+
+export const runTotal = (run: SupplyRun): number => run.manifest.reduce((a, l) => a + l.amount, 0);
 
 export function startRun(game: Game, v: Vessel, run: SupplyRun): string | undefined {
   const from = economy.sites.find((s) => s.id === run.from);
@@ -33,11 +39,16 @@ export function startRun(game: Game, v: Vessel, run: SupplyRun): string | undefi
     return `${from.name} is a launch site; ships leave it by launch stack.`;
   if (needsLaunchStack(game, { kind: 'site', site: to.id }))
     return `A ship cannot land at ${to.name}; it is reached by launch only.`;
+  if (!run.manifest.length || run.manifest.some((l) => !(l.amount > 0)))
+    return 'Name an amount for every material in the run.';
+  const hold = statsOf(v)?.payloadCapacity ?? 0;
+  if (runTotal(run) > hold + 1e-6)
+    return `${v.name} holds ${Math.round(hold).toLocaleString('en-US')} kg; the run asks for ${Math.round(runTotal(run)).toLocaleString('en-US')} kg.`;
   const cycle = cycleOrders(run, kind);
   if (!cycle) return 'The route is gone.';
   const first = legOrders(projectedPlace(v), from).map(makeOrder);
   v.orders = [...first, ...cycle];
-  v.run = { ...run };
+  v.run = { ...run, manifest: run.manifest.map((l) => ({ ...l })) };
   v.progress = 0;
   v.blocked = null;
   return undefined;

@@ -228,8 +228,7 @@ export class PathPlayer extends Player {
     const up = this.launchHeavy({ kind: 'cargo', cargo });
     if (!up) return;
     addOrder(up, { type: 'dock', site: this.station().id });
-    for (const m of Object.keys(cargo))
-      addOrder(up, { type: 'unload', item: { kind: 'cargo', id: m }, amount: null });
+    addOrder(up, { type: 'unload', item: { kind: 'all-cargo' }, amount: null });
     this.fly(up, 'cargo at the station');
   }
 
@@ -299,9 +298,13 @@ export class PathPlayer extends Player {
   }
 
   protected loadAtEarth(v: Vessel, cargo: Record<string, number>, crew = 0): void {
-    for (const [m, kg] of Object.entries(cargo))
-      addOrder(v, { type: 'load', item: { kind: 'cargo', id: m }, amount: kg });
-    if (crew > 0) addOrder(v, { type: 'load', item: { kind: 'crew' }, amount: crew });
+    addOrder(v, {
+      type: 'manifest',
+      lines: [
+        ...Object.entries(cargo).map(([m, kg]) => ({ item: { kind: 'cargo' as const, id: m }, amount: kg })),
+        ...(crew > 0 ? [{ item: { kind: 'crew' as const }, amount: crew }] : [])
+      ]
+    });
     this.days(2);
   }
 
@@ -341,8 +344,7 @@ export class PathPlayer extends Player {
     this.loadAtEarth(v, cargo);
     if (!this.launchHeavy({ kind: 'ship', ship: v.id })) return false;
     if (!this.fuelAndGo(v, 'methalox', 'luna')) return false;
-    for (const m of Object.keys(cargo))
-      addOrder(v, { type: 'unload', item: { kind: 'cargo', id: m }, amount: null });
+    addOrder(v, { type: 'unload', item: { kind: 'all-cargo' }, amount: null });
     this.fly(v, `${v.name} unloading`);
     const done = installModule(this.game, v);
     if (done) this.say(done);

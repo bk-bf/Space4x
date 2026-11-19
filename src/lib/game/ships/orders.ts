@@ -5,7 +5,7 @@ import { PROPELLANTS } from '#lib/game/shipdesign/index.ts';
 import { hangsInOrbit, isPlatform } from './world.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { ships } from './state.svelte.ts';
-import type { Item, Order, Vessel, Whereabouts } from './types.ts';
+import type { AllCargo, Item, ManifestLine, Order, Vessel, Whereabouts } from './types.ts';
 
 export type NewOrder =
   | { type: 'fly'; body: string; angle: number; profile?: Profile }
@@ -14,7 +14,8 @@ export type NewOrder =
   | { type: 'sample' }
   | { type: 'dock'; site: string }
   | { type: 'load'; item: Item; amount: number | null }
-  | { type: 'unload'; item: Item; amount: number | null }
+  | { type: 'unload'; item: Item | AllCargo; amount: number | null }
+  | { type: 'manifest'; lines: ManifestLine[] }
   | { type: 'wait'; seconds: number };
 
 export function makeOrder(o: NewOrder): Order {
@@ -92,12 +93,23 @@ export function goTo(v: Vessel, to: Site, profile: Profile = 'cheapest'): Order[
   return legOrders(projectedPlace(v), to, profile).map((o) => addOrder(v, o));
 }
 
-const itemName = (i: Item): string =>
+export const itemName = (i: Item | AllCargo): string =>
   i.kind === 'crew'
     ? 'crew'
-    : i.kind === 'cargo'
-      ? material(i.id).name
-      : PROPELLANTS[i.id].name.toLowerCase();
+    : i.kind === 'all-cargo'
+      ? 'cargo'
+      : i.kind === 'cargo'
+        ? material(i.id).name
+        : PROPELLANTS[i.id].name.toLowerCase();
+
+const amountText = (item: Item | AllCargo, amount: number | null): string =>
+  amount === null
+    ? 'all'
+    : item.kind === 'crew'
+      ? `${Math.round(amount)}`
+      : `${Math.round(amount).toLocaleString('en-US')} kg`;
+
+export const lineText = (l: ManifestLine): string => `${amountText(l.item, l.amount)} ${itemName(l.item)}`;
 
 export function orderLabel(game: Game, o: Order): string {
   const body = (id: string) => game.placeName(id) ?? id;
@@ -109,9 +121,13 @@ export function orderLabel(game: Game, o: Order): string {
     case 'dock':
       return `Dock at ${siteOf(o.site)?.name ?? 'a lost site'}`;
     case 'load':
-      return `Load ${o.amount === null ? 'all' : `${Math.round(o.amount).toLocaleString('en-US')} kg`} ${itemName(o.item)}`;
+      return `Load ${amountText(o.item, o.amount)} ${itemName(o.item)}`;
     case 'unload':
-      return `Unload ${o.amount === null ? 'all' : `${Math.round(o.amount).toLocaleString('en-US')} kg`} ${itemName(o.item)}`;
+      return o.item.kind === 'all-cargo'
+        ? 'Unload all cargo'
+        : `Unload ${amountText(o.item, o.amount)} ${itemName(o.item)}`;
+    case 'manifest':
+      return `Load ${o.lines.length} items`;
     case 'survey':
       return `Survey ${body(o.body)}`;
     case 'sample':

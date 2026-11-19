@@ -87,6 +87,8 @@ export function seedTravel(game: Game): void {
   station.stock.lox = 430_000;
   const outpost = newSite(economy, { worldBody: 'luna', bodyName: 'Luna', place: 'orbit', angle: 0 })!;
   standFirst(economy, outpost, 'propellant_depot');
+  outpost.stock.stainless_steel = 5000;
+  outpost.stock.food_ration = 800;
   const flying = vessel(
     tug,
     { kind: 'site', site: station.id },

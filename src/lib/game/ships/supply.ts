@@ -8,6 +8,8 @@ import { ships } from './state.svelte.ts';
 import { flightSystem, hangsInOrbit } from './world.ts';
 import { needsLaunchStack } from './trips.ts';
 import { reentryRating } from './model.ts';
+import { propellantAvailable } from './cargo.ts';
+import { PROPELLANT_KINDS, PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
 import type { Vessel } from './types.ts';
 
 export interface ImportOption {
@@ -184,4 +186,23 @@ export function supplyRows(game: Game, site: Site): SupplyRow[] {
 
 export function runsList(): Vessel[] {
   return ships.vessels.filter((v) => v.run);
+}
+
+export interface PropellantStock {
+  kind: PropellantKind;
+  available: number;
+  limit: string | null;
+  mix: { material: string; share: number; stock: number }[];
+}
+
+export function propellantStock(site: Site): PropellantStock[] {
+  return PROPELLANT_KINDS.flatMap((kind): PropellantStock[] => {
+    const mix = Object.entries(PROPELLANTS[kind].mix)
+      .filter(([, share]) => share > 0)
+      .map(([material, share]) => ({ material, share, stock: site.stock[material] ?? 0 }));
+    if (!mix.some((m) => m.stock > 0)) return [];
+    const available = propellantAvailable(site, kind);
+    const limit = mix.reduce((a, b) => (b.stock / b.share < a.stock / a.share ? b : a)).material;
+    return [{ kind, available, limit, mix }];
+  });
 }

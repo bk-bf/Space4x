@@ -1,7 +1,7 @@
 import { DAY } from '#lib/game/clock.ts';
 import { drainDeliveries, economy, touch } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, unloadItem } from './cargo.ts';
+import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, loadManifest, unloadItem } from './cargo.ts';
 import { classes } from '#lib/game/classes.svelte.ts';
 import { settleJumps } from '#lib/game/jump.ts';
 import {
@@ -29,7 +29,7 @@ import {
 } from './trips.ts';
 import type { Order, Vessel } from './types.ts';
 import { bodyOfWhereabouts, hangsInOrbit, isJump, tripOptionOf } from './world.ts';
-import { siteOf } from './orders.ts';
+import { lineText, siteOf } from './orders.ts';
 
 const MAX_STEPS = 256;
 
@@ -272,9 +272,28 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
   const site = siteOf(v.at.site);
   if (!site) return 'stop';
   if (!work(v, HANDLING_SECONDS, cursor, end)) return 'stop';
-  const moved = (order.type === 'load' ? loadItem : unloadItem)(site, v, order.item, order.amount);
-  if (moved <= 0 && order.amount !== null && order.item.kind !== 'propellant')
-    say(game, v, `${v.name} found nothing to ${order.type} at ${site.name}.`, cursor.t, true);
+  if (order.type === 'manifest') {
+    const short = loadManifest(site, v, order.lines).filter(
+      (r) => r.wanted !== null && r.moved + 1e-6 < r.wanted
+    );
+    if (short.length)
+      say(
+        game,
+        v,
+        `${v.name} loaded less than ordered at ${site.name}: ${short
+          .map((r) => lineText({ item: r.item, amount: r.wanted! - r.moved }))
+          .join(', ')} short.`,
+        cursor.t,
+        true
+      );
+  } else {
+    const moved =
+      order.type === 'load'
+        ? loadItem(site, v, order.item, order.amount)
+        : unloadItem(site, v, order.item, order.amount);
+    if (moved <= 0 && order.amount !== null && order.item.kind !== 'propellant')
+      say(game, v, `${v.name} found nothing to ${order.type} at ${site.name}.`, cursor.t, true);
+  }
   v.blocked = null;
   v.orders.shift();
   touch();

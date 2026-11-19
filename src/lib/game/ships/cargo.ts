@@ -1,7 +1,7 @@
 import type { Site } from '#lib/game/economy/index.ts';
 import { PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { cargoRoom, propellantRoom, statsOf } from './model.ts';
-import type { Item, Vessel } from './types.ts';
+import type { AllCargo, Item, ManifestLine, Vessel } from './types.ts';
 
 export const HANDLING_SECONDS = 4 * 3600;
 export const DOCK_SECONDS = 3600;
@@ -57,7 +57,12 @@ export function loadItem(site: Site, v: Vessel, item: Item, amount: number | nul
   return n;
 }
 
-export function unloadItem(site: Site, v: Vessel, item: Item, amount: number | null): number {
+export function unloadItem(site: Site, v: Vessel, item: Item | AllCargo, amount: number | null): number {
+  if (item.kind === 'all-cargo') {
+    let moved = 0;
+    for (const id of Object.keys(v.cargo)) moved += unloadItem(site, v, { kind: 'cargo', id }, null);
+    return moved;
+  }
   if (item.kind === 'cargo') {
     const n = take(amount, v.cargo[item.id] ?? 0);
     if (n <= 0) return 0;
@@ -79,4 +84,20 @@ export function unloadItem(site: Site, v: Vessel, item: Item, amount: number | n
   v.crew -= n;
   site.population += n;
   return n;
+}
+
+export interface ManifestResult {
+  item: Item;
+  wanted: number | null;
+  moved: number;
+}
+
+export function loadManifest(site: Site, v: Vessel, lines: ManifestLine[]): ManifestResult[] {
+  return lines.map((l) => ({ item: l.item, wanted: l.amount, moved: loadItem(site, v, l.item, l.amount) }));
+}
+
+export function previewLoad(site: Site, v: Vessel, lines: ManifestLine[]): ManifestResult[] {
+  const siteCopy: Site = { ...site, stock: { ...site.stock } };
+  const vesselCopy: Vessel = { ...v, cargo: { ...v.cargo }, propellant: { ...v.propellant } };
+  return loadManifest(siteCopy, vesselCopy, lines);
 }

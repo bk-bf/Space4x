@@ -325,7 +325,11 @@ describe('supply runs', () => {
     orbit.stock.lox = 1e7;
     const v = spawn('tug', { kind: 'site', site: orbit.id });
     expect(
-      startRun(g, v, { item: 'stainless_steel', amount: 4000, from: orbit.id, to: moon.id })
+      startRun(g, v, {
+        manifest: [{ material: 'stainless_steel', amount: 4000 }],
+        from: orbit.id,
+        to: moon.id
+      })
     ).toBeUndefined();
     for (let i = 0; i < 18; i++) g.advance(5 * DAY);
     const delivered = moon.stock.stainless_steel ?? 0;

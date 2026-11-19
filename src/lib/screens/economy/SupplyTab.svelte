@@ -5,11 +5,14 @@
   import {
     advanceShips,
     clearOrders,
+    propellantStock,
     runsList,
+    runTotal,
     ships,
     startRun,
     statsOf,
     supplyRows,
+    type RunLine,
     type SupplyRow,
     type Vessel
   } from '#lib/game/ships/index.ts';
@@ -18,6 +21,7 @@
     CardSection,
     Icon,
     Pill,
+    PixIcon,
     Tile,
     TileGrid,
     dim,
@@ -33,7 +37,7 @@
   import TabBody from './TabBody.svelte';
   import { whereabouts } from './shipsView.ts';
   import { ui } from './state.svelte.ts';
-  import { daysText } from './shipTiles.ts';
+  import { daysText, propellantMixIcons, propellantName, stockTip } from './shipTiles.ts';
 
   let { site }: { site: Site } = $props();
 
@@ -42,7 +46,10 @@
   let materialId = $state('');
   const row = $derived(rows.find((r) => r.material === materialId) ?? rows[0]);
   let sourceId = $state('');
-  const source = $derived(row?.options.find((o) => o.from === sourceId) ?? row?.options[0]);
+  let manifest = $state<{ from: string; lines: RunLine[] }>({ from: '', lines: [] });
+  const lockedFrom = $derived(manifest.lines.length ? manifest.from : sourceId);
+  const source = $derived(row?.options.find((o) => o.from === lockedFrom) ?? row?.options[0]);
+  const fuels = $derived(off ? propellantStock(site) : []);
   const freighters = $derived(
     ships.vessels.filter((v) => {
       const s = statsOf(v);
@@ -54,7 +61,10 @@
   let amount = $state(0);
   let message = $state('');
   const cap = $derived(ship ? (statsOf(ship)?.payloadCapacity ?? 0) : 0);
-  const load = $derived(amount > 0 ? Math.min(amount, cap) : cap);
+  const packed = $derived(manifest.lines.reduce((a, l) => a + l.amount, 0));
+  const room = $derived(Math.max(0, cap - packed));
+  const load = $derived(amount > 0 ? Math.min(amount, room) : room);
+  const joins = $derived(!manifest.lines.length || (!!source && source.from === manifest.from));
   const runs = $derived(runsList());
 
   const best = (r: SupplyRow) =>
@@ -81,12 +91,36 @@
     );
   }
 
+  function addLine() {
+    if (!row || !source || !ship || !joins || load <= 0) return;
+    const kg = Math.round(load);
+    const lines = manifest.lines.map((l) => ({ ...l }));
+    const same = lines.find((l) => l.material === row.material);
+    if (same) same.amount += kg;
+    else lines.push({ material: row.material, amount: kg });
+    manifest = { from: source.from, lines };
+    amount = 0;
+  }
+
   function start() {
-    if (!row || !source || !ship) return;
-    const run = { item: row.material, amount: Math.round(load), from: source.from, to: site.id };
-    const refusal = startRun(game, ship, run);
+    if (!ship) return;
+    const lines = manifest.lines.length
+      ? manifest.lines
+      : row
+        ? [{ material: row.material, amount: Math.round(load) }]
+        : [];
+    const from = manifest.lines.length ? manifest.from : source?.from;
+    if (!from) return;
+    const refusal = startRun(game, ship, {
+      manifest: lines.map((l) => ({ ...l })),
+      from,
+      to: site.id
+    });
     message = refusal ?? '';
-    if (!refusal) advanceShips(game, 0);
+    if (!refusal) {
+      manifest = { from: '', lines: [] };
+      advanceShips(game, 0);
+    }
     touch();
   }
 
@@ -133,6 +167,29 @@
   {:else}
     <p class="dim" id="supplyNone">{site.name} needs nothing yet that a ship could bring.</p>
   {/if}
+  {#if off}
+    <h3><Icon name="flame" class="sm" />Propellant it can load <small class="dim">{fuels.length}</small></h3>
+    {#if fuels.length}
+      <div id="propellantLoad">
+        <TileGrid min={116} gap={5}>
+          {#each fuels as p (p.kind)}
+            <Tile
+              variant="stk"
+              icons={propellantMixIcons(p.kind)}
+              name={propellantName(p.kind)}
+              value={fmt.mass(p.available)}
+              note={p.available <= 0 ? 'Cannot load' : undefined}
+              noteTone="hot"
+              warn={p.available <= 0}
+              tip={stockTip(p)}
+            />
+          {/each}
+        </TileGrid>
+      </div>
+    {:else}
+      <p class="dim" id="noPropellant">{site.name} holds none of what a propellant is mixed from.</p>
+    {/if}
+  {/if}
   <h3><Icon name="rocket" class="sm" />Supply runs <small class="dim">{runs.length}</small></h3>
   {#if runs.length}
     <div id="supplyRuns">
@@ -141,16 +198,18 @@
           {@const run = v.run!}
           <Tile
             variant="q"
-            icons={[{ kind: 'material', id: run.item }]}
+            icons={run.manifest.slice(0, 2).map((l) => ({ kind: 'material' as const, id: l.material }))}
             name={v.name}
-            sub={materialName(run.item)}
-            value={fmt.mass(run.amount)}
+            sub={run.manifest.length > 1
+              ? `${materialName(run.manifest[0]!.material)} and ${run.manifest.length - 1} more`
+              : materialName(run.manifest[0]?.material ?? '')}
+            value={fmt.mass(runTotal(run))}
             note={v.blocked ? v.blocked.slice(0, 18) : v.trip ? 'On a trip' : 'Handling cargo'}
             noteTone={v.blocked ? 'hot' : 'dim'}
             warn={!!v.blocked}
             tip={tipText(
               v.name,
-              `${materialName(run.item)}, ${fmt.mass(run.amount)} a trip`,
+              ...run.manifest.map((l) => `${materialName(l.material)}: ${fmt.mass(l.amount)} a trip`),
               `${whereabouts({ kind: 'site', site: run.from })} to ${whereabouts({ kind: 'site', site: run.to })}`,
               v.blocked ? warn(v.blocked) : v.trip ? 'On a trip' : 'Handling cargo'
             )}
@@ -193,6 +252,7 @@
           <select
             id="supplySource"
             value={source?.from ?? ''}
+            disabled={manifest.lines.length > 0}
             onchange={(e) => (sourceId = e.currentTarget.value)}
           >
             {#each row.options as o (o.from)}<option value={o.from}>{o.fromName}</option>{/each}
@@ -236,13 +296,45 @@
           <p class="dim">No idle freighter.</p>
         {/if}
       </CardSection>
+      {#if manifest.lines.length}
+        <CardSection label="Manifest">
+          <ul id="supplyManifest" class="manifest">
+            {#each manifest.lines as l, i (l.material)}
+              <li>
+                <PixIcon kind="material" id={l.material} />
+                <span>{materialName(l.material)}</span>
+                <span class="dim">{fmt.mass(l.amount)}</span>
+                <button
+                  class="stop"
+                  data-manifest-drop={l.material}
+                  onclick={() =>
+                    (manifest = { ...manifest, lines: manifest.lines.filter((_, j) => j !== i) })}
+                  ><Icon name="cross" class="xs" /></button
+                >
+              </li>
+            {/each}
+          </ul>
+          <span class="dim" id="supplyHold">{fmt.mass(packed)} of {fmt.mass(cap)} in the hold</span>
+        </CardSection>
+      {/if}
       <div class="row">
         <Field label="Kilograms a trip" bind:value={amount} min={0} max={1e9} width={9} name="supplyAmount" />
-        <button id="supplyStart" disabled={!row || !source || !ship} onclick={start}
-          ><Icon name="rocket" />Start supply run</button
+        <button id="supplyAdd" disabled={!row || !source || !ship || !joins || load <= 0} onclick={addLine}
+          ><Icon name="plus" />Add to manifest</button
+        >
+        <button
+          id="supplyStart"
+          disabled={!ship || (!manifest.lines.length && (!row || !source))}
+          onclick={start}><Icon name="rocket" />Start supply run</button
         >
       </div>
-      {#if ship}<span class="dim">Takes {fmt.mass(load)} a trip in {ship.name}</span>{/if}
+      {#if ship}<span class="dim"
+          >{manifest.lines.length ? `Hold ${fmt.mass(packed)} full; ` : ''}takes {fmt.mass(load)} more in {ship.name}</span
+        >{/if}
+      {#if manifest.lines.length && !joins}<p class="hot" id="supplyOtherSource">
+          This material is not at {whereabouts({ kind: 'site', site: manifest.from })}, where the manifest
+          loads.
+        </p>{/if}
       {#if message}<p class="hot" id="supplyMessage">{message}</p>{/if}
     </Card>
   {:else}
@@ -277,6 +369,22 @@
   .pick select {
     color: var(--text);
     max-width: 100%;
+  }
+  .manifest {
+    margin: 0 0 4px;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .manifest li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .manifest .stop {
+    margin-left: auto;
   }
   .stop {
     display: flex;

@@ -21,12 +21,16 @@
     moveOrder,
     orderLabel,
     planVessel,
+    previewLoad,
+    siteOf,
     removeOrder,
     ships,
     statsOf,
     vesselById,
     type Destination,
+    type AllCargo,
     type Item,
+    type ManifestLine,
     type NewOrder,
     type VesselPlan
   } from '#lib/game/ships/index.ts';
@@ -38,6 +42,7 @@
     FilterChips,
     Icon,
     IconList,
+    PixIcon,
     Tile,
     TileGrid,
     buildingTip,
@@ -46,6 +51,7 @@
     materialName,
     materialTip,
     tipText,
+    tooltip,
     warn,
     type FilterItem
   } from '#lib/ui/index.ts';
@@ -55,7 +61,7 @@
   import TabBody from './TabBody.svelte';
   import { bodyGrouper, orderedGroups } from './bodyGroups.ts';
   import { bodyName, vesselWhere, whereabouts } from './shipsView.ts';
-  import { daysText, kms, propellantIcon, propellantName } from './shipTiles.ts';
+  import { daysText, kms, orderTip, propellantIcon, propellantTip, runText } from './shipTiles.ts';
   import { ui } from './state.svelte.ts';
 
   const vessels = $derived(ships.vessels);
@@ -204,7 +210,11 @@
     ].filter((m) => isMass(m))
   );
 
-  const items = $derived<{ key: string; label: string; item: Item }[]>([
+  type Choice = { key: string; label: string; item: Item | AllCargo };
+  const items = $derived<Choice[]>([
+    ...(orderType === 'unload'
+      ? [{ key: 'all-cargo', label: 'All cargo', item: { kind: 'all-cargo' } as AllCargo }]
+      : []),
     ...PROPELLANT_KINDS.filter((k) => (stats?.capacity[k] ?? 0) > 0 || (vessel?.propellant[k] ?? 0) > 0).map(
       (k) => ({
         key: `propellant:${k}`,
@@ -220,6 +230,23 @@
     }))
   ]);
   const item = $derived(items.find((i) => i.key === itemKey) ?? items[0]);
+  const wholeHold = $derived(item?.item.kind === 'all-cargo');
+  let manifest = $state<ManifestLine[]>([]);
+  const loadSite = $derived.by(() => {
+    const at = vessel ? projectedPlace(vessel) : undefined;
+    return at?.kind === 'site' ? siteOf(at.site) : undefined;
+  });
+  const currentLine = $derived<ManifestLine | undefined>(
+    item && item.item.kind !== 'all-cargo' ? { item: item.item, amount: all ? null : amount } : undefined
+  );
+  const previewLines = $derived(manifest.length ? manifest : currentLine ? [currentLine] : []);
+  const previews = $derived(
+    orderType === 'load' && vessel && loadSite ? previewLoad(loadSite, vessel, previewLines) : []
+  );
+
+  function addLine() {
+    if (currentLine) manifest = [...manifest, { ...currentLine }];
+  }
 
   const orders = $derived(vessel?.orders ?? []);
   const row = $derived(Math.max(0, Math.min(picked, orders.length - 1)));
@@ -235,7 +262,13 @@
     } else if (orderType === 'dock') {
       const id = dockSite || dockSites[0]?.id;
       if (id) o = { type: 'dock', site: id };
-    } else if (item) o = { type: orderType, item: item.item, amount: all ? null : amount };
+    } else if (orderType === 'load') {
+      const lines = manifest.length ? manifest : currentLine ? [currentLine] : [];
+      const [first] = lines;
+      if (lines.length === 1 && first) o = { type: 'load', item: first.item, amount: first.amount };
+      else if (lines.length) o = { type: 'manifest', lines: lines.map((l) => ({ ...l })) };
+      manifest = [];
+    } else if (item) o = { type: 'unload', item: item.item, amount: wholeHold || all ? null : amount };
     if (!o) return;
     addOrder(vessel, o);
     picked = vessel.orders.length - 1;
@@ -314,7 +347,7 @@
     PROPELLANT_KINDS.filter((k) => (vessel?.propellant[k] ?? 0) > 0).map((k) => ({
       icon: propellantIcon(k),
       amount: fmt.mass(vessel?.propellant[k] ?? 0),
-      tip: tipText(propellantName(k), `${fmt.mass(vessel?.propellant[k] ?? 0)} aboard`)
+      tip: propellantTip(k, `${fmt.mass(vessel?.propellant[k] ?? 0)} aboard`)
     }))
   );
   const cargo = $derived(
@@ -327,6 +360,17 @@
       }))
   );
   const mainFuel = $derived(stats?.main ? propellantIcon(stats.main.propellant) : undefined);
+
+  const itemLabel = (l: ManifestLine): string =>
+    l.item.kind === 'crew'
+      ? 'Crew'
+      : l.item.kind === 'cargo'
+        ? material(l.item.id).name
+        : PROPELLANTS[l.item.id].name;
+  const takesText = (l: ManifestLine, n: number): string =>
+    l.item.kind === 'crew' ? `${n} people` : fmt.mass(n);
+  const askedText = (l: ManifestLine): string =>
+    l.item.kind === 'crew' ? `${l.amount} people` : fmt.mass(l.amount ?? 0);
 
   const ORDER_TYPES: FilterItem[] = [
     { id: 'load', label: 'Load' },
@@ -387,7 +431,7 @@
       </CardSection>
       {#if vessel.run}
         <p class="dim" id="runNote">
-          Supply run: {material(vessel.run.item).name} from {whereabouts({
+          Supply run: {runText(vessel.run.manifest)} from {whereabouts({
             kind: 'site',
             site: vessel.run.from
           })}
@@ -404,6 +448,7 @@
                 class="ord"
                 class:on={i === row}
                 aria-pressed={i === row}
+                use:tooltip={orderTip(o)}
                 onclick={() => (picked = i)}><span class="dim">{i + 1}</span>{orderLabel(game, o)}</button
               >
             {/each}
@@ -459,15 +504,22 @@
                 {#each items as i (i.key)}<option value={i.key}>{i.label}</option>{/each}
               </select></label
             >
-            <label class="pick"><input id="orderAll" type="checkbox" bind:checked={all} /> All</label>
-            <Field
-              label="Kilograms"
-              bind:value={amount}
-              width={8}
-              name="orderAmount"
-              disabled={all}
-              max={1e9}
-            />
+            {#if !wholeHold}
+              <label class="pick"><input id="orderAll" type="checkbox" bind:checked={all} /> All</label>
+              <Field
+                label={item?.item.kind === 'crew' ? 'People' : 'Kilograms'}
+                bind:value={amount}
+                width={8}
+                name="orderAmount"
+                disabled={all}
+                max={1e9}
+              />
+            {/if}
+            {#if orderType === 'load'}
+              <button id="manifestAdd" disabled={!currentLine} onclick={addLine}
+                ><Icon name="plus" />Add to manifest</button
+              >
+            {/if}
           {:else if orderType === 'survey'}
             <label class="pick"
               >Group
@@ -504,6 +556,42 @@
           {/if}
           <button id="orderAdd" onclick={add}><Icon name="plus" />Add order</button>
         </div>
+        {#if orderType === 'load'}
+          {#if previewLines.length}
+            <ul id="loadPreview" class="preview">
+              {#each previewLines as line, i (i)}
+                {@const took = previews[i]?.moved ?? 0}
+                {@const short = line.amount !== null && took + 1e-6 < line.amount}
+                <li class:short>
+                  {#if line.item.kind === 'cargo'}
+                    <PixIcon kind="material" id={line.item.id} />
+                  {:else if line.item.kind === 'propellant'}
+                    <PixIcon {...propellantIcon(line.item.id)} tip={propellantTip(line.item.id)} />
+                  {:else}
+                    <Icon name="people" class="sm" />
+                  {/if}
+                  <span>{itemLabel(line)}</span>
+                  {#if loadSite}
+                    <span class="dim"
+                      >takes {takesText(line, took)}{short ? ` of ${askedText(line)}` : ''}</span
+                    >
+                  {/if}
+                  {#if manifest.length}
+                    <button
+                      class="drop"
+                      data-manifest-drop={i}
+                      onclick={() => (manifest = manifest.filter((_, j) => j !== i))}
+                      ><Icon name="cross" class="xs" /></button
+                    >
+                  {/if}
+                </li>
+              {/each}
+            </ul>
+          {/if}
+          {#if !loadSite}<span class="dim" id="loadNoSite"
+              >It is not at a site, so the load cannot be previewed.</span
+            >{/if}
+        {/if}
       </CardSection>
 
       <CardSection label="Trip">
@@ -689,6 +777,29 @@
   .pick select {
     color: var(--text);
     max-width: 220px;
+  }
+  .preview {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text);
+  }
+  .preview li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .preview li.short .dim {
+    color: var(--hot);
+  }
+  .drop {
+    margin: 0 0 0 auto;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
   }
   .orders {
     display: flex;
