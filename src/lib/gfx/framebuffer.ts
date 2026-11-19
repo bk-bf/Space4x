@@ -15,8 +15,9 @@ export type Background = 'space' | 'stars' | 'grid';
 export type SpritePalette = Readonly<Record<string, RGB | undefined>>;
 
 export class FB implements Surface {
-  readonly ctx: CanvasRenderingContext2D;
   readonly d: Uint8ClampedArray;
+  private readonly ctx: CanvasRenderingContext2D;
+  private readonly frame: OffscreenCanvasRenderingContext2D;
   private readonly img: ImageData;
   private readonly vigAt: Uint32Array;
   private readonly vigLut: Uint16Array;
@@ -29,14 +30,19 @@ export class FB implements Surface {
     readonly scale: number,
     vignetteStart = 0.62
   ) {
-    cv.width = w;
-    cv.height = h;
+    const device = scale * (globalThis.devicePixelRatio || 1);
+    cv.width = Math.round(w * device);
+    cv.height = Math.round(h * device);
     cv.style.width = w * scale + 'px';
     cv.style.height = h * scale + 'px';
-    const ctx = cv.getContext('2d');
-    if (!ctx) throw new Error('canvas 2d context unavailable');
+    cv.dataset.scale = String(scale);
+    const ctx = cv.getContext('2d'),
+      frame = new OffscreenCanvas(w, h).getContext('2d');
+    if (!ctx || !frame) throw new Error('canvas 2d context unavailable');
+    ctx.imageSmoothingEnabled = false;
     this.ctx = ctx;
-    this.img = ctx.createImageData(w, h);
+    this.frame = frame;
+    this.img = frame.createImageData(w, h);
     this.d = new Uint8ClampedArray(w * h * 4).fill(255);
     this.bg = this.d;
     const mask = vignetteMask(w, h, vignetteStart),
@@ -114,7 +120,8 @@ export class FB implements Surface {
       o[j + 1] = VIG_LUT[b + 256 + d[j + 1]!]!;
       o[j + 2] = VIG_LUT[b + 512 + d[j + 2]!]!;
     }
-    this.ctx.putImageData(this.img, 0, 0);
+    this.frame.putImageData(this.img, 0, 0);
+    this.ctx.drawImage(this.frame.canvas, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
   }
 
   makeBg(kind: Background): this {

@@ -74,7 +74,7 @@ function checkPanel(
       );
     const dw = R(v).width - R(c).width,
       dh = R(v).height - R(c).height,
-      sc = R(c).width / c.width;
+      sc = Number(c.dataset.scale) || R(c).width / c.width;
     if (dw < -1 || dh < -1 || dw >= sc + 1 || dh >= sc + 1)
       out.push(`canvas: ${name(c)} is ${dw.toFixed(0)}x${dh.toFixed(0)}px smaller than its frame`);
   }
