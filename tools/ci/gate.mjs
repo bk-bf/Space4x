@@ -10,7 +10,8 @@ export const LEG_SCRIPTS = {
   knip: 'knip',
   format: 'format:check',
   unit: 'test',
-  layout: 'test:layout'
+  layout: 'test:layout',
+  tauri: 'check:tauri'
 };
 
 export const planLegs = (scope) =>

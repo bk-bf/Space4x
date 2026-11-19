@@ -4,7 +4,6 @@ import { existsSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const BROWSER_BUILD = 'https://space4x.callmedaddy.dedyn.io/';
 const WORKFLOW = 'promote.yml';
 const BRANCH = 'promote/main';
 const POLL_MS = 60_000;
@@ -138,10 +137,10 @@ try {
     out('--- installing dependencies in the candidate worktree');
     run('pnpm', ['install', '--frozen-lockfile'], worktree);
     out(`\nGreen: ${latest.url}`);
-    out('\nPlaytest first. The build that follows dev is already running at:');
-    out(`  ${BROWSER_BUILD}`);
+    out('\nPlaytest first, in the desktop app. On the machine you play on, in a checkout of dev:');
+    out('  git pull && ./launch.sh');
     out('The candidate (main plus dev) has its own checkout:');
-    out(`  cd ${worktree} && pnpm dev`);
+    out(`  cd ${worktree} && ./launch.sh`);
     out('\nThen, when you are happy:');
     out('  pnpm promote --push');
   } else {

@@ -1,5 +1,5 @@
 {
-  "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"],
+  "legs": ["typecheck", "lint", "knip", "format", "unit", "layout", "tauri"],
   "full": [".github/workflows/promote.yml"],
   "rules": [
     {
@@ -10,15 +10,16 @@
         ".github/issue-schema.json",
         "mockup/**",
         "deploy/**",
-        "install.sh"
+        "launch.sh"
       ],
       "legs": []
     },
     {
+      "paths": [".github/workflows/**", ".github/actions/**", "tools/ci/**"],
+      "legs": ["typecheck", "lint", "knip", "format", "unit", "layout", "tauri"]
+    },
+    {
       "paths": [
-        ".github/workflows/**",
-        ".github/actions/**",
-        "tools/ci/**",
         "tools/remote/**",
         "package.json",
         "pnpm-lock.yaml",
@@ -29,11 +30,33 @@
       ],
       "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"]
     },
-    { "paths": ["tools/promote.mjs", "tools/serve.mjs"], "legs": ["lint", "knip", "format"] },
-    { "paths": ["eslint.config.js"], "legs": ["lint"] },
-    { "paths": ["knip.json"], "legs": ["knip"] },
-    { "paths": [".prettierrc", ".prettierignore"], "legs": ["format"] },
-    { "paths": ["vitest.config.ts"], "legs": ["unit"] },
-    { "paths": ["playwright.config.ts", "static/**"], "legs": ["layout"] }
+    {
+      "paths": ["tools/promote.mjs"],
+      "legs": ["lint", "knip", "format"]
+    },
+    {
+      "paths": ["eslint.config.js"],
+      "legs": ["lint"]
+    },
+    {
+      "paths": ["knip.json"],
+      "legs": ["knip"]
+    },
+    {
+      "paths": [".prettierrc", ".prettierignore"],
+      "legs": ["format"]
+    },
+    {
+      "paths": ["vitest.config.ts"],
+      "legs": ["unit"]
+    },
+    {
+      "paths": ["playwright.config.ts", "static/**"],
+      "legs": ["layout"]
+    },
+    {
+      "paths": ["src-tauri/**"],
+      "legs": ["tauri"]
+    }
   ]
 }
