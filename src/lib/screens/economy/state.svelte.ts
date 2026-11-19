@@ -11,6 +11,7 @@ import { game } from '#lib/game/index.ts';
 import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
 import { resetShips, seedBelt, seedJump, seedTravel, ships } from '#lib/game/ships/index.ts';
 import type { Tab } from '#lib/ui/index.ts';
+import { launchUi } from './launchState.svelte.ts';
 import type { Period } from '#lib/ui/format.ts';
 
 export type TabId =
@@ -117,6 +118,10 @@ export function applyEconomyParams(params: URLSearchParams): void {
     ui.milestone = milestone;
   const vessel = params.get('vessel');
   if (vessel) ui.vessel = vessel;
+  if (params.has('stack'))
+    launchUi.stages = ships.vessels
+      .filter((v) => v.at.kind === 'site' && v.at.site === ui.site && !v.trip)
+      .map((v) => v.id);
 }
 
 export function selectedSite(): Site {

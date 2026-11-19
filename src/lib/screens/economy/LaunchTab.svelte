@@ -5,7 +5,9 @@
   import {
     designOf,
     freePads,
+    cargoRoom,
     launch,
+    payloadCeiling,
     planStack,
     ships,
     vesselById,
@@ -50,6 +52,8 @@
   );
   const stack = $derived({ ...stackOf(), stages: stages.map((v) => v.id) });
   const plan = $derived(stages.length ? planStack(game, site, stack) : undefined);
+  const ceiling = $derived(stages.length ? payloadCeiling(game, site, stack) : 0);
+  const bay = $derived(stages.length ? cargoRoom(stages[stages.length - 1]!) : 0);
   const cargoLines = $derived(Object.entries(launchUi.cargo).filter(([, kg]) => kg > 0));
   const stocked = $derived(
     Object.keys(site.stock)
@@ -279,13 +283,31 @@
               </div>
             </div>
           </CardSection>
-          <CardSection label="Payload and propellant">
-            <div class="flow">
-              <div class="fr">
-                <Icon name="box" class="sm" /><span class="nm">Payload</span><span class="v"
-                  >{fmt.mass(plan.payloadMass)}</span
-                >
+          <CardSection label="Payload, against what the stack can lift">
+            <div id="launchCeiling">
+              <Bar
+                value={ceiling > 0 ? Math.min(1, plan.payloadMass / ceiling) : plan.payloadMass > 0 ? 1 : 0}
+                thick
+                full
+                tone={plan.payloadMass > ceiling ? 'hot' : 'accent'}
+              />
+              <div class="flow">
+                <div class="fr" data-ceiling={Math.round(ceiling)}>
+                  <Icon name="up" class="sm" /><span class="nm">Payload</span><span
+                    class="v {plan.payloadMass > ceiling ? 'hot' : ''}"
+                    >{fmt.mass(plan.payloadMass)} of {fmt.mass(ceiling)}</span
+                  >
+                </div>
+                <div class="fr">
+                  <Icon name="box" class="sm" /><span class="nm">Room in the top stage's bay</span><span
+                    class="v">{fmt.mass(bay)}</span
+                  >
+                </div>
               </div>
+            </div>
+          </CardSection>
+          <CardSection label="Propellant">
+            <div class="flow">
               <div class="fr">
                 <Icon name="check" class="sm" /><span class="nm">Left in orbit</span><span class="v"
                   >{fmt.mass(plan.leftover)}</span

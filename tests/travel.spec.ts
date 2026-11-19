@@ -111,6 +111,14 @@ test.describe('leaving Earth', () => {
     await expect(page.locator('#launchCargo')).toContainText('2.5 t');
     await expect(page.locator('#launchPlan')).toContainText('Thrust to weight');
     await expect(page.locator('#launchReasons')).toHaveCount(0);
+    const ceiling = page.locator('#launchCeiling [data-ceiling]');
+    const lifts = Number(await ceiling.getAttribute('data-ceiling'));
+    expect(lifts).toBeGreaterThan(2_800);
+    await expect(ceiling).toContainText('2.8 t of ');
+    await page.locator('#launchRemove').click();
+    await expect(ceiling).not.toHaveAttribute('data-ceiling', String(lifts));
+    await page.locator('#launchStage button', { hasText: 'Orbiter' }).click();
+    await expect(ceiling).toHaveAttribute('data-ceiling', String(lifts));
     await expect(page.locator('#launchGo')).toBeEnabled();
     await expectCleanLayout(page);
     await page.locator('#launchGo').click();
