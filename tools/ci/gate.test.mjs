@@ -8,6 +8,7 @@ import { BASE_REF, LEG_SCRIPTS, planLegs } from './gate.mjs';
 const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\n').filter(Boolean);
 const ALL = Object.fromEntries(manifest.legs.map((leg) => [leg, true]));
 const NONE = Object.fromEntries(manifest.legs.map((leg) => [leg, false]));
+const WEB = { ...ALL, tauri: false };
 const legsOf = (files) => scopeFor({ present: tracked, files });
 
 test('every tracked file matches a scope rule', () => {
@@ -18,8 +19,12 @@ test('a docs-only change runs no leg', () => {
   assert.deepEqual(legsOf(['README.md', 'AGENTS.md']), NONE);
 });
 
-test('a change under src/ runs every leg', () => {
-  assert.deepEqual(legsOf(['src/lib/game/index.ts']), ALL);
+test('a change under src/ runs every leg but the desktop shell', () => {
+  assert.deepEqual(legsOf(['src/lib/game/index.ts']), WEB);
+});
+
+test('a change under src-tauri/ runs only the desktop shell leg', () => {
+  assert.deepEqual(legsOf(['src-tauri/src/main.rs', 'src-tauri/Cargo.lock']), { ...NONE, tauri: true });
 });
 
 test('a change under tools/ci/ runs every leg, including the new gate', () => {
@@ -34,7 +39,7 @@ test('a config file runs only the leg it configures', () => {
 });
 
 test('a deleted file keeps its rule without being present', () => {
-  assert.deepEqual(scopeFor({ present: tracked, files: ['src/gone.ts'] }), ALL);
+  assert.deepEqual(scopeFor({ present: tracked, files: ['src/gone.ts'] }), WEB);
 });
 
 test('a changed tracked file with no rule fails the scope', () => {
@@ -62,12 +67,13 @@ test('planLegs keeps the CI order and marks skipped legs', () => {
       ['knip', false],
       ['format', true],
       ['unit', false],
-      ['layout', false]
+      ['layout', false],
+      ['tauri', false]
     ]
   );
   assert.deepEqual(
     plan.map((p) => p.leg),
-    ['typecheck', 'lint', 'knip', 'format', 'unit', 'layout']
+    ['typecheck', 'lint', 'knip', 'format', 'unit', 'layout', 'tauri']
   );
 });
 
@@ -87,8 +93,8 @@ test('the promotion workflow runs every leg on purpose and is listed as full', (
   assert.ok(tracked.includes('.github/workflows/promote.yml'));
 });
 
-test('the browser-build files have scope rules', () => {
-  assert.deepEqual(legsOf(['install.sh', 'deploy/update', 'deploy/build']), NONE);
+test('the launch and deploy scripts have scope rules', () => {
+  assert.deepEqual(legsOf(['launch.sh', 'install.sh', 'deploy/update', 'deploy/build']), NONE);
   assert.deepEqual(legsOf(['tools/serve.mjs']), { ...NONE, lint: true, knip: true, format: true });
   assert.deepEqual(legsOf(['tools/promote.mjs']), { ...NONE, lint: true, knip: true, format: true });
 });
