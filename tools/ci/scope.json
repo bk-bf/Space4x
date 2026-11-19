@@ -10,7 +10,6 @@
         ".github/issue-schema.json",
         "mockup/**",
         "deploy/**",
-        "install.sh",
         "launch.sh"
       ],
       "legs": []
@@ -32,7 +31,7 @@
       "legs": ["typecheck", "lint", "knip", "format", "unit", "layout"]
     },
     {
-      "paths": ["tools/promote.mjs", "tools/serve.mjs"],
+      "paths": ["tools/promote.mjs"],
       "legs": ["lint", "knip", "format"]
     },
     {

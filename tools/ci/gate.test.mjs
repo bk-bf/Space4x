@@ -94,7 +94,6 @@ test('the promotion workflow runs every leg on purpose and is listed as full', (
 });
 
 test('the launch and deploy scripts have scope rules', () => {
-  assert.deepEqual(legsOf(['launch.sh', 'install.sh', 'deploy/update', 'deploy/build']), NONE);
-  assert.deepEqual(legsOf(['tools/serve.mjs']), { ...NONE, lint: true, knip: true, format: true });
+  assert.deepEqual(legsOf(['launch.sh', 'deploy/runner/setup.sh']), NONE);
   assert.deepEqual(legsOf(['tools/promote.mjs']), { ...NONE, lint: true, knip: true, format: true });
 });

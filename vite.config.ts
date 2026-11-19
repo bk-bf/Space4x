@@ -7,8 +7,7 @@ const out = process.env.SPACE4X_OUT ?? 'build';
 export default defineConfig({
   plugins: [
     sveltekit({
-      adapter: adapter({ fallback: 'index.html', pages: out, assets: out }),
-      paths: { base: (process.env.SPACE4X_BASE ?? '') as '' | `/${string}` }
+      adapter: adapter({ fallback: 'index.html', pages: out, assets: out })
     })
   ],
   server: {
