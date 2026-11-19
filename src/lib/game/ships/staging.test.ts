@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { economy, homeSite } from '#lib/game/economy/index.ts';
 import { addDesign, freshGame, spawn } from './fixtures.ts';
-import { launch, payloadCeiling, planStack } from './launch.ts';
+import { designCeiling, launch, payloadCeiling, planDesignStack, planStack, reachesOrbit } from './launch.ts';
 import { ships } from './state.svelte.ts';
 import { statsOf } from './model.ts';
 
@@ -92,6 +92,51 @@ describe('staging a two-stage stack modelled on Falcon 9', () => {
     expect(short.ok).toBe(false);
     expect(short.final).toBe(-1);
     expect(short.reasons.join(' ')).toMatch(/km\/s of delta-v/);
+  });
+});
+
+describe('a stack of designs tried before anything is built', () => {
+  it('gives the verdict and figures planStack gives the same designs on full tanks', () => {
+    const g = freshGame();
+    const site = homeSite();
+    const lower = stage1('s1r', 1);
+    const upper = stage2();
+    const a = spawn('s1r');
+    const b = spawn('s2');
+    for (const payload of [0, 10_000, 17_000, 30_000]) {
+      const stack = { stages: [a.id, b.id], payload: { kind: 'none' as const } };
+      const built = planStack(g, site, stack, { extraMass: payload });
+      const tried = planDesignStack(g, [lower, upper], payload);
+      expect(reachesOrbit(tried)).toBe(reachesOrbit(built));
+      expect(tried.dv).toBeCloseTo(built.dv, 6);
+      expect(tried.need).toBeCloseTo(built.need, 6);
+      expect(tried.twr).toBeCloseTo(built.twr, 9);
+      expect(tried.liftoffMass).toBeCloseTo(built.liftoffMass, 6);
+      expect(tried.final).toBe(built.final);
+      expect(tried.stages.map((s) => s.fate)).toEqual(built.stages.map((s) => s.fate));
+      expect(tried.reasons).toEqual(built.reasons.filter((r) => !/short by/.test(r)));
+    }
+    expect(designCeiling(g, [lower, upper])).toBeCloseTo(
+      payloadCeiling(g, site, { stages: [a.id, b.id], payload: { kind: 'none' } }),
+      6
+    );
+  });
+
+  it('refuses a lone upper stage on thrust to weight, as the launch would', () => {
+    const g = freshGame();
+    const upper = stage2();
+    const plan = planDesignStack(g, [upper], 0);
+    expect(plan.ok).toBe(false);
+    expect(plan.reasons.join(' ')).toMatch(/thrust to weight/);
+    expect(designCeiling(g, [upper])).toBe(0);
+  });
+
+  it('counts the same design twice when it is stacked on itself', () => {
+    const g = freshGame();
+    const upper = stage2();
+    const plan = planDesignStack(g, [upper, upper], 0);
+    expect(plan.stages).toHaveLength(2);
+    expect(new Set(plan.stages.map((s) => s.vessel)).size).toBe(2);
   });
 });
 

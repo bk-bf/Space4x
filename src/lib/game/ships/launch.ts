@@ -1,10 +1,23 @@
 import { DAY } from '#lib/game/clock.ts';
+import { statsFor } from '#lib/game/classes.svelte.ts';
 import { economy, standing, type Site } from '#lib/game/economy/index.ts';
-import { G0, MIN_LIFTOFF_TWR, surfaceGravity, surfaceToOrbit } from '#lib/game/flight/index.ts';
+import {
+  G0,
+  MIN_LIFTOFF_TWR,
+  surfaceGravity,
+  surfaceToOrbit,
+  type FlightBody
+} from '#lib/game/flight/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { material } from '#lib/game/data/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { PROPELLANT_KINDS, PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
+import {
+  PROPELLANT_KINDS,
+  PROPELLANTS,
+  type DesignStats,
+  type PropellantKind,
+  type ShipDesign
+} from '#lib/game/shipdesign/index.ts';
 import { cargoMass, designOf, landingRating, statsOf, wetMass } from './model.ts';
 import { ships } from './state.svelte.ts';
 import type { Vessel } from './types.ts';
@@ -79,13 +92,16 @@ const mix = (draw: Amounts, kind: PropellantKind, kg: number): void => {
   for (const [m, share] of Object.entries(PROPELLANTS[kind].mix)) draw[m] = (draw[m] ?? 0) + share * kg;
 };
 
+const fullLoad = (design: ShipDesign, stats: DesignStats, k: PropellantKind): number =>
+  Math.min(design.load[k] ?? 0, stats.capacity[k] ?? 0);
+
 function topUp(v: Vessel, draw: Amounts): Partial<Record<PropellantKind, number>> {
   const d = designOf(v);
   const s = statsOf(v);
   const out: Partial<Record<PropellantKind, number>> = { ...v.propellant };
   if (!d || !s) return out;
   for (const k of PROPELLANT_KINDS) {
-    const target = Math.min(d.load[k] ?? 0, s.capacity[k] ?? 0);
+    const target = fullLoad(d, s, k);
     const more = target - (v.propellant[k] ?? 0);
     if (more > 0) {
       out[k] = target;
@@ -93,6 +109,113 @@ function topUp(v: Vessel, draw: Amounts): Partial<Record<PropellantKind, number>
     }
   }
   return out;
+}
+
+export function fullTanks(design: ShipDesign): Partial<Record<PropellantKind, number>> {
+  const stats = statsFor(design);
+  const out: Partial<Record<PropellantKind, number>> = {};
+  for (const k of PROPELLANT_KINDS) {
+    const kg = fullLoad(design, stats, k);
+    if (kg > 0) out[k] = kg;
+  }
+  return out;
+}
+
+export interface StageInput {
+  id: string;
+  name: string;
+  design: ShipDesign | undefined;
+  stats: DesignStats | undefined;
+  propellant: Partial<Record<PropellantKind, number>>;
+  cargo: number;
+}
+
+type Flight = Omit<StackPlan, 'ok' | 'reasons' | 'payloadMass' | 'draw'>;
+
+function flyStack(body: FlightBody, inputs: readonly StageInput[], cargo: number, above: number): Flight {
+  const rows = inputs.map((r) => {
+    const main = r.stats!.main!;
+    const others = PROPELLANT_KINDS.filter((k) => k !== main.propellant).reduce(
+      (a, k) => a + (r.propellant[k] ?? 0),
+      0
+    );
+    return { r, main, prop: r.propellant[main.propellant] ?? 0, others };
+  });
+  const lastIndex = rows.length - 1;
+  const dryOf = (i: number) => {
+    const row = rows[i]!;
+    return row.r.stats!.dryMass + row.others + row.r.cargo + (i === lastIndex ? cargo : 0);
+  };
+  const aboveOf: number[] = [];
+  let carry = above;
+  for (let i = lastIndex; i >= 0; i--) {
+    aboveOf[i] = carry;
+    carry += dryOf(i) + rows[i]!.prop;
+  }
+  const liftoffMass = carry;
+  const need = surfaceToOrbit(body);
+  const plans: StagePlan[] = [];
+  let cum = 0;
+  let final = -1;
+  let leftover = 0;
+  let burned = 0;
+  for (let i = 0; i <= lastIndex; i++) {
+    const row = rows[i]!;
+    const ve = row.main.isp * G0;
+    const dry = dryOf(i);
+    const m0 = aboveOf[i]! + dry + row.prop;
+    const rating = row.r.design ? landingRating(row.r.design) : 0;
+    const reusable = i < lastIndex && rating >= dry;
+    const reserve = reusable ? row.prop * RETURN_RESERVE : 0;
+    const dvFull = ve * Math.log(m0 / (m0 - row.prop));
+    const base = {
+      vessel: row.r.id,
+      name: row.r.name,
+      dry,
+      propellant: row.prop,
+      mass0: m0,
+      thrust: row.main.thrust * row.main.throttle
+    };
+    if (final < 0 && cum + dvFull >= need - 1e-9) {
+      final = i;
+      const used = m0 * (1 - Math.exp(-(need - cum) / ve));
+      leftover = row.prop - used;
+      burned += used;
+      plans.push({ ...base, fate: 'orbit', reserve: 0, burned: used, dv: need - cum });
+      cum = need;
+      continue;
+    }
+    if (final >= 0) {
+      plans.push({ ...base, fate: 'carried', reserve: 0, burned: 0, dv: 0 });
+      continue;
+    }
+    const dv = ve * Math.log(m0 / (m0 - (row.prop - reserve)));
+    cum += dv;
+    burned += row.prop;
+    plans.push({ ...base, fate: reusable ? 'returns' : 'expended', reserve, burned: row.prop, dv });
+  }
+  const first = rows[0]!.main;
+  const liftoffThrust = (body.atmosphere ? first.thrustSeaLevel : first.thrust) * first.throttle;
+  const twr = liftoffThrust / (liftoffMass * surfaceGravity(body));
+  return { stages: plans, liftoffMass, liftoffThrust, twr, dv: cum, need, final, leftover, burned };
+}
+
+const flightReasons = (f: Flight): string[] => [
+  ...(f.twr < MIN_LIFTOFF_TWR
+    ? [`Lift-off thrust to weight is ${f.twr.toFixed(2)}; ${MIN_LIFTOFF_TWR} is needed.`]
+    : []),
+  ...(f.final < 0
+    ? [
+        `The stack has ${(f.dv / 1000).toFixed(2)} km/s of delta-v; reaching orbit takes ${(f.need / 1000).toFixed(2)} km/s.`
+      ]
+    : [])
+];
+
+export const reachesOrbit = (plan: Pick<StackPlan, 'final' | 'twr'>): boolean =>
+  plan.final >= 0 && plan.twr >= MIN_LIFTOFF_TWR;
+
+function stagesFly(inputs: readonly StageInput[]): string[] {
+  return inputs.filter((r) => !r.stats?.main).map((r) => `${r.name} has no drive.`);
 }
 
 export function planStack(game: Game, site: Site, stack: Stack, probe?: { extraMass: number }): StackPlan {
@@ -133,119 +256,30 @@ export function planStack(game: Game, site: Site, stack: Stack, probe?: { extraM
     payloadMass = mass;
   }
 
-  const rows = stages.map((v) => {
-    const s = statsOf(v);
-    const main = s?.main;
-    const props = topUp(v, draw);
-    const others = PROPELLANT_KINDS.filter((k) => k !== main?.propellant).reduce(
-      (a, k) => a + (props[k] ?? 0),
-      0
-    );
-    return { v, s, main, prop: main ? (props[main.propellant] ?? 0) : 0, others };
-  });
-  for (const r of rows) if (!r.main) reasons.push(`${r.v.name} has no drive.`);
-  if (rows.some((r) => !r.main)) return { ...empty(reasons), reasons };
+  const inputs: StageInput[] = stages.map((v) => ({
+    id: v.id,
+    name: v.name,
+    design: designOf(v),
+    stats: statsOf(v),
+    propellant: topUp(v, draw),
+    cargo: cargoMass(v)
+  }));
+  const noDrive = stagesFly(inputs);
+  if (noDrive.length) return { ...empty([...reasons, ...noDrive]) };
 
-  const lastIndex = rows.length - 1;
-  const dryOf = (i: number) => {
-    const r = rows[i]!;
-    return (
-      r.s!.dryMass +
-      r.others +
-      cargoMass(r.v) +
-      (i === lastIndex && stack.payload.kind === 'cargo' ? payloadMass : 0)
-    );
-  };
+  const cargo = stack.payload.kind === 'cargo' ? payloadMass : 0;
   payloadMass += probe?.extraMass ?? 0;
-  const shipPayload = stack.payload.kind === 'cargo' ? 0 : payloadMass;
-  const above: number[] = [];
-  let carry = shipPayload;
-  for (let i = lastIndex; i >= 0; i--) {
-    above[i] = carry;
-    carry += dryOf(i) + rows[i]!.prop;
-  }
-  const liftoffMass = carry;
-  const need = surfaceToOrbit(body);
-  const plans: StagePlan[] = [];
-  let cum = 0;
-  let final = -1;
-  let leftover = 0;
-  let burned = 0;
-  for (let i = 0; i <= lastIndex; i++) {
-    const r = rows[i]!;
-    const ve = r.main!.isp * G0;
-    const dry = dryOf(i);
-    const m0 = above[i]! + dry + r.prop;
-    const rating = landingRating(designOf(r.v)!);
-    const reusable = i < lastIndex && rating >= dry;
-    const reserve = reusable ? r.prop * RETURN_RESERVE : 0;
-    const dvFull = ve * Math.log(m0 / (m0 - r.prop));
-    const base = {
-      vessel: r.v.id,
-      name: r.v.name,
-      dry,
-      propellant: r.prop,
-      mass0: m0,
-      thrust: r.main!.thrust * r.main!.throttle
-    };
-    if (final < 0 && cum + dvFull >= need - 1e-9) {
-      final = i;
-      const used = m0 * (1 - Math.exp(-(need - cum) / ve));
-      leftover = r.prop - used;
-      burned += used;
-      plans.push({ ...base, fate: 'orbit', reserve: 0, burned: used, dv: need - cum });
-      cum = need;
-      continue;
-    }
-    if (final >= 0) {
-      plans.push({ ...base, fate: 'carried', reserve: 0, burned: 0, dv: 0 });
-      continue;
-    }
-    const dv = ve * Math.log(m0 / (m0 - (r.prop - reserve)));
-    cum += dv;
-    burned += r.prop;
-    plans.push({ ...base, fate: reusable ? 'returns' : 'expended', reserve, burned: r.prop, dv });
-  }
-
-  const first = rows[0]!;
-  const g = surfaceGravity(body);
-  const liftoffThrust =
-    (body.atmosphere ? first.main!.thrustSeaLevel : first.main!.thrust) * first.main!.throttle;
-  const twr = liftoffThrust / (liftoffMass * g);
-  if (twr < MIN_LIFTOFF_TWR)
-    reasons.push(`Lift-off thrust to weight is ${twr.toFixed(2)}; ${MIN_LIFTOFF_TWR} is needed.`);
-  if (final < 0)
-    reasons.push(
-      `The stack has ${(cum / 1000).toFixed(2)} km/s of delta-v; reaching orbit takes ${(need / 1000).toFixed(2)} km/s.`
-    );
+  const flight = flyStack(body, inputs, cargo, payloadMass - cargo);
+  reasons.push(...flightReasons(flight));
   for (const [m, kg] of checkStock ? Object.entries(draw) : []) {
     const have = site.stock[m] ?? 0;
     if (have + 1e-6 < kg)
       reasons.push(`${material(m).name} is short by ${Math.ceil(kg - have).toLocaleString('en-US')} kg.`);
   }
-  return {
-    ok: reasons.length === 0,
-    reasons,
-    stages: plans,
-    payloadMass,
-    liftoffMass,
-    liftoffThrust,
-    twr,
-    dv: cum,
-    need,
-    final,
-    leftover,
-    draw,
-    burned
-  };
+  return { ...flight, ok: reasons.length === 0, reasons, payloadMass, draw };
 }
 
-export function payloadCeiling(game: Game, site: Site, stack: Stack, limit = 500_000): number {
-  const none: Stack = { ...stack, payload: { kind: 'none' } };
-  const reaches = (kg: number) => {
-    const plan = planStack(game, site, none, { extraMass: kg });
-    return plan.final >= 0 && plan.twr >= MIN_LIFTOFF_TWR;
-  };
+function ceilingOf(reaches: (kg: number) => boolean, limit: number): number {
   if (!reaches(0)) return 0;
   let lo = 0;
   let hi = limit;
@@ -256,6 +290,48 @@ export function payloadCeiling(game: Game, site: Site, stack: Stack, limit = 500
     else hi = mid;
   }
   return lo;
+}
+
+export const CEILING_LIMIT = 500_000;
+
+export function payloadCeiling(game: Game, site: Site, stack: Stack, limit = CEILING_LIMIT): number {
+  const none: Stack = { ...stack, payload: { kind: 'none' } };
+  return ceilingOf((kg) => reachesOrbit(planStack(game, site, none, { extraMass: kg })), limit);
+}
+
+export const LAUNCH_BODY = 'earth';
+
+export function planDesignStack(
+  game: Game,
+  designs: readonly ShipDesign[],
+  payload: number,
+  worldBody = LAUNCH_BODY
+): StackPlan {
+  if (designs.length === 0) return empty(['Add a first stage.']);
+  const body = flightBody(game, worldBody);
+  if (!body) return empty(['Launches start from a surface site.']);
+  const inputs: StageInput[] = designs.map((d, i) => ({
+    id: `${i}:${d.id}`,
+    name: d.name,
+    design: d,
+    stats: statsFor(d),
+    propellant: fullTanks(d),
+    cargo: 0
+  }));
+  const noDrive = stagesFly(inputs);
+  if (noDrive.length) return empty(noDrive);
+  const flight = flyStack(body, inputs, 0, payload);
+  const reasons = flightReasons(flight);
+  return { ...flight, ok: reasons.length === 0, reasons, payloadMass: payload, draw: {} };
+}
+
+export function designCeiling(
+  game: Game,
+  designs: readonly ShipDesign[],
+  worldBody = LAUNCH_BODY,
+  limit = CEILING_LIMIT
+): number {
+  return ceilingOf((kg) => reachesOrbit(planDesignStack(game, designs, kg, worldBody)), limit);
 }
 
 export function launch(game: Game, site: Site, stack: Stack): StackPlan {
@@ -274,7 +350,7 @@ export function launch(game: Game, site: Site, stack: Stack): StackPlan {
     const s = statsOf(v);
     if (!d || !s) continue;
     for (const k of PROPELLANT_KINDS) {
-      const target = Math.min(d.load[k] ?? 0, s.capacity[k] ?? 0);
+      const target = fullLoad(d, s, k);
       if (target > (v.propellant[k] ?? 0)) v.propellant[k] = target;
     }
   }

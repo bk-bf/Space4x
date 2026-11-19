@@ -21,6 +21,7 @@
   import Flags from './Flags.svelte';
   import Load from './Load.svelte';
   import Palette from './Palette.svelte';
+  import StackTry from './StackTry.svelte';
   import Strip from './Strip.svelte';
 
   const EMPTY = newDesign('');
@@ -119,6 +120,8 @@
       </div>
       <h3>Propellant and payload</h3>
       <Load />
+      <h3>Launch stack</h3>
+      <StackTry />
       <h3>Design</h3>
       <Flags />
       <h3>Build cost</h3>
