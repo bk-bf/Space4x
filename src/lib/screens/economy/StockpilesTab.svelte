@@ -28,7 +28,9 @@
   const flows = $derived(flowsOf(site));
   const period = $derived(PERIODS[ui.period]);
 
-  const listed = $derived(materials.filter((m) => ui.showEmpty || !stockView(site, flows, m.id).empty));
+  const listed = $derived(
+    materials.filter((m) => ui.showEmpty || m.id === ui.material || !stockView(site, flows, m.id).empty)
+  );
   const categories = $derived(
     CATEGORY_ORDER.map((c) => ({
       id: c,

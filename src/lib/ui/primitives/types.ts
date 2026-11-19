@@ -14,7 +14,10 @@ export interface IconItem {
   amount?: string;
   need?: string;
   ok?: boolean;
+  note?: string;
+  noteTone?: 'hot' | 'cool' | 'dim';
   tip?: Tip;
+  onpick?: () => void;
 }
 
 export interface FilterItem {

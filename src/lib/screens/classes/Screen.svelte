@@ -127,14 +127,16 @@
       {:else}
         <span class="dim">Empty.</span>
       {/if}
-      <h3>More figures</h3>
-      <div class="figures">
-        {#each secondary as f (f.key)}
-          <div data-stat={f.key}>
-            <Stat dense icon={f.icon} value={f.value} label={f.label} warn={f.warn} tip={f.tip} />
-          </div>
-        {/each}
-      </div>
+      {#if design}
+        <h3>More figures</h3>
+        <div class="figures">
+          {#each secondary as f (f.key)}
+            <div data-stat={f.key}>
+              <Stat dense icon={f.icon} value={f.value} label={f.label} warn={f.warn} tip={f.tip} />
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
   </Panel>
 </ScreenGrid>

@@ -28,23 +28,29 @@
     materialName,
     materialTip,
     tipText,
+    tooltip,
     warn,
     type Chip,
     type IconItem
   } from '#lib/ui/index.ts';
-  import { checkFor, milestoneIcon, openedBy, openedCount, statusOf } from './programme.ts';
+  import { go } from './go.ts';
+  import { liveWorld, stepFor, waysToMake } from './next.ts';
+  import { checkFor, milestoneIcon, openedBy, openedCount, statusOf, type BillRow } from './programme.ts';
   import { research } from './research.svelte.ts';
 
   const site = $derived(homeSite());
+  const flows = $derived(flowsOf(site));
+  const world = $derived(liveWorld(economy, site, flowsOf));
   const m = $derived(milestone(research.selected));
   const status = $derived(statusOf(economy, site, m));
   const running = $derived(runningProgramme(economy, m.number));
-  const check = $derived(checkFor(economy, site, m));
+  const check = $derived(checkFor(economy, site, m, flows));
   const missing = $derived(missingFor(economy, site, m));
+  const step = $derived(missing[0] ? stepFor(world, m, missing[0]) : undefined);
   const opened = $derived(openedBy(m.number));
   const opens = $derived(openedCount(opened));
   const compute = $derived(programmeCompute(m));
-  const supply = $derived(flowsOf(site).compute.supply);
+  const supply = $derived(flows.compute.supply);
   const days = $derived(programmeDays(m));
 
   const STATUS_LABEL = {
@@ -74,17 +80,37 @@
     }
   ]);
 
+  const eta = (r: BillRow): string => {
+    if (r.ok) return 'in store';
+    if (r.days !== undefined && Number.isFinite(r.days)) return fmt.days(r.days);
+    return (flows.produced[r.id] ?? 0) > 0 ? 'no gain' : 'not made';
+  };
+
+  const makers = (id: string): string => {
+    const names = [...new Set(waysToMake(world, site, id).map((w) => buildingName(w.building)))];
+    return names.length ? `Made by ${names.join(', ')}` : 'Nothing open makes it at home';
+  };
+
   const billItems = $derived<IconItem[]>(
     check.bill.map((r) => ({
       icon: { kind: 'material', id: r.id },
       amount: fmt.amount(r.have, material(r.id).unit),
       need: fmt.amount(r.need, material(r.id).unit),
       ok: r.ok,
+      note: eta(r),
+      noteTone: r.ok ? 'cool' : Number.isFinite(r.days ?? Infinity) ? 'dim' : 'hot',
       tip: materialTip(
         r.id,
         `Need ${fmt.amount(r.need, material(r.id).unit)}, have ${fmt.amount(r.have, material(r.id).unit)}`,
-        r.ok ? '' : warn(`${materialName(r.id)} short`)
-      )
+        r.ok
+          ? ''
+          : Number.isFinite(r.days ?? Infinity)
+            ? `Met in ${fmt.days(r.days ?? 0)} at the current rate`
+            : warn(`${materialName(r.id)} short and not gaining`),
+        dim(makers(r.id)),
+        dim('Click to open its stockpile card')
+      ),
+      onpick: () => go({ kind: 'stockpiles', site: site.id, material: r.id })
     }))
   );
 
@@ -150,10 +176,20 @@
       {/if}
     {/if}
   </div>
+  {#if step && status !== 'running' && status !== 'done'}
+    <button
+      id="programmeNext"
+      class="next"
+      data-place={step.place.kind}
+      onclick={() => go(step.place)}
+      use:tooltip={tipText(reason, dim('Opens the place where it is done'))}
+      ><Icon name="arrowR" class="sm" /><span>{step.text}</span></button
+    >
+  {/if}
 
   <CardSection label="Bill, have / need">
     {#if billItems.length}
-      <IconList items={billItems} variant="have" />
+      <div id="programmeBill"><IconList items={billItems} variant="have" /></div>
     {:else}
       <span class="dim">no materials</span>
     {/if}
@@ -169,9 +205,21 @@
       <div class="sites" id="siteNeeds">
         {#each check.sites as s (s.label)}
           <div class="site" class:short={!s.ok} data-site-need={s.ok ? 'met' : 'missing'}>
-            <Icon name={s.ok ? 'check' : 'cross'} class="sm" />
-            <span class="label">{s.label}</span>
-            {#if s.progress !== undefined && !s.ok}<span data-progress>{fmt.pct(s.progress)}</span>{/if}
+            <div class="head">
+              <Icon name={s.ok ? 'check' : 'cross'} class="sm" />
+              <span class="label">{s.label}</span>
+              {#if s.progress !== undefined && !s.ok}<span data-progress>{fmt.pct(s.progress)}</span>{/if}
+            </div>
+            {#if !s.ok}
+              <div class="where dim">{s.site ? `Best match: ${s.site}` : 'No site there yet'}</div>
+              <ul class="criteria">
+                {#each s.criteria as c (c.text)}
+                  <li class:ok={c.ok} data-criterion={c.ok ? 'met' : 'missing'}>
+                    <Icon name={c.ok ? 'check' : 'cross'} class="xs" /><span>{c.text}</span>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
           </div>
         {/each}
       </div>
@@ -234,10 +282,20 @@
     gap: 4px;
     margin-top: 6px;
   }
-  .site {
+  .next {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    margin: 4px 0 0;
+    max-width: 100%;
+    color: var(--cool);
+    text-align: left;
+    line-height: 1.05;
+  }
+  .site {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     padding: 3px 6px;
     background: var(--bg);
     box-shadow: 0 0 0 1px var(--line);
@@ -248,9 +306,38 @@
     box-shadow: 0 0 0 1px var(--hot);
     color: var(--hot);
   }
+  .site .head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
   .site .label {
     flex: 1;
     min-width: 0;
+    color: var(--text);
+  }
+  .site .where {
+    font-size: 15px;
+  }
+  .criteria {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 15px;
+  }
+  .criteria li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--hot);
+  }
+  .criteria li.ok {
+    color: var(--cool);
+  }
+  .criteria li span {
     color: var(--text);
   }
   .needs {

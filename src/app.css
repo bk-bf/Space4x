@@ -37,7 +37,7 @@ body {
     18px/1.1 'VT',
     monospace;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 8px;
   padding: 8px;
 }
@@ -1112,6 +1112,25 @@ div.ui-tile {
 }
 .ui-have.short .need {
   color: var(--hot);
+}
+.ui-have.pick {
+  margin: 0;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+}
+.ui-have.pick:hover {
+  background: var(--panel2);
+}
+.ui-have .note {
+  font-size: 14px;
+  color: var(--dim);
+}
+.ui-have .note.hot {
+  color: var(--hot);
+}
+.ui-have .note.cool {
+  color: var(--cool);
 }
 .ui-have.stand {
   width: 56px;

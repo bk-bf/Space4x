@@ -73,6 +73,7 @@ const QUERIES = [
   'screen=research&milestone=29&reached=28',
   'screen=research&rtab=programmes&milestone=6',
   'screen=research&rtab=unlocks&milestone=3',
+  'screen=research&milestone=11&reached=10',
   'screen=classes',
   'screen=classes&new=stage',
   'screen=classes&reached=6&new=crewed',
@@ -89,6 +90,9 @@ const QUERIES = [
 const SHORT_WINDOW: readonly [number, number] = [1280, 720];
 
 const SHORT_WINDOW_QUERIES = [
+  '',
+  'screen=economy&tab=stockpiles',
+  'screen=research&milestone=11&reached=10',
   'screen=research&milestone=17',
   'screen=research&milestone=22&reached=8',
   'screen=research&milestone=29&reached=28',

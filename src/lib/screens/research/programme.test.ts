@@ -42,11 +42,11 @@ describe('the programme card checks what the game checks', () => {
   it('lists each site need with whether it is met', () => {
     const [start, , moon] = states();
     const six = milestones.find((m) => m.number === 6)!;
-    expect(checkFor(start!, start!.sites[0]!, six).sites).toEqual([
+    expect(checkFor(start!, start!.sites[0]!, six).sites).toMatchObject([
       { label: 'Crewed outpost on the Moon', ok: false }
     ]);
-    expect(checkFor(moon!, moon!.sites[0]!, six).sites).toEqual([
-      { label: 'Crewed outpost on the Moon', ok: true }
+    expect(checkFor(moon!, moon!.sites[0]!, six).sites).toMatchObject([
+      { label: 'Crewed outpost on the Moon', ok: true, site: 'Luna outpost' }
     ]);
   });
 
