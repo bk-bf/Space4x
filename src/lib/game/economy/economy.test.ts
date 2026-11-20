@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { milestone, milestones, material } from '#lib/game/data/index.ts';
+import { milestone, milestones, material, reserveOf } from '#lib/game/data/index.ts';
 import { newSite } from './index.ts';
 import {
   advanceEconomy,
@@ -12,6 +12,7 @@ import {
   programmeStatus,
   queueBuilding,
   removeOrder,
+  reserveLeft,
   setOn,
   siteFlows,
   startEconomy,
@@ -448,5 +449,40 @@ describe('milestones as programmes', () => {
     setOn(site, centres.id, true);
     advanceEconomy(eco, DAY);
     expect(eco.running[0]?.progress).toBeGreaterThan(0);
+  });
+});
+
+describe("Earth's reserves", () => {
+  it('draw down by what the mines extract, the same over one step as over many', () => {
+    const one = startEconomy();
+    const many = startEconomy();
+    const rate = siteFlows(one, earthOf(one)).produced.iron ?? 0;
+    advanceEconomy(one, 30 * DAY);
+    for (let i = 0; i < 30; i++) advanceEconomy(many, DAY);
+    close(one.drawn.iron ?? 0, rate * 24 * 30, 1e-6);
+    close(one.drawn.iron ?? 0, many.drawn.iron ?? 0, 1e-9);
+    close(reserveLeft(one, 'earth', 'iron'), (reserveOf('iron')?.content ?? 0) - (one.drawn.iron ?? 0));
+  });
+
+  it('stop a mine at the moment its reserve runs out, and say so', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const mines = groupOf(site, 'extract:iron');
+    const content = reserveOf('iron')?.content ?? 0;
+    const rate = siteFlows(eco, site).produced.iron ?? 0;
+    eco.drawn.iron = content - rate * 36;
+    const log: string[] = [];
+    advanceEconomy(eco, 3 * DAY, (text) => log.push(text));
+    expect(eco.drawn.iron).toBe(content);
+    expect(reserveLeft(eco, 'earth', 'iron')).toBe(0);
+    expect(actorOf(eco, site, mines.id).limit).toEqual({ kind: 'depleted' });
+    expect(siteFlows(eco, site).produced.iron ?? 0).toBe(0);
+    expect(log.filter((t) => t.includes('reserves of Iron'))).toHaveLength(1);
+  });
+
+  it('leave a material without a reserve, and every site off Earth, unlimited', () => {
+    const eco = startEconomy();
+    expect(reserveLeft(eco, 'earth', 'water')).toBe(Infinity);
+    expect(reserveLeft(eco, 'luna', 'iron')).toBe(Infinity);
   });
 });

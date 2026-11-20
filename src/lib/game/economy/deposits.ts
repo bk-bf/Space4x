@@ -1,4 +1,11 @@
-import { atmosphereOf, depletableRecord, depositGrade, region, type Deposit } from '#lib/game/data/index.ts';
+import {
+  atmosphereOf,
+  depletableRecord,
+  depositGrade,
+  finiteContent,
+  region,
+  type Deposit
+} from '#lib/game/data/index.ts';
 import type { Economy, Site } from './types.ts';
 
 export const DEPLETED_EPS = 1;
@@ -28,3 +35,11 @@ export function remainingMass(eco: Economy, worldBody: string): number {
 
 export const isDepleted = (eco: Economy, worldBody: string): boolean =>
   remainingMass(eco, worldBody) <= DEPLETED_EPS;
+
+export function reserveLeft(eco: Economy, worldBody: string, materialId: string): number {
+  const content = finiteContent(worldBody, materialId);
+  return content === undefined ? Infinity : Math.max(0, content - (eco.drawn[materialId] ?? 0));
+}
+
+export const isReserveSpent = (eco: Economy, worldBody: string, materialId: string): boolean =>
+  reserveLeft(eco, worldBody, materialId) <= DEPLETED_EPS;

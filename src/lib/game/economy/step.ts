@@ -1,6 +1,6 @@
 import { WARN_DAYS } from '#lib/game/alerts.ts';
-import { building, depletableRecord, material, milestone } from '#lib/game/data/index.ts';
-import { DEPLETED_EPS, remainingMass } from './deposits.ts';
+import { building, depletableRecord, finiteContent, material, milestone } from '#lib/game/data/index.ts';
+import { DEPLETED_EPS, remainingMass, reserveLeft } from './deposits.ts';
 import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
@@ -30,6 +30,38 @@ function nextEvent(eco: Economy, site: Site, flows: SiteFlows, warnDays: number)
     }
   }
   return t;
+}
+
+function reserveRates(site: Site, flows: SiteFlows): Record<string, number> {
+  const rates: Record<string, number> = {};
+  if (site.place !== 'surface') return rates;
+  for (const a of flows.actors) {
+    if (a.share <= 0) continue;
+    for (const [m, v] of Object.entries(a.extracts))
+      if (finiteContent(site.worldBody, m) !== undefined) rates[m] = (rates[m] ?? 0) + v * a.share;
+  }
+  return rates;
+}
+
+function drawReserves(
+  eco: Economy,
+  site: Site,
+  flows: SiteFlows,
+  hours: number,
+  at: number,
+  log: LogFn
+): void {
+  for (const [m, rate] of Object.entries(reserveRates(site, flows))) {
+    const content = finiteContent(site.worldBody, m) ?? Infinity;
+    const total = Math.min(content, (eco.drawn[m] ?? 0) + rate * hours);
+    const spent = content - total <= DEPLETED_EPS;
+    eco.drawn[m] = spent ? content : total;
+    if (spent)
+      log(`${site.name} has used up its reserves of ${material(m).name}.`, true, at, site.id, {
+        kind: 'shortage',
+        material: m
+      });
+  }
 }
 
 function placeBuilding(eco: Economy, site: Site, o: BuildOrder): void {
@@ -63,6 +95,7 @@ function applySegment(
       });
     }
   }
+  drawReserves(eco, site, flows, hours, at, log);
   eco.ledger.lost += flows.lostMass * hours;
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
@@ -160,6 +193,9 @@ function depletionEvent(eco: Economy, all: SiteState[]): number {
     if (site.place === 'surface' && depletableRecord(site.worldBody) && flows.extractedMass > 0)
       rate[site.worldBody] = (rate[site.worldBody] ?? 0) + flows.extractedMass;
   for (const [id, r] of Object.entries(rate)) t = Math.min(t, remainingMass(eco, id) / r);
+  for (const { site, flows } of all)
+    for (const [m, r] of Object.entries(reserveRates(site, flows)))
+      if (r > 0) t = Math.min(t, reserveLeft(eco, site.worldBody, m) / r);
   return t;
 }
 

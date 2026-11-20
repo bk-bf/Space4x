@@ -93,6 +93,7 @@ export interface Economy {
   delivered: Delivery[];
   mined: Record<string, number>;
   exhausted: string[];
+  drawn: Record<string, number>;
   ledger: Ledger;
 }
 

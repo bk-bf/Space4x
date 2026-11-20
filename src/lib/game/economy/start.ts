@@ -64,6 +64,7 @@ export function startEconomy(): Economy {
     delivered: [],
     mined: {},
     exhausted: [],
+    drawn: {},
     ledger: { extracted: 0, eaten: 0, built: 0, lost: 0, burned: 0 }
   };
   eco.sites.push(startSite(eco, 'earth', 'earth', earthStart));

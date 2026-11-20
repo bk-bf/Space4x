@@ -1,7 +1,7 @@
 import { building, material, milestone } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
-import { gradeAt, isDepleted } from './deposits.ts';
+import { gradeAt, isDepleted, isReserveSpent } from './deposits.ts';
 import { foodIds, isExtraction, isMass, isStockless, POWER, process } from './processes.ts';
 import { programmeCompute } from './programmes.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
@@ -106,7 +106,12 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
   const { grade, missing } = deposit(site, p);
   const none = { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {} };
   if (missing) return { ...none, grade: 0, limit: { kind: 'deposit', id: missing } };
-  if (Object.keys(p.extracts).length && site.place === 'surface' && isDepleted(eco, site.worldBody))
+  const extracted = Object.keys(p.extracts);
+  if (
+    extracted.length &&
+    site.place === 'surface' &&
+    (isDepleted(eco, site.worldBody) || extracted.some((m) => isReserveSpent(eco, site.worldBody, m)))
+  )
     return { ...none, grade: 0, limit: { kind: 'depleted' } };
   const mined = isExtraction(g.process);
   const rich = mined ? grade : 1;
