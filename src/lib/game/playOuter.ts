@@ -3,6 +3,7 @@ import {
   assign,
   economy,
   extractionId,
+  process,
   queueBuilding,
   siteIn,
   standing,
@@ -31,7 +32,7 @@ export const MARIA = 'luna-maria';
 export const JUMP = 'sol-a';
 export const GIANT = 'uranus';
 
-const SEPARATORS = 200;
+const DEUTERIUM_KG_H = 20;
 const DEUTERIUM_CHUNK_KG = 36_000;
 const HAULER_DEUTERIUM_KG = 140_000;
 const HAULER_STEEL_KG = 240_000;
@@ -88,7 +89,8 @@ export class OuterPlayer extends JumpPlayer {
   }
 
   protected separators(): void {
-    this.earthProcess('isotope_separator', 'deuterium_separation', SEPARATORS, 3000);
+    const each = process('deuterium_separation', 'earth').outputs.deuterium ?? 1;
+    this.earthProcess('isotope_separator', 'deuterium_separation', Math.ceil(DEUTERIUM_KG_H / each), 3000);
   }
 
   protected deuteriumAt(kg: number): void {
@@ -285,7 +287,7 @@ export class OuterPlayer extends JumpPlayer {
   protected fusionPlant(): void {
     const earth = this.earth;
     if (earth.groups.some((g) => g.process === 'd_t_fusion_power' && g.count > 0)) return;
-    this.earthProcess('isotope_separator', 'lithium6_separation', 2);
+    this.earthProcess('isotope_separator', 'lithium6_separation', 1);
     this.earthProcess('fusion_plant', 'tritium_breeding', 2);
     this.waitFor(() => (earth.stock.tritium ?? 0) > 1 && (earth.stock.deuterium ?? 0) > 1, 'tritium', 600, 3);
     this.earthProcess('fusion_plant', 'd_t_fusion_power', 1);

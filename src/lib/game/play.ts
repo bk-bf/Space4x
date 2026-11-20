@@ -15,6 +15,7 @@ import {
   assign,
   averageOutput,
   bestFor,
+  BUILD_SLOTS,
   buildingsAt,
   canAccept,
   createProject,
@@ -214,6 +215,21 @@ export class Player {
     return Math.min(average, firm / PEAK_RATIO) >= grid.demand * LEASE_MARGIN;
   }
 
+  protected sparesOutput(o: Lease): boolean {
+    if (!o.process) return true;
+    const f = flowsOf(this.earth);
+    const outputs = Object.entries(process(o.process, this.earth.body).outputs);
+    return outputs.every(([m, per]) => {
+      if (isStockless(m)) return false;
+      const used = (f.consumed[m] ?? 0) + (f.eaten[m] ?? 0);
+      return (f.produced[m] ?? 0) - per * o.count >= used * SPARE;
+    });
+  }
+
+  protected spares(o: Lease): boolean {
+    return plantOf(o.building) ? this.sparesPower(o) : this.sparesOutput(o);
+  }
+
   readonly leases: number[] = [];
   readonly unpaid: number[] = [];
 
@@ -226,7 +242,7 @@ export class Player {
     };
     while (short()) {
       const best = economy.market.offers
-        .filter((o): o is Lease => o.kind === 'lease' && canAccept(economy, o) && this.sparesPower(o))
+        .filter((o): o is Lease => o.kind === 'lease' && canAccept(economy, o) && this.spares(o))
         .sort((a, b) => b.pays - a.pays)[0];
       if (!best || !acceptOffer(economy, best.id)) break;
       touch();
@@ -327,7 +343,7 @@ export class Player {
     const id = this.chosen.get(materialId) ?? ids[0];
     if (!id) return false;
     const b = id.startsWith('extract:')
-      ? (m.sources?.find((s) => s.body === 'earth')?.building ?? 'mine_earth')
+      ? m.sources!.find((s) => s.body === 'earth')!.building
       : recipesProducing(materialId).find((r) => r.id === id)!.building;
     this.chosen.set(materialId, id);
     this.standOnly.delete(b);
@@ -375,9 +391,10 @@ export class Player {
       this.say(`switched ${n} ${building(b).name} to ${proc.name}`);
     } else {
       const queued = site.queue.filter((o) => o.building === b && o.process === id).length;
-      if (want - have - queued > 0) {
-        queueBuilding(economy, site, b, id, want - have - queued);
-        this.say(`queued ${want - have - queued} ${building(b).name} for ${proc.name}`);
+      const n = Math.min(want - have, BUILD_SLOTS) - queued;
+      if (n > 0) {
+        queueBuilding(economy, site, b, id, n);
+        this.say(`queued ${n} ${building(b).name} for ${proc.name}`);
       }
     }
     touch();
