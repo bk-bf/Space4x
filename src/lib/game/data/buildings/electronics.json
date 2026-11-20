@@ -9,7 +9,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "copper": 500, "fused_silica": 200 },
-    "workers": 300
+    "workers": 300,
+    "bp": 2,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/912f864699ee971225dc9365e24baf1f3fdde841/mockup/sketch/js/sketch-model.js#L13-L15",
+    "bpBasis": "The 2 BP #72 gives for a chip fab, from the design sketch, whose two semiconductor fabs this building follows: 2.5 t of electronic silicon a month at 60 MW, or 1.2 t of radiation-hardened ICs a month at 80 MW",
+    "bpEstimated": true
   },
   {
     "id": "solar_cell_fab",
@@ -20,7 +24,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "copper": 200, "fused_silica": 100 },
-    "workers": 20
+    "workers": 20,
+    "bp": 0.53,
+    "bpSource": "https://pv-magazine-usa.com/?p=14620",
+    "bpBasis": "Sized by silicon cells at 1 t an hour, 8,760 t a year, about 4.0 GW a year at the 2.2 g of silicon a watt Fraunhofer ISE gives for 2022 (silicon used, sawing losses included); Mission Solar is building 2 GW a year of cells in Texas for $265M (2025), scaled linearly to $527M",
+    "bpEstimated": true
   },
   {
     "id": "battery_plant",
@@ -31,7 +39,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "copper": 300, "aluminium": 200 },
-    "workers": 20
+    "workers": 20,
+    "bp": 0.21,
+    "bpSource": "https://source.benchmarkminerals.com/article/investment-in-battery-gigafactories-nears-300-billion-since-2019-as-china-extends-battery-dominance",
+    "bpBasis": "Sized by lithium-ion cells at 1 t an hour, 8,760 t a year, 2.1 GWh a year at the 243 Wh/kg of the Panasonic NCR18650B cell; Benchmark Mineral Intelligence gives over $100M a GWh of new cell capacity in North America (2023), so $213M",
+    "bpEstimated": true
   },
   {
     "id": "magnet_works",
@@ -42,7 +54,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "copper": 300, "nickel_superalloy": 100 },
-    "workers": 15
+    "workers": 15,
+    "bp": 0.33,
+    "bpSource": "https://magneticsmag.com/?p=23496",
+    "bpBasis": "Sized by sintered NdFeB magnets at 1 t an hour, 8,760 t a year; Neo Performance Materials built 2,000 t a year in Narva, Estonia, for $75M (2025), scaled linearly to $329M",
+    "bpEstimated": true
   },
   {
     "id": "data_centre",
@@ -54,6 +70,10 @@
     "thin": true,
     "estimated": true,
     "cost": { "machinery": 2000, "rad_hard_ic": 6000 },
-    "workers": 5
+    "workers": 5,
+    "bp": 1.8,
+    "bpSource": "https://irei.com/news/cushman-wakefield-releases-2026-data-center-development-cost-guide-citing-21-rise-in-per-mw-construction-costs/",
+    "bpBasis": "The 1.8 BP #72 gives for a 120 MW data centre, the size of this one, $15M a MW; the Cushman & Wakefield 2026 Data Center Development Cost Guide gives $17.6M a MW all-in for a greenfield site in the United States and Canada, excluding chips and GPUs",
+    "bpEstimated": true
   }
 ]

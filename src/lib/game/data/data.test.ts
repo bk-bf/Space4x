@@ -241,6 +241,48 @@ describe('buildings and components', () => {
     }
   });
 
+  it('cost build points with a source and a basis, except the buildings open on #72', () => {
+    const open = new Set([
+      'mine_earth',
+      'regolith_excavator',
+      'asteroid_miner',
+      'gas_giant_scoop',
+      'atmosphere_skimmer',
+      'life_support_plant',
+      'ranch',
+      'rtg_factory',
+      'isotope_separator',
+      'exotic_matter_facility',
+      'antimatter_facility',
+      'propellant_depot',
+      'orbital_shipyard',
+      'jump_point_stabiliser',
+      'sabatier_plant',
+      'composite_works',
+      'ceramics_works',
+      'regolith_oxygen_plant',
+      'sinter_printer',
+      'asteroid_processor',
+      'metal_refinery'
+    ]);
+    expect(unknown([...open], buildingIds)).toEqual([]);
+    for (const b of buildings) {
+      if (open.has(b.id)) {
+        expect([b.bp, b.bpSource, b.bpBasis, b.bpEstimated], b.id).toEqual([
+          undefined,
+          undefined,
+          undefined,
+          undefined
+        ]);
+        continue;
+      }
+      expect(b.bp, b.id).toBeGreaterThan(0);
+      expect(b.bpSource, b.id).toMatch(/^https?:\/\//);
+      expect(b.bpBasis?.length, b.id).toBeGreaterThan(40);
+      expect([undefined, true], b.id).toContain(b.bpEstimated);
+    }
+  });
+
   it('give every farming building a footprint and every extractor a source to work', () => {
     const grows = (id: string) =>
       recipes.some(

@@ -163,6 +163,10 @@ export interface Building {
   parts?: string[];
   workers: number;
   footprint?: { land?: number; habitat?: number };
+  bp?: number;
+  bpSource?: string;
+  bpBasis?: string;
+  bpEstimated?: boolean;
 }
 
 export type PerformanceBasis = 'flown' | 'ground-tested' | 'design-study';

@@ -8,7 +8,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 4000, "nickel_superalloy": 500, "copper": 300 },
-    "workers": 30
+    "workers": 30,
+    "bp": 42,
+    "bpSource": "https://world-nuclear-news.org/articles/urenco-usa-to-build-new-us-enrichment-plant",
+    "bpBasis": "Sized by HALEU at 100 kg an hour from 4,230 kg of natural uranium, which at 19.75 percent product and 0.25 percent tails is 4,100 SWU an hour, 35.9 million SWU a year; Urenco invested about $5B in its 4.3 million SWU a year plant at Eunice, so $1,160 a SWU a year, scaled linearly to $41.7B, a plant eight times the size of Eunice",
+    "bpEstimated": true
   },
   {
     "id": "fuel_fabrication_plant",
@@ -19,7 +23,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 2500, "nickel_superalloy": 300 },
-    "workers": 20
+    "workers": 20,
+    "bp": 10.6,
+    "bpSource": "https://fuelcycleoptions.inl.gov/Shared%20Documents/Module_D1-1_rev2.docx.pdf",
+    "bpBasis": "Sized by fuel at 1 t an hour, 8,760 t a year; the INL Fuel Cycle Cost Basis (Module D1-1, 2023) gives $629.1M overnight (2017 dollars) for a 520 tU a year oxide fuel plant, scaled linearly to $10.6B",
+    "bpEstimated": true
   },
   {
     "id": "fission_reactor",
@@ -36,7 +44,11 @@
       "boron_carbide": 150,
       "stainless_steel": 1500
     },
-    "workers": 4
+    "workers": 4,
+    "bp": 0.013,
+    "bpSource": "https://gain.inl.gov/content/uploads/4/2024/11/INL-RPT-23-72972-Literature-Review-of-Adv-Reactor-Cost-Estimates.pdf",
+    "bpBasis": "Sized by its 1 MW of electricity; the INL literature review of advanced reactor costs (INL/RPT-23-72972, 2023) gives a medium overnight capital cost of $13,000 a kWe for a microreactor (2019 dollars), so $13M without the fuel",
+    "bpEstimated": true
   },
   {
     "id": "reprocessing_plant",
@@ -46,7 +58,11 @@
     "milestone": 7,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "nickel_superalloy": 400 },
-    "workers": 20
+    "workers": 20,
+    "bp": 136,
+    "bpSource": "https://fuelcycleoptions.inl.gov/Shared%20Documents/2020_Module_F1.pdf",
+    "bpBasis": "Sized by 2,000 kg of uranium an hour, 17,520 t a year; the INL Fuel Cycle Cost Basis (Module F1, 2021) gives $6.2B (2003) for La Hague UP3 at 800 tHM a year, scaled linearly to $136B, a plant 22 times the size of any built",
+    "bpEstimated": true
   },
   {
     "id": "rtg_factory",
@@ -78,7 +94,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "rebco": 300, "lead": 2000, "stainless_steel": 8000, "nickel_superalloy": 1000 },
-    "workers": 20
+    "workers": 20,
+    "bp": 4,
+    "bpSource": "https://aries.pppl.gov/FPA/ARC17/fpn17-28.shtml",
+    "bpBasis": "Sized by its 1 GW of electricity; the 2017 Bechtel cost study for ARPA-E judged that its 150 MWe fusion concepts might scale to $2 to $6 a watt at 1 GWe, and the midpoint, $4 a watt, gives $4B",
+    "bpEstimated": true
   },
   {
     "id": "solar_power_station",
@@ -89,6 +109,10 @@
     "thin": true,
     "estimated": true,
     "cost": { "mj_solar_cell": 5000, "cfrp": 5000, "polyimide": 1000, "asteroidal_steel": 20000 },
-    "workers": 0
+    "workers": 0,
+    "bp": 3.9,
+    "bpSource": "https://www.nasa.gov/wp-content/uploads/2024/01/otps-sbsp-report-final-tagged-approved-1-8-24-tagged-v2.pdf",
+    "bpBasis": "Sized by its 100 MW; the NASA OTPS Space-Based Solar Power report (2024, fiscal 2022 dollars) costs the assembly of its cheaper 2 GW design, the heliostat swarm, at $78.9B, development left out, scaled linearly to $3.9B",
+    "bpEstimated": true
   }
 ]

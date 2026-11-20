@@ -21,7 +21,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "aluminium": 300, "copper": 100 },
-    "workers": 15
+    "workers": 15,
+    "bp": 0.0033,
+    "bpSource": "https://chemengonline.com/linde-to-build-new-asu-for-sail-in-india",
+    "bpBasis": "Sized by its 2.31 t of oxygen an hour, 55 t a day; Linde is building a 1,000 t a day air separation unit at Rourkela for about $60M (2024), scaled linearly to $3.3M",
+    "bpEstimated": true
   },
   {
     "id": "regolith_excavator",
@@ -43,7 +47,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1200, "copper": 150, "ai_models": 1 },
-    "workers": 4
+    "workers": 4,
+    "bp": 10.7,
+    "bpSource": "https://www.osti.gov/servlets/purl/1503160",
+    "bpBasis": "Sized by water ice at 1 t an hour, 8,760 t a year; Kornuta et al. (2019) cost 30 t of lunar mining and processing hardware for 2,450 t of water a year at $100,000 a kg to develop and build, $3B without the launch, scaled linearly to $10.7B; it includes the processing, so it is high for extraction alone",
+    "bpEstimated": true
   },
   {
     "id": "asteroid_miner",

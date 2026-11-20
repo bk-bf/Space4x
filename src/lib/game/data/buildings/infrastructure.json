@@ -30,7 +30,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 10000, "al_li_alloy": 2000, "nickel_superalloy": 500, "cfrp": 500 },
-    "workers": 300
+    "workers": 300,
+    "bp": 0.2,
+    "bpSource": "https://www.nbcnews.com/tech/innovation/amazons-bezos-unveils-rocket-plant-launch-pad-florida-n427696",
+    "bpBasis": "One rocket factory; Blue Origin said in 2015 it would invest more than $200M to build its rocket manufacturing facility beside Kennedy Space Center",
+    "bpEstimated": true
   },
   {
     "id": "launch_site",
@@ -42,7 +46,10 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 5000, "copper": 500 },
-    "workers": 100
+    "workers": 100,
+    "bp": 0.12,
+    "bpSource": "https://www.space.com/31412-virginia-launchpad-private-rocket-launches.html",
+    "bpBasis": "One launch pad; MARS Pad 0A at Wallops, the Antares pad, cost $120M to build"
   },
   {
     "id": "propellant_depot",

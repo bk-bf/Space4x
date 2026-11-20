@@ -9,7 +9,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "machinery": 5000, "rad_hard_ic": 1000 },
-    "workers": 200
+    "workers": 200,
+    "bp": 0.2,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/912f864699ee971225dc9365e24baf1f3fdde841/mockup/sketch/js/sketch-model.js#L14",
+    "bpBasis": "The 0.2 BP the design sketch gives its flight machine shop, which this building follows: 3 t of machinery a month at 30 MW with 200 workers",
+    "bpEstimated": true
   },
   {
     "id": "smelter",
@@ -20,7 +24,11 @@
     "start": true,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "nickel_superalloy": 300, "copper": 100 },
-    "workers": 20
+    "workers": 20,
+    "bp": 0.026,
+    "bpSource": "https://www.aluminum.org/sites/default/files/2025-05/PoweringUpAluminum_WhitePaper_2025.pdf",
+    "bpBasis": "Sized by the aluminium of anorthite electrolysis, 540 kg an hour, 4,730 t a year; the Aluminum Association (2025) gives $5,000 to $6,000 a tonne of capacity for recent primary smelters, and the midpoint gives $26M",
+    "bpEstimated": true
   },
   {
     "id": "alloy_works",
@@ -32,7 +40,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 2500, "copper": 200 },
-    "workers": 20
+    "workers": 20,
+    "bp": 0.0087,
+    "bpSource": "https://nucor.com/news-release/nucor-selects-west-virginia-as-location-for-new-state-of-the-art-sheet-mill-122736",
+    "bpBasis": "Sized by stainless steel at 1 t an hour, 8,760 t a year; Nucor put its West Virginia sheet mill of 3 million short tons, 2.72 Mt, a year at about $2.7B (2022), scaled linearly to $8.7M",
+    "bpEstimated": true
   },
   {
     "id": "electrolysis_plant",
@@ -43,7 +55,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 500, "platinum": 2, "copper": 100 },
-    "workers": 6
+    "workers": 6,
+    "bp": 0.0104,
+    "bpSource": "https://iea.blob.core.windows.net/assets/89c1e382-dc59-46ca-aa47-9f7d41531ab5/GlobalHydrogenReview2024.pdf",
+    "bpBasis": "Sized by its 5,200 kW draw; the IEA Global Hydrogen Review 2024 gives $2,000 a kW for an installed alkaline electrolyser in 2023, equipment, gas treatment, balance of plant and construction included, so $10.4M",
+    "bpEstimated": true
   },
   {
     "id": "cryogenic_liquefaction_plant",
@@ -55,7 +71,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "aluminium": 300, "copper": 150 },
-    "workers": 10
+    "workers": 10,
+    "bp": 0.0093,
+    "bpSource": "https://worldoil.com/news/2025/4/29/woodside-approves-17-5-billion-louisiana-lng-development/",
+    "bpBasis": "Sized by liquid methane at 1 t an hour, 8,760 t a year; Woodside approved Louisiana LNG, 16.5 Mt a year, at $17.5B with its pipeline and reserve (2025), scaled linearly to $9.3M",
+    "bpEstimated": true
   },
   {
     "id": "sabatier_plant",
@@ -78,7 +98,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 2500, "nickel_superalloy": 200, "copper": 100 },
-    "workers": 25
+    "workers": 25,
+    "bp": 0.024,
+    "bpSource": "https://www.sec.gov/Archives/edgar/data/1324404/000132440426000007/cf-20251231.htm",
+    "bpBasis": "Sized by Haber-Bosch ammonia at 1.02 t an hour, 8,940 t a year; CF Industries puts its Blue Point ammonia plant of 1.4 Mt a year at about $3.7B (10-K for 2025, carbon capture included, air separation left out), scaled linearly to $24M",
+    "bpEstimated": true
   },
   {
     "id": "polymer_plant",
@@ -90,7 +114,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 2000, "copper": 100 },
-    "workers": 15
+    "workers": 15,
+    "bp": 0.0097,
+    "bpSource": "https://corporate.exxonmobil.com/news/news-releases/2022/1206_exxonmobil-doubles-polypropylene-production-at-baton-rouge",
+    "bpBasis": "Sized by polymer at 1 t an hour, 8,760 t a year; ExxonMobil invested more than $500M in 450,000 t a year of polypropylene at Baton Rouge (2022), scaled linearly to $9.7M",
+    "bpEstimated": true
   },
   {
     "id": "fibre_works",
@@ -102,7 +130,11 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 1500, "aluminium": 200, "copper": 100 },
-    "workers": 15
+    "workers": 15,
+    "bp": 0.29,
+    "bpSource": "https://newsroom.bmwgroup.com/global/bmw-group-and-sgl-group-to-triple-production-capacities-at-moses-lake-carbon-fiber-plant",
+    "bpBasis": "Sized by carbon fibre at 1 t an hour, 8,760 t a year; BMW and SGL invested $100M for 3,000 t a year at Moses Lake and $200M more to reach 9,000 t a year (2014), $300M in all, scaled linearly to $292M",
+    "bpEstimated": true
   },
   {
     "id": "composite_works",

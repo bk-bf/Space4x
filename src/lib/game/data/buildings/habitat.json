@@ -30,7 +30,11 @@
     "workers": 200,
     "footprint": {
       "land": 100
-    }
+    },
+    "bp": 0.00024,
+    "bpSource": "https://www.eu-africa-infrastructure-tf.net/attachments/library/aicd-background-paper-9-irrig-invest-summary-en.pdf",
+    "bpBasis": "Sized by wheat at 100 kg an hour, 876 t a year, 241 ha at the FAO world wheat yield of 3.64 t a ha (2024, through Our World in Data); the World Bank AICD background paper (2008) takes $1,000 a ha to develop large-scale irrigation, so $241,000",
+    "bpEstimated": true
   },
   {
     "id": "greenhouse",
@@ -49,7 +53,11 @@
     "workers": 6,
     "footprint": {
       "habitat": 2000
-    }
+    },
+    "bp": 0.081,
+    "bpSource": "https://globalaginvesting.com/aerofarms-announces-42m-investment-build-worlds-largest-vertical-indoor-farm-rural-virginia/",
+    "bpBasis": "Sized by leafy greens at 300 kg an hour, 2,628 t a year; AeroFarms invested $42M in its Danville vertical farm (2019), which grows over 3 million lb, 1,361 t, of leafy greens a year, scaled linearly to $81M",
+    "bpEstimated": true
   },
   {
     "id": "algae_bioreactor",
@@ -66,7 +74,11 @@
     "workers": 2,
     "footprint": {
       "habitat": 300
-    }
+    },
+    "bp": 0.49,
+    "bpSource": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10287645/",
+    "bpBasis": "Sized by spirulina at 1 t an hour, 8,760 t a year; Chalermthai et al. (Scientific Reports, 2023) cost a 20 ha raceway plant making about 1,000 t of spirulina powder and 1,200 t of bioplastic a year at $55.7M, scaled linearly by the spirulina to $488M; the bioplastic line makes it high",
+    "bpEstimated": true
   },
   {
     "id": "protein_fermenter",
@@ -82,7 +94,11 @@
     "workers": 3,
     "footprint": {
       "habitat": 200
-    }
+    },
+    "bp": 0.065,
+    "bpSource": "https://www.greenqueen.com.hk/unibio-saudi-arabia-industrial-investment-group-gas-protein-factory/",
+    "bpBasis": "Sized by single-cell protein at 1 t an hour, 8,760 t a year; the Unibio methanotroph protein plant in Saudi Arabia is to make 50,000 t a year for about $373M (2026), scaled linearly to $65M",
+    "bpEstimated": true
   },
   {
     "id": "food_plant",
@@ -99,7 +115,11 @@
     "workers": 10,
     "footprint": {
       "habitat": 500
-    }
+    },
+    "bp": 0.0105,
+    "bpSource": "https://www.foodbusinessmea.com/?p=2118030",
+    "bpBasis": "Sized by rations at 1 t an hour, 8,760 t a year; Almunajem Foods built a 35,000 t a year food factory in Jeddah for $41.88M (2024), scaled linearly to $10.5M",
+    "bpEstimated": true
   },
   {
     "id": "ranch",
