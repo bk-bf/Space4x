@@ -1,27 +1,19 @@
-import type { Payload, Stack } from '#lib/game/ships/index.ts';
+import type { LaunchRequest } from '#lib/game/ships/index.ts';
 
 export const launchUi: {
-  stages: string[];
-  payload: 'none' | 'cargo' | 'ship';
+  ship: string;
+  payload: 'none' | 'cargo';
   material: string;
   amount: number;
   cargo: Record<string, number>;
-  ship: string;
 } = $state({
-  stages: [],
+  ship: '',
   payload: 'none',
   material: 'stainless_steel',
   amount: 1000,
-  cargo: {},
-  ship: ''
+  cargo: {}
 });
 
-export function stackOf(): Stack {
-  const payload: Payload =
-    launchUi.payload === 'cargo'
-      ? { kind: 'cargo', cargo: { ...launchUi.cargo } }
-      : launchUi.payload === 'ship' && launchUi.ship
-        ? { kind: 'ship', ship: launchUi.ship }
-        : { kind: 'none' };
-  return { stages: [...launchUi.stages], payload };
+export function requestOf(ship: string): LaunchRequest {
+  return launchUi.payload === 'cargo' ? { ship, cargo: { ...launchUi.cargo } } : { ship };
 }

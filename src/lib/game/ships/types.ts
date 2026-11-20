@@ -60,6 +60,7 @@ export interface Vessel {
   propellant: Partial<Record<PropellantKind, number>>;
   cargo: Record<string, number>;
   crew: number;
+  boosters: number;
   orders: Order[];
   run: SupplyRun | null;
   progress: number;
@@ -69,9 +70,8 @@ export interface Vessel {
 export interface LaunchRecord {
   at: number;
   site: string;
-  stages: string[];
-  returned: number;
-  lost: number;
+  ship: string;
+  boosters: number;
   payload: number;
   propellant: number;
   perTonne: number;

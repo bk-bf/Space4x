@@ -6,7 +6,7 @@ import type { Game } from '#lib/game/state.svelte.ts';
 import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { ships } from './state.svelte.ts';
 import { flightSystem, hangsInOrbit } from './world.ts';
-import { needsLaunchStack } from './trips.ts';
+import { leavesByLaunch } from './trips.ts';
 import { reentryRating } from './model.ts';
 import { propellantAvailable } from './cargo.ts';
 import { PROPELLANT_KINDS, PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
@@ -115,7 +115,7 @@ export function importCost(
     days: null,
     note: 'No ship can make this trip'
   };
-  const launchSite = needsLaunchStack(game, { kind: 'site', site: from.id });
+  const launchSite = leavesByLaunch(game, { kind: 'site', site: from.id });
   if (launchSite) {
     const last = ships.launches.at(-1);
     const sameBody = to.place === 'orbit' && to.worldBody === from.worldBody;
@@ -123,12 +123,12 @@ export function importCost(
       last && last.perTonne > 0 && sameBody
         ? {
             design: null,
-            designName: 'Launch stack',
+            designName: 'Launch',
             perTonne: last.perTonne,
             days: 0,
-            note: 'The last stack launched with a full load'
+            note: 'The last launch with a full load'
           }
-        : { ...best, note: sameBody ? 'No launch yet' : 'Leaves by launch stack only' };
+        : { ...best, note: sameBody ? 'No launch yet' : 'Leaves by launch only' };
   } else {
     for (const id of freighterDesigns()) {
       const c = leg(game, id, from, to);

@@ -37,22 +37,23 @@ async function design(page: Page, name: string, role: string, parts: [string, st
 }
 
 test.describe('leaving Earth', () => {
-  test('designs a two-stage launcher and a station module, builds them, launches, founds a station and delivers cargo', async ({
+  test('designs ships with boosters, builds them, launches one, founds a station and delivers cargo', async ({
     page
   }) => {
     test.setTimeout(120_000);
     await open(page, 'screen=classes');
-    await design(page, 'Booster', 'launcher', [
-      ['propulsion', 'chemical_engine_methalox', 3],
-      ['structure', 'propellant_tank', 25],
-      ['structure', 'structure_truss', 1],
-      ['structure', 'landing_legs', 1]
+    await design(page, 'Shuttle', 'freighter', [
+      ['propulsion', 'chemical_engine_methalox', 1],
+      ['structure', 'propellant_tank', 3],
+      ['structure', 'cargo_bay', 1],
+      ['propulsion', 'booster', 1]
     ]);
     await design(page, 'Orbiter', 'freighter', [
       ['propulsion', 'chemical_engine_methalox', 1],
       ['structure', 'propellant_tank', 6],
       ['structure', 'structure_truss', 1],
-      ['structure', 'cargo_bay', 2]
+      ['structure', 'cargo_bay', 2],
+      ['propulsion', 'booster', 2]
     ]);
     await expect(page.locator('#classList button')).toHaveCount(2);
 
@@ -69,17 +70,17 @@ test.describe('leaving Earth', () => {
 
     await tab(page, 'yard');
     await expect(page.locator('#yardQueue button')).toHaveCount(0);
-    for (const name of ['Booster', 'Orbiter']) {
+    for (const name of ['Shuttle', 'Orbiter']) {
       await page.locator('#yardDesigns button', { hasText: name }).click();
       await page.locator('#yardAdd').click();
     }
     await expect(page.locator('#yardQueue button')).toHaveCount(2);
     await page.locator('#yardQueue button').first().click();
-    await expect(page.locator('#yardQueue button').first()).toContainText('Booster');
+    await expect(page.locator('#yardQueue button').first()).toContainText('Shuttle');
     await page.locator('#yardDown').click();
     await expect(page.locator('#yardQueue button').first()).toContainText('Orbiter');
     await page.locator('#yardUp').click();
-    await expect(page.locator('#yardQueue button').first()).toContainText('Booster');
+    await expect(page.locator('#yardQueue button').first()).toContainText('Shuttle');
     await page.locator('#yardPause').click();
     await expect(page.locator('#yardPause')).toContainText('Resume');
     await page.locator('#yardPause').click();
@@ -101,10 +102,9 @@ test.describe('leaving Earth', () => {
     await expect(page.locator('#vessels button')).toHaveCount(2);
 
     await tab(page, 'launch');
-    await expect(page.locator('#launchStage button', { hasText: 'Booster' })).toHaveCount(1);
-    await page.locator('#launchStage button', { hasText: 'Booster' }).click();
-    await page.locator('#launchStage button', { hasText: 'Orbiter' }).click();
-    await expect(page.locator('#stages .ui-tile')).toHaveCount(2);
+    await expect(page.locator('#launchShips button')).toHaveCount(2);
+    await page.locator('#launchShips button', { hasText: 'Orbiter' }).click();
+    await expect(page.locator('#launchBoosters')).toContainText('2,');
     await page.locator('#launchPayload [data-filter="cargo"]').click();
     for (const [material, kg] of [
       ['Stainless steel', 1500],
@@ -123,16 +123,16 @@ test.describe('leaving Earth', () => {
     const ceiling = page.locator('#launchCeiling [data-ceiling]');
     const lifts = Number(await ceiling.getAttribute('data-ceiling'));
     expect(lifts).toBeGreaterThan(2_800);
-    await expect(ceiling).toContainText('2.8 t of ');
-    await page.locator('#launchRemove').click();
-    await expect(ceiling).not.toHaveAttribute('data-ceiling', String(lifts));
-    await page.locator('#launchStage button', { hasText: 'Orbiter' }).click();
+    await expect(ceiling).toContainText('2.5 t of 8 t');
+    await page.locator('#launchShips button', { hasText: 'Orbiter' }).click();
+    await expect(page.locator('#launchPlan')).toHaveCount(0);
+    await page.locator('#launchShips button', { hasText: 'Orbiter' }).click();
     await expect(ceiling).toHaveAttribute('data-ceiling', String(lifts));
     await expect(page.locator('#launchGo')).toBeEnabled();
     await expectCleanLayout(page);
     await page.locator('#launchGo').click();
     await expect(page.locator('#launchLog .entry')).toHaveCount(1);
-    await expect(page.locator('#launchLog')).toContainText('1 back, 0 lost');
+    await expect(page.locator('#launchLog')).toContainText('2 boosters dropped');
 
     await tab(page, 'ships');
     const orbiter = page.locator('#vessels button', { hasText: 'Earth orbit' });

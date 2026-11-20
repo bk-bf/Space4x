@@ -8,11 +8,9 @@
     cargoRoom,
     launch,
     payloadCeiling,
-    planStack,
+    planLaunch,
     ships,
-    vesselById,
-    type Fate,
-    type Vessel
+    vesselById
   } from '#lib/game/ships/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
   import {
@@ -23,18 +21,16 @@
     Icon,
     IconList,
     Pill,
-    Tile,
     TileGrid,
     fmt,
     materialName,
-    materialTip,
-    tipText
+    materialTip
   } from '#lib/ui/index.ts';
   import Field from './Field.svelte';
   import ShipArt from './ShipArt.svelte';
   import ShipTile from './ShipTile.svelte';
   import TabBody from './TabBody.svelte';
-  import { launchUi, stackOf } from './launchState.svelte.ts';
+  import { launchUi, requestOf } from './launchState.svelte.ts';
   import { kms } from './shipTiles.ts';
 
   let { site }: { site: Site } = $props();
@@ -43,17 +39,13 @@
   const here = $derived(
     ships.vessels.filter((v) => v.at.kind === 'site' && v.at.site === site.id && !v.trip)
   );
-  const free = $derived(here.filter((v) => !launchUi.stages.includes(v.id)));
-  const stages = $derived(
-    launchUi.stages.flatMap((id) => {
-      const v = vesselById(id);
-      return v && here.includes(v) ? [v] : [];
-    })
-  );
-  const stack = $derived({ ...stackOf(), stages: stages.map((v) => v.id) });
-  const plan = $derived(stages.length ? planStack(game, site, stack) : undefined);
-  const ceiling = $derived(stages.length ? payloadCeiling(game, site, stack) : 0);
-  const bay = $derived(stages.length ? cargoRoom(stages[stages.length - 1]!) : 0);
+  const ship = $derived.by(() => {
+    const v = vesselById(launchUi.ship);
+    return v && here.includes(v) ? v : undefined;
+  });
+  const plan = $derived(ship ? planLaunch(game, site, requestOf(ship.id)) : undefined);
+  const ceiling = $derived(ship ? payloadCeiling(game, site, ship.id) : 0);
+  const bay = $derived(ship ? cargoRoom(ship) : 0);
   const cargoLines = $derived(Object.entries(launchUi.cargo).filter(([, kg]) => kg > 0));
   const stocked = $derived(
     Object.keys(site.stock)
@@ -61,89 +53,39 @@
       .sort((a, b) => material(a).name.localeCompare(material(b).name))
   );
 
-  const FATE: Record<Fate, { text: string; mark: IconName; tone: 'accent' | 'hot' | 'cool' }> = {
-    returns: { text: 'Returns to the pad', mark: 'down', tone: 'cool' },
-    expended: { text: 'Lost', mark: 'flame', tone: 'hot' },
-    orbit: { text: 'Reaches orbit', mark: 'check', tone: 'accent' },
-    carried: { text: 'Carried to orbit', mark: 'up', tone: 'accent' }
-  };
-
   const payloadChips = [
     { id: 'none', label: 'None' },
-    { id: 'cargo', label: 'Cargo', icon: 'box' as IconName },
-    { id: 'ship', label: 'A ship', icon: 'ship' as IconName }
+    { id: 'cargo', label: 'Cargo', icon: 'box' as IconName }
   ];
 
-  function addStage(id: string) {
-    launchUi.stages = [...stages.map((v) => v.id), id];
-  }
-
   function go() {
-    if (!plan?.ok) return;
-    launch(game, site, stack);
-    launchUi.stages = [];
+    if (!plan?.ok || !ship) return;
+    launch(game, site, requestOf(ship.id));
+    launchUi.ship = '';
     launchUi.payload = 'none';
     launchUi.cargo = {};
     touch();
   }
-
-  const stageVessel = (id: string): Vessel | undefined => vesselById(id);
 </script>
 
 {#snippet main()}
   <h3>
-    <Icon name="rocket" class="sm" />Launch stack
+    <Icon name="rocket" class="sm" />Launch
     <small class="dim" id="padCount"
       >{pads > 0 ? `${freePads(site, game.elapsed)} of ${pads} pads free` : 'no launch site'}</small
     >
   </h3>
   {#if pads > 0}
-    {#if stages.length}
-      <div id="stages">
+    <h3><Icon name="ship" class="sm" />Ships at the pad <small class="dim">{here.length}</small></h3>
+    {#if here.length}
+      <div id="launchShips">
         <TileGrid min={120} gap={5}>
-          {#each plan?.stages ?? stages.map( (v) => ({ vessel: v.id, name: v.name, fate: undefined, dv: 0, dry: 0, propellant: 0, mass0: 0 }) ) as s, i (s.vessel)}
-            {@const v = stageVessel(s.vessel)}
-            <Tile
-              variant="q"
-              name={s.name}
-              corner={String(i + 1)}
-              mark={s.fate ? FATE[s.fate].mark : undefined}
-              markTone={s.fate ? FATE[s.fate].tone : 'dim'}
-              value={s.fate ? kms(s.dv) : undefined}
-              note={s.fate ? FATE[s.fate].text : undefined}
-              noteTone={s.fate === 'expended' ? 'hot' : s.fate === 'returns' ? 'cool' : 'dim'}
-              tip={tipText(
-                `Stage ${i + 1}: ${s.name}`,
-                s.fate ? FATE[s.fate].text : '',
-                s.fate && `Dry mass ${fmt.mass(s.dry)}`,
-                s.fate && `Propellant ${fmt.mass(s.propellant)}`,
-                s.fate && `Ignition mass ${fmt.mass(s.mass0)}`,
-                s.fate && `Delta-v ${kms(s.dv)}`
-              )}
-            >
-              {#snippet art()}{#if v}<ShipArt design={designOf(v)} />{/if}{/snippet}
-            </Tile>
-          {/each}
-        </TileGrid>
-      </div>
-    {/if}
-    <div class="row">
-      <button
-        id="launchRemove"
-        disabled={!stages.length}
-        onclick={() => (launchUi.stages = stages.slice(0, -1).map((v) => v.id))}
-        ><Icon name="minus" />Remove top stage</button
-      >
-      <button id="launchClear" disabled={!stages.length} onclick={() => (launchUi.stages = [])}
-        ><Icon name="trash" />Clear</button
-      >
-    </div>
-    <h3><Icon name="ship" class="sm" />Ships at the pad <small class="dim">{free.length}</small></h3>
-    {#if free.length}
-      <div id="launchStage">
-        <TileGrid min={120} gap={5}>
-          {#each free as v (v.id)}
-            <ShipTile vessel={v} onselect={() => addStage(v.id)} />
+          {#each here as v (v.id)}
+            <ShipTile
+              vessel={v}
+              selected={ship?.id === v.id}
+              onselect={() => (launchUi.ship = ship?.id === v.id ? '' : v.id)}
+            />
           {/each}
         </TileGrid>
       </div>
@@ -153,7 +95,7 @@
       <FilterChips
         items={payloadChips}
         value={launchUi.payload}
-        onchange={(id) => (launchUi.payload = id as 'none' | 'cargo' | 'ship')}
+        onchange={(id) => (launchUi.payload = id as 'none' | 'cargo')}
       />
     </div>
     {#if launchUi.payload === 'cargo'}
@@ -195,20 +137,6 @@
           />
         </div>
       {/if}
-    {:else if launchUi.payload === 'ship'}
-      <div id="launchShip">
-        {#if free.length}
-          <TileGrid min={120} gap={5}>
-            {#each free as v (v.id)}
-              <ShipTile
-                vessel={v}
-                selected={launchUi.ship === v.id}
-                onselect={() => (launchUi.ship = v.id)}
-              />
-            {/each}
-          </TileGrid>
-        {/if}
-      </div>
     {/if}
   {/if}
   <h3><Icon name="list" class="sm" />Launches <small class="dim">{ships.launches.length}</small></h3>
@@ -217,10 +145,10 @@
       {#each [...ships.launches].reverse().slice(0, 12) as l, i (i)}
         <div class="entry">
           <Pill icon="clock" text={formatEventTime(l.at, game.time)} />
-          <span class="stages">{l.stages.join(' + ')}</span>
+          <span class="stages">{l.ship}</span>
           <Pill icon="box" text={fmt.mass(l.payload)} tip="Payload" />
           <Pill icon="flame" text={fmt.mass(l.propellant)} tip="Propellant" />
-          <span class="dim">{l.returned} back, {l.lost} lost</span>
+          <span class="dim">{l.boosters} {l.boosters === 1 ? 'booster' : 'boosters'} dropped</span>
         </div>
       {/each}
     </div>
@@ -229,24 +157,32 @@
 
 {#snippet side()}
   {#if pads > 0}
-    <Card
-      title="Launch plan"
-      subtitle={plan ? `${stages.length} ${stages.length === 1 ? 'stage' : 'stages'}` : 'no stack yet'}
-    >
-      {#snippet art()}{#if stages[0]}<ShipArt design={designOf(stages[0])} size="card" />{/if}{/snippet}
+    <Card title="Launch plan" subtitle={ship ? ship.name : 'no ship'}>
+      {#snippet art()}{#if ship}<ShipArt design={designOf(ship)} size="card" />{/if}{/snippet}
       {#if plan}
         <div id="launchPlan">
           <CardSection label="Delta-v, against what orbit needs">
             <Bar
-              value={plan.need > 0 ? plan.dv / plan.need : 0}
+              value={plan.need > 0 ? plan.deltaV / plan.need : 0}
               thick
               full
-              tone={plan.dv >= plan.need ? 'cool' : 'hot'}
+              tone={plan.deltaV >= plan.need ? 'cool' : 'hot'}
             />
             <div class="flow">
               <div class="fr">
                 <Icon name="rocket" class="sm" /><span class="nm">Delta-v</span><span
-                  class="v {plan.dv >= plan.need ? '' : 'hot'}">{kms(plan.dv)} of {kms(plan.need)}</span
+                  class="v {plan.deltaV >= plan.need ? '' : 'hot'}"
+                  >{kms(plan.deltaV)} of {kms(plan.need)}</span
+                >
+              </div>
+              <div class="fr">
+                <Icon name="up" class="sm" /><span class="nm">Boosters</span><span class="v"
+                  >{kms(plan.boosterDv)}</span
+                >
+              </div>
+              <div class="fr">
+                <Icon name="flame" class="sm" /><span class="nm">Own drive</span><span class="v"
+                  >{kms(plan.shipDv)}</span
                 >
               </div>
             </div>
@@ -265,12 +201,17 @@
               </div>
               <div class="fr">
                 <Icon name="gear" class="sm" /><span class="nm">Thrust to weight</span><span class="v"
-                  >{plan.twr.toFixed(2)}, first stage only</span
+                  >{plan.twr.toFixed(2)}</span
+                >
+              </div>
+              <div class="fr" id="launchBoosters">
+                <Icon name="down" class="sm" /><span class="nm">Boosters dropped</span><span class="v"
+                  >{plan.boosters}, {fmt.mass(plan.boosterMass)}</span
                 >
               </div>
             </div>
           </CardSection>
-          <CardSection label="Payload, against what the stack can lift">
+          <CardSection label="Payload, against what the ship can lift">
             <div id="launchCeiling">
               <Bar
                 value={ceiling > 0 ? Math.min(1, plan.payloadMass / ceiling) : plan.payloadMass > 0 ? 1 : 0}
@@ -286,8 +227,8 @@
                   >
                 </div>
                 <div class="fr">
-                  <Icon name="box" class="sm" /><span class="nm">Room in the top stage's bay</span><span
-                    class="v">{fmt.mass(bay)}</span
+                  <Icon name="box" class="sm" /><span class="nm">Room in the bay</span><span class="v"
+                    >{fmt.mass(bay)}</span
                   >
                 </div>
               </div>

@@ -21,7 +21,7 @@ import type { Game } from './state.svelte.ts';
 import { resetSurvey, survey } from './survey.svelte.ts';
 import type { GameEvent } from './types.ts';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 type SavedTrip = Omit<TripOption, 'system'> & { system: number };
 

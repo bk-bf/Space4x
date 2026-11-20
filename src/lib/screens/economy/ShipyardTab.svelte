@@ -20,7 +20,7 @@
   } from '#lib/game/economy/index.ts';
   import { formatDay } from '#lib/game/clock.ts';
   import { game, shipClasses, statsFor } from '#lib/game/index.ts';
-  import { YARDS, yardName, type Yard } from '#lib/game/shipdesign/index.ts';
+  import { YARDS, builtMass, yardName, type Yard } from '#lib/game/shipdesign/index.ts';
   import { orderShips } from '#lib/game/ships/index.ts';
   import {
     Bar,
@@ -56,7 +56,7 @@
   const sel = $derived(selIndex >= 0 ? site.yard[selIndex] : undefined);
   const stats = $derived(design ? statsFor(design) : undefined);
   const yards = $derived(design ? standing(site, design.yard) : 0);
-  const need = $derived(stats ? shipyardsFor(stats.dryMass) : 0);
+  const need = $derived(stats ? shipyardsFor(builtMass(stats)) : 0);
   const pools = $derived(
     YARDS.filter((y) => hasYard(site, y) || site.yard.some((o) => o.yard === y)).map((y) => pool(y))
   );
@@ -243,7 +243,8 @@
               d.name,
               `${role(d.role)}, built at the ${yardName(d.yard).toLowerCase()}`,
               dim(`Dry mass ${fmt.mass(s.dryMass)}`),
-              `Needs ${shipyardsFor(s.dryMass)} ${yardPlural(d.yard)}`,
+              s.boosters && dim(`${s.boosters.count} boosters, ${fmt.mass(s.boosters.mass)}`),
+              `Needs ${shipyardsFor(builtMass(s))} ${yardPlural(d.yard)}`,
               s.main ? `Delta-v ${kms(s.main.deltaV)} at design load` : warn('No drive')
             )}
             onselect={() => (choice = d.id)}

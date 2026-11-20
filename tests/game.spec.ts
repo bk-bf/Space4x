@@ -77,33 +77,33 @@ async function designStage(page: Page, name: string, parts: [string, number][]) 
   }
 }
 
-test('a two-stage stack is tried in the designer and a site is planned before anything is built', async ({
+async function setPart(page: Page, id: string, n: number) {
+  const input = page.locator(`[data-count="${id}"]`);
+  await input.fill(String(n));
+  await input.press('Tab');
+}
+
+test('boosters lift a design to orbit in the designer and a site is planned before anything is built', async ({
   page
 }) => {
   await open(page, 'screen=classes');
-  await designStage(page, 'Booster', [
-    ['chemical_engine_methalox', 3],
-    ['propellant_tank', 25],
-    ['structure_truss', 1],
-    ['landing_legs', 1]
-  ]);
   await designStage(page, 'Orbiter', [
     ['chemical_engine_methalox', 1],
     ['propellant_tank', 6],
     ['structure_truss', 1],
     ['cargo_bay', 2]
   ]);
-  await expect(page.locator('#stackStages [data-stage]')).toHaveCount(1);
-  await page.locator('#stackAdd').selectOption({ label: 'Booster' });
-  await expect(page.locator('#stackStages [data-stage]')).toHaveCount(2);
-  await expect(page.locator('#stackStages [data-stage="1"]')).toContainText('Booster');
-  await expect(page.locator('#stackStages [data-stage="2"]')).toContainText('reaches orbit');
-  await expect(page.locator('#stackVerdict')).toContainText('Reaches orbit');
-  const ceiling = Number(await page.locator('#stackCeiling').getAttribute('data-ceiling'));
-  expect(ceiling).toBeGreaterThan(1000);
-  await page.locator('#stackPayload').fill(String(Math.ceil(ceiling / 1000) + 1));
-  await page.locator('#stackPayload').press('Tab');
-  await expect(page.locator('#stackVerdict')).toContainText('km/s of delta-v');
+  await expect(page.locator('#climb [data-climb="boosters"]')).toContainText('0,');
+  await expect(page.locator('#climbVerdict')).toContainText('Delta-v to orbit');
+  await page.locator('[data-part="booster"] button').click();
+  await setPart(page, 'booster', 2);
+  await expect(page.locator('#climb [data-climb="boosters"]')).toContainText('2,');
+  await expect(page.locator('#climbVerdict')).toContainText('Reaches orbit');
+  await expect(page.locator('#climbCeiling')).toHaveAttribute('data-ceiling', '8000');
+  await setPart(page, 'booster', 1);
+  await expect(page.locator('#climbVerdict')).toContainText('thrust to weight');
+  await setPart(page, 'booster', 2);
+  await expect(page.locator('#climbVerdict')).toContainText('Reaches orbit');
   await expect(page.locator('[data-screen="classes"] [data-act="lock"]')).toBeEnabled();
 
   await page.locator('[data-nav="economy"]').click();

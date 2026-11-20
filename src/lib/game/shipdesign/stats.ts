@@ -4,7 +4,7 @@ import { earth, mars, moon } from '#lib/game/flight/reference.ts';
 import { surfaceGravity } from '#lib/game/flight/wells.ts';
 import type { FlightBody } from '#lib/game/flight/types.ts';
 import { component, isBooster, isEngine, massOf } from './catalogue.ts';
-import { boostersOf, climbFrom, type Climb } from './climb.ts';
+import { boostersOf, climbDrive, climbFrom, type Climb } from './climb.ts';
 import {
   isPropellant,
   massIn,
@@ -233,7 +233,7 @@ export function designStats(design: ShipDesign, unlocked: Unlocked = () => true)
   for (const k of PROPELLANT_KINDS) addTo(propellantCost, scale(PROPELLANTS[k].mix, carried[k] ?? 0));
 
   const main = loaded.mass > 0 ? mainLoaded : undefined;
-  const climb = climbWith({ dryMass, propellant: carried, main, boosters }, payloadCapacity);
+  const climb = climbWith({ dryMass, propellant: carried, drives, boosters }, payloadCapacity);
   const base = {
     lines,
     dryMass,
@@ -276,13 +276,14 @@ export function designStats(design: ShipDesign, unlocked: Unlocked = () => true)
 type Base = Omit<DesignStats, 'issues' | 'errors' | 'warnings'>;
 
 export function climbWith(
-  s: Pick<DesignStats, 'dryMass' | 'propellant' | 'main' | 'boosters'>,
+  s: Pick<DesignStats, 'dryMass' | 'propellant' | 'drives' | 'boosters'>,
   payload: number
 ): Climb {
-  const kind = s.main?.propellant;
+  const drive = climbDrive(s.drives, (k) => s.propellant[k] ?? 0);
+  const kind = drive?.propellant;
   const load = kind ? (s.propellant[kind] ?? 0) : 0;
   const others = PROPELLANT_KINDS.filter((k) => k !== kind).reduce((t, k) => t + (s.propellant[k] ?? 0), 0);
-  return climbFrom(earth, s.boosters, { dry: s.dryMass + others + payload, propellant: load, drive: s.main });
+  return climbFrom(earth, s.boosters, { dry: s.dryMass + others + payload, propellant: load, drive });
 }
 
 function issuesOf(
@@ -365,7 +366,7 @@ function issuesOf(
   else {
     const body = YARD_BODY[design.yard];
     const climb = s.climb;
-    if (body && (s.main || s.boosters)) {
+    if (body && (s.drives.length || s.boosters)) {
       if (climb.twr < MIN_LIFTOFF_TWR)
         warn(
           'no-liftoff',

@@ -37,6 +37,9 @@ export function boostersOf(items: readonly { c: Component; count: number }[]): B
   };
 }
 
+export const builtMass = (s: { dryMass: number; boosters: Boosters | undefined }): number =>
+  s.dryMass + (s.boosters?.mass ?? 0);
+
 export const withBoosters = (b: Boosters, count: number): Boosters | undefined =>
   count <= 0
     ? undefined
@@ -48,6 +51,14 @@ export const withBoosters = (b: Boosters, count: number): Boosters | undefined =
         thrust: (b.thrust / b.count) * count,
         thrustSeaLevel: (b.thrustSeaLevel / b.count) * count
       };
+
+export const climbDrive = (
+  drives: readonly Drive[],
+  load: (kind: PropellantKind) => number
+): Drive | undefined =>
+  [...drives]
+    .filter((d) => load(d.propellant) > 0)
+    .sort((a, b) => b.thrust * b.throttle - a.thrust * a.throttle)[0];
 
 export interface ClimbShip {
   dry: number;

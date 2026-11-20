@@ -105,7 +105,6 @@ function applyUi(saved: unknown): void {
 function resetAll(): void {
   resetGame(game);
   resetEconomyScreen();
-  launchUi.stages = [];
   launchUi.ship = '';
   designer.pickedId = null;
   research.selected = 1;

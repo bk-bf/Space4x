@@ -16,13 +16,13 @@
     tooltip
   } from '#lib/ui/index.ts';
   import ClassBar from './ClassBar.svelte';
+  import Climb from './Climb.svelte';
   import { designer } from './designer.svelte.ts';
   import { drawDesign } from './drawDesign.ts';
   import { loadedWith, primaryFigures, secondaryFigures } from './figures.ts';
   import Flags from './Flags.svelte';
   import Load from './Load.svelte';
   import Palette from './Palette.svelte';
-  import StackTry from './StackTry.svelte';
   import Strip from './Strip.svelte';
 
   const EMPTY = newDesign('');
@@ -120,8 +120,10 @@
       </div>
       <h3>Propellant and payload</h3>
       <Load />
-      <h3>Launch stack</h3>
-      <StackTry />
+      {#if design?.yard === 'rocket_factory'}
+        <h3>Launch</h3>
+        <Climb />
+      {/if}
       <h3>Design</h3>
       <Flags />
       <h3>Build cost</h3>

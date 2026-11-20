@@ -1,4 +1,4 @@
-import { classes, statsFor } from './classes.svelte.ts';
+import { classes } from './classes.svelte.ts';
 import { building, material, regionsOf } from './data/index.ts';
 import {
   assign,
@@ -13,20 +13,24 @@ import {
   unlockedTag,
   type Site
 } from './economy/index.ts';
-import { Player } from './play.ts';
-import { lock, newDesign, PROPELLANTS, setCount, setLoad, type ShipDesign } from './shipdesign/index.ts';
+import { Player, withBoosters } from './play.ts';
+import {
+  designStats,
+  lock,
+  newDesign,
+  PROPELLANTS,
+  setCount,
+  setLoad,
+  type ShipDesign
+} from './shipdesign/index.ts';
 import {
   addOrder,
   foundSite,
   importCost,
   installModule,
-  launch,
   orderShips,
-  planStack,
   propellantAvailable,
   ships,
-  type Payload,
-  type Stack,
   type Vessel
 } from './ships/index.ts';
 
@@ -70,8 +74,7 @@ const MOON_PROCESS: Record<string, string> = {
   cryogenic_liquefaction_plant: 'lox_liquefaction'
 };
 
-const BOOSTER = 'path-booster';
-const UPPER = 'path-upper';
+const HEAVY = 'path-heavy';
 const LANDER = 'path-lander';
 const HAULER = 'path-hauler';
 const TANKER = 'path-tanker';
@@ -90,6 +93,8 @@ export interface PathReport {
 
 type Parts = readonly (readonly [string, number])[];
 
+export type Payload = { kind: 'ship'; ship: string } | { kind: 'cargo'; cargo: Record<string, number> };
+
 export class PathPlayer extends Player {
   readonly path: PathReport = { sites: [], lunarLox: 0, fills: [] };
 
@@ -106,10 +111,10 @@ export class PathPlayer extends Player {
     let d: ShipDesign = { ...newDesign(id, name), role, yard };
     for (const [c, n] of parts) d = setCount(d, c, n);
     for (const [k, kg] of load ?? []) d = setLoad(d, k, kg);
-    d = lock(d, unlockedTag(economy));
+    d = lock(withBoosters(d), unlockedTag(economy));
     if (!d.locked)
       throw new Error(
-        `${name} could not be locked: ${statsFor(d)
+        `${name} could not be locked: ${designStats(d, unlockedTag(economy))
           .issues.filter((i) => i.level === 'error')
           .map((i) => i.text)
           .join(' ')}`
@@ -164,46 +169,24 @@ export class PathPlayer extends Player {
     if (left.length) this.say(`short of ${left.map(([m]) => material(m).name).join(', ')}`);
   }
 
-  protected heavyDesigns(): { booster: ShipDesign; upper: ShipDesign } {
-    return {
-      booster: this.design(BOOSTER, 'Heavy booster', 'launcher', [
-        ['chemical_engine_methalox', 9],
-        ['propellant_tank', 60],
-        ['structure_truss', 2],
-        ['landing_legs', 4]
-      ]),
-      upper: this.design(UPPER, 'Heavy upper stage', 'freighter', [
-        ['chemical_engine_methalox', 3],
-        ['propellant_tank', 30],
-        ['structure_truss', 1],
-        ['cargo_bay', 10]
-      ])
-    };
+  protected heavyDesign(): ShipDesign {
+    return this.design(HEAVY, 'Heavy freighter', 'freighter', [
+      ['chemical_engine_methalox', 3],
+      ['propellant_tank', 30],
+      ['structure_truss', 1],
+      ['cargo_bay', 10]
+    ]);
   }
 
   protected launchHeavy(payload: Payload): Vessel | undefined {
-    const { booster, upper } = this.heavyDesigns();
-    this.buildAtEarth(booster.id);
-    this.buildAtEarth(upper.id);
-    const stack: Stack = {
-      stages: [this.owned(booster.id)[0]!.id, this.owned(upper.id)[0]!.id],
-      payload
-    };
-    let plan = planStack(this.game, this.earth, stack);
-    let guard = 0;
-    while (!plan.ok && plan.reasons.some((r) => r.includes('pad')) && guard++ < 10) {
-      this.days(1);
-      plan = planStack(this.game, this.earth, stack);
+    if (payload.kind === 'ship') {
+      const v = ships.vessels.find((x) => x.id === payload.ship);
+      return v && this.launchFromEarth(v) ? v : undefined;
     }
-    if (!plan.ok) {
-      this.say(`heavy launch refused: ${plan.reasons.join(' ')}`);
-      return undefined;
-    }
-    launch(this.game, this.earth, stack);
-    this.report.launches.push({ at: this.game.time, payload: plan.payloadMass });
-    this.report.tonnes += plan.payloadMass / 1000;
-    this.say(`launched ${Math.round(plan.payloadMass / 100) / 10} t to orbit`);
-    return ships.vessels.find((v) => v.id === stack.stages[1])!;
+    const heavy = this.heavyDesign();
+    this.buildAtEarth(heavy.id);
+    const v = this.owned(heavy.id)[0]!;
+    return this.launchFromEarth(v, payload.cargo) ? v : undefined;
   }
 
   protected station(): Site {

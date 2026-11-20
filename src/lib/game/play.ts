@@ -37,16 +37,16 @@ import {
   unlockedTag,
   type Site
 } from './economy/index.ts';
-import { lock, newDesign, setCount, type ShipDesign } from './shipdesign/index.ts';
+import { climbWith, designStats, lock, newDesign, setCount, type ShipDesign } from './shipdesign/index.ts';
 import {
   addOrder,
   foundSite,
   installModule,
   launch,
   orderShips,
-  planStack,
+  planLaunch,
   ships,
-  type Stack
+  type Vessel
 } from './ships/index.ts';
 import type { Game } from './state.svelte.ts';
 
@@ -65,35 +65,43 @@ const TRIM_PASSES = 5;
 const TRIM_EVERY_DAYS = 30;
 const END_PRODUCTS = new Set(Object.keys(earthStart.endProducts));
 
-const BOOSTER = 'play-booster';
 const ORBITER = 'play-orbiter';
 const HABITAT = 'play-habitat';
+const MAX_BOOSTERS = 99;
 
-export function launchDesigns(): { booster: ShipDesign; orbiter: ShipDesign } {
-  const make = (id: string, name: string, role: ShipDesign['role'], parts: [string, number][]) => {
-    const found = classes.find(id);
-    if (found) return found;
-    let d: ShipDesign = { ...newDesign(id, name), role, yard: 'rocket_factory' };
-    for (const [c, n] of parts) d = setCount(d, c, n);
-    d = lock(d, unlockedTag(economy));
-    classes.add(d);
-    return d;
-  };
-  return {
-    booster: make(BOOSTER, 'Booster', 'launcher', [
-      ['chemical_engine_methalox', 3],
-      ['propellant_tank', 25],
-      ['structure_truss', 1],
-      ['landing_legs', 1]
-    ]),
-    orbiter: make(ORBITER, 'Orbiter', 'freighter', [
-      ['chemical_engine_methalox', 1],
-      ['propellant_tank', 6],
-      ['structure_truss', 1],
-      ['cargo_bay', 2]
-    ])
-  };
+export function withBoosters(d: ShipDesign): ShipDesign {
+  if (d.yard !== 'rocket_factory') return d;
+  for (const full of [true, false])
+    for (let n = 0; n <= MAX_BOOSTERS; n++) {
+      const t = setCount(d, 'booster', n);
+      const s = designStats(t);
+      if (climbWith(s, full ? s.payloadCapacity : 0).reaches) return t;
+    }
+  throw new Error(`${d.name} cannot reach orbit on any number of boosters`);
 }
+
+function makeDesign(
+  id: string,
+  name: string,
+  role: ShipDesign['role'],
+  parts: [string, number][]
+): ShipDesign {
+  const found = classes.find(id);
+  if (found) return found;
+  let d: ShipDesign = { ...newDesign(id, name), role, yard: 'rocket_factory' };
+  for (const [c, n] of parts) d = setCount(d, c, n);
+  d = lock(withBoosters(d), unlockedTag(economy));
+  classes.add(d);
+  return d;
+}
+
+const orbiterDesign = (): ShipDesign =>
+  makeDesign(ORBITER, 'Orbiter', 'freighter', [
+    ['chemical_engine_methalox', 1],
+    ['propellant_tank', 6],
+    ['structure_truss', 1],
+    ['cargo_bay', 2]
+  ]);
 
 export class Player {
   readonly report: PlayReport = { reached: [], launches: [], tonnes: 0, log: [] };
@@ -314,42 +322,60 @@ export class Player {
     return siteAt(economy, 'earth', 'orbit');
   }
 
-  deliver(cargo: Record<string, number>, found?: string): void {
-    const { booster, orbiter } = launchDesigns();
+  protected stockFor(need: Record<string, number>): void {
     const site = this.earth;
-    const own = (id: string) =>
-      ships.vessels.filter(
-        (v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip
-      );
-    const need = (d: ShipDesign, n: number) => {
-      const have = own(d.id).length + site.yard.filter((o) => o.design === d.id).length;
-      if (have < n) orderShips(site, d.id, n - have);
-    };
-    need(booster, 1);
-    need(orbiter, 1);
-    for (const m of Object.keys(cargo)) site.stock[m] ??= 0;
-    const short = () => Object.entries(cargo).filter(([m, kg]) => (site.stock[m] ?? 0) < kg);
+    const short = () => Object.entries(need).filter(([m, kg]) => (site.stock[m] ?? 0) < kg);
     let guard = 0;
-    while ((own(booster.id).length < 1 || own(orbiter.id).length < 1 || short().length) && guard++ < 200) {
+    while (short().length && guard++ < 200) {
       for (const [m, kg] of short())
         this.produce(m, Math.max(this.floorRate(m), (kg - (site.stock[m] ?? 0)) / 48));
       this.fixShortages();
       this.days(2);
     }
-    const stack: Stack = {
-      stages: [own(booster.id)[0]!.id, own(orbiter.id)[0]!.id],
-      payload: { kind: 'cargo', cargo }
-    };
-    const plan = planStack(this.game, site, stack);
-    if (!plan.ok) {
-      this.say(`launch refused: ${plan.reasons.join(' ')}`);
-      return;
+  }
+
+  protected launchFromEarth(v: Vessel, cargo?: Record<string, number>): boolean {
+    const site = this.earth;
+    const request = { ship: v.id, ...(cargo ? { cargo } : {}) };
+    let plan = planLaunch(this.game, site, request);
+    if (plan.reasons.some((r) => r.includes('short by'))) {
+      this.stockFor(plan.draw);
+      plan = planLaunch(this.game, site, request);
     }
-    launch(this.game, site, stack);
+    let guard = 0;
+    while (!plan.ok && plan.reasons.some((r) => r.includes('pad')) && guard++ < 10) {
+      this.days(1);
+      plan = planLaunch(this.game, site, request);
+    }
+    if (!plan.ok) {
+      this.say(`launch of ${v.name} refused: ${plan.reasons.join(' ')}`);
+      return false;
+    }
+    launch(this.game, site, request);
     this.report.launches.push({ at: this.game.time, payload: plan.payloadMass });
     this.report.tonnes += plan.payloadMass / 1000;
-    this.say(`launched ${Math.round(plan.payloadMass / 100) / 10} t to orbit`);
-    const v = ships.vessels.find((x) => x.id === stack.stages[1])!;
+    this.say(`launched ${v.name} with ${Math.round(plan.payloadMass / 100) / 10} t to orbit`);
+    return true;
+  }
+
+  deliver(cargo: Record<string, number>, found?: string): void {
+    const orbiter = orbiterDesign();
+    const site = this.earth;
+    const own = () =>
+      ships.vessels.filter(
+        (v) => v.design === orbiter.id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip
+      );
+    const have = own().length + site.yard.filter((o) => o.design === orbiter.id).length;
+    if (have < 1) orderShips(site, orbiter.id, 1);
+    for (const m of Object.keys(cargo)) site.stock[m] ??= 0;
+    this.stockFor(cargo);
+    let guard = 0;
+    while (own().length < 1 && guard++ < 200) {
+      this.fixShortages();
+      this.days(2);
+    }
+    const v = own()[0]!;
+    if (!this.launchFromEarth(v, cargo)) return;
     if (found) {
       const r = foundSite(this.game, v, found);
       this.say(typeof r === 'string' ? `founding failed: ${r}` : `founded ${r.name}`);
@@ -414,7 +440,6 @@ export class Player {
     const site = this.earth;
     const st = this.orbital();
     if (!st) return false;
-    const { booster, orbiter } = launchDesigns();
     let habitat = classes.find(HABITAT);
     if (!habitat) {
       let d: ShipDesign = {
@@ -432,21 +457,19 @@ export class Player {
         ['propellant_tank', 1]
       ] as [string, number][])
         d = setCount(d, c, n);
-      habitat = lock(d, unlockedTag(economy));
+      habitat = lock(withBoosters(d), unlockedTag(economy));
       classes.add(habitat);
     }
     const here = (id: string) =>
       ships.vessels.filter(
         (v) => v.design === id && v.at.kind === 'site' && v.at.site === 'earth' && !v.trip
       );
-    for (const d of [booster, orbiter, habitat]) {
-      const have = here(d.id).length + site.yard.filter((o) => o.design === d.id).length;
-      if (have < 1) orderShips(site, d.id, 1);
-    }
+    const have = here(habitat.id).length + site.yard.filter((o) => o.design === habitat.id).length;
+    if (have < 1) orderShips(site, habitat.id, 1);
     const rations = 3000;
     const short = () => (site.stock.food_ration ?? 0) < rations;
     let guard = 0;
-    while ((short() || [booster, orbiter, habitat].some((d) => here(d.id).length < 1)) && guard++ < 200) {
+    while ((short() || here(habitat.id).length < 1) && guard++ < 200) {
       if (short())
         this.produce(
           'food_ration',
@@ -464,18 +487,7 @@ export class Player {
       ]
     });
     this.days(1);
-    const stack: Stack = {
-      stages: [here(booster.id)[0]!.id, here(orbiter.id)[0]!.id],
-      payload: { kind: 'ship', ship: mod.id }
-    };
-    const plan = planStack(this.game, site, stack);
-    if (!plan.ok) {
-      this.say(`crewed launch refused: ${plan.reasons.join(' ')}`);
-      return false;
-    }
-    launch(this.game, site, stack);
-    this.report.launches.push({ at: this.game.time, payload: plan.payloadMass });
-    this.report.tonnes += plan.payloadMass / 1000;
+    if (!this.launchFromEarth(mod)) return false;
     addOrder(mod, { type: 'dock', site: st.id });
     this.days(1);
     const result = installModule(this.game, mod);

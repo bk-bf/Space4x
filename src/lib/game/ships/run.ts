@@ -3,7 +3,7 @@ import type { Game } from '#lib/game/state.svelte.ts';
 import { mainKind, statsOf } from './model.ts';
 import { legOrders, makeOrder, projectedPlace, type NewOrder } from './orders.ts';
 import type { PropellantKind } from '#lib/game/shipdesign/index.ts';
-import { needsLaunchStack } from './trips.ts';
+import { leavesByLaunch } from './trips.ts';
 import type { ManifestLine, Order, SupplyRun, Vessel } from './types.ts';
 
 export function cycleOrders(run: SupplyRun, kind: PropellantKind | undefined): Order[] | undefined {
@@ -35,9 +35,9 @@ export function startRun(game: Game, v: Vessel, run: SupplyRun): string | undefi
   if (v.trip) return `${v.name} is on a trip.`;
   const kind = mainKind(v);
   if (!kind) return `${v.name} has no drive.`;
-  if (needsLaunchStack(game, { kind: 'site', site: from.id }))
-    return `${from.name} is a launch site; ships leave it by launch stack.`;
-  if (needsLaunchStack(game, { kind: 'site', site: to.id }))
+  if (leavesByLaunch(game, { kind: 'site', site: from.id }))
+    return `${from.name} is a launch site; ships leave it by launch.`;
+  if (leavesByLaunch(game, { kind: 'site', site: to.id }))
     return `A ship cannot land at ${to.name}; it is reached by launch only.`;
   if (!run.manifest.length || run.manifest.some((l) => !(l.amount > 0)))
     return 'Name an amount for every material in the run.';

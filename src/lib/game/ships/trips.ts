@@ -39,7 +39,7 @@ export function reasonText(r: Reason): string {
   return 'No transfer exists between these places.';
 }
 
-export const needsLaunchStack = (game: Game, w: Whereabouts): boolean => {
+export const leavesByLaunch = (game: Game, w: Whereabouts): boolean => {
   if (w.kind !== 'site') return false;
   const site = economy.sites.find((s) => s.id === w.site);
   if (!site || site.place !== 'surface' || standing(site, 'launch_site') <= 0) return false;
@@ -69,8 +69,8 @@ export function planVessel(
   const ship = vesselShip(v);
   const target = toPlace(game, to);
   if (!from || !ship || !target) return { options: [], reasons: ['The ship has no drive.'] };
-  if (needsLaunchStack(game, v.at))
-    return { options: [], reasons: ['A ship on Earth leaves by launch stack, not by trip.'] };
+  if (leavesByLaunch(game, v.at))
+    return { options: [], reasons: ['A ship on Earth leaves by launch, not by trip.'] };
   const plan = planTrip({
     from,
     to: target,

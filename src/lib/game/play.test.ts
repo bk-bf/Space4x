@@ -103,7 +103,11 @@ describe('the scripted player from the start state', () => {
     expect(player.report.launches.length).toBeGreaterThan(30);
     expect(player.report.launches.length).toBeLessThan(250);
     expect(player.report.tonnes).toBeGreaterThan(300);
-    expect(ships.launches.every((l) => l.lost === 0)).toBe(true);
+    expect(
+      ships.vessels
+        .filter((v) => v.at.kind !== 'site' || v.at.site !== 'earth')
+        .every((v) => v.boosters === 0)
+    ).toBe(true);
     const used = new Set(classes.saved.map((d) => d.id));
     for (const id of [
       'path-lander',
@@ -191,7 +195,11 @@ describe('the scripted player from the start state', () => {
     expect(player.report.launches.length).toBeGreaterThan(100);
     expect(player.report.launches.length).toBeLessThan(500);
     expect(player.report.tonnes).toBeGreaterThan(1500);
-    expect(ships.launches.every((l) => l.lost === 0)).toBe(true);
+    expect(
+      ships.vessels
+        .filter((v) => v.at.kind !== 'site' || v.at.site !== 'earth')
+        .every((v) => v.boosters === 0)
+    ).toBe(true);
     expect(player.path.sites.sort()).toEqual(
       ['bennu', 'hertha', 'luna', 'luna-maria', 'uranus', 'sol-a'].sort()
     );

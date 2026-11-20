@@ -12,8 +12,8 @@ import {
   type Site
 } from './economy/index.ts';
 import { PathPlayer } from './playPath.ts';
-import { addOrder, installModule, orderShips, ships, type Payload, type Vessel } from './ships/index.ts';
-import { SOUTH_POLE } from './playPath.ts';
+import { addOrder, installModule, orderShips, ships, type Vessel } from './ships/index.ts';
+import { SOUTH_POLE, type Payload } from './playPath.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 
 const BARGE = 'jump-barge';
@@ -30,6 +30,8 @@ const XENON_CHUNK_KG = 36_000;
 const BARGE_METHALOX_KG = 9_000;
 const STEEL_LOAD_KG = 52_000;
 const BARGE_CARBON_KG = 3_000;
+const BARGE_LAUNCH_XENON_KG = 20_000;
+const BARGE_TANKS = 6;
 const HERTHA_REGION = 'hertha-body';
 
 export class JumpPlayer extends PathPlayer {
@@ -37,17 +39,23 @@ export class JumpPlayer extends PathPlayer {
   protected bargePhase: 'out' | 'landed' | 'back' = 'out';
 
   protected bargeDesign(): ShipDesign {
-    return this.design(BARGE, 'Steel barge', 'freighter', [
-      ['ion_thruster', 29],
-      ['copv', 54],
-      ['chemical_engine_methalox', 1],
-      ['propellant_tank', 2],
-      ['fission_reactor_ship', 20],
-      ['structure_truss', 1],
-      ['avionics', 1],
-      ['radiator', 13],
-      ['cargo_bay', 13]
-    ]);
+    return this.design(
+      BARGE,
+      'Steel barge',
+      'freighter',
+      [
+        ['ion_thruster', 29],
+        ['copv', 54],
+        ['chemical_engine_methalox', 1],
+        ['propellant_tank', BARGE_TANKS],
+        ['fission_reactor_ship', 20],
+        ['structure_truss', 1],
+        ['avionics', 1],
+        ['radiator', 13],
+        ['cargo_bay', 13]
+      ],
+      [['xenon', BARGE_LAUNCH_XENON_KG]]
+    );
   }
 
   protected foodHaulerDesign(): ShipDesign {
@@ -101,6 +109,7 @@ export class JumpPlayer extends PathPlayer {
     const up = this.launchHeavy({ kind: 'ship', ship: v.id });
     if (!up) return;
     addOrder(v, { type: 'dock', site: this.station().id });
+    addOrder(v, { type: 'unload', item: { kind: 'propellant', id: 'methalox' }, amount: null });
     addOrder(v, { type: 'load', item: { kind: 'propellant', id: 'xenon' }, amount: null });
     addOrder(v, { type: 'load', item: { kind: 'propellant', id: 'methalox' }, amount: BARGE_METHALOX_KG });
     addOrder(v, { type: 'load', item: { kind: 'cargo', id: 'carbon' }, amount: BARGE_CARBON_KG });

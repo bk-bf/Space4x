@@ -124,10 +124,9 @@ export function applyEconomyParams(params: URLSearchParams): void {
     ui.milestone = milestone;
   const vessel = params.get('vessel');
   if (vessel) ui.vessel = vessel;
-  if (params.has('stack'))
-    launchUi.stages = ships.vessels
-      .filter((v) => v.at.kind === 'site' && v.at.site === ui.site && !v.trip)
-      .map((v) => v.id);
+  if (params.has('launch'))
+    launchUi.ship =
+      ships.vessels.find((v) => v.at.kind === 'site' && v.at.site === ui.site && !v.trip)?.id ?? '';
 }
 
 export function selectedSite(): Site {

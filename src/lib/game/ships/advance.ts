@@ -2,7 +2,7 @@ import { DAY } from '#lib/game/clock.ts';
 import { drainDeliveries, economy, touch } from '#lib/game/economy/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
 import { DOCK_SECONDS, HANDLING_SECONDS, loadItem, loadManifest, unloadItem } from './cargo.ts';
-import { classes } from '#lib/game/classes.svelte.ts';
+import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { settleJumps } from '#lib/game/jump.ts';
 import {
   completeSurvey,
@@ -22,7 +22,7 @@ import {
   commitTrip,
   destinationOf,
   finishTrip,
-  needsLaunchStack,
+  leavesByLaunch,
   pickOption,
   planVessel,
   type Destination
@@ -57,6 +57,7 @@ export function spawnDeliveries(game: Game): void {
       propellant: {},
       cargo: {},
       crew: 0,
+      boosters: statsFor(design).boosters?.count ?? 0,
       orders: [],
       run: null,
       progress: 0,
@@ -170,8 +171,8 @@ function step(game: Game, v: Vessel, cursor: { t: number }, end: number): 'next'
     return 'stop';
   }
   if (order.type === 'fly' || order.type === 'land') {
-    if (needsLaunchStack(game, v.at)) {
-      block(game, v, 'A ship on Earth leaves by launch stack, not by trip.', cursor.t);
+    if (leavesByLaunch(game, v.at)) {
+      block(game, v, 'A ship on Earth leaves by launch, not by trip.', cursor.t);
       return 'stop';
     }
     const local = hopKind(v, order);

@@ -43,7 +43,7 @@
   const taken = $derived(!!place && siteHere(place.at, region));
 
   const launchCargo = $derived.by(() => {
-    const top = vesselById(launchUi.stages.at(-1) ?? '');
+    const top = vesselById(launchUi.ship);
     const out: Record<string, number> = { ...(top?.cargo ?? {}) };
     for (const [m, kg] of Object.entries(launchUi.cargo)) out[m] = (out[m] ?? 0) + kg;
     return out;

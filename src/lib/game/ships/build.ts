@@ -8,7 +8,7 @@ import {
   type Site,
   type YardOrder
 } from '#lib/game/economy/index.ts';
-import { yardName } from '#lib/game/shipdesign/index.ts';
+import { builtMass, yardName } from '#lib/game/shipdesign/index.ts';
 
 export function orderShips(site: Site, designId: string, count = 1): YardOrder[] | string {
   const design = classes.find(designId);
@@ -18,13 +18,13 @@ export function orderShips(site: Site, designId: string, count = 1): YardOrder[]
   if (stats.errors > 0) return 'The design has errors.';
   const yard = yardName(design.yard).toLowerCase();
   if (!hasYard(site, design.yard)) return `${site.name} has no ${yard}.`;
-  const need = shipyardsFor(stats.dryMass);
+  const need = shipyardsFor(builtMass(stats));
   const stand = standing(site, design.yard);
   if (need > stand) return `${design.name} needs ${need} ${yard}s; ${site.name} has ${stand}.`;
   return queueShips(
     economy,
     site,
-    { design: design.id, name: design.name, yard: design.yard, cost: stats.cost, dryMass: stats.dryMass },
+    { design: design.id, name: design.name, yard: design.yard, cost: stats.cost, dryMass: builtMass(stats) },
     count
   );
 }

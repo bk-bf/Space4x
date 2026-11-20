@@ -1,4 +1,4 @@
-import { classes } from '#lib/game/classes.svelte.ts';
+import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { milestones, regionsOf } from '#lib/game/data/index.ts';
 import {
   economy,
@@ -39,6 +39,7 @@ function vessel(d: ShipDesign, at: Vessel['at'], fill: Partial<Vessel> = {}): Ve
     propellant: {},
     cargo: {},
     crew: 0,
+    boosters: statsFor(d).boosters?.count ?? 0,
     orders: [],
     run: null,
     progress: 0,
@@ -55,17 +56,12 @@ export function seedTravel(game: Game): void {
   const earth = homeSite();
   earth.stock.grcop = 5e5;
   earth.stock.platinum = 5e4;
-  const booster = design('travel-booster', 'Booster', 'launcher', [
-    ['chemical_engine_methalox', 3],
-    ['propellant_tank', 25],
-    ['structure_truss', 1],
-    ['landing_legs', 1]
-  ]);
   design('travel-orbiter', 'Orbiter', 'freighter', [
     ['chemical_engine_methalox', 1],
     ['propellant_tank', 6],
     ['structure_truss', 1],
-    ['cargo_bay', 2]
+    ['cargo_bay', 2],
+    ['booster', 2]
   ]);
   const tug = design('travel-tug', 'Tug', 'freighter', [
     ['chemical_engine_methalox', 1],
@@ -75,13 +71,10 @@ export function seedTravel(game: Game): void {
   ]);
   earth.stock.food_ration = 5e5;
   const orbiter = classes.find('travel-orbiter')!;
-  const stageOne = vessel(booster, { kind: 'site', site: 'earth' });
-  const stageTwo = vessel(orbiter, { kind: 'site', site: 'earth' });
-  launch(game, earth, {
-    stages: [stageOne.id, stageTwo.id],
-    payload: { kind: 'cargo', cargo: { stainless_steel: 3000 } }
-  });
+  const first = vessel(orbiter, { kind: 'site', site: 'earth' });
   vessel(orbiter, { kind: 'site', site: 'earth' });
+  vessel(orbiter, { kind: 'site', site: 'earth' });
+  launch(game, earth, { ship: first.id, cargo: { stainless_steel: 3000 } });
   const ordered = orderShips(earth, 'travel-orbiter', 1);
   if (typeof ordered !== 'string') for (const o of ordered) setShipPercent(economy, earth, o.id, 10);
   const station = newSite(economy, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0.6 })!;

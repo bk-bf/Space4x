@@ -2,7 +2,6 @@ import { classes, classInUse, game, specFor, statsFor, type ClassRegistry } from
 import { milestones } from '#lib/game/data/index.ts';
 import { economy, touch, waitingOn, unlockedTag } from '#lib/game/economy/index.ts';
 import { payloadFor, loadedWith, type Loaded } from './figures.ts';
-import { addBelow } from './stackTry.svelte.ts';
 import {
   addPart,
   canLock,
@@ -188,7 +187,4 @@ export function applyClassParams(params: URLSearchParams): void {
   }
   const key = params.get('new');
   if (key) designer.preset(key);
-  const below = Number(params.get('below'));
-  const open = designer.pickedId;
-  if (open && Number.isInteger(below)) for (let i = 0; i < below; i++) addBelow(open);
 }

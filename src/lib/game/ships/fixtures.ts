@@ -1,4 +1,4 @@
-import { classes } from '#lib/game/classes.svelte.ts';
+import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { resetEconomy } from '#lib/game/economy/index.ts';
 import { Game } from '#lib/game/state.svelte.ts';
 import {
@@ -60,6 +60,7 @@ export function spawn(
     propellant: {},
     cargo: {},
     crew: 0,
+    boosters: d ? (statsFor(d).boosters?.count ?? 0) : 0,
     orders: [],
     run: null,
     progress: 0,

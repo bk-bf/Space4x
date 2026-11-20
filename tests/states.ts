@@ -52,7 +52,7 @@ const QUERIES = [
   'screen=economy&scenario=famine',
   'screen=economy&tab=yard&scenario=travel',
   'screen=economy&tab=launch&scenario=travel',
-  'screen=economy&tab=launch&scenario=travel&stack=1',
+  'screen=economy&tab=launch&scenario=travel&launch=1',
   'screen=economy&tab=ships&scenario=travel',
   'screen=economy&tab=ships&scenario=belt',
   'screen=economy&colony=luna&scenario=belt&outpost=1',
@@ -82,7 +82,6 @@ const QUERIES = [
   'screen=research&milestone=11&reached=10',
   'screen=classes',
   'screen=classes&new=stage',
-  'screen=classes&new=stage&below=1',
   'screen=classes&reached=6&new=crewed',
   'screen=classes&reached=29',
   'screen=ground',
@@ -107,9 +106,8 @@ const SHORT_WINDOW_QUERIES = [
   'screen=research&rtab=unlocks&milestone=3',
   'screen=classes',
   'screen=classes&new=stage',
-  'screen=classes&new=stage&below=1',
   'screen=classes&reached=6&new=crewed',
-  'screen=economy&tab=launch&scenario=travel&stack=1',
+  'screen=economy&tab=launch&scenario=travel&launch=1',
   'screen=economy&tab=ships&scenario=travel'
 ];
 
