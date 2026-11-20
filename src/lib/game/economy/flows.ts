@@ -3,7 +3,7 @@ import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { gradeAt, isDepleted, isReserveSpent } from './deposits.ts';
 import { activePlants, averageOutput, gridOf, plantOf, plantWater, type Grid } from './grid.ts';
-import { foodIds, isExtraction, isMass, isStockless, POWER, process, WATER } from './processes.ts';
+import { foodIds, isExtraction, isMass, isStockless, POWER, process, WATER, workersAt } from './processes.ts';
 import { programmeCompute } from './programmes.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
 import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
@@ -301,7 +301,7 @@ function eat(site: Site, net: Amounts, demand: number): Amounts {
 
 export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const available = site.population * site.workforceShare;
-  const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * building(g.building).workers : 0), 0);
+  const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * workersAt(building(g.building), site.body) : 0), 0);
   const workerShare = needed > available ? available / needed : 1;
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),

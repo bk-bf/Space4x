@@ -164,6 +164,13 @@ export interface Plant {
   waterPerMwh: number;
 }
 
+export interface RealPlant {
+  plant: string;
+  basis: string;
+  sources: string[];
+  estimated: boolean;
+}
+
 export interface Building {
   id: string;
   name: string;
@@ -176,6 +183,12 @@ export interface Building {
   cost: Amounts;
   parts?: string[];
   workers: number;
+  scale?: number;
+  power?: number;
+  water?: number;
+  extracts?: Amounts;
+  real?: RealPlant;
+  away?: { workers: number };
   footprint?: { land?: number; habitat?: number };
   plant?: Plant;
   bp?: number;
