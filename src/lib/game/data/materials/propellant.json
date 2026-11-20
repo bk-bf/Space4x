@@ -90,5 +90,67 @@
     "tier": "S",
     "why": "Proposed propellant of theoretical Isp about 1700 s if metastable; unconfirmed",
     "source": "https://en.wikipedia.org/wiki/Metallic_hydrogen"
+  },
+  {
+    "id": "haleu",
+    "name": "High-assay low-enriched uranium (HALEU)",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "why": "5-20% U-235 fuel chosen for modern space reactors and NTR designs",
+    "source": "https://en.wikipedia.org/wiki/High-assay_low-enriched_uranium"
+  },
+  {
+    "id": "lithium6",
+    "name": "Lithium-6",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "why": "Enriched in breeding blankets to make tritium in D-T fusion",
+    "source": "https://en.wikipedia.org/wiki/Breeding_blanket"
+  },
+  {
+    "id": "deuterium",
+    "name": "Deuterium",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
+      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
+    ],
+    "why": "Fusion fuel in D-T and D-He3 reactions",
+    "source": "https://en.wikipedia.org/wiki/Deuterium"
+  },
+  {
+    "id": "tritium",
+    "name": "Tritium",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "why": "D-T fusion fuel; not naturally available, must be bred",
+    "source": "https://en.wikipedia.org/wiki/Tritium"
+  },
+  {
+    "id": "helium3",
+    "name": "Helium-3",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "sources": [
+      { "body": "moon", "how": "solar-wind", "building": "regolith_excavator" },
+      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
+      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
+    ],
+    "why": "Aneutronic-leaning D-He3 fusion fuel; very scarce on Earth",
+    "source": "https://en.wikipedia.org/wiki/Helium-3"
+  },
+  {
+    "id": "xenon",
+    "name": "Xenon",
+    "category": "propellant",
+    "tier": "P",
+    "why": "Standard high-performance electric propulsion propellant; scarce and costly",
+    "source": "https://en.wikipedia.org/wiki/Ion_thruster"
   }
 ]

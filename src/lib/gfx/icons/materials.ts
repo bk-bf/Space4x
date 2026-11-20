@@ -344,6 +344,15 @@ const BIO_SHAPES: Record<string, MaterialShape> = {
   phosphorus: 'pile'
 };
 
+const FUEL_SHAPES: Record<string, MaterialShape> = {
+  haleu: 'rods',
+  lithium6: 'rods',
+  deuterium: 'canister',
+  tritium: 'canister',
+  helium3: 'canister',
+  xenon: 'canister'
+};
+
 function shapeOf(m: Pick<Identity, 'id' | 'category'>): MaterialShape {
   const id = m.id,
     c = m.category;
@@ -357,12 +366,7 @@ function shapeOf(m: Pick<Identity, 'id' | 'category'>): MaterialShape {
   if (id === 'compute') return 'rack';
   if (id === 'ai_models') return 'core';
   if (c === 'metal') return 'ingot';
-  if (c === 'nuclear')
-    return ['deuterium', 'tritium', 'helium3'].includes(id)
-      ? 'canister'
-      : id === 'zircaloy'
-        ? 'ingot'
-        : 'rods';
+  if (c === 'nuclear') return id === 'zircaloy' ? 'ingot' : 'rods';
   if (c === 'semiconductor_electronics') {
     if (id.includes('cell') && id !== 'li_ion_cell') return 'cell';
     if (id === 'li_ion_cell') return 'battery';
@@ -399,7 +403,7 @@ function shapeOf(m: Pick<Identity, 'id' | 'category'>): MaterialShape {
     if (id === 'carbonaceous_chondrite') return 'rock';
     return 'canister';
   }
-  if (c === 'propellant') return 'drum';
+  if (c === 'propellant') return FUEL_SHAPES[id] ?? 'drum';
   if (c === 'polymer') return id === 'ethylene' ? 'canister' : 'roll';
   if (c === 'carbon_materials') {
     if (['carbon_fibre', 'cfrp', 'cnt_fibre'].includes(id)) return 'weave';

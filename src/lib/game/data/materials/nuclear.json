@@ -18,15 +18,6 @@
     "source": "https://en.wikipedia.org/wiki/Uranium"
   },
   {
-    "id": "haleu",
-    "name": "High-assay low-enriched uranium (HALEU)",
-    "category": "nuclear",
-    "tier": "P",
-    "thin": true,
-    "why": "5-20% U-235 fuel chosen for modern space reactors and NTR designs",
-    "source": "https://en.wikipedia.org/wiki/High-assay_low-enriched_uranium"
-  },
-  {
     "id": "heu",
     "name": "Highly enriched uranium",
     "category": "nuclear",
@@ -94,51 +85,6 @@
     ],
     "why": "Fertile fuel for thorium breeder reactors",
     "source": "https://en.wikipedia.org/wiki/KREEP"
-  },
-  {
-    "id": "lithium6",
-    "name": "Lithium-6",
-    "category": "nuclear",
-    "tier": "E",
-    "thin": true,
-    "why": "Enriched in breeding blankets to make tritium in D-T fusion",
-    "source": "https://en.wikipedia.org/wiki/Breeding_blanket"
-  },
-  {
-    "id": "deuterium",
-    "name": "Deuterium",
-    "category": "nuclear",
-    "tier": "P",
-    "thin": true,
-    "sources": [
-      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
-      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
-    ],
-    "why": "Fusion fuel in D-T and D-He3 reactions",
-    "source": "https://en.wikipedia.org/wiki/Deuterium"
-  },
-  {
-    "id": "tritium",
-    "name": "Tritium",
-    "category": "nuclear",
-    "tier": "E",
-    "thin": true,
-    "why": "D-T fusion fuel; not naturally available, must be bred",
-    "source": "https://en.wikipedia.org/wiki/Tritium"
-  },
-  {
-    "id": "helium3",
-    "name": "Helium-3",
-    "category": "nuclear",
-    "tier": "E",
-    "thin": true,
-    "sources": [
-      { "body": "moon", "how": "solar-wind", "building": "regolith_excavator" },
-      { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
-      { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
-    ],
-    "why": "Aneutronic-leaning D-He3 fusion fuel; very scarce on Earth",
-    "source": "https://en.wikipedia.org/wiki/Helium-3"
   },
   {
     "id": "depleted_uranium",

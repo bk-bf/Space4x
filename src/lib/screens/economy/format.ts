@@ -96,7 +96,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   metal: 'Metals and alloys',
   nuclear: 'Nuclear',
   polymer: 'Polymers',
-  propellant: 'Propellant',
+  propellant: 'Fuel',
   semiconductor_electronics: 'Semiconductors and electronics',
   volatile: 'Volatiles and gases'
 };

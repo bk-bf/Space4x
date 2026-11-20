@@ -87,14 +87,6 @@
     "source": "https://en.wikipedia.org/wiki/Hall-effect_thruster"
   },
   {
-    "id": "xenon",
-    "name": "Xenon",
-    "category": "volatile",
-    "tier": "P",
-    "why": "Standard high-performance electric propulsion propellant; scarce and costly",
-    "source": "https://en.wikipedia.org/wiki/Ion_thruster"
-  },
-  {
     "id": "carbon_dioxide",
     "name": "Carbon dioxide",
     "category": "volatile",
