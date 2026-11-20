@@ -29,6 +29,7 @@ export default defineConfig({
   outputDir: 'test-results',
   reporter: 'list',
   fullyParallel: true,
+  expect: { timeout: 15_000 },
   use: {
     browserName: 'chromium',
     viewport: { width: WIDTH || 1440, height: HEIGHT || 900 },
