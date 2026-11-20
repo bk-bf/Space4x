@@ -202,6 +202,25 @@ describe("Earth's reserves", () => {
   });
 });
 
+describe("Earth's starting stocks", () => {
+  it('name known materials with a positive stock, a basis, a source url and an estimated flag', () => {
+    const stocks = Object.entries(earth.stocks);
+    expect(stocks.length).toBeGreaterThan(0);
+    expect(
+      unknown(
+        stocks.map(([id]) => id),
+        materialIds
+      )
+    ).toEqual([]);
+    for (const [id, s] of stocks) {
+      expect(s.stock, id).toBeGreaterThan(0);
+      expect(s.basis, id).not.toBe('');
+      expect(s.source, id).toMatch(/^https:\/\//);
+      expect(typeof s.estimated, id).toBe('boolean');
+    }
+  });
+});
+
 describe('materials', () => {
   it('use known tiers and categories with a source url', () => {
     for (const m of materials) {

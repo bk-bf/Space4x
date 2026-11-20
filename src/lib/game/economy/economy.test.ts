@@ -3,6 +3,7 @@ import { milestone, milestones, material, reserveOf } from '#lib/game/data/index
 import { newSite } from './index.ts';
 import {
   advanceEconomy,
+  earthStart,
   EXTRACT_KG_PER_HOUR,
   assign,
   isMass,
@@ -109,6 +110,13 @@ describe('the start state', () => {
     expect(site.stock.electronic_silicon).toBe(6000);
     expect(site.stock.machinery).toBe(30_000);
     expect(site.stock.rad_hard_ic).toBe(8000);
+  });
+
+  it('starts with each recorded stock in place of days of its production', () => {
+    const site = earthOf(startEconomy());
+    for (const [id, s] of Object.entries(earthStart.stocks)) expect(site.stock[id], id).toBe(s.stock);
+    expect(site.stock.wheat).toBe(282.86e9);
+    expect(site.stock.nickel).toBe(275_118_000);
   });
 
   it('unlocks only the first milestone records and nothing is done', () => {

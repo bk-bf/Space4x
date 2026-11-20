@@ -10,6 +10,13 @@ export interface StartGroup {
   count: number;
 }
 
+export interface StartStock {
+  stock: number;
+  basis: string;
+  source: string;
+  estimated: boolean;
+}
+
 export interface StartSite {
   name: string;
   body: string;
@@ -18,7 +25,7 @@ export interface StartSite {
   kcalPerPersonDay: number;
   growthPerYear: number;
   stockDays: number;
-  startStock: Record<string, number>;
+  stocks: Record<string, StartStock>;
   endProducts: Record<string, number>;
   groups: StartGroup[];
 }
@@ -50,7 +57,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
   const flows = siteFlows(eco, site);
   for (const [m, rate] of Object.entries(flows.produced))
     if (!isStockless(m)) site.stock[m] = rate * 24 * data.stockDays;
-  Object.assign(site.stock, data.startStock);
+  for (const [m, s] of Object.entries(data.stocks)) site.stock[m] = s.stock;
   return site;
 }
 

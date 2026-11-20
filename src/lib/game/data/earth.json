@@ -12,13 +12,94 @@
     "endProducts": "each end product is made at its present-day world output, in kg a year",
     "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
     "power": "the power plants and storage keep the real 2024 mix of Ember 2025, the counts of the design sketch scaled together so that average generation covers the start power demand of the groups with 5% to spare",
-    "stock": "each material starts with stockDays of its start production, except those in startStock",
-    "goods": "the semiconductor fabs, flight machine shops and data centres stand at the counts of the design sketch, and polysilicon, machinery and integrated circuits start at its stock"
+    "stock": "each material in stocks starts with the stock its market reports as held in store in November 2026: world grain and oilseed stocks carried into 2026/27 from the USDA WASDE, global observed oil inventories from the IEA, LME warehouse stocks for base metals, London vault holdings for gold and silver and above ground stocks for platinum; every other material starts with stockDays of its start production",
+    "goods": "the semiconductor fabs, flight machine shops and data centres stand at the counts of the design sketch, and polysilicon, machinery and integrated circuits start at its stock, in stocks"
   },
-  "startStock": {
-    "electronic_silicon": 6000,
-    "machinery": 30000,
-    "rad_hard_ic": 8000
+  "stocks": {
+    "wheat": {
+      "stock": 282860000000,
+      "basis": "world wheat stocks carried into 2026/27, 282.86 Mt, the 2025/26 ending stocks estimated in the USDA WASDE of November 2026",
+      "source": "https://esmis.nal.usda.gov/sites/default/release-files/796142/wasde1126.txt",
+      "estimated": false
+    },
+    "soybean": {
+      "stock": 124980000000,
+      "basis": "world soybean stocks carried into 2026/27, 124.98 Mt, the 2025/26 ending stocks estimated in the USDA WASDE of November 2026",
+      "source": "https://esmis.nal.usda.gov/sites/default/release-files/796142/wasde1126.txt",
+      "estimated": false
+    },
+    "rp1": {
+      "stock": 1078000000000,
+      "basis": "global observed oil inventories, crude and products together, just under 7.9 billion barrels at the end of July 2026 in the IEA Oil Market Report of August 2026, at 7.33 barrels a tonne of crude",
+      "source": "https://www.iea.org/reports/oil-market-report-august-2026",
+      "estimated": true
+    },
+    "aluminium": {
+      "stock": 224425000,
+      "basis": "224,425 t of aluminium in LME warehouses on 19 November 2026, the stock the exchange reports as held in store; stocks held privately or by governments are not published and are left out",
+      "source": "https://www.westmetall.com/en/markdaten.php",
+      "estimated": false
+    },
+    "copper": {
+      "stock": 327525000,
+      "basis": "327,525 t of copper in LME warehouses on 19 November 2026, the stock the exchange reports as held in store; stocks held privately or by governments are not published and are left out",
+      "source": "https://www.westmetall.com/en/markdaten.php",
+      "estimated": false
+    },
+    "nickel": {
+      "stock": 275118000,
+      "basis": "275,118 t of nickel in LME warehouses on 19 November 2026, the stock the exchange reports as held in store; stocks held privately or by governments are not published and are left out",
+      "source": "https://www.westmetall.com/en/markdaten.php",
+      "estimated": false
+    },
+    "lead": {
+      "stock": 266325000,
+      "basis": "266,325 t of lead in LME warehouses on 19 November 2026, the stock the exchange reports as held in store; stocks held privately or by governments are not published and are left out",
+      "source": "https://www.westmetall.com/en/markdaten.php",
+      "estimated": false
+    },
+    "tin": {
+      "stock": 3705000,
+      "basis": "3,705 t of tin in LME warehouses on 19 November 2026, the stock the exchange reports as held in store; stocks held privately or by governments are not published and are left out",
+      "source": "https://www.westmetall.com/en/markdaten.php",
+      "estimated": false
+    },
+    "gold": {
+      "stock": 9850000,
+      "basis": "9,850 t of gold held in London vaults at the end of October 2026 in the LBMA's London vault data; bullion held elsewhere is not counted",
+      "source": "https://www.lbma.org.uk/prices-and-data/london-vault-data",
+      "estimated": false
+    },
+    "silver": {
+      "stock": 28889000,
+      "basis": "28,889 t of silver held in London vaults at the end of October 2026 in the LBMA's London vault data; bullion held elsewhere is not counted",
+      "source": "https://www.lbma.org.uk/prices-and-data/london-vault-data",
+      "estimated": false
+    },
+    "platinum": {
+      "stock": 54000,
+      "basis": "above ground stocks of platinum at the end of 2025, 54 t (1,745 koz), in Table 7 of the WPIC Platinum Quarterly for Q2 2026 (Metals Focus)",
+      "source": "https://platinuminvestment.com/files/354715/WPIC_Platinum_Quarterly_Q2_2026.pdf",
+      "estimated": false
+    },
+    "electronic_silicon": {
+      "stock": 6000,
+      "basis": "the starting stock of the design sketch, which stands the fabs and machine shops at its counts; not a real inventory",
+      "source": "https://github.com/bk-bf/Space4x/blob/912f864699ee971225dc9365e24baf1f3fdde841/mockup/sketch/js/sketch-model.js#L98",
+      "estimated": true
+    },
+    "machinery": {
+      "stock": 30000,
+      "basis": "the starting stock of the design sketch, which stands the fabs and machine shops at its counts; not a real inventory",
+      "source": "https://github.com/bk-bf/Space4x/blob/912f864699ee971225dc9365e24baf1f3fdde841/mockup/sketch/js/sketch-model.js#L98",
+      "estimated": true
+    },
+    "rad_hard_ic": {
+      "stock": 8000,
+      "basis": "the starting stock of the design sketch, which stands the fabs and machine shops at its counts; not a real inventory",
+      "source": "https://github.com/bk-bf/Space4x/blob/912f864699ee971225dc9365e24baf1f3fdde841/mockup/sketch/js/sketch-model.js#L98",
+      "estimated": true
+    }
   },
   "endProducts": {
     "stainless_steel": 58000000000,
