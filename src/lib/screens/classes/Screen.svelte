@@ -56,7 +56,7 @@
   };
 </script>
 
-<ScreenGrid id="classes" columns="384px minmax(0,1fr) 320px">
+<ScreenGrid id="classes" columns="var(--palette-w) minmax(0,1fr) 320px">
   <Panel grow>
     {#snippet head()}
       <Icon name="ship" />Components
@@ -199,5 +199,17 @@
   }
   small {
     font: 18px 'VT';
+    white-space: nowrap;
+  }
+  :global(main[data-screen='classes']) {
+    --palette-w: 384px;
+  }
+  @media (max-width: 1279px) {
+    :global(main[data-screen='classes']) {
+      --palette-w: 293px;
+    }
+    :global(.classpan > h2 button) {
+      padding: 0 5px;
+    }
   }
 </style>

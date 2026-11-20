@@ -27,6 +27,25 @@ const windows = () => all(document, '#desk .win');
 const isMin = (w: Element) => w.classList.contains('min');
 const dockOf = (w: HTMLElement) => w.dataset.dock ?? '';
 
+function checkTitleBar(p: HTMLElement, out: string[]) {
+  const bar = p.querySelector<HTMLElement>(':scope > h2');
+  if (!bar) return;
+  const edge = R(p).right,
+    box = R(bar);
+  for (const c of bar.children) {
+    if (!shown(c)) continue;
+    const r = R(c);
+    if (r.right > edge + 1)
+      out.push(
+        `overflow: title bar ${name(c)} runs ${Math.round(r.right - edge)}px past the right edge of ${name(p)}`
+      );
+    else if (r.top < box.top - 1 || r.bottom > box.bottom + 1)
+      out.push(
+        `wrapped: title bar ${name(c)} is ${Math.round(r.height)}px tall in the ${Math.round(box.height)}px bar of ${name(p)}`
+      );
+  }
+}
+
 function checkPanel(
   p: HTMLElement,
   onMap: boolean,
@@ -49,6 +68,7 @@ function checkPanel(
   else if (over > 1 && over < 40)
     out.push(`cut: ${name(p)} content is ${over}px taller than the panel, so the last row is cut off`);
   if (over >= 20) starved.push([p, over]);
+  checkTitleBar(p, out);
   const kids = [...b.children].filter((c) => shown(c) || c.tagName === 'CANVAS');
   if (kids.length && !b.querySelector('.fit') && !p.dataset.grow) {
     const free = R(b).bottom - parseFloat(cs.paddingBottom) - Math.max(...kids.map((c) => R(c).bottom));
