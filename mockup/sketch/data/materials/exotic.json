@@ -1,0 +1,11 @@
+[
+  {
+    "id": "exotic_matter",
+    "name": "Exotic negative-energy matter (hypothetical)",
+    "category": "exotic",
+    "tier": "S",
+    "thin": true,
+    "why": "Holding a traversable wormhole open requires energy-condition-violating matter",
+    "source": "https://en.wikipedia.org/wiki/Wormhole#Traversable_wormholes"
+  }
+]

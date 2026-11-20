@@ -1,0 +1,83 @@
+[
+  {
+    "id": "mine_earth",
+    "name": "Earth mine and wells",
+    "kind": "extraction",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40
+  },
+  {
+    "id": "air_separation_plant",
+    "name": "Air separation plant",
+    "kind": "extraction",
+    "where": ["earth", "mars"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1500, "aluminium": 300, "copper": 100 },
+    "workers": 15
+  },
+  {
+    "id": "regolith_excavator",
+    "name": "Regolith excavator",
+    "kind": "extraction",
+    "where": ["moon", "mercury", "mars", "io"],
+    "milestone": 8,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 800, "li_ion_cell": 200, "ai_models": 1, "ndfeb_magnet": 50, "copper": 100 },
+    "workers": 2
+  },
+  {
+    "id": "ice_mine",
+    "name": "Ice mine",
+    "kind": "extraction",
+    "where": ["moon", "mercury", "mars", "icy-moon"],
+    "milestone": 8,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1200, "copper": 150, "ai_models": 1 },
+    "workers": 4
+  },
+  {
+    "id": "asteroid_miner",
+    "name": "Asteroid miner",
+    "kind": "extraction",
+    "where": ["asteroid-c", "asteroid-s", "asteroid-m", "comet"],
+    "milestone": 16,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 4000, "ai_models": 2 },
+    "parts": ["solar_array"],
+    "workers": 0
+  },
+  {
+    "id": "gas_giant_scoop",
+    "name": "Gas giant scoop",
+    "kind": "extraction",
+    "where": ["gas-giant", "ice-giant"],
+    "milestone": 25,
+    "thin": true,
+    "estimated": true,
+    "cost": { "asteroidal_steel": 20000, "rebco": 50, "uhtc": 500, "ai_models": 5 },
+    "parts": ["fusion_drive"],
+    "workers": 0
+  },
+  {
+    "id": "atmosphere_skimmer",
+    "name": "Atmosphere skimmer",
+    "kind": "extraction",
+    "where": ["venus", "titan"],
+    "milestone": 25,
+    "estimated": true,
+    "cost": { "asteroidal_steel": 10000, "uhtc": 300, "ai_models": 3 },
+    "parts": ["fusion_drive"],
+    "workers": 0
+  }
+]

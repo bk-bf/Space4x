@@ -1,0 +1,357 @@
+[
+  {
+    "id": "iron",
+    "name": "Iron",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" },
+      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" },
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Base of every steel; the bulk structural metal for hulls and megastructures",
+    "source": "https://en.wikipedia.org/wiki/Iron"
+  },
+  {
+    "id": "nickel",
+    "name": "Nickel",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" },
+      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Matrix metal of superalloys for turbopumps and hot engine parts; stainless steel",
+    "source": "https://en.wikipedia.org/wiki/Nickel"
+  },
+  {
+    "id": "cobalt",
+    "name": "Cobalt",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Superalloy strengthener and lithium-ion cathode element; samarium-cobalt magnets",
+    "source": "https://en.wikipedia.org/wiki/Cobalt"
+  },
+  {
+    "id": "aluminium",
+    "name": "Aluminium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Light structural metal for tanks and airframes; fuel in solid rocket propellant",
+    "source": "https://en.wikipedia.org/wiki/Aluminium"
+  },
+  {
+    "id": "titanium",
+    "name": "Titanium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "High strength-to-mass, corrosion-resistant metal for pressure vessels and fittings",
+    "source": "https://en.wikipedia.org/wiki/Titanium"
+  },
+  {
+    "id": "lithium",
+    "name": "Lithium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "brine", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "mine_earth" }
+    ],
+    "why": "Alloying element in Al-Li tank alloys, battery chemistry, LiOH CO2 scrubbers, source of lithium-6",
+    "source": "https://en.wikipedia.org/wiki/Lithium"
+  },
+  {
+    "id": "copper",
+    "name": "Copper",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" },
+      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Electrical wiring and high-conductivity regeneratively cooled combustion-chamber liners",
+    "source": "https://en.wikipedia.org/wiki/Copper"
+  },
+  {
+    "id": "chromium",
+    "name": "Chromium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Gives stainless steel and nickel superalloys their oxidation resistance",
+    "source": "https://en.wikipedia.org/wiki/Chromium"
+  },
+  {
+    "id": "molybdenum",
+    "name": "Molybdenum",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Superalloy and high-temperature alloy element; alloyed with uranium in Kilopower fuel",
+    "source": "https://en.wikipedia.org/wiki/Molybdenum"
+  },
+  {
+    "id": "tungsten",
+    "name": "Tungsten",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Highest melting point metal; cermet NTR fuel matrix and dense radiation shielding",
+    "source": "https://en.wikipedia.org/wiki/Tungsten"
+  },
+  {
+    "id": "vanadium",
+    "name": "Vanadium",
+    "category": "metal",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Alloying element in Ti-6Al-4V, the standard aerospace titanium alloy",
+    "source": "https://en.wikipedia.org/wiki/Ti-6Al-4V"
+  },
+  {
+    "id": "niobium",
+    "name": "Niobium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Base of C-103 nozzle alloy and of Nb-Ti and Nb3Sn superconductors",
+    "source": "https://en.wikipedia.org/wiki/Niobium"
+  },
+  {
+    "id": "tin",
+    "name": "Tin",
+    "category": "metal",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Forms Nb3Sn superconductor; solder for electronics; alloying element in Zircaloy",
+    "source": "https://en.wikipedia.org/wiki/Niobium%E2%80%93tin"
+  },
+  {
+    "id": "tantalum",
+    "name": "Tantalum",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Compact high-reliability capacitors in flight electronics",
+    "source": "https://en.wikipedia.org/wiki/Tantalum_capacitor"
+  },
+  {
+    "id": "hafnium",
+    "name": "Hafnium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Neutron-absorbing control material; alloying element in C-103 niobium alloy",
+    "source": "https://en.wikipedia.org/wiki/Hafnium"
+  },
+  {
+    "id": "zirconium",
+    "name": "Zirconium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Low neutron absorption cladding (Zircaloy) and hydride moderator for space reactors",
+    "source": "https://en.wikipedia.org/wiki/Zirconium_alloy"
+  },
+  {
+    "id": "rhenium",
+    "name": "Rhenium",
+    "category": "metal",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "why": "Iridium-coated rhenium chambers run hot in storable bipropellant thrusters; superalloy additive",
+    "source": "https://en.wikipedia.org/wiki/Rhenium"
+  },
+  {
+    "id": "iridium",
+    "name": "Iridium",
+    "category": "metal",
+    "tier": "P",
+    "sources": [
+      { "body": "earth", "how": "byproduct", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Oxidation-resistant coating on rhenium thruster chambers",
+    "source": "https://en.wikipedia.org/wiki/Iridium"
+  },
+  {
+    "id": "platinum",
+    "name": "Platinum",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Catalyst in PEM electrolysers, fuel cells and chemical processing",
+    "source": "https://en.wikipedia.org/wiki/Platinum_group"
+  },
+  {
+    "id": "gold",
+    "name": "Gold",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Corrosion-free contacts and infrared-reflective thermal coatings",
+    "source": "https://en.wikipedia.org/wiki/Gold"
+  },
+  {
+    "id": "silver",
+    "name": "Silver",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Solar-cell interconnects, contacts and brazing",
+    "source": "https://en.wikipedia.org/wiki/Silver"
+  },
+  {
+    "id": "beryllium",
+    "name": "Beryllium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Light stiff metal for mirrors and neutron reflectors in compact reactors",
+    "source": "https://en.wikipedia.org/wiki/Beryllium"
+  },
+  {
+    "id": "lead",
+    "name": "Lead",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Gamma shielding; lithium-lead is a candidate fusion breeding blanket",
+    "source": "https://en.wikipedia.org/wiki/Breeding_blanket"
+  },
+  {
+    "id": "sodium",
+    "name": "Sodium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Working fluid in heat pipes of the Kilopower space reactor",
+    "source": "https://en.wikipedia.org/wiki/Kilopower"
+  },
+  {
+    "id": "potassium",
+    "name": "Potassium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
+      { "body": "mercury", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Plant nutrient for food crops; NaK liquid-metal coolant",
+    "source": "https://en.wikipedia.org/wiki/Potash"
+  },
+  {
+    "id": "neodymium",
+    "name": "Neodymium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "moon", "how": "regolith", "building": "regolith_excavator" }
+    ],
+    "why": "Rare earth for NdFeB permanent magnets in motors, actuators and reaction wheels",
+    "source": "https://en.wikipedia.org/wiki/Neodymium_magnet"
+  },
+  {
+    "id": "samarium",
+    "name": "Samarium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Samarium-cobalt magnets keep strength at high temperature (Hall thrusters, actuators)",
+    "source": "https://en.wikipedia.org/wiki/Samarium%E2%80%93cobalt_magnet"
+  },
+  {
+    "id": "yttrium",
+    "name": "Yttrium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Stabilises zirconia electrolytes and is the rare earth in YBCO superconductor tape",
+    "source": "https://en.wikipedia.org/wiki/Yttria-stabilized_zirconia"
+  },
+  {
+    "id": "barium",
+    "name": "Barium",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Constituent of REBCO high-temperature superconductor",
+    "source": "https://en.wikipedia.org/wiki/Yttrium_barium_copper_oxide"
+  },
+  {
+    "id": "boron",
+    "name": "Boron",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Neutron absorber (boron-10), boron carbide and NdFeB magnets",
+    "source": "https://en.wikipedia.org/wiki/Boron"
+  },
+  {
+    "id": "fe_ni_metal",
+    "name": "Meteoritic iron-nickel (kamacite/taenite)",
+    "category": "metal",
+    "tier": "E",
+    "thin": true,
+    "sources": [
+      { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" },
+      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" }
+    ],
+    "why": "Native metal needing no smelting, with cobalt and platinum-group traces",
+    "source": "https://en.wikipedia.org/wiki/M-type_asteroid"
+  },
+  {
+    "id": "calcium",
+    "name": "Calcium",
+    "category": "metal",
+    "tier": "P",
+    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "why": "Reduction product of lunar anorthite and a by-product of regolith processing; structural and chemical use",
+    "source": "https://en.wikipedia.org/wiki/Calcium"
+  }
+]

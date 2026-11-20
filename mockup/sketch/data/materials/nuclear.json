@@ -1,0 +1,185 @@
+[
+  {
+    "id": "zircaloy",
+    "name": "Zircaloy",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Low neutron absorption fuel cladding",
+    "source": "https://en.wikipedia.org/wiki/Zirconium_alloy"
+  },
+  {
+    "id": "uranium",
+    "name": "Natural uranium",
+    "category": "nuclear",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      {
+        "body": "earth",
+        "how": "mined",
+        "building": "mine_earth"
+      }
+    ],
+    "why": "Feed for all enriched fission fuel",
+    "source": "https://en.wikipedia.org/wiki/Uranium"
+  },
+  {
+    "id": "haleu",
+    "name": "High-assay low-enriched uranium (HALEU)",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "why": "5-20% U-235 fuel chosen for modern space reactors and NTR designs",
+    "source": "https://en.wikipedia.org/wiki/High-assay_low-enriched_uranium"
+  },
+  {
+    "id": "heu",
+    "name": "Highly enriched uranium",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Most compact reactor cores (Kilopower used HEU)",
+    "source": "https://en.wikipedia.org/wiki/Enriched_uranium"
+  },
+  {
+    "id": "u_mo_fuel",
+    "name": "Uranium-molybdenum alloy fuel",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Cast metal core of the KRUSTY Kilopower test reactor",
+    "source": "https://en.wikipedia.org/wiki/Kilopower"
+  },
+  {
+    "id": "uzrh_fuel",
+    "name": "Uranium-zirconium hydride fuel",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Self-moderating fuel of SNAP-10A, the only US reactor flown in orbit",
+    "source": "https://en.wikipedia.org/wiki/SNAP-10A"
+  },
+  {
+    "id": "triso",
+    "name": "TRISO fuel particles",
+    "category": "nuclear",
+    "tier": "P",
+    "thin": true,
+    "why": "Coated fuel particles that retain fission products at high temperature",
+    "source": "https://en.wikipedia.org/wiki/Nuclear_fuel#TRISO_fuel"
+  },
+  {
+    "id": "w_cermet",
+    "name": "Tungsten-UO2 cermet fuel",
+    "category": "nuclear",
+    "tier": "E",
+    "why": "Candidate hot hydrogen-resistant nuclear thermal rocket fuel",
+    "source": "https://ntrs.nasa.gov/citations/20150006886"
+  },
+  {
+    "id": "neptunium237",
+    "name": "Neptunium-237",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Irradiation target from which plutonium-238 is bred",
+    "source": "https://en.wikipedia.org/wiki/Neptunium"
+  },
+  {
+    "id": "pu238",
+    "name": "Plutonium-238",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Decay-heat source of radioisotope generators for deep-space probes",
+    "source": "https://en.wikipedia.org/wiki/Plutonium-238"
+  },
+  {
+    "id": "thorium",
+    "name": "Thorium",
+    "category": "nuclear",
+    "tier": "E",
+    "sources": [
+      {
+        "body": "earth",
+        "how": "mined",
+        "building": "mine_earth"
+      },
+      {
+        "body": "moon",
+        "how": "regolith",
+        "building": "regolith_excavator"
+      }
+    ],
+    "why": "Fertile fuel for thorium breeder reactors",
+    "source": "https://en.wikipedia.org/wiki/KREEP"
+  },
+  {
+    "id": "lithium6",
+    "name": "Lithium-6",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "why": "Enriched in breeding blankets to make tritium in D-T fusion",
+    "source": "https://en.wikipedia.org/wiki/Breeding_blanket"
+  },
+  {
+    "id": "deuterium",
+    "name": "Deuterium",
+    "category": "propellant",
+    "tier": "P",
+    "thin": true,
+    "sources": [
+      {
+        "body": "gas-giant",
+        "how": "atmosphere",
+        "building": "gas_giant_scoop"
+      },
+      {
+        "body": "ice-giant",
+        "how": "atmosphere",
+        "building": "gas_giant_scoop"
+      }
+    ],
+    "why": "Fusion fuel in D-T and D-He3 reactions",
+    "source": "https://en.wikipedia.org/wiki/Deuterium"
+  },
+  {
+    "id": "tritium",
+    "name": "Tritium",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "why": "D-T fusion fuel; not naturally available, must be bred",
+    "source": "https://en.wikipedia.org/wiki/Tritium"
+  },
+  {
+    "id": "helium3",
+    "name": "Helium-3",
+    "category": "propellant",
+    "tier": "E",
+    "thin": true,
+    "sources": [
+      {
+        "body": "moon",
+        "how": "solar-wind",
+        "building": "regolith_excavator"
+      },
+      {
+        "body": "gas-giant",
+        "how": "atmosphere",
+        "building": "gas_giant_scoop"
+      },
+      {
+        "body": "ice-giant",
+        "how": "atmosphere",
+        "building": "gas_giant_scoop"
+      }
+    ],
+    "why": "Aneutronic-leaning D-He3 fusion fuel; very scarce on Earth",
+    "source": "https://en.wikipedia.org/wiki/Helium-3"
+  },
+  {
+    "id": "depleted_uranium",
+    "name": "Depleted uranium",
+    "category": "nuclear",
+    "tier": "P",
+    "why": "Tails of uranium enrichment: dense, cheap radiation and ballast mass",
+    "source": "https://en.wikipedia.org/wiki/Depleted_uranium"
+  }
+]

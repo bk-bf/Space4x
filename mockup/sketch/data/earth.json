@@ -1,0 +1,317 @@
+{
+  "name": "Earth",
+  "body": "earth",
+  "population": 8200000000.0,
+  "populationSource": "https://population.un.org/wpp/",
+  "workforceShare": 0.45,
+  "growthPerYear": 0.009,
+  "gridKw": 3500000000.0,
+  "stockDays": 90,
+  "sizing": {
+    "food": "ranches make meat for 10% of the calories at 2,200 kcal per kg from cereal and soybean feed, farmland makes the other crops, and together they feed the population at kcalPerPersonDay with a 5% surplus, the crops split 40% wheat, 25% potato, 25% soybean, 10% leafy greens by mass after the ranches have taken their feed",
+    "endProducts": "each end product is made at its present-day world output, in kg a year",
+    "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
+    "grid": "gridKw covers the start demand with about 15% to spare",
+    "stock": "each material starts with stockDays of its start production"
+  },
+  "endProducts": {
+    "stainless_steel": 58000000000.0,
+    "nickel_superalloy": 300000000.0,
+    "al_li_alloy": 100000000.0,
+    "ti_6al_4v": 100000000.0,
+    "cfrp": 200000000.0,
+    "lox": 20000000000.0,
+    "lch4": 400000000000.0,
+    "helium4": 30000000.0
+  },
+  "groups": [
+    {
+      "building": "farmland",
+      "process": "farm_wheat",
+      "count": 2360403
+    },
+    {
+      "building": "farmland",
+      "process": "farm_potato",
+      "count": 863746
+    },
+    {
+      "building": "farmland",
+      "process": "farm_soybean",
+      "count": 1189883
+    },
+    {
+      "building": "farmland",
+      "process": "farm_leafy_greens",
+      "count": 345499
+    },
+    {
+      "building": "ranch",
+      "process": "ranch_meat",
+      "count": 1043637
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:water",
+      "count": 1834546
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:methane",
+      "count": 357061
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:iron",
+      "count": 182523
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:potassium",
+      "count": 4545
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:chromium",
+      "count": 1651
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:phosphorus",
+      "count": 3559
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:sulfur",
+      "count": 9697
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:nickel",
+      "count": 422
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:ethylene",
+      "count": 41
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:aluminium",
+      "count": 8214
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:titanium",
+      "count": 642
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:helium4",
+      "count": 3
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:niobium",
+      "count": 13
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:molybdenum",
+      "count": 30
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:copper",
+      "count": 2624
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:lithium",
+      "count": 27
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:vanadium",
+      "count": 11
+    },
+    {
+      "building": "air_separation_plant",
+      "process": "air_separation",
+      "count": 2354
+    },
+    {
+      "building": "chemical_plant",
+      "process": "haber_bosch",
+      "count": 7250
+    },
+    {
+      "building": "chemical_plant",
+      "process": "steam_methane_reforming",
+      "count": 6493
+    },
+    {
+      "building": "chemical_plant",
+      "process": "urea_synthesis",
+      "count": 6336
+    },
+    {
+      "building": "chemical_plant",
+      "process": "potassium_sulfate_synthesis",
+      "count": 2860
+    },
+    {
+      "building": "chemical_plant",
+      "process": "sulfuric_acid_synthesis",
+      "count": 1449
+    },
+    {
+      "building": "chemical_plant",
+      "process": "map_neutralisation",
+      "count": 1434
+    },
+    {
+      "building": "chemical_plant",
+      "process": "phosphoric_acid_thermal",
+      "count": 1097
+    },
+    {
+      "building": "alloy_works",
+      "process": "stainless_steel_304",
+      "count": 6617
+    },
+    {
+      "building": "alloy_works",
+      "process": "nickel_superalloy_melting",
+      "count": 35
+    },
+    {
+      "building": "alloy_works",
+      "process": "al_li_alloy_blending",
+      "count": 12
+    },
+    {
+      "building": "alloy_works",
+      "process": "ti_6al_4v_melting",
+      "count": 12
+    },
+    {
+      "building": "polymer_plant",
+      "process": "pan_polymerisation",
+      "count": 36
+    },
+    {
+      "building": "polymer_plant",
+      "process": "epoxy_curing_resin",
+      "count": 11
+    },
+    {
+      "building": "fibre_works",
+      "process": "carbon_fibre_carbonisation",
+      "count": 16
+    },
+    {
+      "building": "composite_works",
+      "process": "cfrp_layup",
+      "count": 23
+    },
+    {
+      "building": "cryogenic_liquefaction_plant",
+      "process": "lch4_liquefaction",
+      "count": 45631
+    },
+    {
+      "building": "cryogenic_liquefaction_plant",
+      "process": "lox_liquefaction",
+      "count": 2282
+    },
+    {
+      "building": "rocket_factory",
+      "process": null,
+      "count": 10
+    },
+    {
+      "building": "launch_site",
+      "process": null,
+      "count": 25
+    },
+    {
+      "building": "smelter",
+      "process": null,
+      "count": 100
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:cobalt",
+      "count": 33
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:tungsten",
+      "count": 9
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:tin",
+      "count": 34
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:silver",
+      "count": 3
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:lead",
+      "count": 491
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:uranium",
+      "count": 6
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:graphite",
+      "count": 183
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:fluorite",
+      "count": 1084
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:iodine",
+      "count": 4
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:rp1",
+      "count": 412959
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:silicon",
+      "count": 1107
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:zirconium",
+      "count": 85
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:arsenic",
+      "count": 5
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:barium",
+      "count": 550
+    }
+  ],
+  "kcalPerPersonDay": 2800,
+  "kcalSource": "https://www.fao.org/3/y5686e/y5686e08.htm",
+  "kcalBasis": "Reference person: a moderately active man of 18 to 30 years, 1.70 m, with a physical activity level of 1.75, whose recommended intake is about 2,800 kcal a day in the FAO, WHO and UNU report on human energy requirements; every person in the game needs this, on Earth and off it"
+}

@@ -1,0 +1,43 @@
+.pools > div { min-width: 0; }
+.pool, .bpt { margin-bottom: 8px; }
+.pool .ph2, .bpt .ph2 { display: flex; align-items: center; gap: 5px; font-size: 17px; margin-bottom: 2px; }
+.pool .ph2 .ic, .bpt .ph2 .ic { width: 14px; height: 14px; color: var(--dim); }
+.pool .ph2 .v, .bpt .ph2 .v { margin-left: auto; color: var(--dim); font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool.short .ph2 .v, .pool.short .ph2 .ic { color: var(--hot); }
+.sbar { display: flex; height: 12px; background: var(--bg); outline: 1px solid var(--line); overflow: hidden; }
+.sbar i { display: block; height: 100%; flex: none; box-shadow: inset -1px 0 0 var(--bg); }
+.sbar i.over { background: repeating-linear-gradient(135deg, var(--hot) 0 3px, transparent 3px 6px) !important; }
+.legend { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 15px; color: var(--dim); margin: 0 0 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 3px; }
+.legend b { width: 9px; height: 9px; display: inline-block; }
+.c-research { background: #5fd0c5; }
+.c-processing { background: #f2b35d; }
+.c-production { background: #c98f4a; }
+.c-compute { background: #7f9cf5; }
+.c-shipbuilding { background: #ef6f5e; }
+.c-programme { background: #ff9fb0; }
+.c-construction { background: #b48cf2; }
+.c-infrastructure { background: #8a7fc4; }
+.c-sold { background: #8fd06a; }
+.c-upkeep { background: #6d6899; }
+.sklog { display: flex; flex-direction: column; gap: 2px; font-size: 16px; margin-bottom: 8px; }
+.sklog div { display: flex; gap: 6px; line-height: 1.05; }
+.sklog em { font-style: normal; color: var(--dim); white-space: nowrap; flex: none; min-width: 64px; }
+.sklog .hot { color: var(--hot); }
+.sklog .cool { color: var(--cool); }
+.sklog .acc { color: var(--accent); }
+.ctl { display: inline-flex; align-items: center; gap: 4px; }
+.ctl button { padding: 0 6px; margin: 1px; }
+.ctl .val { min-width: 48px; text-align: center; color: var(--accent); }
+.mk { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; margin-bottom: 8px; }
+.mk .card { margin: 0; }
+.ledger .fr.tot { border-top: 1px solid var(--line); padding-top: 3px; }
+.plan { display: flex; gap: 5px; flex-wrap: wrap; }
+.plan .tile { width: 96px; height: 52px; justify-content: center; cursor: default; }
+.plan .tile .sub { font-size: 14px; color: var(--dim); white-space: nowrap; }
+.c-q0 { background: var(--accent); }
+.c-q1 { background: var(--cool); }
+.sbar i.free { background: transparent; }
+.c-q2 { background: #c98f4a; }
+.c-q3 { background: #8a7fc4; }
+.pool .legend { margin: 3px 0 0; }

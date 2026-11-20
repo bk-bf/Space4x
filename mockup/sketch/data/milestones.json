@@ -1,0 +1,679 @@
+[
+  {
+    "id": "reusable_orbital_launch",
+    "number": 1,
+    "name": "Reusable orbital launch",
+    "subject": "launch",
+    "tier": "P",
+    "unlocks": "cheap, repeated lift from Earth; every later project is paid for in launches until 12.",
+    "requires": [],
+    "needs": {
+      "materials": [
+        "stainless_steel",
+        "aluminium",
+        "al_li_alloy",
+        "nickel_superalloy",
+        "copper",
+        "titanium",
+        "oxygen",
+        "lox",
+        "lch4",
+        "helium4",
+        "cfrp",
+        "iron"
+      ],
+      "buildings": [
+        "mine_earth",
+        "alloy_works",
+        "air_separation_plant",
+        "cryogenic_liquefaction_plant",
+        "composite_works",
+        "rocket_factory",
+        "launch_site",
+        "chemical_plant",
+        "polymer_plant",
+        "fibre_works"
+      ],
+      "components": ["chemical_engine_methalox", "propellant_tank", "structure_truss"]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Falcon_9"]
+  },
+  {
+    "id": "orbital_propellant_transfer",
+    "number": 2,
+    "name": "Orbital propellant transfer",
+    "subject": "launch",
+    "tier": "E",
+    "unlocks": "refuelling in LEO, so a ship can leave LEO with full tanks; first delta-v gate beyond LEO.",
+    "requires": [1],
+    "needs": {
+      "materials": ["polyimide"],
+      "buildings": ["propellant_depot"],
+      "components": ["mli_blanket", "docking_adapter"]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Orbital_propellant_depot"]
+  },
+  {
+    "id": "long_duration_leo_station_with_regenerative_life_support",
+    "number": 3,
+    "name": "Long-duration LEO station with regenerative life support",
+    "subject": "habitats",
+    "tier": "P",
+    "unlocks": "crew stays for months; habitat module tech; water and oxygen recycling.",
+    "requires": [1, 2],
+    "needs": {
+      "materials": [
+        "water",
+        "hydrogen",
+        "carbon_dioxide",
+        "ammonia",
+        "amine_sorbent",
+        "fused_silica",
+        "platinum",
+        "plant_biomass",
+        "food_ration"
+      ],
+      "buildings": [
+        "life_support_plant",
+        "electrolysis_plant",
+        "sabatier_plant",
+        "ceramics_works",
+        "farmland",
+        "food_plant"
+      ],
+      "components": ["habitat_module", "life_support_unit", "whipple_shield", "radiator"]
+    },
+    "sources": [
+      "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Research/Advanced_Closed_Loop_System"
+    ]
+  },
+  {
+    "id": "space_solar_power_arrays_at_scale",
+    "number": 4,
+    "name": "Space solar power arrays at scale",
+    "subject": "power",
+    "tier": "P",
+    "unlocks": "tens to hundreds of kW per ship and station.",
+    "requires": [1, 3],
+    "needs": {
+      "materials": ["silicon", "electronic_silicon", "mj_solar_cell", "li_ion_cell"],
+      "buildings": ["solar_cell_fab", "semiconductor_fab", "battery_plant"],
+      "components": ["solar_array", "battery_pack"]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Multi-junction_solar_cell"]
+  },
+  {
+    "id": "data_centres_and_autonomy",
+    "number": 5,
+    "name": "Data centres and autonomy",
+    "subject": "computing",
+    "tier": "P",
+    "unlocks": "compute and AI as resources; autonomous robots where light delay rules out teleoperation (asteroids, outer system).",
+    "requires": [4],
+    "needs": {
+      "materials": ["compute", "ai_models", "neon"],
+      "buildings": ["data_centre"],
+      "components": ["avionics"]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/AI_accelerator"]
+  },
+  {
+    "id": "crewed_lunar_landing_and_surface_outpost",
+    "number": 6,
+    "name": "Crewed lunar landing and surface outpost",
+    "subject": "habitats",
+    "tier": "P",
+    "unlocks": "sorties to the lunar south pole; first lunar habitat.",
+    "requires": [3],
+    "needs": {
+      "materials": ["lh2", "uhmwpe"],
+      "buildings": [],
+      "components": ["chemical_engine_hydrolox", "heat_shield", "radiation_shield"],
+      "sites": [
+        {
+          "label": "No crewed outpost on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "people": 1
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Artemis_Base_Camp"]
+  },
+  {
+    "id": "fission_surface_power",
+    "number": 7,
+    "name": "Fission surface power",
+    "subject": "power",
+    "tier": "E",
+    "unlocks": "continuous power through the 14-day lunar night and later at Mars and beyond.",
+    "requires": [6],
+    "needs": {
+      "materials": ["uranium", "haleu", "boron_carbide", "haynes_230"],
+      "buildings": ["enrichment_plant", "fuel_fabrication_plant", "fission_reactor"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No fission reactor on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["fission_reactor"]
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Kilopower"]
+  },
+  {
+    "id": "lunar_polar_ice_mining",
+    "number": 8,
+    "name": "Lunar polar ice mining",
+    "subject": "mining",
+    "tier": "E",
+    "unlocks": "lunar water, hence local oxygen and hydrogen propellant.",
+    "requires": [5, 6, 7],
+    "needs": {
+      "materials": ["lunar_regolith", "ndfeb_magnet"],
+      "buildings": ["ice_mine", "regolith_excavator", "magnet_works"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No ice mine at the lunar south pole",
+          "world": "luna",
+          "region": "luna-south-pole",
+          "buildings": ["ice_mine"]
+        }
+      ]
+    },
+    "sources": ["https://www.sciencenews.org/article/moon-crash-reveals-crater-held-water"]
+  },
+  {
+    "id": "regolith_oxygen_and_metals",
+    "number": 9,
+    "name": "Regolith oxygen and metals",
+    "subject": "chemistry",
+    "tier": "E",
+    "unlocks": "oxygen from dry regolith anywhere on the Moon; iron and silicon as by-products.",
+    "requires": [8],
+    "needs": {
+      "materials": ["iron"],
+      "buildings": ["regolith_oxygen_plant"],
+      "components": []
+    },
+    "sources": ["https://ntrs.nasa.gov/citations/20110008535"]
+  },
+  {
+    "id": "regolith_construction",
+    "number": 10,
+    "name": "Regolith construction",
+    "subject": "habitats",
+    "tier": "E",
+    "unlocks": "shielded habitats, landing pads and berms without lift from Earth.",
+    "requires": [9],
+    "needs": {
+      "materials": ["sintered_regolith"],
+      "buildings": ["sinter_printer"],
+      "components": []
+    },
+    "sources": [
+      "https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Shaping_the_Future/3D_printing_of_a_model_building_block_for_a_lunar_base_outer_shell"
+    ]
+  },
+  {
+    "id": "permanent_moon_base",
+    "number": 11,
+    "name": "Permanent Moon base",
+    "subject": "habitats",
+    "tier": "E",
+    "unlocks": "closed food loop and a self-sustaining crew; game pacing after this point.",
+    "requires": [3, 10],
+    "needs": {
+      "materials": ["plant_biomass"],
+      "buildings": ["greenhouse"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No fed crew with a greenhouse on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["greenhouse"],
+          "people": 4,
+          "fed": true
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Moon_Village"]
+  },
+  {
+    "id": "cislunar_propellant_economy",
+    "number": 12,
+    "name": "Cislunar propellant economy",
+    "subject": "launch",
+    "tier": "E",
+    "unlocks": "lunar-made LOX/LH2 sold at depots at L1/L2 and in LEO; Earth lift no longer limits propellant.",
+    "requires": [2, 8],
+    "needs": {
+      "materials": ["lox", "lh2"],
+      "buildings": ["propellant_depot", "cryogenic_liquefaction_plant", "ice_mine", "electrolysis_plant"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No lunar propellant plant on the Moon",
+          "world": "luna",
+          "place": "surface",
+          "buildings": ["ice_mine", "electrolysis_plant", "cryogenic_liquefaction_plant"]
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Lunar_water"]
+  },
+  {
+    "id": "nuclear_electric_propulsion",
+    "number": 13,
+    "name": "Nuclear electric propulsion",
+    "subject": "propulsion",
+    "tier": "E",
+    "unlocks": "high-Isp cargo tugs for asteroids and Mars; low thrust, long trips.",
+    "requires": [7, 8],
+    "needs": {
+      "materials": ["argon", "smco_magnet"],
+      "buildings": ["magnet_works"],
+      "components": ["hall_thruster", "fission_reactor_ship"]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Nuclear_electric_rocket"]
+  },
+  {
+    "id": "nuclear_thermal_propulsion",
+    "number": 14,
+    "name": "Nuclear thermal propulsion",
+    "subject": "propulsion",
+    "tier": "E",
+    "unlocks": "roughly double chemical Isp at high thrust; faster crewed transfers.",
+    "requires": [7, 13],
+    "needs": {
+      "materials": ["triso"],
+      "buildings": [],
+      "components": ["ntr_engine"]
+    },
+    "sources": [
+      "https://en.wikipedia.org/wiki/NERVA",
+      "https://breakingdefense.com/2025/06/darpas-draco-nuclear-propulsion-project-roars-no-more/"
+    ]
+  },
+  {
+    "id": "near_earth_asteroid_prospecting_and_sample_return",
+    "number": 15,
+    "name": "Near-Earth asteroid prospecting and sample return",
+    "subject": "mining",
+    "tier": "P",
+    "unlocks": "survey of asteroid composition; picks mining targets.",
+    "requires": [1, 8],
+    "needs": {
+      "materials": [],
+      "buildings": [],
+      "components": ["survey_suite", "sampling_arm", "heat_shield"],
+      "sites": [
+        {
+          "label": "No asteroid sample on Earth",
+          "world": "earth",
+          "stock": {
+            "material": "carbonaceous_chondrite",
+            "amount": 0.1
+          }
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/OSIRIS-REx"]
+  },
+  {
+    "id": "c_type_asteroid_volatiles_mining",
+    "number": 16,
+    "name": "C-type asteroid volatiles mining",
+    "subject": "mining",
+    "tier": "E",
+    "unlocks": "water, carbon and nitrogen in quantity without a gravity well; feeds every depot.",
+    "requires": [12, 15],
+    "needs": {
+      "materials": ["carbonaceous_chondrite"],
+      "buildings": ["asteroid_miner", "asteroid_processor"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No miner on a carbonaceous asteroid",
+          "body": "asteroid-c",
+          "place": "surface",
+          "buildings": ["asteroid_miner"]
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Asteroid_mining"]
+  },
+  {
+    "id": "metal_asteroid_mining_and_in_space_metallurgy",
+    "number": 17,
+    "name": "Metal asteroid mining and in-space metallurgy",
+    "subject": "mining",
+    "tier": "E",
+    "unlocks": "bulk iron-nickel and platinum-group metals; the \"sheer quantity\" gate.",
+    "requires": [16],
+    "needs": {
+      "materials": ["fe_ni_metal", "asteroidal_steel"],
+      "buildings": ["metal_refinery"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No miner on a metallic asteroid",
+          "body": "asteroid-m",
+          "place": "surface",
+          "buildings": ["asteroid_miner"]
+        }
+      ]
+    },
+    "sources": ["https://planetary.org/space-missions/psyche"]
+  },
+  {
+    "id": "orbital_shipyard",
+    "number": 18,
+    "name": "Orbital shipyard",
+    "subject": "launch",
+    "tier": "E",
+    "unlocks": "ships too large to launch, built from asteroidal metal and volatiles.",
+    "requires": [12, 17],
+    "needs": {
+      "materials": [],
+      "buildings": ["orbital_shipyard"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No orbital shipyard has built a ship",
+          "place": "orbit",
+          "buildings": ["orbital_shipyard"],
+          "built": 1
+        }
+      ]
+    },
+    "sources": ["https://www.nasa.gov/mission/on-orbit-servicing-assembly-and-manufacturing-2-osam-2/"]
+  },
+  {
+    "id": "in_space_electronics_and_chip_fabrication",
+    "number": 19,
+    "name": "In-space electronics and chip fabrication",
+    "subject": "computing",
+    "tier": "E",
+    "unlocks": "solar cells and chips made off Earth from regolith or asteroid silicon.",
+    "requires": [9, 18],
+    "needs": {
+      "materials": ["sulfuric_acid"],
+      "buildings": ["semiconductor_fab", "solar_cell_fab"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No chip fab has run in orbit",
+          "place": "orbit",
+          "buildings": ["semiconductor_fab", "solar_cell_fab"],
+          "ran": {
+            "semiconductor_fab": 24
+          }
+        }
+      ]
+    },
+    "sources": ["https://arxiv.org/abs/2408.05823"]
+  },
+  {
+    "id": "space_based_solar_power_stations",
+    "number": 20,
+    "name": "Space-based solar power stations",
+    "subject": "power",
+    "tier": "E",
+    "unlocks": "gigawatt power in orbit for industry and beaming.",
+    "requires": [4, 18, 19],
+    "needs": {
+      "materials": [],
+      "buildings": ["solar_power_station"],
+      "components": ["solar_array", "radiator"],
+      "sites": [
+        {
+          "label": "No space solar power station has delivered power",
+          "place": "orbit",
+          "buildings": ["solar_power_station"],
+          "ran": {
+            "solar_power_station": 24
+          }
+        }
+      ]
+    },
+    "sources": ["https://www.powermag.com/space-solar-power-prototype-beams-first-power-to-earth/"]
+  },
+  {
+    "id": "mars_isru",
+    "number": 21,
+    "name": "Mars ISRU",
+    "subject": "chemistry",
+    "tier": "E",
+    "optional": true,
+    "unlocks": "oxygen and methane made on Mars from atmospheric CO2 and subsurface ice.",
+    "requires": [8, 9, 12],
+    "needs": {
+      "materials": ["lch4"],
+      "buildings": ["sabatier_plant", "ice_mine", "regolith_oxygen_plant"],
+      "components": []
+    },
+    "sources": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC9432831/"]
+  },
+  {
+    "id": "fusion_power_plants_d_t",
+    "number": 22,
+    "name": "Fusion power plants, D-T",
+    "subject": "power",
+    "tier": "E",
+    "unlocks": "compact high-field fusion; breeding of tritium.",
+    "requires": [7, 8],
+    "needs": {
+      "materials": ["rebco", "lithium6", "deuterium", "tritium"],
+      "buildings": ["isotope_separator", "fusion_plant", "magnet_works"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No fusion plant has run",
+          "buildings": ["fusion_plant"],
+          "ran": {
+            "d_t_fusion_power": 24
+          }
+        }
+      ],
+      "bill": {
+        "lithium6": 200,
+        "deuterium": 200,
+        "tritium": 20
+      }
+    },
+    "sources": [
+      "https://www.eurekalert.org/news-releases/1036447",
+      "https://www.iter.org/mach/TritiumBreeding"
+    ]
+  },
+  {
+    "id": "lunar_helium_3_extraction",
+    "number": 23,
+    "name": "Lunar helium-3 extraction",
+    "subject": "mining",
+    "tier": "E",
+    "unlocks": "first He-3 stock for D-He3 fusion.",
+    "requires": [8, 22],
+    "needs": {
+      "materials": ["helium3"],
+      "buildings": ["regolith_excavator"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No helium-3 mined on the lunar maria",
+          "world": "luna",
+          "place": "surface",
+          "region": "luna-maria",
+          "made": {
+            "material": "helium3",
+            "amount": 1000
+          }
+        }
+      ]
+    },
+    "sources": ["https://www.nasa.gov/feature/harnessing-power-from-the-moon"]
+  },
+  {
+    "id": "fusion_propulsion_d_he3",
+    "number": 24,
+    "name": "Fusion propulsion, D-He3",
+    "subject": "propulsion",
+    "tier": "E",
+    "unlocks": "high Isp with useful thrust; practical travel to the outer planets.",
+    "requires": [18, 22, 23],
+    "needs": {
+      "materials": ["uhtc"],
+      "buildings": ["orbital_shipyard"],
+      "components": ["fusion_drive"],
+      "sites": [
+        {
+          "label": "No ship has flown on a fusion drive",
+          "flown": "fusion_drive"
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Direct_Fusion_Drive"]
+  },
+  {
+    "id": "gas_giant_atmospheric_mining",
+    "number": 25,
+    "name": "Gas giant atmospheric mining",
+    "subject": "mining",
+    "tier": "E",
+    "unlocks": "He-3, deuterium and hydrogen in quantity from Uranus or Saturn.",
+    "requires": [16, 24],
+    "needs": {
+      "materials": ["helium3", "deuterium", "hydrogen"],
+      "buildings": ["gas_giant_scoop"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No scoop at a gas or ice giant has made helium-3",
+          "place": "surface",
+          "buildings": ["gas_giant_scoop"],
+          "made": {
+            "material": "helium3",
+            "amount": 1000
+          }
+        }
+      ],
+      "bill": {
+        "deuterium": 200
+      }
+    },
+    "sources": ["https://ntrs.nasa.gov/api/citations/20170005215/downloads/20170005215.pdf"]
+  },
+  {
+    "id": "megastructure_fabrication",
+    "number": 26,
+    "name": "Megastructure fabrication",
+    "subject": "launch",
+    "tier": "E",
+    "unlocks": "kilometre-scale frames for the jump point station.",
+    "requires": [17, 18],
+    "needs": {
+      "materials": ["cnt_fibre"],
+      "buildings": ["orbital_shipyard", "metal_refinery"],
+      "components": ["structure_truss"],
+      "sites": [
+        {
+          "label": "No carbon nanotube fibre made beside an orbital shipyard",
+          "place": "orbit",
+          "buildings": ["orbital_shipyard"],
+          "made": {
+            "material": "cnt_fibre",
+            "amount": 5000
+          }
+        }
+      ]
+    },
+    "sources": ["https://en.wikipedia.org/wiki/Solar_power_satellite"]
+  },
+  {
+    "id": "room_temperature_superconductors",
+    "number": 27,
+    "name": "Room-temperature superconductors",
+    "subject": "power",
+    "tier": "S",
+    "unlocks": "high-field magnets with no cryogenics.",
+    "requires": [22],
+    "needs": {
+      "materials": ["rt_superconductor"],
+      "buildings": ["magnet_works"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No room-temperature superconductor has been made",
+          "made": {
+            "material": "rt_superconductor",
+            "amount": 600
+          }
+        }
+      ]
+    },
+    "sources": [
+      "https://www.qmul.ac.uk/news/latest-news/2025/science-and-engineering/se/the-quest-for-room-temperature-superconductors.html"
+    ]
+  },
+  {
+    "id": "exotic_negative_energy_matter_production",
+    "number": 28,
+    "name": "Exotic negative-energy matter production",
+    "subject": "physics",
+    "tier": "S",
+    "unlocks": "material that can hold a wormhole throat open.",
+    "requires": [17, 22, 27],
+    "needs": {
+      "materials": ["exotic_matter"],
+      "buildings": ["exotic_matter_facility"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No exotic matter facility has made exotic matter",
+          "place": "orbit",
+          "buildings": ["exotic_matter_facility"],
+          "made": {
+            "material": "exotic_matter",
+            "amount": 0.01
+          }
+        }
+      ]
+    },
+    "sources": ["https://arxiv.org/abs/2107.00605"]
+  },
+  {
+    "id": "jump_point_stabilisation",
+    "number": 29,
+    "name": "Jump point stabilisation",
+    "subject": "physics",
+    "tier": "S",
+    "unlocks": "a stable route to another star system; end of the prototype.",
+    "requires": [25, 26, 27, 28],
+    "needs": {
+      "materials": [
+        "exotic_matter",
+        "rt_superconductor",
+        "asteroidal_steel",
+        "cnt_fibre",
+        "compute",
+        "ai_models"
+      ],
+      "buildings": ["jump_point_stabiliser"],
+      "components": [],
+      "sites": [
+        {
+          "label": "No jump point stabiliser stands at the jump point",
+          "world": "sol-a",
+          "place": "point",
+          "buildings": ["jump_point_stabiliser"]
+        }
+      ]
+    },
+    "sources": ["https://arxiv.org/abs/2405.05476"]
+  }
+]

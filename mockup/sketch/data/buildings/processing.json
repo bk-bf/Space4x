@@ -1,0 +1,162 @@
+[
+  {
+    "id": "smelter",
+    "name": "Smelter",
+    "kind": "processing",
+    "where": ["earth", "moon"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "nickel_superalloy": 300, "copper": 100 },
+    "workers": 20
+  },
+  {
+    "id": "alloy_works",
+    "name": "Alloy works",
+    "kind": "processing",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2500, "copper": 200 },
+    "workers": 20
+  },
+  {
+    "id": "electrolysis_plant",
+    "name": "Electrolysis plant",
+    "kind": "processing",
+    "where": ["earth", "moon", "mars", "orbit"],
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 500, "platinum": 2, "copper": 100 },
+    "workers": 6
+  },
+  {
+    "id": "cryogenic_liquefaction_plant",
+    "name": "Cryogenic liquefaction plant",
+    "kind": "processing",
+    "where": ["earth", "moon", "mars", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1500, "aluminium": 300, "copper": 150 },
+    "workers": 10
+  },
+  {
+    "id": "sabatier_plant",
+    "name": "Sabatier plant",
+    "kind": "processing",
+    "where": ["earth", "moon", "mars", "orbit"],
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 400, "nickel": 50, "copper": 50 },
+    "workers": 4
+  },
+  {
+    "id": "chemical_plant",
+    "name": "Chemical plant",
+    "kind": "processing",
+    "where": ["earth", "moon", "mars", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2500, "nickel_superalloy": 200, "copper": 100 },
+    "workers": 25
+  },
+  {
+    "id": "polymer_plant",
+    "name": "Polymer plant",
+    "kind": "processing",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 100 },
+    "workers": 15
+  },
+  {
+    "id": "fibre_works",
+    "name": "Fibre works",
+    "kind": "processing",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1500, "aluminium": 200, "copper": 100 },
+    "workers": 15
+  },
+  {
+    "id": "composite_works",
+    "name": "Composite works",
+    "kind": "processing",
+    "where": ["earth", "orbit"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "aluminium": 300 },
+    "workers": 20
+  },
+  {
+    "id": "ceramics_works",
+    "name": "Ceramics works",
+    "kind": "processing",
+    "where": ["earth", "moon", "orbit"],
+    "milestone": 3,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1500, "nickel_superalloy": 100, "copper": 100 },
+    "workers": 12
+  },
+  {
+    "id": "regolith_oxygen_plant",
+    "name": "Regolith oxygen plant",
+    "kind": "processing",
+    "where": ["moon", "mars"],
+    "milestone": 9,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 1000, "nickel_superalloy": 200, "copper": 200 },
+    "workers": 3
+  },
+  {
+    "id": "sinter_printer",
+    "name": "Sinter printer",
+    "kind": "processing",
+    "where": ["moon", "mars"],
+    "milestone": 10,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 800, "copper": 100, "ai_models": 1 },
+    "workers": 2
+  },
+  {
+    "id": "asteroid_processor",
+    "name": "Asteroid processor",
+    "kind": "processing",
+    "where": ["asteroid-c", "asteroid-s", "asteroid-m", "comet", "orbit"],
+    "milestone": 16,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "nickel_superalloy": 300, "ai_models": 2 },
+    "workers": 0
+  },
+  {
+    "id": "metal_refinery",
+    "name": "Metal refinery",
+    "kind": "processing",
+    "where": ["asteroid-m", "moon", "orbit"],
+    "milestone": 17,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 3000, "nickel_superalloy": 500, "ai_models": 2 },
+    "workers": 0
+  }
+]

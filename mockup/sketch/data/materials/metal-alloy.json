@@ -1,0 +1,72 @@
+[
+  {
+    "id": "stainless_steel",
+    "name": "Stainless steel",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "why": "Cheap, cryogenically tough, heat tolerant hull and tank metal (Starship)",
+    "source": "https://en.wikipedia.org/wiki/SpaceX_Starship"
+  },
+  {
+    "id": "al_li_alloy",
+    "name": "Aluminium-lithium alloy",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "why": "Lighter, stiffer cryogenic tank alloy (2195 on Shuttle external tank, Falcon 9)",
+    "source": "https://en.wikipedia.org/wiki/Aluminium%E2%80%93lithium_alloys"
+  },
+  {
+    "id": "ti_6al_4v",
+    "name": "Titanium alloy Ti-6Al-4V",
+    "category": "metal",
+    "tier": "P",
+    "why": "Workhorse aerospace titanium alloy for fittings and pressure vessels",
+    "source": "https://en.wikipedia.org/wiki/Ti-6Al-4V"
+  },
+  {
+    "id": "nickel_superalloy",
+    "name": "Nickel superalloy (Inconel)",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "why": "Keeps strength in hot oxygen-rich turbopump and manifold environments",
+    "source": "https://en.wikipedia.org/wiki/Inconel"
+  },
+  {
+    "id": "grcop",
+    "name": "GRCop copper-chromium-niobium alloy",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "why": "Additively manufactured combustion-chamber liner alloy developed by NASA",
+    "source": "https://www.nasa.gov/centers-and-facilities/marshall/3d-printed-rocket-launched-using-innovative-nasa-alloy/"
+  },
+  {
+    "id": "c103",
+    "name": "C-103 niobium alloy",
+    "category": "metal",
+    "tier": "P",
+    "why": "Radiatively cooled nozzle extensions and small thrusters",
+    "source": "https://en.wikipedia.org/wiki/Niobium"
+  },
+  {
+    "id": "haynes_230",
+    "name": "Haynes 230 nickel-chromium-tungsten alloy",
+    "category": "metal",
+    "tier": "P",
+    "thin": true,
+    "why": "Heat-pipe envelope alloy in the KRUSTY/Kilopower reactor test",
+    "source": "https://ntrs.nasa.gov/api/citations/20180005435/downloads/20180005435.pdf"
+  },
+  {
+    "id": "asteroidal_steel",
+    "name": "In-space iron-nickel steel",
+    "category": "metal",
+    "tier": "E",
+    "thin": true,
+    "why": "Bulk structural metal for hulls and megastructures without lift from Earth",
+    "source": "https://en.wikipedia.org/wiki/Asteroid_mining"
+  }
+]
