@@ -12,7 +12,13 @@
     "endProducts": "each end product is made at its present-day world output, in kg a year",
     "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
     "grid": "gridKw covers the start demand with about 15% to spare",
-    "stock": "each material starts with stockDays of its start production"
+    "stock": "each material starts with stockDays of its start production, except those in startStock",
+    "goods": "the semiconductor fabs, flight machine shops and data centres stand at the counts of the design sketch, and polysilicon, machinery and integrated circuits start at its stock"
+  },
+  "startStock": {
+    "electronic_silicon": 6000,
+    "machinery": 30000,
+    "rad_hard_ic": 8000
   },
   "endProducts": {
     "stainless_steel": 58000000000.0,
@@ -239,6 +245,26 @@
       "building": "smelter",
       "process": null,
       "count": 100
+    },
+    {
+      "building": "semiconductor_fab",
+      "process": "electronic_silicon_purification",
+      "count": 1
+    },
+    {
+      "building": "semiconductor_fab",
+      "process": "rad_hard_ic_fabrication",
+      "count": 1
+    },
+    {
+      "building": "machine_shop",
+      "process": null,
+      "count": 2
+    },
+    {
+      "building": "data_centre",
+      "process": "compute_generation",
+      "count": 2
     }
   ],
   "kcalPerPersonDay": 2800,

@@ -69,25 +69,20 @@ describe('the depletion forecast', () => {
     expect(warning?.day).toBe(0);
   });
 
-  it('warns before a reactor runs out of HALEU and power fails, and before data centres run out of accelerators', () => {
+  it('warns before a reactor runs out of HALEU and power fails', () => {
     const eco = startEconomy();
     const site = outpost(eco, 200, { wheat: wheatFor(200, 1000) });
     site.groups.push(
-      { id: eco.nextId++, building: 'fission_reactor', process: 'fission_haleu_power', count: 5, on: true },
+      { id: eco.nextId++, building: 'fission_reactor', process: 'fission_haleu_power', count: 125, on: true },
       { id: eco.nextId++, building: 'data_centre', process: 'compute_generation', count: 1, on: true }
     );
     site.stock.haleu = 1;
-    site.stock.ai_accelerator = 1;
     const flows = siteFlows(eco, site);
     const haleuPerDay = -(flows.net.haleu ?? 0) * 24;
-    const chipsPerDay = -(flows.net.ai_accelerator ?? 0) * 24;
     expect(haleuPerDay).toBeGreaterThan(0);
-    expect(chipsPerDay).toBeGreaterThan(0);
     expect(flows.power.supply).toBeGreaterThanOrEqual(flows.power.demand);
     site.stock.haleu = haleuPerDay * 50;
-    site.stock.ai_accelerator = chipsPerDay * 70;
     expect(supply(eco, site, 'power:haleu')?.days).toBeCloseTo(50, 6);
-    expect(supply(eco, site, 'compute:ai_accelerator')?.days).toBeCloseTo(70, 6);
     expect(economyHorizon(eco, 30) / DAY).toBeLessThanOrEqual(1);
 
     const { logs, log } = recorder();
@@ -95,15 +90,12 @@ describe('the depletion forecast', () => {
     const mine = logs.filter((l) => l.site === site.id);
     const fuel = mine.find((l) => l.tag?.material === 'haleu');
     const dark = mine.find((l) => l.text.includes('short of power'));
-    const chips = mine.find((l) => l.tag?.material === 'ai_accelerator');
     expect(fuel?.text).toBe(
       'Luna outpost runs out of High-assay low-enriched uranium (HALEU) in 30 days; its Fission reactor will stop and power will fail.'
     );
     expect(fuel?.day).toBeCloseTo(20, 6);
     expect(dark?.day).toBeCloseTo(50, 6);
     expect(dark?.tag?.kind).toBe('shortage');
-    expect(chips?.tag?.kind).toBe('shortage');
-    expect(chips?.day).toBeCloseTo(40, 6);
   });
 
   it('logs no warning for Earth from the start state', () => {

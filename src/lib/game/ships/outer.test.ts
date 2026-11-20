@@ -37,7 +37,7 @@ describe('the jump point', () => {
       { kind: 'orbit', body: 'earth', angle: 0 },
       {
         propellant: { deuterium: 15_000 },
-        cargo: { stainless_steel: 1000, copper: 300, aluminium: 300, ai_accelerator: 50 }
+        cargo: { machinery: 2000, rad_hard_ic: 6000 }
       }
     );
     const jump = g.jump('sol-a')!.point;
@@ -83,7 +83,7 @@ describe('the jump point', () => {
       { kind: 'orbit', body: 'sol-a', angle: 0 },
       {
         propellant: { deuterium: 1000 },
-        cargo: { stainless_steel: 1000, copper: 300, aluminium: 300, ai_accelerator: 50 }
+        cargo: { machinery: 2000, rad_hard_ic: 6000 }
       }
     );
     const site = foundSite(g, v, 'data_centre') as Site;

@@ -4,7 +4,8 @@
     "name": "Semiconductor fab",
     "kind": "electronics",
     "where": ["earth", "moon", "orbit"],
-    "milestone": 4,
+    "milestone": 1,
+    "start": true,
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "copper": 500, "fused_silica": 200 },
@@ -48,10 +49,11 @@
     "name": "Data centre",
     "kind": "electronics",
     "where": ["earth", "moon", "orbit", "jump-point"],
-    "milestone": 5,
+    "milestone": 1,
+    "start": true,
     "thin": true,
     "estimated": true,
-    "cost": { "stainless_steel": 1000, "copper": 300, "aluminium": 300, "ai_accelerator": 50 },
+    "cost": { "machinery": 2000, "rad_hard_ic": 6000 },
     "workers": 5
   }
 ]
