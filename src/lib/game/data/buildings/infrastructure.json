@@ -7,7 +7,7 @@
     "milestone": 28,
     "thin": true,
     "estimated": true,
-    "cost": { "rt_superconductor": 50, "asteroidal_steel": 20000, "compute": 1000000 },
+    "cost": { "rt_superconductor": 50, "asteroidal_steel": 20000, "compute": 90000 },
     "workers": 0
   },
   {
@@ -63,7 +63,7 @@
     "milestone": 18,
     "thin": true,
     "estimated": true,
-    "cost": { "asteroidal_steel": 30000, "cfrp": 5000, "ai_models": 5, "compute": 100000 },
+    "cost": { "asteroidal_steel": 30000, "cfrp": 5000, "ai_models": 5, "compute": 9000 },
     "workers": 0
   },
   {
@@ -79,7 +79,7 @@
       "rt_superconductor": 500,
       "asteroidal_steel": 200000,
       "cnt_fibre": 5000,
-      "compute": 10000000,
+      "compute": 900000,
       "ai_models": 20
     },
     "workers": 0

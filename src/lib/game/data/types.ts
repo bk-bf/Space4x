@@ -98,7 +98,7 @@ export type Site = Body | 'orbit' | 'jump-point';
 export type How =
   'mined' | 'wells' | 'brine' | 'byproduct' | 'atmosphere' | 'ice' | 'regolith' | 'solar-wind' | 'liquid';
 
-export type Unit = 'kg' | 'cu' | 'model';
+export type Unit = 'kg' | 'eflops' | 'model';
 
 export type Amounts = Record<string, number>;
 

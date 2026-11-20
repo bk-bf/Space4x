@@ -13,6 +13,7 @@ const ALLOYS = new Set([
   'asteroidal_steel'
 ]);
 const INK: Color = [20, 14, 42];
+const GEAR_HUB: Color = [28, 22, 50];
 
 const COL: Record<string, Color> = {
   iron: [150, 162, 190],
@@ -55,6 +56,7 @@ const COL: Record<string, Color> = {
   c103: [108, 142, 196],
   haynes_230: [120, 132, 96],
   asteroidal_steel: [172, 130, 100],
+  machinery: [132, 146, 184],
   water: [74, 150, 232],
   hydrogen: [232, 238, 255],
   oxygen: [112, 172, 255],
@@ -194,6 +196,7 @@ const BAND: Record<string, readonly [number, number]> = {
   fertiliser: [0.45, 0.56],
   bio_life_support: [0.5, 0.52],
   computation: [0.6, 0.6],
+  machinery: [0.2, 0.62],
   exotic: [0.8, 0.6]
 };
 
@@ -293,6 +296,7 @@ export type MaterialShape =
   | 'crate'
   | 'steak'
   | 'rack'
+  | 'gear'
   | 'core'
   | 'orb';
 
@@ -319,6 +323,7 @@ export const SHAPE_NAMES: Record<MaterialShape, string> = {
   crate: 'crate',
   steak: 'cut of meat',
   rack: 'rack',
+  gear: 'gear',
   core: 'model core',
   orb: 'orb'
 };
@@ -365,6 +370,7 @@ function shapeOf(m: Pick<Identity, 'id' | 'category'>): MaterialShape {
     return 'orb';
   if (id === 'compute') return 'rack';
   if (id === 'ai_models') return 'core';
+  if (c === 'machinery') return 'gear';
   if (c === 'metal') return 'ingot';
   if (c === 'nuclear') return id === 'zircaloy' ? 'ingot' : 'rods';
   if (c === 'semiconductor_electronics') {
@@ -843,6 +849,16 @@ const DRAW: Record<MaterialShape, Draw> = {
       im.set(6, 3 + k * 3, k % 2 ? [242, 179, 93] : R.m);
       im.rect(8, 2 + k * 3, 4, 1, [70, 70, 100]);
     }
+  },
+  gear(im, I) {
+    const R = I.R;
+    for (let a = 0; a < 8; a++) {
+      const t = (a * Math.PI) / 4;
+      im.disc(8 + Math.cos(t) * 6, 8 + Math.sin(t) * 6, 1.6, R.d);
+    }
+    im.sphere(8, 8, 5.6, R);
+    im.disc(8, 8, 2, GEAR_HUB);
+    im.disc(8, 8, 1, R.d);
   },
   core(im, I) {
     const R = I.R;

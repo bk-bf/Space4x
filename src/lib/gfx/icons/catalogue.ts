@@ -6,6 +6,7 @@ export const CATEGORY_NAMES: Record<string, string> = {
   exotic: 'Exotic',
   fertiliser: 'Fertiliser',
   food: 'Food',
+  machinery: 'Machinery',
   metal: 'Metals and alloys',
   nuclear: 'Nuclear',
   polymer: 'Polymers',
@@ -27,7 +28,8 @@ export const CATEGORY_ORDER = [
   'fertiliser',
   'bio_life_support',
   'computation',
-  'exotic'
+  'exotic',
+  'machinery'
 ] as const;
 
 export const CATEGORY_EXAMPLES: Record<string, string> = {
@@ -43,6 +45,7 @@ export const CATEGORY_EXAMPLES: Record<string, string> = {
   fertiliser: 'urea',
   bio_life_support: 'spirulina',
   computation: 'compute',
+  machinery: 'machinery',
   exotic: 'exotic_matter'
 };
 

@@ -11,6 +11,7 @@ import {
 import type { Amounts, Building, Recipe, Site as Where } from '#lib/game/data/index.ts';
 
 export const POWER = '@power';
+export const COMPUTE = 'compute';
 export const EXTRACT_KG_PER_HOUR = 1000;
 export const EXTRACT_KW = 200;
 export const FOOD_CATEGORY = 'food';
@@ -33,7 +34,7 @@ export const extractionId = (materialId: string): string => `${EXTRACT}${materia
 export const isExtraction = (id: string): boolean => id.startsWith(EXTRACT);
 
 const perHour = (amounts: Amounts, hours: number): Amounts =>
-  Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, v / hours]));
+  Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, k === COMPUTE ? v : v / hours]));
 
 const selfExtracted = (r: Recipe, body: Where): string[] =>
   Object.keys(r.inputs).filter((m) =>
@@ -143,7 +144,7 @@ export const buildingsAt = (body: Where): Building[] => buildings.filter((b) => 
 
 export const isMass = (id: string): boolean => id !== POWER && hasMaterial(id) && !material(id).unit;
 
-export const isStockless = (id: string): boolean => id === POWER || id === 'compute';
+export const isStockless = (id: string): boolean => id === POWER || id === COMPUTE;
 
 export const isFood = (id: string): boolean => hasMaterial(id) && material(id).category === FOOD_CATEGORY;
 

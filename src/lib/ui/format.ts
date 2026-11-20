@@ -62,8 +62,10 @@ export const thrust = (newtons: number): string => `${num(newtons / 1000)} kN`;
 
 export const pct = (fraction: number): string => `${Math.round(fraction * 100)}%`;
 
+export const eflops = (v: number): string => `${num(v)} EFLOP/s`;
+
 export function amount(a: number, unit?: Unit): string {
-  if (unit === 'cu') return `${group(a)} cu`;
+  if (unit === 'eflops') return eflops(a);
   if (unit === 'model') return num(a);
   return mass(a);
 }
@@ -100,6 +102,7 @@ export const signedPct = (fraction: number): string => signed(fraction, pct(Math
 export const perHour = (perSecond: number): number => perSecond * 3600;
 
 export function rate(ratePerHour: number, period: Period, unit?: Unit, withSign = false): string {
+  if (unit === 'eflops') return withSign ? signedAmount(ratePerHour, unit) : amount(ratePerHour, unit);
   const v = ratePerHour * PERIODS[period].hours,
     text = withSign ? signedAmount(v, unit) : amount(v, unit);
   return isZero(text) ? '0' : `${text}/${PERIODS[period].unit}`;

@@ -27,6 +27,7 @@
     "id": "ti_6al_4v_melting",
     "building": "alloy_works",
     "milestone": 1,
+    "thin": true,
     "estimated": false,
     "inputs": { "titanium": 900, "aluminium": 60, "vanadium": 40 },
     "outputs": { "ti_6al_4v": 1000 },
@@ -157,5 +158,17 @@
     "hours": 1,
     "reaction": "CaAl2Si2O8 -> Ca + 2 Al + 2 Si + 4 O",
     "source": "https://en.wikipedia.org/wiki/Anorthite"
+  },
+  {
+    "id": "machinery_machining",
+    "building": "machine_shop",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "inputs": { "stainless_steel": 1800, "nickel_superalloy": 900, "ti_6al_4v": 600 },
+    "outputs": { "machinery": 3000 },
+    "power": 30000,
+    "hours": 730.5,
+    "reaction": "0.6 t stainless steel, 0.3 t nickel superalloy and 0.2 t Ti-6Al-4V make 1 t of machinery; the other 0.1 t is lost as swarf"
   }
 ]

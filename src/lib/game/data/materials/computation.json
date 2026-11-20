@@ -5,7 +5,7 @@
     "category": "computation",
     "tier": "P",
     "thin": true,
-    "unit": "cu",
+    "unit": "eflops",
     "why": "Design, simulation and logistics planning capacity",
     "source": "https://en.wikipedia.org/wiki/Data_center"
   },

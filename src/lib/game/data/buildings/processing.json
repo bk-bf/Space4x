@@ -1,5 +1,17 @@
 [
   {
+    "id": "machine_shop",
+    "name": "Flight machine shop",
+    "kind": "processing",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "machinery": 5000, "rad_hard_ic": 1000 },
+    "workers": 200
+  },
+  {
     "id": "smelter",
     "name": "Smelter",
     "kind": "processing",

@@ -19,6 +19,7 @@ export interface StartSite {
   growthPerYear: number;
   gridKw: number;
   stockDays: number;
+  startStock: Record<string, number>;
   groups: StartGroup[];
 }
 
@@ -49,6 +50,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
   const flows = siteFlows(eco, site);
   for (const [m, rate] of Object.entries(flows.produced))
     if (!isStockless(m)) site.stock[m] = rate * 24 * data.stockDays;
+  Object.assign(site.stock, data.startStock);
   return site;
 }
 

@@ -12,13 +12,13 @@
   {
     "id": "electronic_silicon_purification",
     "building": "semiconductor_fab",
-    "milestone": 4,
+    "milestone": 1,
     "thin": true,
     "estimated": true,
-    "inputs": { "silicon": 1100, "hydrogen": 5 },
-    "outputs": { "electronic_silicon": 1000 },
-    "power": 2000,
-    "hours": 1
+    "inputs": { "silicon": 2750, "hydrogen": 12.5 },
+    "outputs": { "electronic_silicon": 2500 },
+    "power": 60000,
+    "hours": 730.5
   },
   {
     "id": "gallium_arsenide_synthesis",
@@ -61,13 +61,13 @@
   {
     "id": "rad_hard_ic_fabrication",
     "building": "semiconductor_fab",
-    "milestone": 5,
+    "milestone": 1,
     "thin": true,
     "estimated": true,
-    "inputs": { "electronic_silicon": 800, "copper": 150, "gold": 50 },
-    "outputs": { "rad_hard_ic": 1000 },
-    "power": 2000,
-    "hours": 1
+    "inputs": { "electronic_silicon": 1800, "compute": 36 },
+    "outputs": { "rad_hard_ic": 1200 },
+    "power": 80000,
+    "hours": 730.5
   },
   {
     "id": "ai_accelerator_fabrication",
@@ -185,7 +185,7 @@
     "milestone": 27,
     "thin": true,
     "estimated": true,
-    "inputs": { "yttrium": 100, "hydrogen": 20, "compute": 1000 },
+    "inputs": { "yttrium": 100, "hydrogen": 20, "compute": 90 },
     "outputs": { "rt_superconductor": 100 },
     "power": 600,
     "hours": 1
@@ -196,7 +196,7 @@
     "milestone": 28,
     "thin": true,
     "estimated": true,
-    "inputs": { "rt_superconductor": 1, "compute": 100000 },
+    "inputs": { "rt_superconductor": 1, "compute": 9000 },
     "outputs": { "exotic_matter": 0.001 },
     "power": 1000000,
     "hours": 1
@@ -204,12 +204,12 @@
   {
     "id": "compute_generation",
     "building": "data_centre",
-    "milestone": 5,
+    "milestone": 1,
     "thin": true,
     "estimated": true,
-    "inputs": { "ai_accelerator": 0.01 },
-    "outputs": { "compute": 1000 },
-    "power": 5000,
+    "inputs": {},
+    "outputs": { "compute": 90 },
+    "power": 120000,
     "hours": 1
   },
   {
@@ -218,7 +218,7 @@
     "milestone": 5,
     "thin": true,
     "estimated": true,
-    "inputs": { "compute": 100000 },
+    "inputs": { "compute": 9000 },
     "outputs": { "ai_models": 1 },
     "power": 5000,
     "hours": 1

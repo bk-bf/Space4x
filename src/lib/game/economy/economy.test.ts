@@ -16,6 +16,7 @@ import {
   startEconomy,
   startProgramme,
   isUnlocked,
+  POWER,
   unlockedProcesses,
   type Economy,
   type GroupActor,
@@ -66,9 +67,40 @@ describe('the start state', () => {
     const site = earthOf(eco);
     const f = siteFlows(eco, site);
     for (const a of f.actors)
-      if (a.kind === 'group' && a.group.process) expect(a.share, a.group.process).toBe(1);
+      if (a.kind === 'group' && a.group.process && a.group.process !== 'electronic_silicon_purification')
+        expect(a.share, a.group.process).toBe(1);
     expect(f.power.demand).toBeLessThan(f.power.supply);
     expect(f.workers.needed).toBeLessThan(f.workers.available);
+  });
+
+  it('waits on silicon for polysilicon, which Earth does not make at the start', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const poly = actorOf(eco, site, groupOf(site, 'electronic_silicon_purification').id);
+    expect(poly.share).toBe(0);
+    expect(poly.limit).toEqual({ kind: 'material', id: 'silicon' });
+    site.stock.silicon = 1e6;
+    expect(actorOf(eco, site, groupOf(site, 'electronic_silicon_purification').id).share).toBe(1);
+  });
+
+  it('machines 1 t of machinery from 0.6 t steel, 0.3 t superalloy and 0.2 t titanium alloy', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const shop = actorOf(eco, site, groupOf(site, 'machinery_machining').id);
+    expect(shop.share).toBe(1);
+    const month = (v: number | undefined) => ((v ?? 0) * 730.5) / 2;
+    close(month(shop.outputs.machinery), 3000);
+    close(month(shop.inputs.stainless_steel), 1800);
+    close(month(shop.inputs.nickel_superalloy), 900);
+    close(month(shop.inputs.ti_6al_4v), 600);
+    expect(shop.inputs[POWER]).toBe(60_000);
+  });
+
+  it('starts with the goods of the design sketch in store', () => {
+    const site = earthOf(startEconomy());
+    expect(site.stock.electronic_silicon).toBe(6000);
+    expect(site.stock.machinery).toBe(30_000);
+    expect(site.stock.rad_hard_ic).toBe(8000);
   });
 
   it('unlocks only the first milestone records and nothing is done', () => {
@@ -146,6 +178,7 @@ describe('production', () => {
   it('scales powered work down when generation falls short, and leaves unpowered farms alone', () => {
     const eco = startEconomy();
     const site = earthOf(eco);
+    site.stock.silicon = 1e9;
     const demand = siteFlows(eco, site).power.demand;
     site.gridKw = demand / 2;
     const f = siteFlows(eco, site);
@@ -174,23 +207,36 @@ describe('compute', () => {
     const eco = startEconomy();
     eco.done.push(1, 2, 3, 4);
     const site = earthOf(eco);
-    site.stock.ai_accelerator = 1000;
+    setOn(site, groupOf(site, 'rad_hard_ic_fabrication').id, false);
     site.groups.push({
       id: 900,
       building: 'data_centre',
       process: 'compute_generation',
-      count: 10,
+      count: 8,
       on: true
     });
     site.groups.push({ id: 901, building: 'data_centre', process: 'ai_model_training', count: 1, on: true });
     const f = siteFlows(eco, site);
-    expect(f.compute.supply).toBe(10_000);
-    expect(f.compute.demand).toBe(100_000);
+    expect(f.compute.supply).toBe(900);
+    expect(f.compute.demand).toBe(9000);
     close(actorOf(eco, site, 901).share, 0.1);
     expect(actorOf(eco, site, 901).limit).toEqual({ kind: 'compute' });
     advanceEconomy(eco, DAY);
     expect(site.stock.compute).toBeUndefined();
     close(site.stock.ai_models ?? 0, 2.4, 1e-6);
+  });
+
+  it('runs a data centre at 90 EFLOP/s on 120 MW and the IC line on 36 EFLOP/s', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const dc = actorOf(eco, site, groupOf(site, 'compute_generation').id);
+    const ics = actorOf(eco, site, groupOf(site, 'rad_hard_ic_fabrication').id);
+    expect(dc.outputs.compute).toBe(180);
+    expect(dc.inputs[POWER]).toBe(240_000);
+    expect(ics.inputs.compute).toBe(36);
+    close((ics.outputs.rad_hard_ic ?? 0) * 730.5, 1200);
+    close((ics.inputs.electronic_silicon ?? 0) * 730.5, 1800);
+    expect(siteFlows(eco, site).compute).toEqual({ supply: 180, demand: 36, used: 36 });
   });
 });
 
@@ -391,16 +437,11 @@ describe('milestones as programmes', () => {
     for (let n = 1; n <= 5; n++) eco.done.push(n);
     const site = earthOf(eco);
     eco.running.push({ number: 6, site: 'earth', progress: 0 });
+    const centres = groupOf(site, 'compute_generation');
+    setOn(site, centres.id, false);
     advanceEconomy(eco, DAY);
     expect(eco.running[0]?.progress).toBe(0);
-    site.stock.ai_accelerator = 1000;
-    site.groups.push({
-      id: 900,
-      building: 'data_centre',
-      process: 'compute_generation',
-      count: 100,
-      on: true
-    });
+    setOn(site, centres.id, true);
     advanceEconomy(eco, DAY);
     expect(eco.running[0]?.progress).toBeGreaterThan(0);
   });

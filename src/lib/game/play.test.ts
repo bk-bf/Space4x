@@ -196,7 +196,7 @@ describe('the scripted player from the start state', () => {
       ['bennu', 'hertha', 'luna', 'luna-maria', 'uranus', 'sol-a'].sort()
     );
     const used = new Set(classes.saved.map((d) => d.id));
-    for (const id of ['jump-hauler', 'jump-scout', 'jump-scoop-ship', 'jump-founder'])
+    for (const id of ['jump-hauler', 'jump-scout', 'jump-scoop-ship', 'jump-founder', 'jump-power'])
       expect(used.has(id), id).toBe(true);
     expect(ships.launches.length).toBe(player.report.launches.length);
 

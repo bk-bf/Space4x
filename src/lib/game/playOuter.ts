@@ -25,6 +25,7 @@ const HAULER = 'jump-hauler';
 const SCOUT = 'jump-scout';
 const SCOOP_SHIP = 'jump-scoop-ship';
 const FOUNDER = 'jump-founder';
+const POWER_SHIP = 'jump-power';
 
 export const MARIA = 'luna-maria';
 export const JUMP = 'sol-a';
@@ -43,6 +44,11 @@ const FOUNDER_WHEAT_KG = 26_000;
 const MARIA_WHEAT_KG = 5_500;
 const STABILISER_STEEL_KG = 200_000;
 const STEEL_HAUL_KG = 201_000;
+const JUMP_WHEAT_KG = 30_000;
+const STATION_WHEAT_KEPT_KG = 60_000;
+const POWER_SHIPS = 14;
+const POWER_SHIP_DEUTERIUM_KG = 20_000;
+const JUMP_POWER_KW = 32_000;
 const EXOTIC_KG = 0.012;
 const CNT_FIBRE_KG = 5_300;
 const METHANE_KG = 14_000;
@@ -160,6 +166,62 @@ export class OuterPlayer extends JumpPlayer {
       ['structure_truss', 2],
       ['avionics', 1]
     ]);
+  }
+
+  protected powerShipDesign(): ShipDesign {
+    return this.fusionDesign(POWER_SHIP, 'Jump point power ship', 'transfer', [
+      ['fusion_drive', 2],
+      ['radiator', 90],
+      ['propellant_tank', 24],
+      ['structure_truss', 2],
+      ['avionics', 1]
+    ]);
+  }
+
+  protected powerJump(site: Site): void {
+    if (site.gridKw >= JUMP_POWER_KW) return;
+    const st = this.station();
+    const design = this.powerShipDesign();
+    const cost = statsFor(design).cost;
+    const docked = () => this.owned(design.id, st.id);
+    const wanted = Math.min(
+      POWER_SHIPS,
+      Math.ceil((JUMP_POWER_KW - site.gridKw) / statsFor(design).power.made)
+    );
+    const ordered = docked().length + st.yard.filter((o) => o.design === design.id).length;
+    if (ordered < wanted) {
+      const all = Object.fromEntries(Object.entries(cost).map(([m, kg]) => [m, kg * (wanted - ordered)]));
+      let guard = 0;
+      while (Object.keys(this.missingAtStation(all)).length && guard++ < 20)
+        this.deliverToStation(this.missingAtStation(all));
+      const r = orderShips(st, design.id, wanted - ordered);
+      if (typeof r === 'string') throw new Error(`could not order the power ships: ${r}`);
+    }
+    if (!this.waitFor(() => docked().length >= wanted, 'the power ships', 3000, 3))
+      throw new Error('the power ships were not built');
+    const fleet = docked().slice(0, wanted);
+    for (const v of fleet) {
+      this.deuteriumAt(POWER_SHIP_DEUTERIUM_KG);
+      addOrder(v, {
+        type: 'load',
+        item: { kind: 'propellant', id: 'deuterium' },
+        amount: POWER_SHIP_DEUTERIUM_KG
+      });
+      addOrder(v, { type: 'fly', body: JUMP, angle: 0 });
+      addOrder(v, { type: 'dock', site: site.id });
+      this.days(1);
+    }
+    const arrived = this.timed('the power ships to the jump point', () =>
+      this.waitFor(() => fleet.every((v) => this.flightDone(v) || !!v.blocked), 'the power ships', 9000, 1)
+    );
+    for (const v of fleet) {
+      if (!arrived || v.blocked)
+        throw new Error(`${v.name} to the jump point: ${v.blocked ?? 'it did not arrive'}`);
+      const done = installModule(this.game, v);
+      if (done) throw new Error(done);
+    }
+    this.say(`${fleet.length} power ships installed at ${site.name}: ${Math.round(site.gridKw / 1000)} MW`);
+    touch();
   }
 
   protected buildAtStation(design: ShipDesign): Vessel | undefined {
@@ -402,6 +464,7 @@ export class OuterPlayer extends JumpPlayer {
     if (existing && standing(existing, 'jump_point_stabiliser') > 0) return;
     const site = existing ?? this.foundJump();
     if ((site.stock.asteroidal_steel ?? 0) < STABILISER_STEEL_KG - 1) this.haulSteelToJump(site);
+    this.powerJump(site);
     if (
       standing(site, 'jump_point_stabiliser') <= 0 &&
       !site.queue.some((o) => o.building === 'jump_point_stabiliser')
@@ -422,10 +485,8 @@ export class OuterPlayer extends JumpPlayer {
       f = this.buildAtStation(this.founderDesign());
       if (!f) throw new Error('there is no founder ship');
       const kit = {
-        stainless_steel: 1000,
-        copper: 300,
-        aluminium: 300,
-        ai_accelerator: 650,
+        machinery: 2000,
+        rad_hard_ic: 6000,
         ai_models: 21,
         rt_superconductor: 520,
         exotic_matter: 0.0105,
@@ -481,6 +542,8 @@ export class OuterPlayer extends JumpPlayer {
       item: { kind: 'cargo', id: 'asteroidal_steel' },
       amount: STEEL_HAUL_KG
     });
+    const wheat = Math.min(JUMP_WHEAT_KG, (st.stock.wheat ?? 0) - STATION_WHEAT_KEPT_KG);
+    if (wheat > 0) addOrder(h, { type: 'load', item: { kind: 'cargo', id: 'wheat' }, amount: wheat });
     addOrder(h, { type: 'fly', body: JUMP, angle: 0 });
     addOrder(h, { type: 'dock', site: site.id });
     addOrder(h, { type: 'unload', item: { kind: 'cargo', id: 'asteroidal_steel' }, amount: null });

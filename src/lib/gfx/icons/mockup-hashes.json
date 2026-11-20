@@ -162,7 +162,8 @@
     "yttrium": "be1bbdc7a88e4aeacdc52d7afe8c1138c60e66ff",
     "zeolite": "e37bc9db126ba63c6def9f7852437a4fb40de2a3",
     "zircaloy": "913286545566fe08555dca004f92bf48ab75b4f8",
-    "zirconium": "2257a6cbe423ed1265fa0da10eeb6564c5490c9a"
+    "zirconium": "2257a6cbe423ed1265fa0da10eeb6564c5490c9a",
+    "machinery": "632a29346a7687ffee000a86bb67f00102149d47"
   },
   "building": {
     "air_separation_plant": "92700d2bea941399566a0baa4999593fdef02112",
@@ -211,7 +212,8 @@
     "sinter_printer": "15021978cef6b46316bdf89b95340e2ee7a7dd20",
     "smelter": "e4bd4d4018fa41a38cdd92bd5b70d32195318280",
     "solar_cell_fab": "83c15072222aa4a518947f9c9232c259d7663a16",
-    "solar_power_station": "b3e9d993fd34cc7caa3d330b8581cd1e7bcd9c29"
+    "solar_power_station": "b3e9d993fd34cc7caa3d330b8581cd1e7bcd9c29",
+    "machine_shop": "e3f0f58f9ef5f24970d94057273d83964a943b36"
   },
   "component": {
     "avionics": "8dd95f9a996fdca9f4526d5241809ead01b63d08",

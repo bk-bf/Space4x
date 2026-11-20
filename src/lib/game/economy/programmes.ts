@@ -6,7 +6,7 @@ import { requiresMet } from './unlocks.ts';
 export const PROGRAMME_BASE_DAYS = 60;
 export const PROGRAMME_DAYS_PER_STEP = 30;
 export const PROGRAMME_COMPUTE_FROM = 6;
-export const PROGRAMME_COMPUTE_PER_STEP = 1000;
+export const PROGRAMME_COMPUTE_PER_STEP = 90;
 export const programmeEstimated = true;
 
 const TIER_FACTOR: Record<Tier, number> = { P: 1, E: 1.25, S: 1.5 };

@@ -98,12 +98,13 @@ registerStatus('power', () => {
 
 registerStatus('compute', () => {
   const c = flows().compute;
+  const share = c.demand > 0 ? Math.min(1, c.supply / c.demand) : 1;
   return withTroubles(
     {
       icon: 'chip',
-      value: c.supply > 0 || c.demand > 0 ? `${fmt.group(c.supply)} cu/h` : 'None',
-      title: 'Compute produced an hour',
-      warn: c.demand > c.supply
+      value: share < 1 ? `${Math.round(share * 100)}% compute` : `+${fmt.eflops(c.supply - c.demand)}`,
+      title: 'Compute',
+      warn: share < 1
     },
     'compute'
   );

@@ -1,5 +1,5 @@
 import { material } from '#lib/game/data/index.ts';
-import { mass } from '#lib/ui/format.ts';
+import { eflops, mass } from '#lib/ui/format.ts';
 
 const group = (n: number): string => Math.round(n).toLocaleString('en-US');
 
@@ -34,7 +34,7 @@ export const formatCount = (n: number): string => (Math.abs(n) >= 1e6 ? formatPe
 
 export function formatAmount(id: string, amount: number): string {
   const unit = material(id).unit;
-  if (unit === 'cu') return `${formatCount(amount)} cu`;
+  if (unit === 'eflops') return eflops(amount);
   if (unit === 'model') return `${amount.toFixed(amount < 10 ? 1 : 0)}`;
   return mass(amount);
 }
@@ -83,6 +83,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   exotic: 'Exotic',
   fertiliser: 'Fertiliser',
   food: 'Food',
+  machinery: 'Machinery',
   metal: 'Metals and alloys',
   nuclear: 'Nuclear',
   polymer: 'Polymers',

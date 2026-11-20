@@ -25,7 +25,7 @@ export function siteTroubles(site: Site, flows: SiteFlows, warnDays: number): Tr
   if (flows.power.demand > flows.power.supply * (1 + SHORT))
     now.push(at('power', `short of ${fmt.power(flows.power.demand - flows.power.supply)}`));
   if (flows.compute.demand > flows.compute.supply * (1 + SHORT))
-    now.push(at('compute', `short of ${fmt.group(flows.compute.demand - flows.compute.supply)} cu/h`));
+    now.push(at('compute', `short of ${fmt.eflops(flows.compute.demand - flows.compute.supply)}`));
   const soon = supplyWarnings(site, flows, warnDays)
     .filter((s) => s.days > 1e-6)
     .map((s) =>
