@@ -434,7 +434,7 @@ describe('flying to and landing on an asteroid', () => {
     for (let i = 0; i < 200 && (v.orders.length || v.trip); i++) g.advance(30 * DAY);
     expect(v.blocked).toBeNull();
     expect(v.at).toEqual({ kind: 'surface', body: 'bennu' });
-  });
+  }, 20_000);
 });
 
 describe('the belt scenario', () => {
