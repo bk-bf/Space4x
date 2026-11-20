@@ -165,25 +165,27 @@
     {#if sel && chosen}
       <Card
         title={sel.building.name}
-        subtitle={recipeName}
+        subtitle={plant ? (BUILDING_KIND_NAMES[sel.building.kind] ?? '') : recipeName}
         icon={bld(sel.building.id)}
-        chips={[
-          { icon: 'factory', text: fmt.count(chosen.group.count), tip: 'Buildings in this group' },
-          {
-            icon: 'people',
-            text: fmt.population(sel.building.workers * chosen.group.count),
-            tip: tipText('Workers', `${sel.building.workers} a building`)
-          },
-          ...(chosen.group.process && isExtraction(chosen.group.process)
-            ? [
-                {
-                  icon: 'drop' as const,
-                  text: `grade ${chosen.grade.toFixed(2)}`,
-                  tip: 'Grade'
-                }
-              ]
-            : [])
-        ]}
+        chips={plant
+          ? []
+          : [
+              { icon: 'factory', text: fmt.count(chosen.group.count), tip: 'Buildings in this group' },
+              {
+                icon: 'people',
+                text: fmt.population(sel.building.workers * chosen.group.count),
+                tip: tipText('Workers', `${sel.building.workers} a building`)
+              },
+              ...(chosen.group.process && isExtraction(chosen.group.process)
+                ? [
+                    {
+                      icon: 'drop' as const,
+                      text: `grade ${chosen.grade.toFixed(2)}`,
+                      tip: 'Grade'
+                    }
+                  ]
+                : [])
+            ]}
       >
         {#if plant}
           <Facts rows={plantRows} />
