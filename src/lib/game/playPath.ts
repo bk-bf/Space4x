@@ -153,7 +153,7 @@ export class PathPlayer extends Player {
     const site = this.earth;
     const short = () => Object.entries(cargo).filter(([m, kg]) => (site.stock[m] ?? 0) < kg);
     let guard = 0;
-    while (short().length && guard++ < 150) {
+    while (short().length && guard++ < 250) {
       for (const [m, kg] of short())
         if (!BYPRODUCTS.has(m)) this.produce(m, this.supplyRate(m, kg - (site.stock[m] ?? 0)));
       this.fixShortages();

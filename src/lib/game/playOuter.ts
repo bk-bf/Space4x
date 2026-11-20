@@ -116,8 +116,8 @@ export class OuterPlayer extends JumpPlayer {
 
   protected haulerDesign2(): ShipDesign {
     return this.fusionDesign(HAULER, 'Fusion hauler', 'freighter', [
-      ['fusion_drive', 2],
-      ['radiator', 90],
+      ['fusion_drive', 1],
+      ['radiator', 45],
       ['cargo_bay', 60],
       ['propellant_tank', 48],
       ['structure_truss', 4],

@@ -84,6 +84,15 @@ test.describe('leaving Earth', () => {
     await expect(page.locator('#yardPause')).toContainText('Resume');
     await page.locator('#yardPause').click();
     await expect(page.locator('#yardPause')).toContainText('Pause');
+    await expect(page.locator('input[name="yardPercent"]')).toHaveValue('100');
+    await page.locator('input[name="yardPercent"]').fill('50');
+    await page.locator('input[name="yardPercent"]').dispatchEvent('change');
+    await page.locator('#yardQueue button').nth(1).click();
+    await expect(page.locator('input[name="yardPercent"]')).toHaveValue('0');
+    await page.locator('input[name="yardPercent"]').fill('80');
+    await page.locator('input[name="yardPercent"]').dispatchEvent('change');
+    await expect(page.locator('input[name="yardPercent"]')).toHaveValue('50');
+    await expect(page.locator('.sbar i')).toHaveCount(2);
     await expectCleanLayout(page);
     for (let i = 0; i < 2; i++) await page.locator(MONTH).click();
     await expect(page.locator('#yardQueue button')).toHaveCount(0);

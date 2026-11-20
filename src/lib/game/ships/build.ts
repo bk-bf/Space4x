@@ -1,5 +1,13 @@
 import { classes, statsFor } from '#lib/game/classes.svelte.ts';
-import { economy, hasYard, queueShips, type Site, type YardOrder } from '#lib/game/economy/index.ts';
+import {
+  economy,
+  hasYard,
+  queueShips,
+  shipyardsFor,
+  standing,
+  type Site,
+  type YardOrder
+} from '#lib/game/economy/index.ts';
 import { yardName } from '#lib/game/shipdesign/index.ts';
 
 export function orderShips(site: Site, designId: string, count = 1): YardOrder[] | string {
@@ -8,7 +16,11 @@ export function orderShips(site: Site, designId: string, count = 1): YardOrder[]
   if (!design.locked) return 'Lock the design before building it.';
   const stats = statsFor(design);
   if (stats.errors > 0) return 'The design has errors.';
-  if (!hasYard(site, design.yard)) return `${site.name} has no ${yardName(design.yard).toLowerCase()}.`;
+  const yard = yardName(design.yard).toLowerCase();
+  if (!hasYard(site, design.yard)) return `${site.name} has no ${yard}.`;
+  const need = shipyardsFor(stats.dryMass);
+  const stand = standing(site, design.yard);
+  if (need > stand) return `${design.name} needs ${need} ${yard}s; ${site.name} has ${stand}.`;
   return queueShips(
     economy,
     site,

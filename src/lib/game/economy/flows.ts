@@ -3,7 +3,8 @@ import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { gradeAt, isDepleted } from './deposits.ts';
 import { foodIds, isExtraction, isMass, isStockless, POWER, process } from './processes.ts';
-import { programmeCompute, standing } from './programmes.ts';
+import { programmeCompute } from './programmes.ts';
+import { activeYardOrders, yardPointsPerDay } from './yard.ts';
 import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
 
 export const STOCK_EPS = 1e-6;
@@ -130,25 +131,15 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
 export const activeOrders = (site: Site): BuildOrder[] =>
   site.queue.filter((o) => !o.paused).slice(0, BUILD_SLOTS);
 
-export function activeYardOrders(site: Site): YardOrder[] {
-  const taken: Record<string, number> = {};
-  return site.yard.filter((o) => {
-    if (o.paused) return false;
-    const n = taken[o.yard] ?? 0;
-    if (n >= standing(site, o.yard)) return false;
-    taken[o.yard] = n + 1;
-    return true;
-  });
-}
-
-function yardActor(o: YardOrder): YardActor {
+function yardActor(site: Site, o: YardOrder): YardActor {
+  const perHour = (yardPointsPerDay(site, o.yard) * o.percent) / 100 / 24;
   return {
     kind: 'yard',
     order: o,
-    hours: o.hours,
-    cap: 1,
+    hours: perHour > 0 ? o.points / perHour : Infinity,
+    cap: perHour > 0 ? 1 : 0,
     share: 0,
-    inputs: scaled(o.cost, 1 / o.hours),
+    inputs: {},
     outputs: {},
     extracts: {},
     limit: null,
@@ -269,7 +260,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
     ...activeOrders(site).map(buildActor),
-    ...activeYardOrders(site).map(yardActor),
+    ...activeYardOrders(site).map((o) => yardActor(site, o)),
     ...eco.running.filter((p) => p.site === site.id).map(programmeActor)
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);

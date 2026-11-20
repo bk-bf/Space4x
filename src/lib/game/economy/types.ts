@@ -24,7 +24,10 @@ export interface YardOrder {
   name: string;
   yard: string;
   cost: Amounts;
-  hours: number;
+  shipyards: number;
+  points: number;
+  percent: number;
+  paid: boolean;
   done: number;
   paused: boolean;
   stalled: string | null;

@@ -13,6 +13,7 @@ import {
   programmeCompute,
   programmeStatus,
   queueBuilding,
+  setShipPercent,
   siteAt,
   standing,
   startProgramme,
@@ -86,10 +87,22 @@ export class Player {
     return homeSite();
   }
 
+  protected shareShipyards(): void {
+    for (const site of economy.sites)
+      for (const yard of new Set(site.yard.map((o) => o.yard))) {
+        const orders = site.yard.filter((o) => o.yard === yard && !o.paused);
+        const each = Math.floor(100 / Math.max(1, orders.length));
+        if (orders.every((o) => o.percent === each)) continue;
+        for (const o of orders) o.percent = 0;
+        for (const o of orders) setShipPercent(economy, site, o.id, each);
+      }
+  }
+
   days(n: number): void {
     let left = n;
     while (left > 1e-9) {
       const step = Math.min(left, 5);
+      this.shareShipyards();
       this.game.advance(step * DAY);
       left -= step;
     }
@@ -169,6 +182,13 @@ export class Player {
           (a.inputs[id] ?? 0) * a.cap * (id === 'compute' ? 1 : 2)
         );
         this.produce(id, needRate, 1);
+      }
+    }
+    for (const o of site.yard) {
+      if (o.paid || o.paused) continue;
+      for (const [id, need] of Object.entries(o.cost)) {
+        const short = need - (site.stock[id] ?? 0);
+        if (short > 1e-9) this.produce(id, Math.max(this.floorRate(id), short / 24), 1);
       }
     }
   }

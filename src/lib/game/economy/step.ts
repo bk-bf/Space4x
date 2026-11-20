@@ -5,6 +5,7 @@ import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
 import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
+import { startShips } from './yard.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
 
 export const SEGMENT_HOURS = 24;
@@ -91,10 +92,6 @@ function applySegment(
     if (a.kind === 'yard') {
       const o = a.order;
       o.done = Math.min(1, o.done + (a.share * hours) / a.hours);
-      const short = a.share < 1 - 1e-9 && a.limit?.kind === 'material' ? a.limit.id : null;
-      if (short && short !== o.stalled)
-        log(`The ${o.name} at ${site.name} is waiting for ${material(short).name}.`, true, at, site.id);
-      o.stalled = short;
       if (o.done >= 1 - 1e-9) {
         site.yard.splice(site.yard.indexOf(o), 1);
         eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
@@ -177,8 +174,11 @@ function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: nu
   return Math.max(hours, 0);
 }
 
-const statesOf = (eco: Economy): SiteState[] =>
-  eco.sites.map((site) => ({ site, flows: siteFlows(eco, site) }));
+const statesOf = (eco: Economy, log?: LogFn): SiteState[] =>
+  eco.sites.map((site) => {
+    if (log) startShips(eco, site, eco.elapsed, log);
+    return { site, flows: siteFlows(eco, site) };
+  });
 
 export function economyHorizon(eco: Economy, warnDays = WARN_DAYS): number {
   return segmentHours(eco, statesOf(eco), Infinity, warnDays) * 3600;
@@ -192,11 +192,11 @@ export function advanceEconomy(
 ): void {
   let left = seconds / 3600;
   let segments = 0;
-  let all = statesOf(eco);
+  let all = statesOf(eco, log);
   for (const { site, flows } of all) checkAlerts(site, flows, eco.elapsed, log, warnDays);
   while (left > MIN_HOURS && segments++ < MAX_SEGMENTS) {
     if (segments > 1) {
-      all = statesOf(eco);
+      all = statesOf(eco, log);
       for (const { site, flows } of all) checkAlerts(site, flows, eco.elapsed, log, warnDays);
     }
     const hours = segmentHours(eco, all, left, warnDays);

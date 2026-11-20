@@ -7,13 +7,20 @@ import {
   homeSite,
   isMass,
   newSite,
+  freeShipyards,
   pauseShipOrder,
   removeShipOrder,
   moveShipOrder,
   setOn,
+  setShipPercent,
+  shipPoints,
+  shipyardsFor,
   touch,
-  type Site
+  yardPointsPerDay,
+  type Site,
+  type YardOrder
 } from '#lib/game/economy/index.ts';
+import { statsFor } from '#lib/game/index.ts';
 import { orderShips } from './build.ts';
 import { foundOptions, foundSite, installModule } from './colonise.ts';
 import { addDesign, freshGame, spawn } from './fixtures.ts';
@@ -57,29 +64,49 @@ const totalMass = (): number => {
   return m;
 };
 
+const HAULER = {
+  id: 'hauler',
+  role: 'freighter' as const,
+  parts: [
+    ['chemical_engine_methalox', 9],
+    ['propellant_tank', 60],
+    ['structure_truss', 20],
+    ['cargo_bay', 80],
+    ['landing_legs', 1]
+  ] as const,
+  load: [['methalox', 1e9]] as const
+};
+
+const yardCount = (site: Site, n: number): void => {
+  for (const grp of site.groups) if (grp.building === 'rocket_factory') grp.count = n;
+  touch();
+};
+
 describe('building ships', () => {
-  it('spends the design cost from the site stock over the build time and delivers a ship there', () => {
+  it('pays the design cost when the build starts and delivers a ship after its shipyard points', () => {
     const g = freshGame();
     const site = homeSite();
     withGrcop(site);
     const d = addDesign(TUG);
-    const [o] = orderShips(site, d.id) as { id: number; hours: number }[];
-    expect(o).toBeDefined();
-    const steel = site.stock.stainless_steel ?? 0;
-    g.advance(2 * DAY);
-    expect(site.stock.al_li_alloy).toBeDefined();
+    const cost = statsFor(d).cost;
+    const before = site.stock.stainless_steel ?? 0;
+    const [o] = orderShips(site, d.id) as YardOrder[];
+    expect(o!.percent).toBe(100);
+    expect(o!.paid).toBe(true);
+    expect(site.stock.stainless_steel).toBeCloseTo(before - (cost.stainless_steel ?? 0));
+    const days = o!.points / yardPointsPerDay(site, 'rocket_factory');
+    g.advance(days * 0.9 * DAY);
     expect(ships.vessels).toHaveLength(0);
-    g.advance((o!.hours / 24) * DAY);
+    g.advance(days * 0.2 * DAY);
     expect(ships.vessels).toHaveLength(1);
     const v = ships.vessels[0]!;
     expect(v.design).toBe(d.id);
     expect(v.at).toEqual({ kind: 'site', site: 'earth' });
     expect(v.propellant).toEqual({});
     expect(site.yard).toHaveLength(0);
-    expect(steel).toBeGreaterThan(0);
   });
 
-  it('refuses a design that is not locked or has no yard, and names what a stalled build is missing', () => {
+  it('refuses a design that is not locked or has no yard, and names what an unstarted build is missing', () => {
     const g = freshGame();
     const site = homeSite();
     withGrcop(site);
@@ -90,25 +117,68 @@ describe('building ships', () => {
     classes.replace(d);
     setOn(site, site.groups.find((x) => x.process === 'cfrp_layup')!.id, false);
     site.stock.cfrp = 0;
-    const [o] = orderShips(site, d.id) as { stalled: string | null; done: number }[];
+    const [o] = orderShips(site, d.id) as YardOrder[];
     g.advance(DAY);
+    expect(o!.paid).toBe(false);
     expect(o!.stalled).toBe('cfrp');
     expect(o!.done).toBe(0);
     expect(g.events.some((e) => e.text.includes('waiting for Carbon'))).toBe(true);
   });
 
-  it('pauses, reorders and removes ship orders and builds only as many as there are yards', () => {
+  it('needs one shipyard up to 100 t of dry mass and one more for each 100 t above', () => {
+    expect(shipyardsFor(5_000)).toBe(1);
+    expect(shipyardsFor(100_000)).toBe(1);
+    expect(shipyardsFor(100_001)).toBe(2);
+    expect(shipyardsFor(250_000)).toBe(3);
+    expect(shipPoints(250_000)).toBeCloseTo((2 + 0.5 * 250) * 3);
+  });
+
+  it('runs a small and a large design at one site on free shipyards and shares points by percentage', () => {
+    const g = freshGame();
+    const site = homeSite();
+    withGrcop(site);
+    const small = addDesign(TUG);
+    const large = addDesign(HAULER);
+    const needed = shipyardsFor(statsFor(large).dryMass);
+    expect(shipyardsFor(statsFor(small).dryMass)).toBe(1);
+    expect(needed).toBeGreaterThan(1);
+    yardCount(site, needed - 1);
+    expect(orderShips(site, large.id)).toMatch(new RegExp(`needs ${needed} shipyards`));
+    yardCount(site, needed);
+    const [s] = orderShips(site, small.id) as YardOrder[];
+    const [l] = orderShips(site, large.id) as YardOrder[];
+    expect(s!.percent).toBe(100);
+    expect(l!.percent).toBe(0);
+    setShipPercent(economy, site, s!.id, 50);
+    setShipPercent(economy, site, l!.id, 80);
+    expect(l!.percent).toBe(50);
+    expect(s!.paid).toBe(true);
+    expect(l!.paid).toBe(false);
+    expect(freeShipyards(site, 'rocket_factory')).toBe(needed - 1);
+    g.advance(0.01 * DAY);
+    expect(l!.done).toBe(0);
+    const perDay = yardPointsPerDay(site, 'rocket_factory') / 2;
+    expect(s!.done).toBeCloseTo((0.01 * perDay) / s!.points);
+    g.advance((s!.points / perDay) * DAY);
+    expect(site.yard).toEqual([l]);
+    expect(l!.paid).toBe(true);
+    expect(l!.done).toBeGreaterThan(0);
+    expect(freeShipyards(site, 'rocket_factory')).toBe(0);
+  });
+
+  it('pauses, reorders and removes ship orders, and a paused order frees its shipyards', () => {
     const g = freshGame();
     const site = homeSite();
     withGrcop(site);
     const d = addDesign(TUG);
-    const made = orderShips(site, d.id, 4) as { id: number; done: number }[];
-    for (const grp of site.groups) if (grp.building === 'rocket_factory') grp.count = 2;
-    touch();
-    pauseShipOrder(site, made[0]!.id);
-    moveShipOrder(site, made[3]!.id, -3);
-    removeShipOrder(site, made[1]!.id);
-    g.advance(DAY);
+    yardCount(site, 2);
+    const made = orderShips(site, d.id, 4) as YardOrder[];
+    for (const o of made) o.percent = 0;
+    for (const o of made) setShipPercent(economy, site, o.id, 25);
+    pauseShipOrder(economy, site, made[0]!.id);
+    moveShipOrder(economy, site, made[3]!.id, -3);
+    removeShipOrder(economy, site, made[1]!.id);
+    g.advance(0.01 * DAY);
     expect(site.yard.map((o) => o.id)).toEqual([made[3]!.id, made[0]!.id, made[2]!.id]);
     expect(made[3]!.done).toBeGreaterThan(0);
     expect(made[2]!.done).toBeGreaterThan(0);

@@ -1,6 +1,14 @@
 import { classes } from '#lib/game/classes.svelte.ts';
 import { milestones, regionsOf } from '#lib/game/data/index.ts';
-import { economy, homeSite, newSite, queueBuilding, standFirst, touch } from '#lib/game/economy/index.ts';
+import {
+  economy,
+  homeSite,
+  newSite,
+  queueBuilding,
+  setShipPercent,
+  standFirst,
+  touch
+} from '#lib/game/economy/index.ts';
 import { lock, newDesign, setCount, type ShipDesign } from '#lib/game/shipdesign/index.ts';
 import { completeSurvey } from '#lib/game/survey.svelte.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
@@ -74,7 +82,8 @@ export function seedTravel(game: Game): void {
     payload: { kind: 'cargo', cargo: { stainless_steel: 3000 } }
   });
   vessel(orbiter, { kind: 'site', site: 'earth' });
-  orderShips(earth, 'travel-orbiter', 1);
+  const ordered = orderShips(earth, 'travel-orbiter', 1);
+  if (typeof ordered !== 'string') for (const o of ordered) setShipPercent(economy, earth, o.id, 10);
   const station = newSite(economy, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0.6 })!;
   standFirst(economy, station, 'propellant_depot');
   queueBuilding(economy, station, 'life_support_plant', null);
