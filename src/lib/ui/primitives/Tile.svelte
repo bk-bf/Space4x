@@ -86,6 +86,12 @@
     kind ? `rgb(${(KIND_COLOURS[kind] ?? FALLBACK_KIND_COLOUR).join(',')})` : undefined
   );
   const inlineFoot = $derived(variant === 'prod');
+  const AMOUNT_ROOM = 13;
+  const amountSize = $derived(
+    value !== undefined && variant !== 'cmp' && value.length > AMOUNT_ROOM
+      ? `${Math.max(9, Math.floor((17 * AMOUNT_ROOM) / value.length))}px`
+      : undefined
+  );
 </script>
 
 {#snippet body()}
@@ -120,7 +126,7 @@
       </span>
     {/if}
   {:else}
-    {#if value !== undefined}<span class="ui-amt">{value}</span>{/if}
+    {#if value !== undefined}<span class="ui-amt" style:font-size={amountSize}>{value}</span>{/if}
     {#if note}<span class="ui-net {noteTone}">{note}</span>{/if}
     {#if meter !== undefined}<Bar value={meter} tone={meterTone} full />{/if}
   {/if}
