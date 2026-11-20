@@ -179,8 +179,8 @@
               { icon: 'factory', text: fmt.count(chosen.group.count), tip: 'Buildings in this group' },
               {
                 icon: 'people',
-                text: fmt.population(sel.building.workers * chosen.group.count),
-                tip: tipText('Workers', `${sel.building.workers} a building`)
+                text: fmt.population(sel.workers * chosen.group.count),
+                tip: tipText('Workers', `${sel.workers} a building`)
               },
               ...(chosen.group.process && isExtraction(chosen.group.process)
                 ? [

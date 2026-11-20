@@ -12,7 +12,8 @@ import {
   POWER,
   process,
   WATER,
-  WATER_DRAWN_ON
+  WATER_DRAWN_ON,
+  workersAt
 } from './processes.ts';
 import { labFigures, LAB, researchSite, rpPerHour } from './programmes.ts';
 import { MONTH_HOURS } from './calendar.ts';
@@ -333,7 +334,10 @@ function eat(site: Site, net: Amounts, demand: number): Amounts {
 
 export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const available = site.population * site.workforceShare;
-  const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * building(g.building).workers : 0), 0);
+  const needed = site.groups.reduce(
+    (a, g) => a + (g.on ? g.count * workersAt(building(g.building), site.body) : 0),
+    0
+  );
   const workerShare = needed > available ? available / needed : 1;
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),

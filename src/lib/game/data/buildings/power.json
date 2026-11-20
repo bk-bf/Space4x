@@ -8,7 +8,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 100,
+    "real": {
+      "plant": "A 1 GW coal power station",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.1 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Coal; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.55,
@@ -30,7 +38,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 80,
+    "real": {
+      "plant": "A 1 GW gas power station",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.08 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Gas; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.4,
@@ -52,7 +68,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 80,
+    "real": {
+      "plant": "A 1 GW oil power station",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.08 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Oil and diesel, which the table gives the factors for gas; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.2,
@@ -74,7 +98,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 300,
+    "real": {
+      "plant": "A 1 GW nuclear power station",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.3 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Nuclear; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.82,
@@ -96,7 +128,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 300,
+    "real": {
+      "plant": "A 1 GW hydroelectric dam",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.3 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Hydro-large; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.37,
@@ -118,7 +158,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 1500,
+    "real": {
+      "plant": "A 1 GW bioenergy plant",
+      "basis": "Operations and maintenance jobs at 1 GW: 1.5 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Biomass; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.55,
@@ -140,7 +188,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 200,
+    "real": {
+      "plant": "A 1 GW wind farm",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.2 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Wind onshore; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.25,
@@ -162,7 +218,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 300,
+    "real": {
+      "plant": "A 1 GW solar farm",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.3 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row PV; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "capacityFactor": 0.13,
@@ -206,7 +270,15 @@
     "start": true,
     "estimated": true,
     "cost": {},
-    "workers": 0,
+    "workers": 300,
+    "real": {
+      "plant": "A 1 GW pumped hydro storage",
+      "basis": "Operations and maintenance jobs at 1 GW: 0.3 jobs a MW in Table 1 (OECD employment factors) of Rutovitz and Harris, Calculating global energy sector jobs: 2012 methodology (ISF, UTS), row Hydro-large, since the table has no row for storage; jobs in fuel supply are left out, since the game's own mines supply the fuel; capacity, capacity factor, firm share and water a MWh are the design sketch's (#76)",
+      "sources": [
+        "https://cfsites1.uts.edu.au/find/isf/publications/rutovitzharris2012globalenergyjobsmethycalc.pdf"
+      ],
+      "estimated": true
+    },
     "plant": {
       "capacityKw": 1000000,
       "storageKwh": 48000000,

@@ -20,6 +20,14 @@ export const EXTRACT_KW = 200;
 export const FOOD_CATEGORY = 'food';
 export const WATER = 'water';
 export const WATER_DRAWN_ON: Where = 'earth';
+export const REAL_PLANTS_ON: Where = 'earth';
+
+const real = (body: Where): boolean => body === REAL_PLANTS_ON;
+
+export const scaleAt = (b: Building, body: Where): number => (real(body) ? (b.scale ?? 1) : 1);
+
+export const workersAt = (b: Building, body: Where): number =>
+  real(body) ? b.workers : (b.away?.workers ?? b.workers);
 
 export interface Process {
   id: string;
@@ -40,26 +48,35 @@ export const extractionId = (materialId: string): string => `${EXTRACT}${materia
 
 export const isExtraction = (id: string): boolean => id.startsWith(EXTRACT);
 
-const perHour = (amounts: Amounts, hours: number): Amounts =>
-  Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, k === COMPUTE ? v : v / hours]));
+const perHour = (amounts: Amounts, hours: number, scale: number): Amounts =>
+  Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, (k === COMPUTE ? v : v / hours) * scale]));
 
 const selfExtracted = (r: Recipe, body: Where): string[] =>
   Object.keys(r.inputs).filter((m) =>
     material(m).sources?.some((s) => s.body === body && s.building === r.building)
   );
 
+function drawnWater(b: Building, body: Where, recipeWater: number, scale: number): number {
+  if (body !== WATER_DRAWN_ON) return 0;
+  if (real(body) && b.water !== undefined) return b.water;
+  return recipeWater * scale;
+}
+
 function recipeProcess(r: Recipe, body: Where): Process {
-  const inputs = perHour(r.inputs, r.hours);
+  const b = building(r.building);
+  const scale = scaleAt(b, body);
+  const inputs = perHour(r.inputs, r.hours, scale);
   const extracts: Amounts = {};
   for (const m of selfExtracted(r, body)) {
     extracts[m] = inputs[m] ?? 0;
     delete inputs[m];
   }
-  if (r.power > 0) inputs[POWER] = r.power;
-  const water = body === WATER_DRAWN_ON && r.water ? r.water / r.hours : 0;
+  const power = real(body) && b.power !== undefined ? b.power : r.power * scale;
+  if (power > 0) inputs[POWER] = power;
+  const water = drawnWater(b, body, r.water ? r.water / r.hours : 0, scale);
   if (water > 0) inputs[WATER] = (inputs[WATER] ?? 0) + water;
-  const outputs = perHour(r.outputs, r.hours);
-  if (r.generates) outputs[POWER] = r.generates;
+  const outputs = perHour(r.outputs, r.hours, scale);
+  if (r.generates) outputs[POWER] = r.generates * scale;
   return {
     id: r.id,
     name: processName(r),
@@ -111,16 +128,22 @@ function processName(r: Recipe): string {
   return twin && from ? `${name} from ${material(from).name}` : name;
 }
 
-function extractionProcess(materialId: string, b: Building): Process {
+function extractionProcess(materialId: string, b: Building, body: Where): Process {
+  const own = real(body);
+  const rate = (own ? b.extracts?.[materialId] : undefined) ?? extractRate(materialId);
+  const power = own && b.power !== undefined ? b.power : EXTRACT_KW;
+  const water = materialId === WATER ? 0 : drawnWater(b, body, 0, 1);
+  const inputs: Amounts = power > 0 ? { [POWER]: power } : {};
+  if (water > 0) inputs[WATER] = water;
   return {
     id: extractionId(materialId),
     name: `Extract ${material(materialId).name}`,
     building: b.id,
     research: b.research,
-    inputs: { [POWER]: EXTRACT_KW },
-    outputs: { [materialId]: extractRate(materialId) },
-    extracts: { [materialId]: extractRate(materialId) },
-    water: 0,
+    inputs,
+    outputs: { [materialId]: rate },
+    extracts: { [materialId]: rate },
+    water,
     upkeep: 0,
     estimated: true
   };
@@ -137,7 +160,7 @@ export function process(id: string, body: Where): Process {
     const m = id.slice(EXTRACT.length);
     const source = material(m).sources?.find((s) => s.body === body);
     if (!source) throw new Error(`${m} cannot be extracted on ${body}`);
-    made = extractionProcess(m, building(source.building));
+    made = extractionProcess(m, building(source.building), body);
   } else made = recipeProcess(recipe(id), body);
   cache.set(key, made);
   return made;
