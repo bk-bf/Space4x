@@ -10,9 +10,9 @@
   };
 
   const BUILDINGS = {
-    silicon: { name: 'Semiconductor fab', kind: 'electronics', role: 'production', icon: 'semiconductor_fab', desc: 'Purifies metallurgical silicon to electronic grade.', make: { si: 2.5 }, power: 60, upkeep: 0.08, water: 500000, cost: { bp: 1, mach: 5, elec: 1 }, start: 1 },
-    mshop: { name: 'Flight machine shop', kind: 'processing', role: 'processing', icon: 'machine_shop', desc: 'Space-grade motors, pumps, valves and turbopumps from nickel superalloy.', make: { mach: 3 }, power: 30, upkeep: 0.06, water: 1000, cost: { bp: 0.2, mach: 5, elec: 1 }, start: 2 },
-    efab: { name: 'Semiconductor fab', kind: 'electronics', role: 'processing', icon: 'semiconductor_fab', desc: 'Radiation-hardened integrated circuits for flight computers and drives.', use: { si: 1.5 }, compute: 4, make: { elec: 1.2 }, power: 80, upkeep: 0.12, water: 1140000, cost: { bp: 2, mach: 6, elec: 2 }, start: 1 },
+    silicon: { name: 'Semiconductor fab', kind: 'electronics', role: 'production', icon: 'semiconductor_fab', desc: 'Purifies metallurgical silicon to electronic grade.', make: { si: 2.5 }, workers: 300, power: 60, upkeep: 0.08, water: 500000, cost: { bp: 2, mach: 6, elec: 2 }, start: 1 },
+    mshop: { name: 'Flight machine shop', kind: 'processing', role: 'processing', icon: 'machine_shop', desc: 'Space-grade motors, pumps, valves and turbopumps from nickel superalloy.', useGame: { stainless_steel: 1.8, nickel_superalloy: 0.9, ti_6al_4v: 0.6 }, make: { mach: 3 }, workers: 200, power: 30, upkeep: 0.06, water: 1000, cost: { bp: 0.2, mach: 5, elec: 1 }, start: 2 },
+    efab: { name: 'Semiconductor fab', kind: 'electronics', role: 'processing', icon: 'semiconductor_fab', desc: 'Radiation-hardened integrated circuits for flight computers and drives.', use: { si: 1.5 }, compute: 4, make: { elec: 1.2 }, workers: 1500, power: 80, upkeep: 0.12, water: 1140000, cost: { bp: 2, mach: 6, elec: 2 }, start: 1 },
     dc: { name: 'Data centre', kind: 'electronics', role: 'compute', icon: 'data_centre', desc: 'Compute for research, for the electronics lines and for sale.', make: { cu: 10 }, power: 120, upkeep: 0.1, water: 157788, cost: { bp: 1.8, mach: 2, elec: 6 }, start: 2 },
     lab: { name: 'Research lab', kind: 'infrastructure', role: 'research', icon: 'lab', desc: 'One lab adds one point of research a month to the project it is assigned to, if it has its compute.', compute: 2, make: { rp: 1 }, power: 10, upkeep: 0.05, water: 500, cost: { bp: 0.1, mach: 1, elec: 1 }, start: 4 },
     yard: { name: 'Construction yard', kind: 'infrastructure', role: 'infrastructure', icon: 'yard', desc: 'A construction contractor working the queue.', make: { bp: 0.01 }, power: 0.1, upkeep: 0, water: 2000, cost: { bp: 0.12, mach: 4 }, start: 2000 },
@@ -30,19 +30,34 @@
 
   const SUBJECTS = { launch: 'Launch', habitats: 'Habitats', power: 'Power', computing: 'Computing' };
 
-  const PROGRAMMES = [
-    { n: 1, name: 'Reusable orbital launch', subject: 'launch', rp: 60, needs: [] },
-    { n: 2, name: 'Orbital propellant transfer', subject: 'launch', rp: 100, needs: [1] },
-    { n: 3, name: 'Long-duration station', subject: 'habitats', rp: 160, needs: [1, 2] },
-    { n: 4, name: 'Space solar at scale', subject: 'power', rp: 140, needs: [1, 3], effect: 'Power plants give half as much again.' },
-    { n: 5, name: 'Data centres and autonomy', subject: 'computing', rp: 160, needs: [4], effect: 'Data centres make twice the compute; the electronics lines need half.' },
-    { n: 6, name: 'Crewed lunar outpost', subject: 'habitats', rp: 260, needs: [3] }
+  const TREE = [
+    ['recovery', 'launch', 'Booster recovery', [], 0], ['reusable', 'launch', 'Reusable boosters', ['recovery'], 1], ['heavy', 'launch', 'Heavy-lift boosters', ['reusable'], 0],
+    ['transfer', 'launch', 'Propellant transfer in orbit', ['reusable'], 2], ['depots', 'launch', 'Orbital depots', ['transfer', 'ice'], 12], ['shipyard', 'launch', 'Orbital shipyard', ['depots', 'refining'], 18],
+    ['water', 'habitats', 'Closed-loop water', [], 0], ['lifesupport', 'habitats', 'Regenerative life support', ['water', 'reusable'], 3], ['habmodule', 'habitats', 'Orbital habitat module', ['lifesupport'], 0],
+    ['lunarhab', 'habitats', 'Lunar surface habitat', ['habmodule'], 6], ['shielding', 'habitats', 'Radiation shielding from regolith', ['lunarhab', 'regolithO2'], 10], ['greenhouse', 'habitats', 'Greenhouse at low gravity', ['lunarhab', 'shielding'], 11],
+    ['cells', 'power', 'Better solar cells', [], 0], ['orbitalsolar', 'power', 'Orbital solar arrays', ['cells', 'lifesupport'], 4], ['batteries', 'power', 'Grid-scale batteries', ['cells'], 0],
+    ['smr', 'power', 'Small modular fission', [], 0], ['lunarfission', 'power', 'Lunar fission surface power', ['smr', 'lunarhab'], 7], ['sps', 'power', 'Solar power stations in orbit', ['orbitalsolar', 'shipyard', 'orbitalfab'], 20],
+    ['dtfusion', 'power', 'D-T fusion', ['smr', 'ice'], 22], ['dhefusion', 'power', 'D-He3 fusion', ['dtfusion', 'he3'], 0],
+    ['radhard', 'computing', 'Radiation-hardened chips', [], 0], ['autonomy', 'computing', 'Autonomous operations', ['radhard', 'orbitalsolar'], 5], ['accelerators', 'computing', 'More efficient accelerators', ['autonomy'], 0],
+    ['orbitalfab', 'computing', 'Orbital chip fabrication', ['accelerators', 'shipyard'], 19], ['orbitaldc', 'computing', 'Orbital data centres', ['orbitalfab'], 0],
+    ['sensing', 'mining', 'Remote-sensing instruments', [], 0], ['prospecting', 'mining', 'Prospecting landers', ['sensing', 'reusable'], 0], ['ice', 'mining', 'Lunar ice extraction', ['prospecting', 'lunarhab', 'autonomy', 'lunarfission'], 8],
+    ['excavation', 'mining', 'Regolith excavation', ['ice'], 0], ['sampling', 'mining', 'Asteroid sampling', ['prospecting', 'electric'], 15], ['asteroidmining', 'mining', 'Asteroid mining', ['sampling', 'depots'], 16],
+    ['he3', 'mining', 'Helium-3 extraction', ['excavation', 'dtfusion'], 23], ['scoop', 'mining', 'Gas giant scooping', ['asteroidmining', 'fusiondrive'], 25],
+    ['regolithO2', 'chemistry', 'Regolith oxygen extraction', ['ice'], 9], ['electrolysis', 'chemistry', 'Water electrolysis at scale', ['ice'], 0], ['sabatier', 'chemistry', 'Methane from CO2', ['electrolysis', 'regolithO2'], 21],
+    ['refining', 'chemistry', 'In-space metal refining', ['asteroidmining'], 17], ['nanotube', 'chemistry', 'Carbon nanotube fibre', ['refining', 'shipyard'], 26],
+    ['chemical', 'propulsion', 'Better chemical engines', [], 0], ['electric', 'propulsion', 'Electric propulsion', ['chemical'], 0], ['ntr', 'propulsion', 'Nuclear thermal propulsion', ['electric', 'lunarfission'], 14],
+    ['nep', 'propulsion', 'Nuclear electric propulsion', ['ntr', 'smr'], 13], ['fusiondrive', 'propulsion', 'Fusion drives', ['nep', 'dhefusion', 'shipyard'], 24],
+    ['magnets', 'physics', 'Superconducting magnets', [], 0], ['rtsc', 'physics', 'Room-temperature superconductors', ['magnets', 'dtfusion'], 27], ['exotic', 'physics', 'Exotic matter', ['rtsc', 'refining'], 28],
+    ['jump', 'physics', 'Jump point stabilisation', ['exotic', 'scoop', 'nanotube'], 29]
   ];
+  const TREE_NUM = Object.fromEntries(TREE.map((t, i) => [t[0], 101 + i]));
+  const treeDepth = key => { const t = TREE.find(x => x[0] === key); return t[3].length ? 1 + Math.max(...t[3].map(treeDepth)) : 0; };
+  const PROGRAMMES = TREE.map(([key, subject, name, req, grant]) => ({ n: TREE_NUM[key], key, name, subject, needs: req.map(k => TREE_NUM[k]), grant: grant || null, rp: 40 * (1 + treeDepth(key)) }));
 
   const GOODS = {
-    si: { name: 'Electronic-grade silicon', sell: 0.03, q: 20, buy: 0.12, avail: 3 },
+    si: { name: 'Electronic-grade polysilicon', sell: 0.03, q: 20, buy: 0.12, avail: 3 },
     mach: { name: 'Machinery', sell: 0.03, q: 30, buy: 0.1, avail: 8 },
-    elec: { name: 'Control electronics', sell: 0.5, q: 4, buy: 1.6, avail: 1 },
+    elec: { name: 'Radiation-hardened integrated circuits', sell: 0.5, q: 4, buy: 1.6, avail: 1 },
     cu: { name: 'Compute', sell: 0.06, q: 20 },
     launch: { name: 'Commercial launches', sell: 0.35, q: 2 }
   };
@@ -79,7 +94,7 @@
   function newGame() {
     const g = {
       month: START,
-      usd: 15,
+      usd: 1000,
       stock: { si: 6, mach: 30, elec: 8 },
       count: {}, active: {},
       queue: [],
@@ -91,7 +106,7 @@
       programmes: PROGRAMMES.map(p => ({ n: p.n, started: false, queued: false, rp: 0, tests: 0, cargo: 0, done: null, labs: 0, lead: null })),
       scientists: SCIENTISTS.map(scientist),
       recruiting: [], recruitsUsed: 0,
-      leases: [], offers: [], log: [], last: null, flows: null, climate: { ppm: 429, temp: START_TEMP, sea: 0, cumulative: 0, lastGt: 0 }
+      taxRate: NEUTRAL_TAX, gdp: 110000, leases: [], offers: [], log: [], last: null, flows: null, climate: { ppm: 429, temp: START_TEMP, sea: 0, cumulative: 0, lastGt: 0 }
     };
     for (const [id, b] of Object.entries(BUILDINGS)) { g.count[id] = b.start; g.active[id] = b.start; }
     g.flows = simulate(g, true);
@@ -101,7 +116,7 @@
 
   const prog = (g, n) => g.programmes.find(p => p.n === n);
   const def = n => PROGRAMMES.find(p => p.n === n);
-  const done = (g, n) => prog(g, n).done !== null;
+  const done = (g, n) => (n > 100 ? prog(g, n).done !== null : PROGRAMMES.some(p => p.grant === n && prog(g, p.n).done !== null));
   const available = (g, n) => !done(g, n) && def(n).needs.every(m => done(g, m));
   const monthName = m => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m % 12] + ' ' + Math.floor(m / 12);
   const priceFor = (id, q) => GOODS[id].sell / (1 + q / GOODS[id].q);
@@ -111,7 +126,11 @@
   const leading = (g, sid) => g.programmes.find(p => p.lead === sid && p.started && p.done === null);
   const queueOf = (g, sid) => g.programmes.filter(p => p.lead === sid && p.queued);
   const bonusOf = (s, subject) => (s.subject === subject ? 0.08 * s.skill : 0.02 * s.skill);
-  const income = g => BASE_INCOME * Math.pow(1.02, (g.month - START) / 12);
+  const WAGE_B = 1000 / 1e9;
+  const BASE_GROWTH = 0.03, NEUTRAL_TAX = 0.15, GROWTH_PER_TAX = 0.15;
+  const growthOf = g => BASE_GROWTH - GROWTH_PER_TAX * (g.taxRate - NEUTRAL_TAX);
+  const income = g => g.taxRate * g.gdp / 12;
+  const sketchWorkers = A => Object.entries(BUILDINGS).reduce((a, [id, b]) => a + (A[id] || 0) * (b.workers || 0), 0);
   const canPay = (g, cost) => Object.entries(cost).every(([k, v]) => k === 'bp' || (k === 'usd' ? g.usd >= v : (g.stock[k] || 0) >= v - 1e-9));
   const pay = (g, cost) => { for (const [k, v] of Object.entries(cost)) { if (k === 'bp') continue; if (k === 'usd') g.usd -= v; else g.stock[k] -= v; } };
   const log = (g, text, tone = '') => { g.log.unshift({ at: g.month, text, tone }); if (g.log.length > 60) g.log.pop(); };
@@ -154,17 +173,20 @@
   function makeOffers(g) {
     const r = rng(g.month * 7919 + 13), out = [];
     const pick = a => a[Math.floor(r() * a.length)];
-    const months = () => pick([3, 6, 6, 12, 12, 24]);
-    const demand = () => 0.6 + r() * 1.0;
+    const growth = growthOf(g), longest = Math.max(3, Math.round(6 + growth * 400));
+    const months = () => pick([3, 6, 12, 18, 24, 36].filter(m => m <= longest));
+    const payFactor = Math.max(0.6, 1.4 - growth * 10);
+    const demand = () => (0.6 + r() * 1.0) * payFactor;
+    const variety = Math.max(1, Math.round(2 + growth * 100));
     const sketchIds = Object.keys(BUILDINGS).filter(id => !['lab', 'yard'].includes(id));
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < variety; i++) {
       const id = pick(sketchIds), b = BUILDINGS[id], free = (g.active[id] || 0) - leasedOf(g, 'sketch', id);
       if (free < 1) continue;
       const count = Math.max(1, Math.round(free * (0.05 + r() * 0.15)));
       out.push({ kind: 'sketch', id, name: b.name, count, months: months(), usd: count * b.cost.bp * LEASE_YIELD * demand() });
     }
     const games = g.ext && g.ext.gameGroups ? g.ext.gameGroups() : [];
-    for (let i = 0; i < 3 && games.length; i++) {
+    for (let i = 0; i < variety && games.length; i++) {
       const x = pick(games), count = Math.max(1, Math.round(x.count * (0.005 + r() * 0.02)));
       out.push({ kind: 'game', id: x.building, process: x.process, name: x.name, count, months: months(), usd: count * x.bp * LEASE_YIELD * demand() });
     }
@@ -195,14 +217,19 @@
     const grid = gridOf(g, demand / 1000);
     f.grid = grid;
     const supply = Math.max(0, grid.effective - grid.industry + demand / 1000) * 1000;
-    const broke = g.usd < 0 ? 0.5 : 1;
-    const ps = (demand > 0 ? Math.min(1, supply / demand) : 1) * broke;
+    const wagesDue = (sketchWorkers(A) + (g.ext && g.ext.processingWorkers ? g.ext.processingWorkers() : 0)) * WAGE_B;
+    f.wages = wagesDue;
+    const upkeepDue = Object.entries(BUILDINGS).reduce((a, [id, b]) => a + (A[id] || 0) * b.upkeep, 0) + g.scientists.length * 0.02 + wagesDue;
+    const leaseIn = g.leases.filter(l => l.kind !== 'supply').reduce((a, l) => a + l.usd, 0);
+    const paid = upkeepDue > 0 ? Math.max(0, Math.min(1, (g.usd + income(g) + leaseIn) / upkeepDue)) : 1;
+    f.paid = paid;
+    const ps = (demand > 0 ? Math.min(1, supply / demand) : 1) * paid;
     if (grid.firm < grid.peak) f.notes.push(['Firm capacity short of peak demand', 'hot']);
     for (const k of Object.keys(f.power)) f.power[k] *= ps;
     f.power.idle = Math.max(0, supply - demand);
     f.supply.power = supply;
     f.ps = ps;
-    if (broke < 1) f.notes.push(['Treasury overdrawn: upkeep unpaid, everything runs at half rate', 'hot']);
+    if (paid < 1) f.notes.push(['Upkeep unpaid: buildings run at ' + Math.round(paid * 100) + '%', 'hot']);
     else if (ps < 1) f.notes.push(['Power short: every building runs at ' + Math.round(ps * 100) + '%', 'hot']);
 
     const bp = A.yard * BUILDINGS.yard.make.bp * ps;
@@ -257,6 +284,8 @@
     let upkeep = 0;
     for (const [id, b] of Object.entries(BUILDINGS)) upkeep += A[id] * b.upkeep;
     upkeep += g.scientists.length * 0.02;
+    f.wages *= paid;
+    upkeep = upkeep * paid + f.wages;
     f.upkeep = upkeep;
     f.income = income(g);
     f.leaseIncome = g.leases.filter(l => l.kind !== 'supply').reduce((a, l) => a + l.usd, 0);
@@ -411,6 +440,7 @@
     const f = simulate(g, false);
     g.last = f;
     warm(g, f.grid);
+    g.gdp *= Math.pow(1 + growthOf(g), 1 / 12);
     g.month++;
     for (const l of g.leases) l.left--;
     for (const l of g.leases.filter(x => x.left <= 0)) { if (l.kind === 'game' && g.ext) g.ext.release(l); log(g, 'Contract ended: ' + l.name, 'cool'); }
@@ -470,6 +500,7 @@
       p.labs = Math.max(0, Math.min(p.labs + Math.min(k, free), s.admin));
       g.flows = simulate(g, true);
     },
+    tax(g, v) { g.taxRate = Math.max(0, Math.min(0.6, v)); g.offers = makeOffers(g); g.flows = simulate(g, true); },
     accept(g, i) {
       const o = g.offers[i];
       if (!o) return;
@@ -503,7 +534,7 @@
     }
   }
 
-  const api = { BASE_GRID_SHOWN: false, ROLES, BUILDINGS, PROGRAMMES, GOODS, SUBJECTS, STAGE, CARGO, PAYLOAD, LAUNCH_OPS, RECRUIT_COST, RECRUIT_MONTHS, BASE_GRID, START, newGame, step, act, simulate, prog, def, done, available, monthName, priceFor, labsInUse, allocated, leasedOf, makeOffers, gridOf, START_TEMP, worldCo2, population, WAGE_PER_BP, leading, queueOf, bonusOf, income, canPay };
+  const api = { BASE_GRID_SHOWN: false, ROLES, BUILDINGS, PROGRAMMES, GOODS, SUBJECTS, STAGE, CARGO, PAYLOAD, LAUNCH_OPS, RECRUIT_COST, RECRUIT_MONTHS, BASE_GRID, START, newGame, step, act, simulate, prog, def, done, available, monthName, priceFor, labsInUse, allocated, leasedOf, growthOf, WAGE_B, TREE_NUM, makeOffers, gridOf, START_TEMP, worldCo2, population, WAGE_PER_BP, leading, queueOf, bonusOf, income, canPay };
   if (typeof module !== 'undefined') module.exports = api;
   else root.BAL = api;
 })(typeof window !== 'undefined' ? window : globalThis);

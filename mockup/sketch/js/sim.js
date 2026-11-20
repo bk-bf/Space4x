@@ -89,7 +89,7 @@
     if (!pid) return null;
     if (pid.startsWith('extract:')) {
       const m = pid.slice(8);
-      return { id: pid, name: 'Extract ' + short(m).toLowerCase(), inputs: {}, outputs: { [m]: 1000 }, power: 200, extract: m };
+      return { id: pid, name: 'Extract ' + short(m).toLowerCase(), inputs: {}, outputs: { [m]: (D.mat[m] && D.mat[m].extractKgH) || 1000 }, power: 200, extract: m };
     }
     const r = D.rec[pid];
     const out = {}, inp = {};
@@ -98,11 +98,17 @@
     return { id: pid, name: human(pid), inputs: inp, outputs: out, power: r.power, generates: r.generates, recipe: r };
   }
 
-  const prerequisitesOf = tag => (D.miles.find(m => m.number === tag) || { requires: [] }).requires;
-  const tagOpen = tag => prerequisitesOf(tag).every(r => E.done.includes(r));
-  const missingPrerequisites = tag => prerequisitesOf(tag).filter(r => !E.done.includes(r));
-  const depthOf = n => { const r = prerequisitesOf(n); return r.length ? 1 + Math.max(...r.map(depthOf)) : 0; };
-  const opensTags = n => D.miles.filter(m => m.requires.includes(n)).map(m => m.number);
+  const prerequisitesOf = tag => ((D.tagMiles || D.miles).find(m => m.number === tag) || { requires: [] }).requires;
+  const doneTags = () => E.doneTags || E.done;
+  const tagOpen = tag => prerequisitesOf(tag).every(r => doneTags().includes(r));
+  const missingPrerequisites = tag => prerequisitesOf(tag).filter(r => !doneTags().includes(r));
+  const requiresOf = n => (D.miles.find(m => m.number === n) || { requires: [] }).requires;
+  const depthOf = n => { const r = requiresOf(n); return r.length ? 1 + Math.max(...r.map(depthOf)) : 0; };
+  const opensTags = n => {
+    if (!D.tagMiles) return D.miles.filter(m => m.requires.includes(n)).map(m => m.number);
+    const grant = (D.miles.find(m => m.number === n) || {}).grant;
+    return grant ? D.tagMiles.filter(m => m.requires.includes(grant)).map(m => m.number) : [];
+  };
   const unlocked = item => tagOpen(item.milestone);
   const canStand = (b, s = site()) => (D.bld[b].where || []).includes(s.place === 'orbit' ? 'orbit' : s.world === 'luna' ? 'moon' : s.world);
 
@@ -225,7 +231,7 @@
   }
 
   const TIER = { P: 1, E: 1.25, S: 1.5 };
-  const mile = n => D.miles.find(m => m.number === n);
+  const mile = n => D.miles.find(m => m.number === n) || (D.tagMiles || []).find(m => m.number === n);
   const programmeDays = n => { const m = mile(n); return (60 + 30 * (n - 1)) * TIER[m.tier]; };
   const programmeCompute = n => { const m = mile(n); return n < 6 ? 0 : 1000 * (n - 5) * TIER[m.tier]; };
 

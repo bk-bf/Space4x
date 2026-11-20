@@ -13,6 +13,7 @@
     take: o => { const x = S4.E.groups.find(y => y.building === o.id && y.process === o.process); if (!x || x.count < o.count) return false; x.count -= o.count; return true; },
     release: l => { const x = S4.E.groups.find(y => y.building === l.id && y.process === l.process); if (x) x.count += l.count; else S4.E.groups.push({ id: S4.E.uid++, building: l.id, process: l.process, count: l.count, on: true }); },
     farmCo2: () => { const f = flows0(S4.E); return Object.entries(FARM_CO2E).reduce((a, [id, k]) => a + (f.out[id] || 0) * 8766 * k / 1e12, 0); },
+    processingWorkers: () => S4.E.groups.length ? flows0(S4.E).actors.filter(a => a.b && a.b.kind === 'processing' && a.g.on !== false).reduce((s2, a) => s2 + a.b.workers * a.g.count, 0) : 0,
     population: months => S4.E.pop * Math.pow(1 + (S4.E.growth || 0), months / 12),
     industryGw: () => (S4.E.groups.length ? flows0(S4.E).power.demand / 1e6 : 0),
     short: q => Object.entries(S4.D.bld[q.id].cost).filter(([m, v]) => (S4.E.stock[m] || 0) < v).map(([m]) => m),
@@ -100,6 +101,7 @@
     for (const [k, id] of Object.entries(GOOD_MAT)) S4.E.stock[id] = (g.stock[k] || 0) * 1000;
     S4.E.done.length = 0;
     for (const p of g.programmes) if (p.done !== null) S4.E.done.push(p.n);
+    S4.E.doneTags = M.PROGRAMMES.filter(p => p.grant && M.prog(g, p.n).done !== null).map(p => p.grant);
     S4.E.programmes.length = 0;
     for (const p of g.programmes) if (p.started && p.done === null) S4.E.programmes.push({ number: p.n, progress: p.rp / M.def(p.n).rp });
   }
@@ -116,6 +118,16 @@
       S4.D.mat.machinery = m; S4.D.mats.push(m); S4.D.cats.push('machinery');
       S4.CAT_NAMES.machinery = 'Machinery'; S4.CAT_REP.machinery = 'machinery';
     }
+    if (!S4.D.tagMiles) {
+      const old = S4.D.miles, by = n => M.PROGRAMMES.find(p => p.grant === n);
+      S4.D.tagMiles = old.map(m => ({ ...m, name: by(m.number) ? by(m.number).name : m.name }));
+      S4.D.miles = M.PROGRAMMES.map(p => {
+        const o = p.grant ? old.find(m => m.number === p.grant) : null;
+        S4.MS_SHORT[p.n] = p.name;
+        return { number: p.n, name: p.name, subject: p.subject, requires: p.needs, grant: p.grant, tier: 'P', unlocks: o ? o.unlocks.replace(/milestones?/gi, 'project') : '', needs: o ? o.needs : { buildings: [], components: [], materials: [], sites: [] } };
+      });
+      S4.research.RS.sel = M.PROGRAMMES[0].n;
+    }
     g.offers = M.makeOffers(g);
     sync();
   });
@@ -126,6 +138,12 @@
     const f = flows0(s);
     if (s !== S4.E || !g.flows) return f;
     f.use.water = (f.use.water || 0) + waterKgPerHour();
+    for (const [id, b] of Object.entries(BUILDINGS)) for (const [m, v] of Object.entries(b.useGame || {})) f.use[m] = (f.use[m] || 0) + (g.active[id] || 0) * v * 1000 / HOURS_MONTH;
+    const paid = g.flows.paid ?? 1;
+    if (paid < 1) for (const a of f.actors) if (a.b && a.b.kind === 'processing') {
+      for (const [m, v] of Object.entries(a.out || {})) f.out[m] -= v * (1 - paid);
+      for (const [m, v] of Object.entries(a.inp || {})) f.use[m] -= v * (1 - paid);
+    }
     const dT = g.climate.temp - M.START_TEMP;
     for (const [id, k] of Object.entries(YIELD_PER_DEGREE)) if (f.out[id]) f.out[id] *= Math.max(0, 1 - k * dT);
     for (const [k, id] of Object.entries(GOOD_MAT)) {
@@ -137,7 +155,7 @@
 
   const ms0 = S4.milestoneState;
   S4.milestoneState = n => {
-    if (n > 6) return ms0(n);
+    if (!M.def(n)) return ms0(n);
     const p = M.prog(g, n);
     if (p.done !== null) return 'done';
     if (p.started) return 'running';
@@ -258,11 +276,11 @@
     const b = BUILDINGS[id];
     const out = b.make ? Object.values(b.make)[0] : 1;
     const output = Object.entries(b.make || {}).filter(([k]) => k !== 'mw').map(([k, v]) => rateTile(k, v)).join('');
-    const input = [...Object.entries(b.use || {}).map(([k, v]) => rateTile(k, id === 'lab' ? v : v * out)), b.compute ? rateTile('cu', b.compute) : ''].join('');
+    const input = [...Object.entries(b.useGame || {}).map(([k, v]) => `<span class="rate">${S4.mi(k, 2)}<span>${S4.fmt.mass(v * 1000 * S4.perOf().hours / HOURS_MONTH)}/${S4.perOf().unit}</span></span>`), ...Object.entries(b.use || {}).map(([k, v]) => rateTile(k, id === 'lab' ? v : v * out)), b.compute ? rateTile('cu', b.compute) : ''].join('');
     return `<div class="card"><header>${bicon(id, 2)}<div><div class="t">${esc(b.name)}</div><div class="s">${esc(S4.KIND_NAMES[b.kind])}${FAB_RECIPE[id] ? ' · ' + esc(RES[MAIN_OUT[id]].name) : ''}</div></div></header><div class="cb">
       ${output ? `<div><span class="lbl">Output</span><div class="eq">${output}</div></div>` : ''}
       ${input ? `<div><span class="lbl">Input</span><div class="eq">${input}</div></div>` : ''}
-      <div class="flow"><div class="fr"><span class="nm">Power</span><span class="v">${S4.fmt.power(b.power * 1000)}</span></div>${b.water ? `<div class="fr"><span class="nm">Water</span><span class="v">${S4.fmt.mass(b.water * 1000 * S4.perOf().hours / HOURS_MONTH)}/${S4.perOf().unit}</span></div>` : ''}<div class="fr"><span class="nm">Upkeep</span><span class="v">${perMonth('usd', b.upkeep)}</span></div>${withBuild ? `<div class="fr"><span class="nm">Standing</span><span class="v">${g.count[id]}</span></div>` : ''}</div>
+      <div class="flow"><div class="fr"><span class="nm">Power</span><span class="v">${S4.fmt.power(b.power * 1000)}</span></div>${b.workers ? `<div class="fr"><span class="nm">Workers</span><span class="v">${S4.fmt.group(b.workers)}</span></div><div class="fr"><span class="nm">Wages</span><span class="v">$${S4.fmt.group(b.workers * M.WAGE_B * 1e9 * S4.perOf().hours / HOURS_MONTH)}/${S4.perOf().unit}</span></div>` : ''}${b.water ? `<div class="fr"><span class="nm">Water</span><span class="v">${S4.fmt.mass(b.water * 1000 * S4.perOf().hours / HOURS_MONTH)}/${S4.perOf().unit}</span></div>` : ''}<div class="fr"><span class="nm">Upkeep</span><span class="v">${perMonth('usd', b.upkeep)}</span></div>${withBuild ? `<div class="fr"><span class="nm">Standing</span><span class="v">${g.count[id]}</span></div>` : ''}</div>
       ${withBuild ? '' : `<div class="row sp"><span class="lbl" style="margin:0">Active</span>${ctl('skactive', id, g.active[id] + ' / ' + g.count[id])}</div>`}
       ${!withBuild && FAB_RECIPE[id] ? `<div class="row sp"><span class="lbl" style="margin:0">Switch one to ${esc(RES[MAIN_OUT[FAB_RECIPE[id]]].name)}</span><button data-act="skretool" data-id="${id}" ${g.count[id] ? '' : 'disabled'}>${gl('arrowR', 'sm')}</button></div>` : ''}
       ${withBuild ? `<div><span class="lbl">Build cost</span>${costList({ ...b.cost, usd: b.cost.bp * M.WAGE_PER_BP })}</div>
@@ -316,7 +334,7 @@
       const q = id === 'launch' ? f.launches.commercial : made * g.sell[id];
       const price = M.priceFor(id, q), rev = id === 'launch' ? f.sales.launch || 0 : f.sales[id];
       const icon = id === 'launch' ? ricon('launch', 2) : ricon(id, 2);
-      return `<div class="card"><header>${icon}<div><div class="t">${esc(id === 'launch' ? 'Commercial launches' : RES[id].name)}</div><div class="s">${id === 'launch' ? '' : n1(made) + ' ' + (id === 'cu' ? 'CU' : 't') + ' made a month'}</div></div></header><div class="cb">
+      return `<div class="card"><header>${icon}<div><div class="t">${esc(id === 'launch' ? 'Commercial launches' : RES[id].name)}</div><div class="s">${id === 'launch' ? '' : (id === 'cu' ? eflops(made) : S4.fmt.mass(made * 1000) + ' made a month')}</div></div></header><div class="cb">
         <div class="row sp"><span class="lbl" style="margin:0">${id === 'launch' ? 'Launches a month' : 'Share sold'}</span>${id === 'launch' ? ctl('skcommercial', 'x', String(g.commercial)) : ctl('sksell', id, Math.round(g.sell[id] * 100) + '%')}</div>
         <div class="flow"><div class="fr"><span class="nm">Price now</span><span class="v">$${n1(price * 1000)}M ${id === 'launch' ? 'a launch' : id === 'cu' ? 'an EFLOP/s a month' : 'a tonne'}</span></div><div class="fr"><span class="nm">Earns a month</span><span class="v cool">${amt('usd', rev)}</span></div></div></div></div>`;
     };
@@ -340,11 +358,15 @@
   function ledger() {
     const f = g.flows;
     const rows = [
-      ['Income from Earth', f.income], ['Leases', f.leaseIncome || 0], ['Supply contracts', f.supplyIncome || 0], ['Electronics sold', f.sales.elec], ['Machinery sold', f.sales.mach], ['Compute sold', f.sales.cu], ['Commercial launches', f.sales.launch || 0],
-      ['Upkeep and salaries', -f.upkeep], ['Construction', -f.usd.construction], ['Stages and launches', -(f.usd.shipbuilding + f.usd.programme)], ['Purchases', -(f.bought || 0)]
+      ['Taxes', f.income], ['Leases', f.leaseIncome || 0], ['Supply contracts', f.supplyIncome || 0], ['Electronics sold', f.sales.elec], ['Machinery sold', f.sales.mach], ['Compute sold', f.sales.cu], ['Commercial launches', f.sales.launch || 0],
+      ['Wages', -(f.wages || 0)], ['Upkeep', -(f.upkeep - (f.wages || 0))], ['Construction', -f.usd.construction], ['Stages and launches', -(f.usd.shipbuilding + f.usd.programme)], ['Purchases', -(f.bought || 0)]
     ];
     const net = rows.reduce((a, [, v]) => a + v, 0);
-    return `<div class="card ledger"><header>${gl('coin', 'lg')}<div><div class="t">Next month</div><div class="s">Treasury ${amt('usd', g.usd)}</div></div></header><div class="cb"><div class="flow">${rows.map(([t, v]) => `<div class="fr"><span class="nm">${t}</span><span class="v ${v > 0.0005 ? 'cool' : v < -0.0005 ? 'hot' : ''}">${v >= 0 ? '+' : '−'}${amt('usd', Math.abs(v))}</span></div>`).join('')}<div class="fr tot"><span class="nm">Net</span><span class="v ${net >= 0 ? 'cool' : 'hot'}">${net >= 0 ? '+' : '−'}${amt('usd', Math.abs(net))}</span></div></div>${g.usd < 0 ? '<div class="hot">Overdrawn: space-grade buildings at half rate</div>' : ''}</div></div>`;
+    const growth = M.growthOf(g);
+    const taxCard = `<div class="card"><header>${gl('coin', 'lg')}<div><div class="t">Taxes</div><div class="s">${S4.fmt.group(g.gdp)} $B a year economy</div></div></header><div class="cb">
+      <label class="field">Tax rate <input class="sktax" type="number" min="0" max="60" step="1" value="${Math.round(g.taxRate * 100)}" style="width:64px"> %</label>
+      <div class="flow">${fr('Civilian growth', (growth * 100).toFixed(1) + '% a year', growth < 0)}${fr('Taxes a month', amt('usd', f.income))}${fr('Offers a month', String(g.offers.length))}${fr('Longest contract', Math.max(3, Math.round(6 + growth * 400)) + ' months')}</div></div></div>`;
+    return taxCard + `<div class="card ledger"><header>${gl('coin', 'lg')}<div><div class="t">Next month</div><div class="s">Treasury ${amt('usd', g.usd)}</div></div></header><div class="cb"><div class="flow">${rows.map(([t, v]) => `<div class="fr"><span class="nm">${t}</span><span class="v ${v > 0.0005 ? 'cool' : v < -0.0005 ? 'hot' : ''}">${v >= 0 ? '+' : '−'}${amt('usd', Math.abs(v))}</span></div>`).join('')}<div class="fr tot"><span class="nm">Net</span><span class="v ${net >= 0 ? 'cool' : 'hot'}">${net >= 0 ? '+' : '−'}${amt('usd', Math.abs(net))}</span></div></div>${f.paid < 1 ? `<div class="hot">Upkeep paid ${Math.round(f.paid * 100)}%</div>` : ''}</div></div>`;
   }
 
   const face = s => ({ seed: s.seed, age: 2026 - s.born + Math.floor((g.month - M.START) / 12), rank: 1, branch: 'staff', gender: s.gender });
@@ -429,7 +451,7 @@
   S4.sketchUI = {
     rtab: tab => (tab === 'scientists' ? scientists() : ''),
     rkpis: kp => researchKpis(kp),
-    rcard: RS => (RS.tab === 'scientists' && SK.ssel !== null ? sciCard(SK.ssel) : RS.sel <= 6 ? progCard(RS.sel) : null),
+    rcard: RS => (RS.tab === 'scientists' && SK.ssel !== null ? sciCard(SK.ssel) : M.def(RS.sel) ? progCard(RS.sel) : null),
     etab: (tab, f, s) => (tab === 'market' ? market() : tab === 'minerals' && s === S4.E ? S4.minerals.render(f) : null),
     summary: () => summaryBlock(),
     replaces: ['semiconductor_fab', 'data_centre'],
@@ -478,6 +500,7 @@
     sync(); rerender();
   }, true);
   document.addEventListener('change', e => {
+    if (e.target.classList.contains('sktax')) { act.tax(g, (+e.target.value || 0) / 100); sync(); rerender(); return; }
     if (!e.target.classList.contains('skpct')) return;
     act.setPct(g, +e.target.dataset.id, +e.target.value || 0);
     sync(); rerender();

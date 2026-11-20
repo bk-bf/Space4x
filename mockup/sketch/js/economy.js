@@ -13,7 +13,7 @@
   };
   const TABS = [['summary', 'Summary', 'list'], ['production', 'Production', 'factory'], ['construction', 'Construction', 'hammer'], ['stockpiles', 'Stockpiles', 'box'], ['people', 'People', 'people'], ['yard', 'Shipyard', 'yard'], ['launch', 'Launch', 'rocket'], ['ships', 'Ships', 'ship'], ['supply', 'Supply', 'flame']];
   const kc = k => { const c = S4.KIND[k] || [150, 150, 180]; return `rgb(${c.join(',')})`; };
-  const FACTS = { earth: ['1.00 g', 'Breathable', '15 °C'], luna: ['0.16 g', 'None', '-23 °C'] };
+  const FACTS = { earth: ['1.00 g', 'Breathable', '15 °C', '1 Earth mass', '5.97 × 10²¹ t'], luna: ['0.16 g', 'None', '-23 °C', '0.0123 Earth masses', '7.34 × 10¹⁹ t'] };
 
   const PLANETS = {};
   function planet(world) {

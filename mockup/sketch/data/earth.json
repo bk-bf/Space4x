@@ -309,6 +309,41 @@
       "building": "mine_earth",
       "process": "extract:barium",
       "count": 550
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:gold",
+      "count": 375
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:platinum",
+      "count": 19
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:rhenium",
+      "count": 7
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:indium",
+      "count": 123
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:gallium",
+      "count": 87
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:beryllium",
+      "count": 41
+    },
+    {
+      "building": "mine_earth",
+      "process": "extract:tantalum",
+      "count": 240
     }
   ],
   "kcalPerPersonDay": 2800,

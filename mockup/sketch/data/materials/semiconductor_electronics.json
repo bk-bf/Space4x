@@ -6,9 +6,21 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
-      { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" },
-      { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
+      {
+        "body": "earth",
+        "how": "mined",
+        "building": "mine_earth"
+      },
+      {
+        "body": "asteroid-s",
+        "how": "mined",
+        "building": "asteroid_miner"
+      },
+      {
+        "body": "mars",
+        "how": "regolith",
+        "building": "regolith_excavator"
+      }
     ],
     "why": "Base of chips and silicon solar cells; by-product of molten regolith electrolysis",
     "source": "https://en.wikipedia.org/wiki/Silicon"
@@ -19,9 +31,16 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [
+      {
+        "body": "earth",
+        "how": "byproduct",
+        "building": "mine_earth"
+      }
+    ],
     "why": "Element of GaAs, InGaP and GaN; recovered as a by-product of bauxite and zinc processing",
-    "source": "https://en.wikipedia.org/wiki/Gallium"
+    "source": "https://en.wikipedia.org/wiki/Gallium",
+    "extractKgH": 1
   },
   {
     "id": "germanium",
@@ -29,7 +48,13 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [
+      {
+        "body": "earth",
+        "how": "byproduct",
+        "building": "mine_earth"
+      }
+    ],
     "why": "Substrate and bottom junction of space multi-junction solar cells",
     "source": "https://en.wikipedia.org/wiki/Germanium"
   },
@@ -39,9 +64,16 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [
+      {
+        "body": "earth",
+        "how": "byproduct",
+        "building": "mine_earth"
+      }
+    ],
     "why": "Element of InGaP top junctions and transparent conductors",
-    "source": "https://en.wikipedia.org/wiki/Indium"
+    "source": "https://en.wikipedia.org/wiki/Indium",
+    "extractKgH": 1
   },
   {
     "id": "arsenic",
@@ -49,7 +81,13 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [
+      {
+        "body": "earth",
+        "how": "byproduct",
+        "building": "mine_earth"
+      }
+    ],
     "why": "Element of gallium arsenide",
     "source": "https://en.wikipedia.org/wiki/Gallium_arsenide"
   },
@@ -67,7 +105,13 @@
     "name": "Fluorite (fluorspar)",
     "category": "semiconductor_electronics",
     "tier": "P",
-    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "sources": [
+      {
+        "body": "earth",
+        "how": "mined",
+        "building": "mine_earth"
+      }
+    ],
     "why": "Source of fluorine for PTFE and fluoropolymers and HF for chip etching",
     "source": "https://en.wikipedia.org/wiki/Fluorite"
   },
