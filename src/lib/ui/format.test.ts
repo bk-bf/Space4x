@@ -9,6 +9,7 @@ import {
   group,
   bodyMass,
   mass,
+  money,
   scientific,
   num,
   kcal,
@@ -20,6 +21,7 @@ import {
   rate,
   signed,
   signedAmount,
+  signedMoney,
   signedPct,
   signedPower,
   thrust,
@@ -27,6 +29,16 @@ import {
   trend,
   trendTone
 } from './format.ts';
+
+describe('money', () => {
+  it('shows dollars in billions with a sign for gain and loss', () => {
+    expect(money(15e9)).toBe('$15B');
+    expect(money(5.2e8)).toBe('$0.52B');
+    expect(money(-1.25e9)).toBe('-$1.25B');
+    expect(signedMoney(7.3e8)).toBe('+$0.73B');
+    expect(signedMoney(-2e9)).toBe('-$2B');
+  });
+});
 
 describe('numbers', () => {
   it('groups thousands and rounds to whole numbers', () => {

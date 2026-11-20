@@ -26,6 +26,7 @@ export function limitText(limit: Limit | null): string {
   if (limit.kind === 'off') return 'Switched off';
   if (limit.kind === 'idle') return 'No recipe yet';
   if (limit.kind === 'workers') return 'Short of workers';
+  if (limit.kind === 'upkeep') return 'Upkeep unpaid';
   if (limit.kind === 'power') return 'Short of power';
   if (limit.kind === 'compute') return 'Short of compute';
   if (limit.kind === 'material') return `Short of ${materialName(limit.id)}`;

@@ -20,6 +20,7 @@ export type Limit =
   | { kind: 'off' }
   | { kind: 'idle' }
   | { kind: 'workers' }
+  | { kind: 'upkeep' }
   | { kind: 'power' }
   | { kind: 'compute' }
   | { kind: 'material'; id: string }
@@ -137,7 +138,8 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
     return { ...none, grade: 0, limit: { kind: 'depleted' } };
   const mined = isExtraction(g.process);
   const rich = mined ? grade : 1;
-  const cap = workerShare * (mined ? 1 : Math.min(1, grade));
+  const paid = p.upkeep > 0 ? eco.market.paid : 1;
+  const cap = workerShare * paid * (mined ? 1 : Math.min(1, grade));
   const gradeLimited = !mined && grade < 1 - 1e-9;
   return {
     ...base,
@@ -149,9 +151,11 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
     extracts: scaled(p.extracts, g.count * rich),
     limit: gradeLimited
       ? { kind: 'deposit', id: Object.keys(p.extracts)[0] ?? '' }
-      : workerShare < 1
-        ? { kind: 'workers' }
-        : null,
+      : paid < 1
+        ? { kind: 'upkeep' }
+        : workerShare < 1
+          ? { kind: 'workers' }
+          : null,
     worst: cap
   };
 }

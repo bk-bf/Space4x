@@ -1,6 +1,7 @@
 import earth from '#lib/game/data/earth.json';
 import type { Site as Where } from '#lib/game/data/index.ts';
 import { siteFlows } from './flows.ts';
+import { makeOffers, startMarket } from './market.ts';
 import { isStockless } from './processes.ts';
 import type { Economy, Site } from './types.ts';
 
@@ -72,8 +73,10 @@ export function startEconomy(): Economy {
     mined: {},
     exhausted: [],
     drawn: {},
-    ledger: { extracted: 0, eaten: 0, built: 0, lost: 0, burned: 0 }
+    ledger: { extracted: 0, eaten: 0, built: 0, lost: 0, burned: 0 },
+    market: startMarket()
   };
   eco.sites.push(startSite(eco, 'earth', 'earth', earthStart));
+  eco.market.offers = makeOffers(eco, 0);
   return eco;
 }

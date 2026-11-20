@@ -11,8 +11,11 @@ import {
 } from './data/index.ts';
 import type { Milestone } from './data/index.ts';
 import {
+  acceptOffer,
   assign,
+  averageOutput,
   buildingsAt,
+  canAccept,
   earthStart,
   economy,
   extractionId,
@@ -22,6 +25,9 @@ import {
   flowsOf,
   homeSite,
   isUnlocked,
+  leaseIncome,
+  PEAK_RATIO,
+  plantOf,
   process,
   programmeCompute,
   programmeStatus,
@@ -35,6 +41,8 @@ import {
   touch,
   unlockedProcesses,
   unlockedTag,
+  upkeepDue,
+  type Offer,
   type Site
 } from './economy/index.ts';
 import { climbWith, designStats, lock, newDesign, setCount, type ShipDesign } from './shipdesign/index.ts';
@@ -63,6 +71,10 @@ const SPARE = 1.2;
 const TRIM_STOCK_DAYS = 365;
 const TRIM_PASSES = 5;
 const TRIM_EVERY_DAYS = 30;
+const SOLVENT_MONTHS = 12;
+const LEASE_MARGIN = 1.03;
+
+type Lease = Offer & { kind: 'lease' };
 const END_PRODUCTS = new Set(Object.keys(earthStart.endProducts));
 
 const ORBITER = 'play-orbiter';
@@ -169,6 +181,46 @@ export class Player {
     return changed;
   }
 
+  protected sparesPower(o: Lease): boolean {
+    const p = plantOf(o.building);
+    if (!p) return false;
+    const grid = flowsOf(this.earth).grid;
+    const average = grid.average - averageOutput(p, o.count);
+    const firm = grid.firm - o.count * p.capacityKw * p.firmShare;
+    return Math.min(average, firm / PEAK_RATIO) >= grid.demand * LEASE_MARGIN;
+  }
+
+  readonly leases: number[] = [];
+  readonly unpaid: number[] = [];
+
+  protected keepSolvent(): void {
+    const month = economy.market.month;
+    if (economy.market.paid < 1 - 1e-9 && this.unpaid.at(-1) !== month) this.unpaid.push(month);
+    const short = () => {
+      const upkeep = upkeepDue(economy);
+      return economy.market.treasury + SOLVENT_MONTHS * (leaseIncome(economy) - 2 * upkeep) < 0;
+    };
+    while (short()) {
+      const best = economy.market.offers
+        .filter((o): o is Lease => o.kind === 'lease' && canAccept(economy, o) && this.sparesPower(o))
+        .sort((a, b) => b.pays - a.pays)[0];
+      if (!best || !acceptOffer(economy, best.id)) break;
+      touch();
+      this.leases.push(best.pays * best.months);
+      this.say(`leased ${best.count} ${building(best.building).name} for ${best.months} months`);
+    }
+  }
+
+  protected readonly reachedAt = new Map<number, number>();
+
+  protected noteReached(): void {
+    for (const n of economy.done) {
+      if (this.reachedAt.has(n)) continue;
+      const e = this.game.events.find((x) => x.text.startsWith(`Milestone ${n} reached`));
+      this.reachedAt.set(n, e?.at ?? this.game.time);
+    }
+  }
+
   days(n: number): void {
     let left = n;
     while (left > 1e-9) {
@@ -176,9 +228,11 @@ export class Player {
         this.economise();
         this.trimmedAt = this.game.elapsed;
       }
+      this.keepSolvent();
       const step = Math.min(left, 5);
       this.shareShipyards();
       this.game.advance(step * DAY);
+      this.noteReached();
       left -= step;
     }
     touch();
@@ -430,8 +484,8 @@ export class Player {
       this.days(10);
     }
     if (economy.done.includes(n) && !this.report.reached.some((r) => r.number === n)) {
-      const e = this.game.events.find((x) => x.text.startsWith(`Milestone ${n} reached`));
-      this.report.reached.push({ number: n, at: e?.at ?? this.game.time });
+      this.noteReached();
+      this.report.reached.push({ number: n, at: this.reachedAt.get(n) ?? this.game.time });
     }
     return economy.done.includes(n);
   }

@@ -29,6 +29,7 @@ export interface Process {
   outputs: Amounts;
   extracts: Amounts;
   water: number;
+  upkeep: number;
   estimated: boolean;
 }
 
@@ -67,6 +68,7 @@ function recipeProcess(r: Recipe, body: Where): Process {
     outputs,
     extracts,
     water,
+    upkeep: r.upkeep ?? 0,
     estimated: r.estimated
   };
 }
@@ -118,6 +120,7 @@ function extractionProcess(materialId: string, b: Building): Process {
     outputs: { [materialId]: extractRate(materialId) },
     extracts: { [materialId]: extractRate(materialId) },
     water: 0,
+    upkeep: 0,
     estimated: true
   };
 }

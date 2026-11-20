@@ -68,6 +68,11 @@ export const pct = (fraction: number): string => `${Math.round(fraction * 100)}%
 
 export const eflops = (v: number): string => `${num(v)} EFLOP/s`;
 
+export const money = (dollars: number): string =>
+  `${dollars < 0 ? '-' : ''}$${num(Math.abs(dollars) / 1e9)}B`;
+
+export const signedMoney = (dollars: number): string => signed(dollars, money(Math.abs(dollars)));
+
 export function amount(a: number, unit?: Unit): string {
   if (unit === 'eflops') return eflops(a);
   if (unit === 'model') return num(a);

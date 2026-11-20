@@ -5,6 +5,7 @@ import { programmeDays } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
 import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
+import { chargeUpkeep, marketEvents, marketHours } from './market.ts';
 import { startShips } from './yard.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
 
@@ -224,7 +225,7 @@ function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: nu
   const boundary = (Math.floor(now / SEGMENT_HOURS + 1e-9) + 1) * SEGMENT_HOURS - now;
   let hours = Math.min(left, boundary);
   for (const { site, flows } of all) hours = Math.min(hours, nextEvent(eco, site, flows, warnDays));
-  hours = Math.min(hours, depletionEvent(eco, all));
+  hours = Math.min(hours, depletionEvent(eco, all), marketHours(eco));
   return Math.max(hours, 0);
 }
 
@@ -255,8 +256,10 @@ export function advanceEconomy(
     }
     const hours = segmentHours(eco, all, left, warnDays);
     const at = eco.elapsed + hours * 3600;
+    chargeUpkeep(eco, hours);
     for (const { site, flows } of all) applySegment(eco, site, flows, hours, at, log);
     eco.elapsed = at;
+    marketEvents(eco, log);
     left -= hours;
   }
 }

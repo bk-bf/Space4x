@@ -7,6 +7,7 @@ export * from './found.ts';
 export * from './flows.ts';
 export * from './forecast.ts';
 export * from './grid.ts';
+export * from './market.ts';
 export * from './processes.ts';
 export * from './programmes.ts';
 export * from './start.ts';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { classes } from './classes.svelte.ts';
+import { money } from '#lib/ui/format.ts';
 import { formatDay } from './clock.ts';
 import { economy, flowsOf, remainingMass, siteAt, siteIn, standing } from './economy/index.ts';
 import { OuterPlayer } from './playOuter.ts';
@@ -174,6 +175,9 @@ describe('the scripted player from the start state', () => {
     expect(ending).toHaveLength(1);
 
     expect(player.hunger).toEqual([]);
+    expect(player.unpaid).toEqual([]);
+    expect(player.leases.length).toBeGreaterThan(0);
+    expect(economy.market.treasury).toBeGreaterThan(0);
     for (const site of economy.sites.filter((s) => s.id !== 'earth' && s.population >= 0.5)) {
       expect(site.alerts.food, `${site.name} is hungry`).toBe(false);
       expect(flowsOf(site).food.cover, `${site.name} is fed`).toBeGreaterThan(0.999);
@@ -220,7 +224,11 @@ describe('the scripted player from the start state', () => {
       'tonnes',
       player.report.tonnes.toFixed(0),
       'sites',
-      economy.sites.map((s) => s.id).join(',')
+      economy.sites.map((s) => s.id).join(','),
+      'leases',
+      player.leases.length,
+      'treasury',
+      money(economy.market.treasury)
     );
     console.info('trips', JSON.stringify(player.trips.map((t) => [t.label, Math.round(t.days)])));
     console.info('legs', JSON.stringify(legs.filter((l) => /Fusion|Scoop|founder|barge|Steel/i.test(l))));

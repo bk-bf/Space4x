@@ -86,6 +86,22 @@ export interface Ledger {
   burned: number;
 }
 
+export type Terms =
+  | { kind: 'lease'; building: string; process: string | null; count: number }
+  | { kind: 'supply'; material: string; amount: number };
+
+export type Offer = Terms & { id: number; months: number; pays: number };
+
+export type Contract = Offer & { left: number; due: number; missed: boolean };
+
+export interface Market {
+  treasury: number;
+  paid: number;
+  month: number;
+  offers: Offer[];
+  contracts: Contract[];
+}
+
 export interface Economy {
   sites: Site[];
   done: number[];
@@ -97,6 +113,7 @@ export interface Economy {
   exhausted: string[];
   drawn: Record<string, number>;
   ledger: Ledger;
+  market: Market;
 }
 
 export interface LogTag {

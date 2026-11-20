@@ -1,4 +1,5 @@
 import { siteFlows, type SiteFlows } from './flows.ts';
+import { acceptOffer, paidShare } from './market.ts';
 import { isFood } from './processes.ts';
 import { startEconomy } from './start.ts';
 import type { Economy, Site } from './types.ts';
@@ -38,7 +39,15 @@ export function homeSite(): Site {
 
 const FOOD_FARMS = 'farmland';
 
-export function applyScenario(name: string | null): void {
+function seedMarket(broke: boolean): void {
+  if (broke) economy.market.treasury = 0;
+  else for (const o of [...economy.market.offers]) acceptOffer(economy, o.id);
+  economy.market.paid = paidShare(economy);
+  touch();
+}
+
+export function applyScenario(name: string | null, broke = false): void {
+  if (name === 'market') return seedMarket(broke);
   if (name !== 'famine') return;
   const site = homeSite();
   for (const g of site.groups) if (g.building === FOOD_FARMS) g.count = Math.round(g.count / 2);
