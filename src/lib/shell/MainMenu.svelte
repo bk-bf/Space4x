@@ -1,13 +1,14 @@
 <script lang="ts">
   import { formatDay, game } from '#lib/game/index.ts';
   import { Icon } from '#lib/ui/index.ts';
-  import { paintBackdrop } from './backdrop';
   import { isDesktop, quitDesktop } from './desktop';
+  import { loadStill, MenuScene } from './menuScene';
   import solStation from './sol-station.png';
   import { hasSave } from './saveManager.ts';
   import SaveListMenu from './SaveListMenu.svelte';
   import { continueGame, session, startGame } from './session.svelte.ts';
 
+  let root: HTMLDivElement;
   let backdrop: HTMLCanvasElement;
   const desktop = isDesktop();
   let canLoad = $state(false);
@@ -19,15 +20,27 @@
   }
 
   $effect(() => {
-    const img = new Image();
-    const paint = () => paintBackdrop(backdrop, img, devicePixelRatio || 1);
-    const resize = new ResizeObserver(paint);
-    img.onload = () => {
-      paint();
-      resize.observe(backdrop);
+    let scene: MenuScene | null = null,
+      raf = 0,
+      gone = false;
+    const fit = () => scene?.resize(backdrop, root.clientWidth, root.clientHeight);
+    const resize = new ResizeObserver(fit);
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      scene?.tick(now);
     };
-    img.src = solStation;
-    return () => resize.disconnect();
+    void loadStill(solStation).then((still) => {
+      if (gone) return;
+      scene = new MenuScene(still);
+      fit();
+      resize.observe(root);
+      raf = requestAnimationFrame(loop);
+    });
+    return () => {
+      gone = true;
+      cancelAnimationFrame(raf);
+      resize.disconnect();
+    };
   });
 
   $effect(() => {
@@ -36,7 +49,7 @@
   });
 </script>
 
-<div id="title" role="dialog" aria-modal="true" aria-label="Space4x">
+<div id="title" role="dialog" aria-modal="true" aria-label="Space4x" bind:this={root}>
   <canvas class="scene" bind:this={backdrop}></canvas>
   <div class="content">
     <h1 aria-label="Space4x">
@@ -77,13 +90,13 @@
     position: fixed;
     inset: 0;
     z-index: 50;
+    overflow: hidden;
     background: var(--bg);
   }
   .scene {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
   }
   .content {
     position: absolute;
