@@ -1,6 +1,6 @@
 <script lang="ts">
   import { milestone, milestones, shortName, TIER_NAMES } from '#lib/game/data/index.ts';
-  import { economy, homeSite, runningProgramme } from '#lib/game/economy/index.ts';
+  import { economy, runningProgramme } from '#lib/game/economy/index.ts';
   import { Icon, Tile, dim, tipText, warn, type Tip } from '#lib/ui/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
   import { CHAIN, LABEL_W, SUBJECT_ICONS, TILE_W } from './chain.ts';
@@ -12,7 +12,6 @@
   let scroller = $state<HTMLElement>();
   let hovered = $state<number | null>(null);
 
-  const site = $derived(homeSite());
   const focus = $derived(hovered ?? research.selected);
   const needs = $derived(new Set(milestone(focus).requires));
   const feeds = $derived(new Set(milestones.filter((m) => m.requires.includes(focus)).map((m) => m.number)));
@@ -31,7 +30,6 @@
     done: { icon: 'check', tone: 'accent' },
     running: { icon: 'hammer', tone: 'cool' },
     ready: { icon: 'play', tone: 'cool' },
-    waiting: { icon: 'clock', tone: 'dim' },
     locked: { icon: 'lock', tone: 'dim' }
   };
 
@@ -39,13 +37,12 @@
     done: 'Done',
     running: 'Programme running',
     ready: 'Ready to start',
-    waiting: 'Open: something is missing',
     locked: 'Locked'
   } as const;
 
   function tipFor(n: number): Tip {
     const m = milestone(n);
-    const status = statusOf(economy, site, m);
+    const status = statusOf(economy, m);
     const before = m.requires.filter((r) => !economy.done.includes(r)).map(shortName);
     return tipText(
       m.name,
@@ -129,7 +126,7 @@
         {/each}
       </svg>
       {#each CHAIN.nodes as n (n.number)}
-        {@const status = statusOf(economy, site, milestone(n.number))}
+        {@const status = statusOf(economy, milestone(n.number))}
         {@const glyph = GLYPH[status]!}
         {@const running = runningProgramme(economy, n.number)}
         {@const icon = milestoneIcon(n.number)}
@@ -299,9 +296,6 @@
       0 2px 0 var(--cool),
       -2px 0 0 var(--cool),
       2px 0 0 var(--cool);
-  }
-  .tpos :global(.ui-tile.waiting:not(.feeds):not(.needs)) {
-    box-shadow: var(--edge);
   }
   .tkey {
     display: flex;

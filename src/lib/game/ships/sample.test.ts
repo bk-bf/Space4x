@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { DAY } from '#lib/game/clock.ts';
 import { economy, newSite, standFirst } from '#lib/game/economy/index.ts';
-import { milestone } from '#lib/game/data/index.ts';
-import { siteNeedMet } from '#lib/game/economy/index.ts';
 import { addDesign, freshGame, spawn } from './fixtures.ts';
 import { addOrder } from './orders.ts';
 import { SAMPLE_DAYS, SAMPLE_KG, sampleMaterial } from './sample.ts';
@@ -54,7 +52,7 @@ describe('sampling an asteroid', () => {
     expect(full.blocked).toContain('no room');
   });
 
-  it('puts a sample on Earth that satisfies the milestone once it is unloaded at the station', () => {
+  it('puts a sample into the station stock once it is unloaded there', () => {
     const g = freshGame();
     addDesign(PROBE);
     const station = newSite(economy, { worldBody: 'earth', bodyName: 'Earth', place: 'orbit', angle: 0 })!;
@@ -64,11 +62,9 @@ describe('sampling an asteroid', () => {
       { kind: 'site', site: station.id },
       { cargo: { carbonaceous_chondrite: 1 } }
     );
-    const need = milestone(15).needs.sites![0]!;
-    expect(economy.sites.some((s) => siteNeedMet(s, need))).toBe(false);
+    expect(station.stock.carbonaceous_chondrite ?? 0).toBe(0);
     addOrder(v, { type: 'unload', item: { kind: 'cargo', id: 'carbonaceous_chondrite' }, amount: null });
     g.advance(DAY);
     expect(station.stock.carbonaceous_chondrite).toBe(1);
-    expect(economy.sites.some((s) => siteNeedMet(s, need))).toBe(true);
   });
 });

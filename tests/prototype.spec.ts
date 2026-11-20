@@ -142,13 +142,11 @@ test.describe('the prototype on present-day Earth', () => {
     await expectCleanLayout(page);
   });
 
-  test('starts milestone 1 once its needs are met and opens what it unlocks', async ({ page }) => {
+  test('starts milestone 1 at once and opens what it unlocks', async ({ page }) => {
     await open(page, 'screen=economy&tab=production&test');
     const start = () => page.evaluate(() => window.space4xTest?.startProgramme(1));
-    expect(await start()).toBe(false);
-    await switchRecipe(page, 'Alloy works', 'Stainless steel', 'GRCop copper-chromium-niobium alloy', 1);
-    await page.locator('[data-step="86400"]').click();
     expect(await start()).toBe(true);
+    expect(await start()).toBe(false);
     await group(page, 'Polymer plant').first().click();
     await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(0);
     for (let i = 0; i < 3; i++) await page.locator(MONTH).click();

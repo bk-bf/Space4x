@@ -43,7 +43,7 @@ const FOUNDER_WHEAT_KG = 26_000;
 const MARIA_WHEAT_KG = 5_500;
 const STABILISER_STEEL_KG = 200_000;
 const STEEL_HAUL_KG = 201_000;
-const HELIUM3_KG = 1_100;
+const EXOTIC_KG = 0.012;
 const CNT_FIBRE_KG = 5_300;
 const METHANE_KG = 14_000;
 
@@ -186,11 +186,9 @@ export class OuterPlayer extends JumpPlayer {
 
   protected provideSite(n: number): void {
     if (n === 19) return this.chipFab();
-    if (n === 20) return this.solarStation();
     if (n === 22) return this.fusionPlant();
     if (n === 23) return this.mariaOutpost();
     if (n === 24) return this.fusionFlight();
-    if (n === 25) return this.scoopSite();
     if (n === 26) return this.fibre();
     if (n === 28) return this.exotic();
     if (n === 29) return this.stabiliser();
@@ -215,31 +213,19 @@ export class OuterPlayer extends JumpPlayer {
 
   protected chipFab(): void {
     const st = this.station();
-    if ((st.ran.semiconductor_fab ?? 0) >= 24) return;
+    if (standing(st, 'semiconductor_fab') > 0 && standing(st, 'solar_cell_fab') > 0) return;
     this.stationBuild('semiconductor_fab');
     this.stationBuild('solar_cell_fab');
-    let guard = 0;
-    const need = { silicon: 30_000, hydrogen: 200 };
-    while (Object.keys(this.missingAtStation(need)).length && guard++ < 6)
-      this.deliverToStation(this.missingAtStation(need));
-    this.waitFor(() => (st.ran.semiconductor_fab ?? 0) >= 24, 'a chip fab running in orbit', 1200, 3);
     for (const b of ['semiconductor_fab', 'solar_cell_fab']) this.switchOff(st, b);
-  }
-
-  protected solarStation(): void {
-    const st = this.station();
-    if (standing(st, 'solar_power_station') <= 0) return;
-    this.waitFor(() => (st.ran.solar_power_station ?? 0) >= 24, 'the solar power station running', 200, 1);
   }
 
   protected fusionPlant(): void {
     const earth = this.earth;
-    if ((earth.ran.d_t_fusion_power ?? 0) >= 24) return;
+    if (earth.groups.some((g) => g.process === 'd_t_fusion_power' && g.count > 0)) return;
     this.earthProcess('isotope_separator', 'lithium6_separation', 2);
     this.earthProcess('fusion_plant', 'tritium_breeding', 2);
     this.waitFor(() => (earth.stock.tritium ?? 0) > 1 && (earth.stock.deuterium ?? 0) > 1, 'tritium', 600, 3);
     this.earthProcess('fusion_plant', 'd_t_fusion_power', 1);
-    this.waitFor(() => (earth.ran.d_t_fusion_power ?? 0) >= 24, 'a fusion plant running', 400, 2);
   }
 
   protected mariaShip?: Vessel;
@@ -326,7 +312,7 @@ export class OuterPlayer extends JumpPlayer {
   }
 
   protected fusionFlight(): void {
-    if ((economy.flown.fusion_drive ?? 0) > 0) return;
+    if (this.game.jump(JUMP)?.point.surveyed) return;
     const v = this.scoutShip ?? this.buildAtStation(this.scoutDesign());
     if (!v) return;
     this.scoutShip = v;
@@ -382,38 +368,27 @@ export class OuterPlayer extends JumpPlayer {
     touch();
   }
 
-  protected scoopSite(): void {
-    const site = siteIn(economy, GIANT, 'surface', null);
-    if (!site) return;
-    this.waitFor(() => (site.made.helium3 ?? 0) >= HELIUM3_KG, 'helium-3 at the gas giant', 400, 1);
-  }
-
   protected fibre(): void {
     const st = this.station();
-    if ((st.stock.cnt_fibre ?? 0) >= CNT_FIBRE_KG && (st.made.cnt_fibre ?? 0) >= CNT_FIBRE_KG) return;
+    if ((st.stock.cnt_fibre ?? 0) >= CNT_FIBRE_KG) return;
     this.stationBuild('fibre_works', 1, 'cnt_fibre_growth');
     let guard = 0;
     const need = { methane: METHANE_KG };
     while (Object.keys(this.missingAtStation(need)).length && guard++ < 6)
       this.deliverToStation(this.missingAtStation(need));
-    this.waitFor(
-      () => (st.stock.cnt_fibre ?? 0) >= CNT_FIBRE_KG && (st.made.cnt_fibre ?? 0) >= CNT_FIBRE_KG,
-      'carbon nanotube fibre in orbit',
-      1500,
-      3
-    );
+    this.waitFor(() => (st.stock.cnt_fibre ?? 0) >= CNT_FIBRE_KG, 'carbon nanotube fibre in orbit', 1500, 3);
     this.switchOff(st, 'fibre_works');
   }
 
   protected exotic(): void {
     const st = this.station();
-    if ((st.made.exotic_matter ?? 0) >= 0.012) return;
+    if ((st.stock.exotic_matter ?? 0) >= EXOTIC_KG) return;
     if (standing(st, 'exotic_matter_facility') <= 0) return;
     const need = { rt_superconductor: 20 };
     let guard = 0;
     while (Object.keys(this.missingAtStation(need)).length && guard++ < 6)
       this.deliverToStation(this.missingAtStation(need));
-    this.waitFor(() => (st.made.exotic_matter ?? 0) >= 0.012, 'exotic matter', 2000, 3);
+    this.waitFor(() => (st.stock.exotic_matter ?? 0) >= EXOTIC_KG, 'exotic matter', 2000, 3);
   }
 
   protected jumpSite(): Site | undefined {

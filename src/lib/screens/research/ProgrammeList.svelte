@@ -1,18 +1,15 @@
 <script lang="ts">
   import { milestone, milestones, shortName } from '#lib/game/data/index.ts';
-  import { economy, homeSite, programmeDays, runningProgramme } from '#lib/game/economy/index.ts';
+  import { economy, programmeDays, runningProgramme } from '#lib/game/economy/index.ts';
   import type { ProgrammeStatus } from '#lib/game/economy/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
-  import { Icon, Tile, TileGrid, dim, fmt, tipText, warn } from '#lib/ui/index.ts';
-  import { GROUPS, GROUP_NAMES, billShare, checkFor, milestoneIcon, statusOf } from './programme.ts';
+  import { Icon, Tile, TileGrid, dim, fmt, tipText } from '#lib/ui/index.ts';
+  import { GROUPS, GROUP_NAMES, milestoneIcon, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
-
-  const site = $derived(homeSite());
 
   const ICON: Record<ProgrammeStatus, IconName> = {
     running: 'hammer',
     ready: 'play',
-    waiting: 'clock',
     locked: 'lock',
     done: 'check'
   };
@@ -20,7 +17,6 @@
   const TONE: Record<ProgrammeStatus, 'accent' | 'cool' | 'dim'> = {
     running: 'cool',
     ready: 'cool',
-    waiting: 'dim',
     locked: 'dim',
     done: 'accent'
   };
@@ -28,19 +24,18 @@
   const groups = $derived(
     GROUPS.map((status) => ({
       status,
-      items: milestones.filter((m) => statusOf(economy, site, m) === status)
+      items: milestones.filter((m) => statusOf(economy, m) === status)
     }))
   );
 
   const NONE: Record<ProgrammeStatus, string> = {
     running: 'No programme is running.',
     ready: 'None are ready.',
-    waiting: 'None.',
     locked: 'None.',
     done: 'None yet.'
   };
 
-  function foot(n: number, status: ProgrammeStatus): { note: string; meter?: number; tone: 'cool' | 'hot' } {
+  function foot(n: number, status: ProgrammeStatus): { note?: string; meter?: number; tone: 'cool' } {
     const m = milestone(n);
     if (status === 'running') {
       const p = runningProgramme(economy, n);
@@ -56,13 +51,7 @@
           .join(', ')}`,
         tone: 'cool'
       };
-    const rows = checkFor(economy, site, m).bill;
-    const ok = rows.filter((r) => r.ok).length;
-    return {
-      note: `${ok} of ${rows.length} in store`,
-      meter: billShare(economy, site, m),
-      tone: ok === rows.length ? 'cool' : 'hot'
-    };
+    return { tone: 'cool' };
   }
 </script>
 
@@ -94,7 +83,7 @@
               `${m.number}. ${m.name}`,
               dim(m.unlocks),
               `${fmt.days(programmeDays(m))}, tier ${m.tier}`,
-              g.status === 'waiting' ? warn(f.note) : f.note
+              f.note ?? ''
             )}
             onselect={() => (research.selected = m.number)}
           />

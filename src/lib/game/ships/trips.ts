@@ -2,7 +2,7 @@ import { START_TIME } from '#lib/game/clock.ts';
 import { economy, standing } from '#lib/game/economy/index.ts';
 import { planTrip, type Place, type Profile, type Reason, type TripOption } from '#lib/game/flight/index.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
-import { canAerobrake, mainKind, statsOf, vesselShip } from './model.ts';
+import { canAerobrake, mainKind, vesselShip } from './model.ts';
 import { surfaceSite } from './orders.ts';
 import type { Order, Vessel, Whereabouts } from './types.ts';
 import {
@@ -124,8 +124,6 @@ export function finishTrip(game: Game, v: Vessel, t: number): void {
   v.trip = null;
   clearTripOption(v.id);
   const body = bodyOfWhereabouts(v.at);
-  const main = statsOf(v)?.main;
-  for (const e of main?.engines ?? []) economy.flown[e.component] = (economy.flown[e.component] ?? 0) + 1;
   const name = body ? (game.body(body)?.name ?? game.jump(body)?.point.name ?? body) : 'its destination';
   game.log('ship', `${v.name} arrived at ${name}.`, false, {
     at: clockAt(t),

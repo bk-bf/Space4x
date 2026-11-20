@@ -3,7 +3,6 @@ import '#lib/screens/economy/system.ts';
 import { defaultPauses, PAUSE_KINDS, WARN_DAYS } from './alerts.ts';
 import { DAY } from './clock.ts';
 import {
-  assign,
   economy,
   homeSite,
   newSite,
@@ -64,15 +63,8 @@ describe('pausing on chosen events', () => {
   it('pauses at the moment a milestone is reached, inside a 30-day step', () => {
     const game = freshGame();
     const earth = homeSite();
-    assign(
-      economy,
-      earth,
-      earth.groups.find((g) => g.process === 'stainless_steel_304')!.id,
-      'grcop_42_melting',
-      1
-    );
     only(game, null);
-    while (programmeStatus(economy, earth, milestone(1)) !== 'ready') game.advance(DAY);
+    expect(programmeStatus(economy, milestone(1))).toBe('ready');
     expect(startProgramme(economy, earth, 1)).toBe(true);
     only(game, 'milestone');
     const start = runUntilPaused(game);

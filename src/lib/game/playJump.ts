@@ -12,7 +12,7 @@ import {
   type Site
 } from './economy/index.ts';
 import { PathPlayer } from './playPath.ts';
-import { addOrder, installModule, orderShips, type Payload, type Vessel } from './ships/index.ts';
+import { addOrder, installModule, orderShips, ships, type Payload, type Vessel } from './ships/index.ts';
 import { SOUTH_POLE } from './playPath.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 
@@ -289,10 +289,6 @@ export class JumpPlayer extends PathPlayer {
     return material(id).unit ? 1 : 0.01;
   }
 
-  protected billRate(id: string, need: number): number {
-    return Math.max(this.floorRate(id), need / (45 * 24));
-  }
-
   protected supplyRate(id: string, short: number): number {
     const used = flowsOf(this.earth).consumed[id] ?? 0;
     return Math.max(this.floorRate(id), used * 1.2 + short / (60 * 24));
@@ -359,14 +355,15 @@ export class JumpPlayer extends PathPlayer {
 
   protected firstShip(): void {
     const st = this.station();
-    if (st.built > 0 || standing(st, 'orbital_shipyard') <= 0) return;
     const tender = this.tenderDesign();
+    const built = () => ships.vessels.some((v) => v.design === tender.id);
+    if (built() || standing(st, 'orbital_shipyard') <= 0) return;
     if (!st.yard.some((o) => o.design === tender.id)) {
       this.deliverToStation(this.missingAtStation(statsFor(tender).cost));
       const r = orderShips(st, tender.id, 1);
       if (typeof r === 'string') this.say(`could not order the tender: ${r}`);
     }
-    this.waitFor(() => st.built > 0, 'the first ship from the orbital yard', 800, 3);
+    this.waitFor(built, 'the first ship from the orbital yard', 800, 3);
   }
 
   protected missingAtStation(cost: Record<string, number>): Record<string, number> {

@@ -17,9 +17,8 @@
 
   const site = $derived(homeSite());
   const flows = $derived(flowsOf(site));
-  const statuses = $derived(milestones.map((m) => statusOf(economy, site, m)));
+  const statuses = $derived(milestones.map((m) => statusOf(economy, m)));
   const ready = $derived(statuses.filter((s) => s === 'ready').length);
-  const open = $derived(statuses.filter((s) => s === 'ready' || s === 'waiting').length);
   const next = $derived(
     Math.min(
       ...economy.running.map(
@@ -52,21 +51,14 @@
           icon="hammer"
           value={String(running)}
           label={running ? `next done in ${fmt.days(next)}` : 'none running'}
-          tip={tipText(
-            'Programmes running',
-            dim('A programme spends its bill when it starts and runs for its length.')
-          )}
+          tip={tipText('Programmes running')}
         />
         <Stat
           compact
           icon="play"
           value={String(ready)}
-          label="ready of {open} open"
-          tip={tipText(
-            'Ready to start',
-            dim('Open milestones with every building, site and material in place.'),
-            `${open} milestones have their prerequisites done`
-          )}
+          label="ready to start"
+          tip={tipText('Ready to start')}
         />
         <Stat
           compact

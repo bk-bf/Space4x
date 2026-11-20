@@ -88,10 +88,7 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
     queue: [],
     yard: [],
     launches: [],
-    alerts: { food: false, power: false },
-    made: {},
-    ran: {},
-    built: 0
+    alerts: { food: false, power: false }
   };
   eco.sites.push(site);
   return site;

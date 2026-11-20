@@ -88,15 +88,6 @@ test.describe('the top bar', () => {
     await expect(chip(page, 'Food: calories made against calories needed')).toHaveText(balance);
   });
 
-  test('a milestone lists the site it needs and what is still missing', async ({ page }) => {
-    await open(page, 'screen=research&milestone=6');
-    const outpost = page.locator('#siteNeeds [data-site-need]', { hasText: /crewed outpost on the Moon/i });
-    await expect(outpost).toHaveAttribute('data-site-need', 'missing');
-    await open(page, 'screen=research&milestone=17');
-    const miner = page.locator('#siteNeeds [data-site-need]', { hasText: /miner on a metallic asteroid/i });
-    await expect(miner).toHaveAttribute('data-site-need', 'missing');
-  });
-
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
     await expect(page.locator('#chips .chip')).toHaveCount(5);

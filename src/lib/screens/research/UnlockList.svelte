@@ -1,11 +1,9 @@
 <script lang="ts">
   import { milestones, shortName } from '#lib/game/data/index.ts';
-  import { economy, homeSite } from '#lib/game/economy/index.ts';
+  import { economy } from '#lib/game/economy/index.ts';
   import { PixIcon } from '#lib/ui/index.ts';
   import { openedBy, openedCount, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
-
-  const site = $derived(homeSite());
 
   const rows = $derived([
     {
@@ -18,7 +16,7 @@
       number: m.number,
       label: shortName(m.number),
       unlocks: m.unlocks,
-      status: statusOf(economy, site, m)
+      status: statusOf(economy, m)
     }))
   ]);
 

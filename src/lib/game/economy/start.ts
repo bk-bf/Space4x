@@ -44,10 +44,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
     queue: [],
     yard: [],
     launches: [],
-    alerts: { food: false, power: false },
-    made: {},
-    ran: {},
-    built: 0
+    alerts: { food: false, power: false }
   };
   const flows = siteFlows(eco, site);
   for (const [m, rate] of Object.entries(flows.produced))
@@ -65,8 +62,7 @@ export function startEconomy(): Economy {
     delivered: [],
     mined: {},
     exhausted: [],
-    flown: {},
-    ledger: { extracted: 0, eaten: 0, built: 0, spent: 0, lost: 0, burned: 0 }
+    ledger: { extracted: 0, eaten: 0, built: 0, lost: 0, burned: 0 }
   };
   eco.sites.push(startSite(eco, 'earth', 'earth', earthStart));
   return eco;

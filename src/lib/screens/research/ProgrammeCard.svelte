@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { material, milestone, shortName, TIER_NAMES, type Milestone } from '#lib/game/data/index.ts';
+  import { milestone, shortName, TIER_NAMES, type Milestone } from '#lib/game/data/index.ts';
   import {
-    describeMissing,
     economy,
     flowsOf,
     homeSite,
-    missingFor,
     programmeCompute,
     programmeDays,
     runningProgramme,
@@ -20,38 +18,23 @@
     IconList,
     Pill,
     Tile,
-    buildingName,
-    buildingTip,
-    componentTip,
     dim,
     fmt,
-    materialName,
-    materialTip,
-    shell,
     tipText,
     warn,
     type Chip,
     type IconItem
   } from '#lib/ui/index.ts';
-  import { ui } from '#lib/screens/economy/state.svelte.ts';
-  import {
-    checkFor,
-    makersOf,
-    milestoneIcon,
-    openedBy,
-    openedCount,
-    statusOf,
-    type BillRow
-  } from './programme.ts';
+  import { checkFor, milestoneIcon, openedBy, openedCount, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
   const site = $derived(homeSite());
   const flows = $derived(flowsOf(site));
   const m = $derived(milestone(research.selected));
-  const status = $derived(statusOf(economy, site, m));
+  const status = $derived(statusOf(economy, m));
   const running = $derived(runningProgramme(economy, m.number));
-  const check = $derived(checkFor(economy, site, m, flows));
-  const missing = $derived(missingFor(economy, site, m));
+  const check = $derived(checkFor(economy, m));
+  const missing = $derived(check.requires.filter((r) => !r.ok));
   const opened = $derived(openedBy(m.number));
   const opens = $derived(openedCount(opened));
   const compute = $derived(programmeCompute(m));
@@ -62,7 +45,6 @@
     done: 'done',
     running: 'running',
     ready: 'ready',
-    waiting: 'waiting',
     locked: 'locked'
   } as const;
 
@@ -85,72 +67,13 @@
     }
   ]);
 
-  function openStockpile(id: string): void {
-    ui.site = site.id;
-    ui.tab = 'stockpiles';
-    ui.category = 'all';
-    ui.material = id;
-    shell.setScreen('economy');
-  }
-
-  const eta = (r: BillRow): string => {
-    if (r.ok) return 'in store';
-    if (r.days !== undefined && Number.isFinite(r.days)) return fmt.days(r.days);
-    return (flows.produced[r.id] ?? 0) > 0 ? 'no gain' : 'not made';
-  };
-
-  const makers = (id: string): string => {
-    const names = makersOf(economy, site, id).map(buildingName);
-    return names.length ? `Made by ${names.join(', ')}` : 'Nothing open makes it at home';
-  };
-
-  const billItems = $derived<IconItem[]>(
-    check.bill.map((r) => ({
-      icon: { kind: 'material', id: r.id },
-      amount: fmt.amount(r.have, material(r.id).unit),
-      need: fmt.amount(r.need, material(r.id).unit),
-      ok: r.ok,
-      note: eta(r),
-      noteTone: r.ok ? 'cool' : Number.isFinite(r.days ?? Infinity) ? 'dim' : 'hot',
-      tip: materialTip(
-        r.id,
-        `Need ${fmt.amount(r.need, material(r.id).unit)}, have ${fmt.amount(r.have, material(r.id).unit)}`,
-        r.ok
-          ? ''
-          : Number.isFinite(r.days ?? Infinity)
-            ? `Met in ${fmt.days(r.days ?? 0)} at the current rate`
-            : warn(`${materialName(r.id)} short and not gaining`),
-        dim(makers(r.id)),
-        dim('Click to open its stockpile card')
-      ),
-      onpick: () => openStockpile(r.id)
-    }))
-  );
-
-  const standItems = $derived<IconItem[]>(
-    check.stand.map((r) => ({
-      icon: { kind: r.kind, id: r.id },
-      amount: r.ok ? 'yes' : 'no',
-      ok: r.ok,
-      tip:
-        r.kind === 'building'
-          ? buildingTip(r.id, r.ok ? 'Standing' : warn('Not standing at any site'))
-          : componentTip(
-              r.id,
-              r.ok
-                ? 'Can be built at home'
-                : warn(`No ${r.builder ? buildingName(r.builder) : 'builder'} to build parts`)
-            )
-    }))
-  );
-
   const unlockItems = $derived<IconItem[]>([
     ...opened.buildings.map((b) => ({ icon: { kind: 'building' as const, id: b.id } })),
     ...opened.components.map((c) => ({ icon: { kind: 'component' as const, id: c.id } })),
     ...opened.materials.map((id) => ({ icon: { kind: 'material' as const, id } }))
   ]);
 
-  const reason = $derived(missing.length ? describeMissing(missing[0]!) : '');
+  const reason = $derived(missing.length ? `Needs ${milestone(missing[0]!.number).name}` : '');
   const icon = $derived(milestoneIcon(m.number));
 
   function start() {
@@ -189,45 +112,6 @@
       {/if}
     {/if}
   </div>
-
-  <CardSection label="Bill, have / need">
-    {#if billItems.length}
-      <div id="programmeBill"><IconList items={billItems} variant="have" /></div>
-    {:else}
-      <span class="dim">no materials</span>
-    {/if}
-  </CardSection>
-
-  <CardSection label="Must stand">
-    {#if standItems.length}
-      <IconList items={standItems} variant="stand" />
-    {:else}
-      <span class="dim">no buildings or parts</span>
-    {/if}
-    {#if check.sites.length}
-      <div class="sites" id="siteNeeds">
-        {#each check.sites as s (s.label)}
-          <div class="site" class:short={!s.ok} data-site-need={s.ok ? 'met' : 'missing'}>
-            <div class="head">
-              <Icon name={s.ok ? 'check' : 'cross'} class="sm" />
-              <span class="label">{s.label}</span>
-              {#if s.progress !== undefined && !s.ok}<span data-progress>{fmt.pct(s.progress)}</span>{/if}
-            </div>
-            {#if !s.ok}
-              <div class="where dim">{s.site ? `Best match: ${s.site}` : 'No site there yet'}</div>
-              <ul class="criteria">
-                {#each s.criteria as c (c.text)}
-                  <li class:ok={c.ok} data-criterion={c.ok ? 'met' : 'missing'}>
-                    <Icon name={c.ok ? 'check' : 'cross'} class="xs" /><span>{c.text}</span>
-                  </li>
-                {/each}
-              </ul>
-            {/if}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </CardSection>
 
   <CardSection label="Prerequisites">
     <div class="needs" id="requires">
@@ -278,60 +162,6 @@
     display: flex;
     align-items: center;
     gap: 5px;
-  }
-  .sites {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 6px;
-  }
-  .site {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 3px 6px;
-    background: var(--bg);
-    box-shadow: 0 0 0 1px var(--line);
-    color: var(--cool);
-    line-height: 1.05;
-  }
-  .site.short {
-    box-shadow: 0 0 0 1px var(--hot);
-    color: var(--hot);
-  }
-  .site .head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .site .label {
-    flex: 1;
-    min-width: 0;
-    color: var(--text);
-  }
-  .site .where {
-    font-size: 15px;
-  }
-  .criteria {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    font-size: 15px;
-  }
-  .criteria li {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--hot);
-  }
-  .criteria li.ok {
-    color: var(--cool);
-  }
-  .criteria li span {
-    color: var(--text);
   }
   .needs {
     display: flex;

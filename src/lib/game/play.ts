@@ -1,6 +1,6 @@
 import { DAY, formatClock } from './clock.ts';
 import { classes } from './classes.svelte.ts';
-import { building, material, milestone, recipesProducing } from './data/index.ts';
+import { building, material, milestone, recipesProducing, shipComponent } from './data/index.ts';
 import type { Milestone } from './data/index.ts';
 import {
   assign,
@@ -10,9 +10,7 @@ import {
   flowsOf,
   homeSite,
   isUnlocked,
-  missingFor,
   programmeCompute,
-  programmeDays,
   programmeStatus,
   queueBuilding,
   siteAt,
@@ -160,10 +158,6 @@ export class Player {
     return floor(id);
   }
 
-  protected billRate(id: string, need: number): number {
-    return Math.max(this.floorRate(id), need / 48);
-  }
-
   protected fixShortages(): void {
     const site = this.earth;
     const f = flowsOf(site);
@@ -207,8 +201,11 @@ export class Player {
     need(booster, 1);
     need(orbiter, 1);
     for (const m of Object.keys(cargo)) site.stock[m] ??= 0;
+    const short = () => Object.entries(cargo).filter(([m, kg]) => (site.stock[m] ?? 0) < kg);
     let guard = 0;
-    while ((own(booster.id).length < 1 || own(orbiter.id).length < 1) && guard++ < 200) {
+    while ((own(booster.id).length < 1 || own(orbiter.id).length < 1 || short().length) && guard++ < 200) {
+      for (const [m, kg] of short())
+        this.produce(m, Math.max(this.floorRate(m), (kg - (site.stock[m] ?? 0)) / 48));
       this.fixShortages();
       this.days(2);
     }
@@ -241,44 +238,43 @@ export class Player {
 
   protected provideSite(_n: number): void {}
 
-  protected missingNote(site: Site, n: number): string {
+  protected standsAnywhere(buildingId: string): boolean {
+    return economy.sites.some((s) => standing(s, buildingId) > 0);
+  }
+
+  protected prepare(n: number): void {
     const m = milestone(n);
-    return missingFor(economy, site, m)
-      .map((x) =>
-        x.kind === 'material' ? `${material(x.id).name} ${Math.round(x.have)}/${Math.round(x.need)}` : x.kind
-      )
-      .join(', ');
+    for (let guard = 0; guard < 120; guard++) {
+      const buildings = m.needs.buildings.filter((id) => !this.standsAnywhere(id));
+      const builders = m.needs.components
+        .map((id) => shipComponent(id).builtAt)
+        .filter((at) => !at.some((b) => this.standsAnywhere(b)))
+        .flatMap((at) => at.slice(0, 1));
+      for (const id of buildings) this.provideBuilding(id);
+      this.provideSite(n);
+      for (const id of builders) this.ensureBuilding(id);
+      if (!buildings.length && !builders.length) return;
+      this.fixShortages();
+      this.days(3);
+      if (guard % 50 === 49) this.say(`milestone ${n} still lacks ${[...buildings, ...builders].join(', ')}`);
+    }
   }
 
   reach(n: number): boolean {
     const site = this.earth;
     const m = milestone(n);
+    for (const r of m.requires) if (!economy.done.includes(r)) this.reach(r);
+    if (programmeStatus(economy, m) === 'ready') {
+      this.computeForProgramme();
+      this.ensureCompute(m);
+      startProgramme(economy, site, n);
+      this.say(`started milestone ${n}`);
+    }
+    this.prepare(n);
     let guard = 0;
-    while (!economy.done.includes(n) && guard++ < 120) {
-      if (economy.running.some((p) => p.number === n)) {
-        this.computeForProgramme();
-        this.days(10);
-        continue;
-      }
-      const missing = missingFor(economy, site, m);
-      if (!missing.length && programmeStatus(economy, site, m) === 'ready') {
-        this.computeForProgramme();
-        this.ensureCompute(m);
-        startProgramme(economy, site, n);
-        this.say(`started milestone ${n}`);
-        this.days(programmeDays(m) + 1);
-        continue;
-      }
-      for (const x of missing) {
-        if (x.kind === 'requires') this.reach(x.number);
-        else if (x.kind === 'building') this.provideBuilding(x.id);
-        else if (x.kind === 'site') this.provideSite(n);
-        else if (x.kind === 'builder') this.ensureBuilding(x.id);
-        else if (x.kind === 'material') this.produce(x.id, this.billRate(x.id, x.need));
-      }
-      this.fixShortages();
-      this.days(3);
-      if (guard % 50 === 0) this.say(`milestone ${n} waits for ${this.missingNote(site, n)}`);
+    while (economy.running.some((p) => p.number === n) && guard++ < 1000) {
+      this.computeForProgramme();
+      this.days(10);
     }
     if (economy.done.includes(n) && !this.report.reached.some((r) => r.number === n)) {
       const e = this.game.events.find((x) => x.text.startsWith(`Milestone ${n} reached`));

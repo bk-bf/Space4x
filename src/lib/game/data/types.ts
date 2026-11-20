@@ -217,22 +217,6 @@ export interface Component {
   design: ComponentDesign;
 }
 
-export interface SiteNeed {
-  label: string;
-  world?: string;
-  body?: Body;
-  place?: 'surface' | 'orbit' | 'point';
-  region?: string;
-  buildings?: string[];
-  people?: number;
-  fed?: boolean;
-  stock?: { material: string; amount: number };
-  made?: { material: string; amount: number };
-  ran?: Record<string, number>;
-  built?: number;
-  flown?: string;
-}
-
 export interface Subject {
   id: string;
   name: string;
@@ -251,8 +235,6 @@ export interface Milestone {
     materials: string[];
     buildings: string[];
     components: string[];
-    sites?: SiteNeed[];
-    bill?: Record<string, number>;
   };
   sources: string[];
 }

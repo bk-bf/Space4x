@@ -33,22 +33,12 @@ test.describe('research', () => {
   const rtab = (page: Page, id: string) =>
     page.locator(`[data-screen="research"] [data-tab="${id}"]`).click();
 
-  async function makeMilestoneOneReady(page: Page) {
-    await open(page, 'screen=economy&tab=production');
-    await page.locator('#groups button.ui-tile', { hasText: 'Stainless steel' }).first().click();
-    await page.getByRole('button', { name: 'GRCop copper-chromium-niobium alloy', exact: true }).click();
-    await page.locator('input[name="switchCount"]').fill('1');
-    await page.locator('#recipeSwitch').click();
-    await advance(page, DAY);
-    await page.locator('[data-nav="research"]').click();
-  }
-
   test('shows the 29 milestones as tiles in a dependency tree, and a tile click selects one', async ({
     page
   }) => {
     await open(page, 'screen=research');
     await expect(page.locator('#techTree .tpos')).toHaveCount(29);
-    await expect(slot(page, 1)).toHaveAttribute('data-status', 'waiting');
+    await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
     await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
     await expect(title(page)).toHaveText('1. Reusable orbital launch');
     await tile(page, 29).click();
@@ -160,11 +150,12 @@ test.describe('research', () => {
       'Locked until Orbital launch and Propellant transfer done'
     );
     await open(page, 'screen=research&reached=4&milestone=6');
-    await expect(slot(page, 5)).toHaveAttribute('data-status', 'waiting');
-    await expect(slot(page, 6)).toHaveAttribute('data-status', 'waiting');
+    await expect(slot(page, 5)).toHaveAttribute('data-status', 'ready');
+    await expect(slot(page, 6)).toHaveAttribute('data-status', 'ready');
     await expect(slot(page, 7)).toHaveAttribute('data-status', 'locked');
     await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
-    await expect(page.locator('#programmeWhy')).not.toContainText('Needs');
+    await expect(page.locator('#programmeWhy')).toHaveCount(0);
+    await expect(page.locator('#programmeStart')).toBeEnabled();
     await tile(page, 7).hover();
     await expect(page.locator('#ui-tip')).toContainText('Locked until Lunar outpost done');
   });
@@ -178,13 +169,11 @@ test.describe('research', () => {
     await expect(title(page)).toHaveText('5. Data centres and autonomy');
   });
 
-  test('the strip counts reached, running, ready and open milestones, compute and what is open', async ({
-    page
-  }) => {
+  test('the strip counts reached, running and ready projects, compute and what is open', async ({ page }) => {
     await open(page, 'screen=research');
     await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('0 of 29');
     await expect(kpi(page, 'none running')).toBeVisible();
-    await expect(kpi(page, 'ready of 1 open').locator('.big')).toHaveText('0');
+    await expect(kpi(page, 'ready to start').locator('.big')).toHaveText('1');
     await expect(kpi(page, 'buildings and parts open').locator('.big')).not.toHaveText('0');
     await open(page, 'screen=research&reached=3');
     await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('3 of 29');
@@ -194,28 +183,24 @@ test.describe('research', () => {
     await open(page, 'screen=research&rtab=programmes');
     const group = (status: string) => page.locator(`.slot[data-status="${status}"]`);
     await expect(page.locator('h3[data-group="running"]')).toContainText('0');
-    await expect(group('waiting')).toHaveCount(1);
+    await expect(page.locator('h3[data-group]')).toHaveCount(4);
+    await expect(group('ready')).toHaveCount(1);
     await expect(group('locked')).toHaveCount(28);
-    await expect(group('waiting').locator('.ui-nm')).toHaveText('Orbital launch');
-    await expect(group('waiting')).toContainText('of 13 in store');
+    await expect(group('ready').locator('.ui-nm')).toHaveText('Orbital launch');
     await page.locator('.slot[data-milestone="6"] button').click();
     await expect(title(page)).toHaveText('6. Crewed lunar landing and surface outpost');
     await expectCleanLayout(page);
   });
 
-  test('the card lists everything a programme checks and which of it is met', async ({ page }) => {
+  test('the card checks the prerequisites and nothing else', async ({ page }) => {
     await open(page, 'screen=research&milestone=6');
     await expect(page.locator('#programmeStart')).toBeDisabled();
-    await expect(page.locator('#programmeWhy')).toBeVisible();
-    const needs = page.locator('#siteNeeds [data-site-need]');
-    await expect(needs).toHaveCount(1);
-    await expect(needs).toHaveAttribute('data-site-need', 'missing');
-    await expect(needs).toContainText('Crewed outpost on the Moon');
-    await expect(card(page).locator('.ui-have.short').first()).toBeVisible();
+    await expect(page.locator('#programmeWhy')).toContainText('Needs');
     await expect(page.locator('#requires')).toContainText('LEO station');
-    await open(page, 'screen=research&milestone=17');
-    await expect(page.locator('#siteNeeds')).toContainText('Miner on a metallic asteroid');
-    await expect(card(page).locator('.ui-have.stand.short').first()).toBeVisible();
+    await expect(page.locator('#programmeBill, #siteNeeds, .ui-have')).toHaveCount(0);
+    await open(page, 'screen=research&milestone=6&reached=5');
+    await expect(page.locator('#programmeStart')).toBeEnabled();
+    await expect(page.locator('#programmeWhy')).toHaveCount(0);
     await open(page, 'screen=research&milestone=2&reached=1');
     await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
   });
@@ -237,13 +222,9 @@ test.describe('research', () => {
     page
   }) => {
     await open(page, 'screen=research');
-    await expect(page.locator('#programmeStart')).toBeDisabled();
-    await expect(page.locator('#programmeWhy')).toContainText('GRCop copper-chromium-niobium alloy short');
-    await makeMilestoneOneReady(page);
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
     await expect(page.locator('#programmeWhy')).toHaveCount(0);
     await expect(page.locator('#programmeStart')).toBeEnabled();
-    await expect(card(page).locator('.ui-have.short')).toHaveCount(0);
     await page.locator('#programmeStart').click();
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'running');
     await expect(page.locator('#programmeStart')).toHaveCount(0);

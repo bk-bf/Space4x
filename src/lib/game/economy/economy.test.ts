@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { milestone, material } from '#lib/game/data/index.ts';
+import { milestone, milestones, material } from '#lib/game/data/index.ts';
 import { newSite } from './index.ts';
 import {
   advanceEconomy,
   assign,
   isMass,
-  missingFor,
   moveOrder,
   pauseOrder,
   programmeDays,
@@ -107,7 +106,7 @@ describe('production', () => {
     );
   });
 
-  it('conserves mass: stock change is extraction less eating, building, programmes and process losses', () => {
+  it('conserves mass: stock change is extraction less eating, building and process losses', () => {
     const eco = startEconomy();
     const site = earthOf(eco);
     const before = stockMass(site);
@@ -116,11 +115,10 @@ describe('production', () => {
     advanceEconomy(eco, 5 * DAY);
     expect(startProgramme(eco, site, 1)).toBe(true);
     advanceEconomy(eco, 200 * DAY);
-    const { extracted, eaten, built, spent, lost } = eco.ledger;
+    const { extracted, eaten, built, lost } = eco.ledger;
     expect(lost).toBeGreaterThanOrEqual(0);
     expect(built).toBeGreaterThan(0);
-    expect(spent).toBeGreaterThan(0);
-    close(stockMass(site) - before, extracted - eaten - built - spent - lost, 1e-6);
+    close(stockMass(site) - before, extracted - eaten - built - lost, 1e-6);
   });
 
   it('scales a recipe down in proportion when an input runs out', () => {
@@ -353,21 +351,16 @@ describe('construction', () => {
 });
 
 describe('milestones as programmes', () => {
-  it('reaches milestone 1 by play from the start state', () => {
+  it('reaches milestone 1 from the start state, spending nothing to start it', () => {
     const eco = startEconomy();
     const site = earthOf(eco);
     const m1 = milestone(1);
-    expect(programmeStatus(eco, site, m1)).toBe('waiting');
-    expect(missingFor(eco, site, m1).map((x) => (x.kind === 'material' ? x.id : x.kind))).toEqual(['grcop']);
-    expect(startProgramme(eco, site, 1)).toBe(false);
-    assign(eco, site, groupOf(site, 'stainless_steel_304').id, 'grcop_42_melting', 1);
-    let days = 0;
-    while (programmeStatus(eco, site, m1) !== 'ready' && days < 30) {
-      advanceEconomy(eco, DAY);
-      days++;
-    }
+    expect(programmeStatus(eco, m1)).toBe('ready');
+    const stock = { ...site.stock };
     expect(startProgramme(eco, site, 1)).toBe(true);
-    expect(programmeStatus(eco, site, m1)).toBe('running');
+    expect(site.stock).toEqual(stock);
+    expect(startProgramme(eco, site, 1)).toBe(false);
+    expect(programmeStatus(eco, m1)).toBe('running');
     const logs: string[] = [];
     advanceEconomy(eco, programmeDays(m1) * DAY, (t) => logs.push(t));
     expect(eco.done).toEqual([1]);
@@ -375,9 +368,22 @@ describe('milestones as programmes', () => {
     expect(isUnlocked(eco, { milestone: 2 })).toBe(true);
     expect(isUnlocked(eco, { milestone: 3 })).toBe(false);
     expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).toContain('polyimide_synthesis');
-    expect(programmeStatus(eco, site, milestone(2))).toBe('waiting');
-    expect(programmeStatus(eco, site, milestone(3))).toBe('locked');
-    expect(programmeStatus(eco, site, milestone(15))).toBe('locked');
+    expect(programmeStatus(eco, milestone(2))).toBe('ready');
+    expect(programmeStatus(eco, milestone(3))).toBe('locked');
+    expect(programmeStatus(eco, milestone(15))).toBe('locked');
+  });
+
+  it('makes every project ready once its prerequisites are researched, whatever stands and whatever is in stock', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    site.stock = {};
+    site.groups = [];
+    for (const m of milestones) {
+      eco.done = [...m.requires];
+      expect(programmeStatus(eco, m), `${m.number}`).toBe('ready');
+      eco.done = m.requires.slice(1);
+      if (m.requires.length) expect(programmeStatus(eco, m), `${m.number}`).toBe('locked');
+    }
   });
 
   it('slows a programme that needs compute to what data centres supply', () => {

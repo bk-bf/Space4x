@@ -128,15 +128,7 @@
     "needs": {
       "materials": ["lh2", "uhmwpe"],
       "buildings": [],
-      "components": ["chemical_engine_hydrolox", "heat_shield", "radiation_shield"],
-      "sites": [
-        {
-          "label": "No crewed outpost on the Moon",
-          "world": "luna",
-          "place": "surface",
-          "people": 1
-        }
-      ]
+      "components": ["chemical_engine_hydrolox", "heat_shield", "radiation_shield"]
     },
     "sources": ["https://en.wikipedia.org/wiki/Artemis_Base_Camp"]
   },
@@ -151,15 +143,7 @@
     "needs": {
       "materials": ["uranium", "haleu", "boron_carbide", "haynes_230"],
       "buildings": ["enrichment_plant", "fuel_fabrication_plant", "fission_reactor"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No fission reactor on the Moon",
-          "world": "luna",
-          "place": "surface",
-          "buildings": ["fission_reactor"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://en.wikipedia.org/wiki/Kilopower"]
   },
@@ -174,15 +158,7 @@
     "needs": {
       "materials": ["lunar_regolith", "ndfeb_magnet"],
       "buildings": ["ice_mine", "regolith_excavator", "magnet_works"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No ice mine at the lunar south pole",
-          "world": "luna",
-          "region": "luna-south-pole",
-          "buildings": ["ice_mine"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://www.sciencenews.org/article/moon-crash-reveals-crater-held-water"]
   },
@@ -229,17 +205,7 @@
     "needs": {
       "materials": ["plant_biomass"],
       "buildings": ["greenhouse"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No fed crew with a greenhouse on the Moon",
-          "world": "luna",
-          "place": "surface",
-          "buildings": ["greenhouse"],
-          "people": 4,
-          "fed": true
-        }
-      ]
+      "components": []
     },
     "sources": ["https://en.wikipedia.org/wiki/Moon_Village"]
   },
@@ -254,15 +220,7 @@
     "needs": {
       "materials": ["lox", "lh2"],
       "buildings": ["propellant_depot", "cryogenic_liquefaction_plant", "ice_mine", "electrolysis_plant"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No lunar propellant plant on the Moon",
-          "world": "luna",
-          "place": "surface",
-          "buildings": ["ice_mine", "electrolysis_plant", "cryogenic_liquefaction_plant"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://en.wikipedia.org/wiki/Lunar_water"]
   },
@@ -310,17 +268,7 @@
     "needs": {
       "materials": [],
       "buildings": [],
-      "components": ["survey_suite", "sampling_arm", "heat_shield"],
-      "sites": [
-        {
-          "label": "No asteroid sample on Earth",
-          "world": "earth",
-          "stock": {
-            "material": "carbonaceous_chondrite",
-            "amount": 0.1
-          }
-        }
-      ]
+      "components": ["survey_suite", "sampling_arm", "heat_shield"]
     },
     "sources": ["https://en.wikipedia.org/wiki/OSIRIS-REx"]
   },
@@ -335,15 +283,7 @@
     "needs": {
       "materials": ["carbonaceous_chondrite"],
       "buildings": ["asteroid_miner", "asteroid_processor"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No miner on a carbonaceous asteroid",
-          "body": "asteroid-c",
-          "place": "surface",
-          "buildings": ["asteroid_miner"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://en.wikipedia.org/wiki/Asteroid_mining"]
   },
@@ -358,15 +298,7 @@
     "needs": {
       "materials": ["fe_ni_metal", "asteroidal_steel"],
       "buildings": ["metal_refinery"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No miner on a metallic asteroid",
-          "body": "asteroid-m",
-          "place": "surface",
-          "buildings": ["asteroid_miner"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://planetary.org/space-missions/psyche"]
   },
@@ -381,15 +313,7 @@
     "needs": {
       "materials": [],
       "buildings": ["orbital_shipyard"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No orbital shipyard has built a ship",
-          "place": "orbit",
-          "buildings": ["orbital_shipyard"],
-          "built": 1
-        }
-      ]
+      "components": []
     },
     "sources": ["https://www.nasa.gov/mission/on-orbit-servicing-assembly-and-manufacturing-2-osam-2/"]
   },
@@ -404,17 +328,7 @@
     "needs": {
       "materials": ["sulfuric_acid"],
       "buildings": ["semiconductor_fab", "solar_cell_fab"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No chip fab has run in orbit",
-          "place": "orbit",
-          "buildings": ["semiconductor_fab", "solar_cell_fab"],
-          "ran": {
-            "semiconductor_fab": 24
-          }
-        }
-      ]
+      "components": []
     },
     "sources": ["https://arxiv.org/abs/2408.05823"]
   },
@@ -429,17 +343,7 @@
     "needs": {
       "materials": [],
       "buildings": ["solar_power_station"],
-      "components": ["solar_array", "radiator"],
-      "sites": [
-        {
-          "label": "No space solar power station has delivered power",
-          "place": "orbit",
-          "buildings": ["solar_power_station"],
-          "ran": {
-            "solar_power_station": 24
-          }
-        }
-      ]
+      "components": ["solar_array", "radiator"]
     },
     "sources": ["https://www.powermag.com/space-solar-power-prototype-beams-first-power-to-earth/"]
   },
@@ -470,21 +374,7 @@
     "needs": {
       "materials": ["rebco", "lithium6", "deuterium", "tritium"],
       "buildings": ["isotope_separator", "fusion_plant", "magnet_works"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No fusion plant has run",
-          "buildings": ["fusion_plant"],
-          "ran": {
-            "d_t_fusion_power": 24
-          }
-        }
-      ],
-      "bill": {
-        "lithium6": 200,
-        "deuterium": 200,
-        "tritium": 20
-      }
+      "components": []
     },
     "sources": [
       "https://www.eurekalert.org/news-releases/1036447",
@@ -502,19 +392,7 @@
     "needs": {
       "materials": ["helium3"],
       "buildings": ["regolith_excavator"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No helium-3 mined on the lunar maria",
-          "world": "luna",
-          "place": "surface",
-          "region": "luna-maria",
-          "made": {
-            "material": "helium3",
-            "amount": 1000
-          }
-        }
-      ]
+      "components": []
     },
     "sources": ["https://www.nasa.gov/feature/harnessing-power-from-the-moon"]
   },
@@ -529,13 +407,7 @@
     "needs": {
       "materials": ["uhtc"],
       "buildings": ["orbital_shipyard"],
-      "components": ["fusion_drive"],
-      "sites": [
-        {
-          "label": "No ship has flown on a fusion drive",
-          "flown": "fusion_drive"
-        }
-      ]
+      "components": ["fusion_drive"]
     },
     "sources": ["https://en.wikipedia.org/wiki/Direct_Fusion_Drive"]
   },
@@ -550,21 +422,7 @@
     "needs": {
       "materials": ["helium3", "deuterium", "hydrogen"],
       "buildings": ["gas_giant_scoop"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No scoop at a gas or ice giant has made helium-3",
-          "place": "surface",
-          "buildings": ["gas_giant_scoop"],
-          "made": {
-            "material": "helium3",
-            "amount": 1000
-          }
-        }
-      ],
-      "bill": {
-        "deuterium": 200
-      }
+      "components": []
     },
     "sources": ["https://ntrs.nasa.gov/api/citations/20170005215/downloads/20170005215.pdf"]
   },
@@ -579,18 +437,7 @@
     "needs": {
       "materials": ["cnt_fibre"],
       "buildings": ["orbital_shipyard", "metal_refinery"],
-      "components": ["structure_truss"],
-      "sites": [
-        {
-          "label": "No carbon nanotube fibre made beside an orbital shipyard",
-          "place": "orbit",
-          "buildings": ["orbital_shipyard"],
-          "made": {
-            "material": "cnt_fibre",
-            "amount": 5000
-          }
-        }
-      ]
+      "components": ["structure_truss"]
     },
     "sources": ["https://en.wikipedia.org/wiki/Solar_power_satellite"]
   },
@@ -605,16 +452,7 @@
     "needs": {
       "materials": ["rt_superconductor"],
       "buildings": ["magnet_works"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No room-temperature superconductor has been made",
-          "made": {
-            "material": "rt_superconductor",
-            "amount": 600
-          }
-        }
-      ]
+      "components": []
     },
     "sources": [
       "https://www.qmul.ac.uk/news/latest-news/2025/science-and-engineering/se/the-quest-for-room-temperature-superconductors.html"
@@ -631,18 +469,7 @@
     "needs": {
       "materials": ["exotic_matter"],
       "buildings": ["exotic_matter_facility"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No exotic matter facility has made exotic matter",
-          "place": "orbit",
-          "buildings": ["exotic_matter_facility"],
-          "made": {
-            "material": "exotic_matter",
-            "amount": 0.01
-          }
-        }
-      ]
+      "components": []
     },
     "sources": ["https://arxiv.org/abs/2107.00605"]
   },
@@ -664,15 +491,7 @@
         "ai_models"
       ],
       "buildings": ["jump_point_stabiliser"],
-      "components": [],
-      "sites": [
-        {
-          "label": "No jump point stabiliser stands at the jump point",
-          "world": "sol-a",
-          "place": "point",
-          "buildings": ["jump_point_stabiliser"]
-        }
-      ]
+      "components": []
     },
     "sources": ["https://arxiv.org/abs/2405.05476"]
   }

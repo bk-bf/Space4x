@@ -66,23 +66,6 @@ test('the game build counts food in calories and the top bar agrees with the Sum
   ).toHaveText(balance);
 });
 
-test('a milestone in the game build lists the site it needs', async ({ page }) => {
-  await open(page, 'screen=research&milestone=8');
-  const need = page.locator('#siteNeeds [data-site-need]', { hasText: /ice mine at the lunar south pole/i });
-  await expect(need).toHaveAttribute('data-site-need', 'missing');
-});
-
-test('a bill item on the programme card opens its stockpile card even with no stock', async ({ page }) => {
-  await open(page, 'screen=research&milestone=1');
-  const grcop = page.locator('#programmeBill .ui-have.short').first();
-  await expect(grcop).toContainText('not made');
-  await grcop.click();
-  await expect(page.locator('[data-tab="stockpiles"]')).toHaveClass(/on/);
-  await expect(page.locator('#showEmpty')).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('[data-screen="economy"] .ui-card .ttl').first()).toContainText('GRCop');
-  await expect(page.locator('#stockpiles .ui-tile[aria-pressed="true"]')).toHaveCount(1);
-});
-
 async function designStage(page: Page, name: string, parts: [string, number][]) {
   await page.locator('[data-act="new"]').click();
   await page.locator('#clsName').fill(name);

@@ -154,11 +154,11 @@ describe('a scoop at a gas giant', () => {
     expect(process).toMatch(/^extract:/);
     site.gridKw = 5000;
     g.advance(DAY);
-    const first = Object.keys(site.made)[0];
-    expect(first).toBeDefined();
+    const first = process!.slice('extract:'.length);
+    expect(site.stock[first]).toBeGreaterThan(0);
     const hauler = spawn('scooper', { kind: 'orbit', body: 'jupiter', angle: 0 }, {});
     addOrder(hauler, { type: 'dock', site: site.id });
-    addOrder(hauler, { type: 'load', item: { kind: 'cargo', id: first! }, amount: null });
+    addOrder(hauler, { type: 'load', item: { kind: 'cargo', id: first }, amount: null });
     addOrder(hauler, { type: 'fly', body: 'jupiter', angle: 0 });
     g.advance(DAY);
     expect(hauler.blocked).toBeNull();
