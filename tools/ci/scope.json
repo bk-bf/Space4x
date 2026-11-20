@@ -10,7 +10,8 @@
         ".github/issue-schema.json",
         "mockup/**",
         "deploy/**",
-        "launch.sh"
+        "launch.sh",
+        ".claude/**"
       ],
       "legs": []
     },
