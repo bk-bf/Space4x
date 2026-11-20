@@ -19,6 +19,7 @@ export type TabId =
   | 'production'
   | 'construction'
   | 'stockpiles'
+  | 'minerals'
   | 'people'
   | 'yard'
   | 'launch'
@@ -30,6 +31,7 @@ export const TABS: readonly (Tab & { id: TabId })[] = [
   { id: 'production', label: 'Production', icon: 'factory' },
   { id: 'construction', label: 'Construction', icon: 'hammer' },
   { id: 'stockpiles', label: 'Stockpiles', icon: 'box' },
+  { id: 'minerals', label: 'Minerals', icon: 'map' },
   { id: 'people', label: 'People', icon: 'people' },
   { id: 'yard', label: 'Shipyard', icon: 'yard' },
   { id: 'launch', label: 'Launch', icon: 'rocket' },
@@ -56,6 +58,8 @@ interface EconomyUi {
   material: string;
   category: string;
   showEmpty: boolean;
+  mineral: string;
+  deposit: string;
   milestone: number;
   vessel: string | null;
   yardOrder: number | null;
@@ -78,6 +82,8 @@ const initial = (): EconomyUi => ({
   material: 'iron',
   category: 'all',
   showEmpty: false,
+  mineral: '',
+  deposit: '',
   milestone: 1,
   vessel: null,
   yardOrder: null

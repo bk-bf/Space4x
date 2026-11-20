@@ -5,6 +5,7 @@
   import LaunchTab from './LaunchTab.svelte';
   import PeopleTab from './PeopleTab.svelte';
   import PlanetPanel from './PlanetPanel.svelte';
+  import MineralsTab from './MineralsTab.svelte';
   import ProductionTab from './ProductionTab.svelte';
   import RateSwitch from './RateSwitch.svelte';
   import ShipsTab from './ShipsTab.svelte';
@@ -36,6 +37,7 @@
           {:else if ui.tab === 'production'}<ProductionTab {site} />
           {:else if ui.tab === 'construction'}<ConstructionTab {site} />
           {:else if ui.tab === 'stockpiles'}<StockpilesTab {site} />
+          {:else if ui.tab === 'minerals'}<MineralsTab {site} />
           {:else if ui.tab === 'people'}<PeopleTab {site} />
           {:else if ui.tab === 'yard'}<ShipyardTab {site} />
           {:else if ui.tab === 'launch'}<LaunchTab {site} />
