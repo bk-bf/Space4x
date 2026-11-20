@@ -124,6 +124,7 @@
     "name": "Vanadium",
     "category": "metal",
     "tier": "P",
+    "thin": true,
     "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
     "why": "Alloying element in Ti-6Al-4V, the standard aerospace titanium alloy",
     "source": "https://en.wikipedia.org/wiki/Ti-6Al-4V"

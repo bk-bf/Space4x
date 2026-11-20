@@ -258,7 +258,7 @@
     },
     {
       "building": "machine_shop",
-      "process": null,
+      "process": "machinery_machining",
       "count": 2
     },
     {

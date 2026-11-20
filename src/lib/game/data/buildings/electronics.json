@@ -9,7 +9,7 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "copper": 500, "fused_silica": 200 },
-    "workers": 40
+    "workers": 300
   },
   {
     "id": "solar_cell_fab",

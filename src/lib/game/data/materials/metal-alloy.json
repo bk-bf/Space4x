@@ -22,6 +22,7 @@
     "name": "Titanium alloy Ti-6Al-4V",
     "category": "metal",
     "tier": "P",
+    "thin": true,
     "why": "Workhorse aerospace titanium alloy for fittings and pressure vessels",
     "source": "https://en.wikipedia.org/wiki/Ti-6Al-4V"
   },

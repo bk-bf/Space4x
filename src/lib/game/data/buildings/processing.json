@@ -9,7 +9,7 @@
     "thin": true,
     "estimated": true,
     "cost": { "machinery": 5000, "rad_hard_ic": 1000 },
-    "workers": 0
+    "workers": 200
   },
   {
     "id": "smelter",

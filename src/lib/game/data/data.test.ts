@@ -32,7 +32,6 @@ import {
   type Body,
   type Site
 } from './index.ts';
-import earth from './earth.json';
 
 const SNAKE = /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/;
 const TIERS = ['P', 'E', 'S'];
@@ -70,9 +69,6 @@ const materialIds = new Set(materials.map((m) => m.id));
 const buildingIds = new Set(buildings.map((b) => b.id));
 const componentIds = new Set(shipComponents.map((c) => c.id));
 const unitOf = (id: string) => material(id).unit ?? 'kg';
-const unmade = (id: string) => !material(id).sources?.length && recipesProducing(id).length === 0;
-const startStockOnly = new Set(Object.keys(earth.startStock).filter(unmade));
-const madeSomewhere = (m: { id: string }) => !startStockOnly.has(m.id);
 const mass = (amounts: Amounts) => Object.values(amounts).reduce((a, b) => a + b, 0);
 const massOnly = (r: { inputs: Amounts; outputs: Amounts }) =>
   [...Object.keys(r.inputs), ...Object.keys(r.outputs)].every((id) => unitOf(id) === 'kg');
@@ -170,12 +166,8 @@ describe('materials', () => {
   });
 
   it('are either extractable somewhere or produced by some recipe', () => {
-    const orphans = materials.filter((m) => madeSomewhere(m) && unmade(m.id));
+    const orphans = materials.filter((m) => !m.sources?.length && recipesProducing(m.id).length === 0);
     expect(orphans.map((m) => m.id)).toEqual([]);
-  });
-
-  it("come only from Earth's start stock for machinery alone, until the machine shop has a recipe", () => {
-    expect([...startStockOnly]).toEqual(['machinery']);
   });
 
   it('say where they can be extracted and made, in a form code can query', () => {
@@ -439,9 +431,7 @@ describe('the whole data set', () => {
   const all = reach();
 
   it('reaches every material, building, component and recipe: no cycle strands one', () => {
-    expect(materials.filter((m) => madeSomewhere(m) && !all.materials.has(m.id)).map((m) => m.id)).toEqual(
-      []
-    );
+    expect(materials.filter((m) => !all.materials.has(m.id)).map((m) => m.id)).toEqual([]);
     expect(buildings.filter((b) => !all.buildings.has(b.id)).map((b) => b.id)).toEqual([]);
     expect(shipComponents.filter((c) => !all.components.has(c.id)).map((c) => c.id)).toEqual([]);
     expect(recipes.filter((r) => !all.recipes.has(r.id)).map((r) => r.id)).toEqual([]);
@@ -449,9 +439,7 @@ describe('the whole data set', () => {
 
   it('makes each thin material on the thin path and each other material somewhere', () => {
     const thin = reach({ thinOnly: true });
-    expect(
-      materials.filter((m) => m.thin && madeSomewhere(m) && !thin.materials.has(m.id)).map((m) => m.id)
-    ).toEqual([]);
+    expect(materials.filter((m) => m.thin && !thin.materials.has(m.id)).map((m) => m.id)).toEqual([]);
   });
 });
 

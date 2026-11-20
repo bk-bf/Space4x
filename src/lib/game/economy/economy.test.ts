@@ -83,6 +83,19 @@ describe('the start state', () => {
     expect(actorOf(eco, site, groupOf(site, 'electronic_silicon_purification').id).share).toBe(1);
   });
 
+  it('machines 1 t of machinery from 0.6 t steel, 0.3 t superalloy and 0.2 t titanium alloy', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const shop = actorOf(eco, site, groupOf(site, 'machinery_machining').id);
+    expect(shop.share).toBe(1);
+    const month = (v: number | undefined) => ((v ?? 0) * 730.5) / 2;
+    close(month(shop.outputs.machinery), 3000);
+    close(month(shop.inputs.stainless_steel), 1800);
+    close(month(shop.inputs.nickel_superalloy), 900);
+    close(month(shop.inputs.ti_6al_4v), 600);
+    expect(shop.inputs[POWER]).toBe(60_000);
+  });
+
   it('starts with the goods of the design sketch in store', () => {
     const site = earthOf(startEconomy());
     expect(site.stock.electronic_silicon).toBe(6000);
