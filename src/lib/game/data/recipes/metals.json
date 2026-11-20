@@ -161,6 +161,7 @@
   },
   {
     "id": "machinery_machining",
+    "upkeep": 60000000,
     "building": "machine_shop",
     "milestone": 1,
     "thin": true,

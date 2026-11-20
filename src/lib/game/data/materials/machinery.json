@@ -1,6 +1,7 @@
 [
   {
     "id": "machinery",
+    "price": 30000,
     "name": "Machinery",
     "category": "machinery",
     "tier": "P",

@@ -221,6 +221,28 @@ describe("Earth's starting stocks", () => {
   });
 });
 
+describe('money', () => {
+  it('gives upkeep in dollars a month only to the fabs, machine shops and data centres of the design sketch', () => {
+    const upkeep = Object.fromEntries(
+      recipes.filter((r) => r.upkeep !== undefined).map((r) => [r.id, r.upkeep])
+    );
+    expect(upkeep).toEqual({
+      electronic_silicon_purification: 80e6,
+      rad_hard_ic_fabrication: 120e6,
+      machinery_machining: 60e6,
+      compute_generation: 100e6,
+      ai_model_training: 100e6
+    });
+  });
+
+  it('prices machinery and integrated circuits in dollars a kilogram', () => {
+    const priced = Object.fromEntries(
+      materials.filter((m) => m.price !== undefined).map((m) => [m.id, m.price])
+    );
+    expect(priced).toEqual({ machinery: 30_000, rad_hard_ic: 500_000 });
+  });
+});
+
 describe('materials', () => {
   it('use known tiers and categories with a source url', () => {
     for (const m of materials) {

@@ -11,6 +11,7 @@
   },
   {
     "id": "electronic_silicon_purification",
+    "upkeep": 80000000,
     "building": "semiconductor_fab",
     "milestone": 1,
     "thin": true,
@@ -62,6 +63,7 @@
   },
   {
     "id": "rad_hard_ic_fabrication",
+    "upkeep": 120000000,
     "building": "semiconductor_fab",
     "milestone": 1,
     "thin": true,
@@ -207,6 +209,7 @@
   },
   {
     "id": "compute_generation",
+    "upkeep": 100000000,
     "building": "data_centre",
     "milestone": 1,
     "thin": true,
@@ -220,6 +223,7 @@
   },
   {
     "id": "ai_model_training",
+    "upkeep": 100000000,
     "building": "data_centre",
     "milestone": 5,
     "thin": true,

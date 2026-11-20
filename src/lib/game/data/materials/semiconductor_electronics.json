@@ -127,6 +127,7 @@
   },
   {
     "id": "rad_hard_ic",
+    "price": 500000,
     "name": "Radiation-hardened integrated circuits",
     "category": "semiconductor_electronics",
     "tier": "P",

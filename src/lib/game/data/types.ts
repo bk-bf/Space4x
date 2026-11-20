@@ -117,6 +117,7 @@ export interface Material {
   unit?: Unit;
   sources?: Source[];
   kcalPerKg?: number;
+  price?: number;
   extractKgH?: number;
   kcalSource?: string;
   kcalBasis?: string;
@@ -136,6 +137,7 @@ export interface Recipe {
   power: number;
   hours: number;
   generates?: number;
+  upkeep?: number;
   product?: string;
   reaction?: string;
   source?: string;
