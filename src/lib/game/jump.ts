@@ -12,11 +12,6 @@ export function settleJumps(game: Game): void {
       const site = economy.sites.find((s) => s.place === 'point' && s.worldBody === point.id);
       if (!site || standing(site, STABILISER) <= 0) continue;
       point.stable = true;
-      game.log(
-        'flask',
-        `${point.name} is stable. Stabilising it was the goal of the first prototype, and it is reached.`,
-        false,
-        { subject: { kind: 'base', id: site.id } }
-      );
+      game.log('flask', `${point.name} is stable.`, false, { subject: { kind: 'base', id: site.id } });
     }
 }

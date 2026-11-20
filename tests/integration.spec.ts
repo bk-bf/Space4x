@@ -69,7 +69,6 @@ test.describe('the top bar', () => {
     for (let i = 0; i < 3; i++) await page.locator(MONTH).click();
     await expect(people).not.toHaveText(before);
     await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
-    await expect(chip(page, 'Milestones reached')).toHaveText('0/29');
     await goTo(page, 'research');
     await expect(page.locator('[data-screen="research"]')).toContainText('0 of 29 reached');
   });
@@ -100,14 +99,13 @@ test.describe('the top bar', () => {
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
-    await expect(page.locator('#chips .chip')).toHaveCount(6);
+    await expect(page.locator('#chips .chip')).toHaveCount(5);
     for (const title of [
       'People',
       'Food: calories made against calories needed',
       'Power: generation less demand',
       'Compute produced an hour',
-      'Scarcest material',
-      'Milestones reached'
+      'Scarcest material'
     ]) {
       await expect(chip(page, title).locator('svg, canvas, .ic').first()).toBeVisible();
       await expect(chip(page, title)).toHaveText(/\S/);

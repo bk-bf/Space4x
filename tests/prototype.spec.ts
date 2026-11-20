@@ -37,7 +37,6 @@ test.describe('the prototype on present-day Earth', () => {
     await expect(page.locator('#siteList [data-site="earth"]')).toContainText('Earth');
     await expect(page.locator('#siteList')).toContainText('Sol');
     await expect(page.locator('.chip[aria-label="People"]')).toContainText('8,200 M');
-    await expect(page.locator('.chip[aria-label="Milestones reached"]')).toContainText('0/29');
     await tab(page, 'people');
     await expect(page.locator('[data-screen="economy"] .ui-card header .t')).toHaveText('Population');
     await expectCleanLayout(page);
@@ -153,7 +152,6 @@ test.describe('the prototype on present-day Earth', () => {
     await group(page, 'Polymer plant').first().click();
     await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(0);
     for (let i = 0; i < 3; i++) await page.locator(MONTH).click();
-    await expect(page.locator('.chip[aria-label="Milestones reached"]')).toContainText('1/29');
     await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(1);
     await expectCleanLayout(page);
   });

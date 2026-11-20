@@ -11,7 +11,6 @@ import {
 import { game, registerHorizon, registerStatus, registerSystem, START_TIME } from '#lib/game/index.ts';
 import type { StatusValue } from '#lib/game/types.ts';
 import { advanceShips, shipsHorizon } from '#lib/game/ships/index.ts';
-import { milestones } from '#lib/game/data/index.ts';
 import { fmt } from '#lib/ui/index.ts';
 import { shortName } from './format.ts';
 import { allTroubles, troubleLine, type Trouble } from './troubles.ts';
@@ -121,9 +120,3 @@ registerStatus('scarce', () => {
       }
     : { icon: 'warn', value: 'None', title: 'Scarcest material', warn: false };
 });
-
-registerStatus('milestones', () => ({
-  icon: 'flask',
-  value: `${economy.done.length}/${milestones.length}`,
-  title: 'Milestones reached'
-}));

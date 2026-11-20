@@ -259,7 +259,6 @@ test.describe('research', () => {
     await rtab(page, 'tree');
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'done');
     await expect(page.locator('#techTree path.e').first()).toHaveAttribute('d', /^M/);
-    await expect(page.locator('#chips .chip[aria-label="Milestones reached"]')).toHaveText('1/29');
     const events = await eventTexts(page);
     expect(events.some((e) => e.includes('Milestone 1 reached: Reusable orbital launch.'))).toBe(true);
   });

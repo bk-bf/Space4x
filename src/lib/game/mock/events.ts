@@ -5,7 +5,7 @@ export const mockEvents = (): GameEvent[] => [
   {
     at: START_TIME,
     category: 'flask',
-    text: 'Earth has one government. Jump point A, out past Jupiter, is unsurveyed and unstable; stabilising it is the goal.',
+    text: 'Earth has one government. Jump point A, out past Jupiter, is unsurveyed and unstable.',
     subject: { kind: 'body', id: 'earth' }
   }
 ];

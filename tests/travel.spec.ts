@@ -153,7 +153,6 @@ test.describe('leaving Earth', () => {
     expect(state.sites).toEqual(['earth', 'orbit-earth']);
     expect(state.launches).toBe(2);
     await page.locator(MONTH).click();
-    await expect(page.locator('.chip[aria-label="Milestones reached"]')).toContainText('3/29');
     await expect(page.locator('#siteList [data-site]')).toHaveCount(2);
   });
 });
