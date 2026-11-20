@@ -4,6 +4,7 @@
     activeOrders,
     BUILD_SLOTS,
     buildable,
+    buildCost,
     buildHours,
     economy,
     flowsOf,
@@ -190,7 +191,7 @@
         {#each shown as b (b.id)}
           {@const isOpenB = open.some((x) => x.id === b.id)}
           {@const standingN = standing(site, b.id)}
-          {@const costs = Object.entries(b.cost).sort((x, y) => y[1] - x[1])}
+          {@const costs = Object.entries(buildCost(b.id, site.body)).sort((x, y) => y[1] - x[1])}
           <Tile
             variant="bld"
             icons={[bld(b.id)]}
@@ -206,7 +207,7 @@
               b.id,
               isOpenB ? 'Open' : warn(`Needs ${waitingOn(economy, b.research).join(' and ')}`),
               standingN ? `${fmt.count(standingN)} standing` : dim('None standing'),
-              `Build time ${fmt.days(buildHours(b.id) / 24)}`
+              `Build time ${fmt.days(buildHours(b.id, site.body) / 24)}`
             )}
             onselect={() => pickBuilding(b.id)}
           />
@@ -240,7 +241,7 @@
             </div>{/if}
         </CardSection>
         <CardSection label="Build cost">
-          <IconList variant="have" items={costItems(b.cost, 1)} />
+          <IconList variant="have" items={costItems(buildCost(b.id, site.body), 1)} />
         </CardSection>
         <div class="btns">
           <button id="orderUp" disabled={selIndex <= 0} onclick={() => act((s, id) => moveOrder(s, id, -1))}
@@ -264,7 +265,7 @@
         icon={bld(picked.id)}
         chips={[
           { icon: 'people', text: picked.workers, tip: 'Workers' },
-          { icon: 'clock', text: fmt.days(buildHours(picked.id) / 24), tip: 'Build time' },
+          { icon: 'clock', text: fmt.days(buildHours(picked.id, site.body) / 24), tip: 'Build time' },
           { icon: 'factory', text: fmt.count(standing(site, picked.id)), tip: 'Standing' },
           ...(picked.start
             ? [
@@ -279,7 +280,7 @@
         ]}
       >
         <CardSection label="Build cost">
-          <IconList variant="have" items={costItems(picked.cost, ui.quantity)} />
+          <IconList variant="have" items={costItems(buildCost(picked.id, site.body), ui.quantity)} />
         </CardSection>
         {#if isOpen}
           {#if recipes.length}

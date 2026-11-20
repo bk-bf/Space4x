@@ -1,0 +1,230 @@
+[
+  {
+    "world": "mercury",
+    "gravity": 3.7,
+    "radius": 2439700,
+    "temperature": 440,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "NSSDC fact sheet: surface gravity 3.70 m/s2, average temperature 440 K; an exosphere under 10 t of atomic sodium, magnesium, oxygen and hydrogen, which no gas material holds",
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html",
+    "estimated": false
+  },
+  {
+    "world": "venus",
+    "gravity": 8.87,
+    "radius": 6051800,
+    "temperature": 737,
+    "water": 0,
+    "atmosphere": {
+      "carbon_dioxide": 4.69e20,
+      "nitrogen": 1.083e19,
+      "argon": 3.088e16,
+      "helium4": 5.305e14
+    },
+    "basis": "NSSDC fact sheet: surface gravity 8.87 m/s2, average temperature 737 K, about 4.8e20 kg of air at 96.5% CO2, 3.5% N2, 70 ppm Ar and 12 ppm He by volume, split by molar mass; SO2, H2O, CO and Ne have no gas material",
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
+    "estimated": false
+  },
+  {
+    "world": "earth",
+    "gravity": 9.82,
+    "radius": 6371000,
+    "temperature": 288,
+    "water": 0.71,
+    "atmosphere": {
+      "nitrogen": 3.851e18,
+      "oxygen": 1.18e18,
+      "argon": 6.569e16,
+      "carbon_dioxide": 3.254e15,
+      "methane": 5.479e12,
+      "helium4": 3.692e12,
+      "hydrogen": 1.952e11
+    },
+    "warming": 1.4,
+    "niche": [
+      {
+        "warming": 0,
+        "share": 1
+      },
+      {
+        "warming": 1.2,
+        "share": 0.91
+      },
+      {
+        "warming": 2.7,
+        "share": 0.667
+      },
+      {
+        "warming": 4,
+        "share": 0.5
+      }
+    ],
+    "basis": "NSSDC fact sheet: mean surface gravity 9.820 m/s2, average temperature 288 K, 5.1e18 kg of dry air at 78.08% N2, 20.95% O2, 9,340 ppm Ar, 420 ppm CO2, 5.24 ppm He, 1.94 ppm CH4 and 0.55 ppm H2 by volume, split by molar mass; Ne and Kr are left out. Water covers about 71% of the surface (USGS). Warming at the start is 1.4 C over pre-industrial. The share of people inside the human climate niche is 1 before warming, 0.91 at +1.2 C, two thirds at +2.7 C and a half at +3.6 to 4.4 C (Lenton et al. 2023), taken at +4.0 C",
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+    "waterSource": "https://www.usgs.gov/special-topics/water-science-school/science/how-much-water-there-earth",
+    "nicheSource": "https://pure.iiasa.ac.at/id/eprint/18812/",
+    "estimated": false
+  },
+  {
+    "world": "luna",
+    "gravity": 1.62,
+    "radius": 1737400,
+    "temperature": 250,
+    "water": 0,
+    "atmosphere": {
+      "argon": 12770,
+      "helium4": 1608,
+      "hydrogen": 708.5,
+      "carbon_dioxide": 441.9,
+      "ammonia": 171,
+      "methane": 161.1
+    },
+    "basis": "NSSDC fact sheet: surface gravity 1.62 m/s2, about 25,000 kg of exosphere, split by its night-time particle counts (He-4 40,000, Ne 45,000, H2 35,000, Ar 32,000, CH4, NH3 and CO2 1,000 a cubic centimetre) times molar mass; Ne is left out. Mean equatorial surface temperature 250 K (Wikipedia)",
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+    "temperatureSource": "https://en.wikipedia.org/wiki/Moon",
+    "estimated": false
+  },
+  {
+    "world": "mars",
+    "gravity": 3.73,
+    "radius": 3389500,
+    "temperature": 210,
+    "water": 0,
+    "atmosphere": {
+      "carbon_dioxide": 2.409e16,
+      "argon": 4.461e14,
+      "nitrogen": 4.177e14,
+      "oxygen": 2.947e13
+    },
+    "basis": "NSSDC fact sheet: mean surface gravity 3.73 m/s2, about 2.5e16 kg of air at 95.1% CO2, 2.59% N2, 1.94% Ar and 0.16% O2 by volume, split by molar mass; CO, H2O, NO, Ne, Kr and Xe are left out. Average temperature about 210 K as the fact sheet gave it until 2021; it now gives about 214 K",
+    "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+    "temperatureSource": "https://web.archive.org/web/20190606041823/https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+    "estimated": false
+  },
+  {
+    "world": "jupiter",
+    "gravity": 24.79,
+    "radius": 69911000,
+    "temperature": 165,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 24.79 m/s2, 165 K at 1 bar; a gas giant has no surface to hold an atmosphere stock",
+    "source": "https://en.wikipedia.org/wiki/Jupiter",
+    "estimated": false
+  },
+  {
+    "world": "saturn",
+    "gravity": 10.44,
+    "radius": 58232000,
+    "temperature": 134,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 10.44 m/s2, 134 K at 1 bar; a gas giant has no surface to hold an atmosphere stock",
+    "source": "https://en.wikipedia.org/wiki/Saturn",
+    "estimated": false
+  },
+  {
+    "world": "uranus",
+    "gravity": 8.69,
+    "radius": 25362000,
+    "temperature": 76,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 8.69 m/s2, 76 K at 1 bar; an ice giant has no surface to hold an atmosphere stock",
+    "source": "https://en.wikipedia.org/wiki/Uranus",
+    "estimated": false
+  },
+  {
+    "world": "neptune",
+    "gravity": 11.27,
+    "radius": 24622000,
+    "temperature": 72,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 11.27 m/s2, 72 K at 1 bar; an ice giant has no surface to hold an atmosphere stock",
+    "source": "https://en.wikipedia.org/wiki/Neptune",
+    "estimated": false
+  },
+  {
+    "world": "io",
+    "gravity": 1.796,
+    "radius": 1821600,
+    "temperature": 110,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 1.796 m/s2, mean surface temperature 110 K; a thin SO2 atmosphere, which no gas material holds",
+    "source": "https://en.wikipedia.org/wiki/Io_(moon)",
+    "estimated": false
+  },
+  {
+    "world": "europa",
+    "gravity": 1.314,
+    "radius": 1560800,
+    "temperature": 102,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 1.314 m/s2, mean surface temperature 102 K; a tenuous oxygen exosphere without a measured mass",
+    "source": "https://en.wikipedia.org/wiki/Europa_(moon)",
+    "estimated": false
+  },
+  {
+    "world": "ganymede",
+    "gravity": 1.427,
+    "radius": 2634100,
+    "temperature": 110,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 1.427 m/s2, mean surface temperature 110 K; a tenuous oxygen exosphere without a measured mass",
+    "source": "https://en.wikipedia.org/wiki/Ganymede_(moon)",
+    "estimated": false
+  },
+  {
+    "world": "callisto",
+    "gravity": 1.236,
+    "radius": 2410300,
+    "temperature": 134,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 1.236 m/s2, mean surface temperature 134 K; a tenuous CO2 exosphere without a measured mass",
+    "source": "https://en.wikipedia.org/wiki/Callisto_(moon)",
+    "estimated": false
+  },
+  {
+    "world": "titan",
+    "gravity": 1.352,
+    "radius": 2574700,
+    "temperature": 93.7,
+    "water": 0,
+    "atmosphere": {
+      "nitrogen": 8.779e18,
+      "methane": 2.593e17,
+      "hydrogen": 6.65e14
+    },
+    "basis": "Wikipedia: surface gravity 1.352 m/s2, surface temperature 93.7 K, surface pressure 146.7 kPa, lower troposphere 95.0% N2 and 4.9% CH4 with 0.1% H2 by volume; the mass, 9.04e18 kg, is the pressure times the surface area over gravity, split by molar mass. Its lakes are hydrocarbons, not water",
+    "source": "https://en.wikipedia.org/wiki/Titan_(moon)",
+    "estimated": true
+  },
+  {
+    "world": "enceladus",
+    "gravity": 0.113,
+    "radius": 252100,
+    "temperature": 75,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: surface gravity 0.113 m/s2, surface temperature 75 K; water vapour plumes, no standing atmosphere",
+    "source": "https://en.wikipedia.org/wiki/Enceladus",
+    "estimated": false
+  },
+  {
+    "world": "ceres",
+    "gravity": 0.284,
+    "radius": 469730,
+    "temperature": 172.5,
+    "water": 0,
+    "atmosphere": {},
+    "basis": "Wikipedia: equatorial surface gravity 0.284 m/s2, mean surface temperature 172.5 K; traces of water vapour, no standing atmosphere",
+    "source": "https://en.wikipedia.org/wiki/Ceres_(dwarf_planet)",
+    "estimated": false
+  }
+]

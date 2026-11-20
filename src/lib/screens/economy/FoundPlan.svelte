@@ -132,7 +132,7 @@
     <div id="planBuildings">
       <TileGrid min={104} gap={6}>
         {#each options as o (o.building.id)}
-          {@const costs = Object.entries(o.building.cost).sort((x, y) => y[1] - x[1])}
+          {@const costs = Object.entries(o.cost).sort((x, y) => y[1] - x[1])}
           <Tile
             variant="bld"
             icons={[{ kind: 'building', id: o.building.id }]}
@@ -158,14 +158,14 @@
       <h3>
         <Icon name="box" class="sm" />{pick.building.name}
         <small class="dim" id="planCost"
-          >costs {fmt.mass(Object.values(pick.building.cost).reduce((a, x) => a + x, 0))}</small
+          >costs {fmt.mass(Object.values(pick.cost).reduce((a, x) => a + x, 0))}</small
         >
       </h3>
       <div id="planHave">
         <IconList
           variant="have"
           size={32}
-          items={Object.entries(pick.building.cost).map(([m, need]) => ({
+          items={Object.entries(pick.cost).map(([m, need]) => ({
             icon: { kind: 'material' as const, id: m },
             amount: fmt.mass(cargo[m] ?? 0),
             need: fmt.mass(need),

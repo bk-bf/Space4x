@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { classes } from '#lib/game/classes.svelte.ts';
 import { DAY } from '#lib/game/clock.ts';
+import { projectById } from '#lib/game/data/index.ts';
 import {
+  berthsOf,
   economy,
   homeSite,
   isMass,
@@ -391,7 +393,7 @@ describe('colonists', () => {
     load: [['hydrolox', 1e9]] as const
   };
 
-  it('settle the Moon before it mines anything, and it grows while fed and housed up to its berths', () => {
+  it('settle the Moon before it mines anything, and grow only into the berths of its biospheres', () => {
     const g = freshGame();
     addDesign(COLONY_SHIP);
     const founder = spawn(
@@ -401,7 +403,7 @@ describe('colonists', () => {
     );
     const site = foundSite(g, founder, 'alloy_works', 'luna-maria') as Site;
     expect(site.population).toBe(2);
-    expect(site.berths).toBe(6);
+    expect(berthsOf(site)).toBe(0);
     expect(site.groups.some((x) => x.process?.startsWith('extract:'))).toBe(false);
     site.stock.wheat = 1e5;
 
@@ -415,19 +417,40 @@ describe('colonists', () => {
     goTo(v, site);
     addOrder(v, { type: 'unload', item: { kind: 'crew' }, amount: null });
     g.advance(12 * DAY);
-    expect(v.blocked).toBeNull();
     expect(v.at).toEqual({ kind: 'site', site: site.id });
-    expect(site.population).toBe(6);
-    expect(v.crew).toBe(2);
+    expect(site.population).toBe(2);
+    expect(v.crew).toBe(6);
+    g.advance(30 * DAY);
+    expect(site.population).toBe(2);
 
+    economy.done.push(projectById('biosphere').number);
+    site.groups.push({ id: economy.nextId++, building: 'biosphere', process: null, count: 1, on: true });
+    touch();
+    expect(berthsOf(site)).toBe(100);
+    addOrder(v, { type: 'unload', item: { kind: 'crew' }, amount: null });
+    g.advance(DAY);
+    expect(site.population).toBeCloseTo(8, 3);
+    expect(v.crew).toBe(0);
     expect(installModule(g, v)).toBeUndefined();
-    expect(site.population).toBe(8);
-    expect(site.berths).toBe(12);
+    expect(site.berths).toBe(0);
+    expect(berthsOf(site)).toBe(100);
+    const before = site.population;
     g.advance(30 * DAY);
-    expect(site.population).toBeCloseTo(8 * Math.exp((earth.growthPerYear * 30) / 365.25), 9);
-    site.population = 11.999;
+    expect(site.population).toBeCloseTo(before * Math.exp((earth.growthPerYear * 30) / 365.25), 6);
+    site.population = 99.999;
     g.advance(30 * DAY);
-    expect(site.population).toBe(12);
+    expect(site.population).toBeCloseTo(100, 9);
+  });
+
+  it('keep the berths of a module installed at an orbital station', () => {
+    const g = freshGame();
+    addDesign(COLONY_SHIP);
+    const orbit = station();
+    const v = spawn('colony', { kind: 'site', site: orbit.id });
+    const before = orbit.berths ?? 0;
+    expect(installModule(g, v)).toBeUndefined();
+    expect(orbit.berths).toBe(before + 6);
+    expect(berthsOf(orbit)).toBe(before + 6);
   });
 });
 

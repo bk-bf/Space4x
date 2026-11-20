@@ -48,9 +48,9 @@ describe('the project card checks what the game checks', () => {
 });
 
 describe('the tiles', () => {
-  it('give every project an icon but construction rate and the biosphere', () => {
+  it('give every project an icon but construction rate', () => {
     const without = projects.filter((p) => !projectIcon(p.number)).map((p) => p.line ?? p.id);
-    expect([...new Set(without)]).toEqual(['construction_rate', 'biosphere']);
+    expect([...new Set(without)]).toEqual(['construction_rate']);
   });
 
   it('group every status', () => {

@@ -5,6 +5,7 @@ import { buildingsAt, isMass, processesAt } from './processes.ts';
 import { unlockedProcesses } from './actions.ts';
 import { earthStart } from './start.ts';
 import type { Economy, Site, SitePlace } from './types.ts';
+import { holdsHere } from './housing.ts';
 import { isUnlocked } from './unlocks.ts';
 
 export const FOUNDING_CREW_SHARE = 1;
@@ -46,7 +47,10 @@ export function firstBuildings(
 ) {
   const where = whereOf(worldBody, place);
   return where
-    ? buildingsAt(where).filter((b) => isUnlocked(eco, b) && workableHere(b.id, where, worldBody, region))
+    ? buildingsAt(where).filter(
+        (b) =>
+          isUnlocked(eco, b) && holdsHere(b.id, worldBody) && workableHere(b.id, where, worldBody, region)
+      )
     : [];
 }
 
@@ -96,7 +100,8 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
 
 export function standFirst(eco: Economy, site: Site, buildingId: string): boolean {
   const b = building(buildingId);
-  if (!b.where.includes(site.body) || !isUnlocked(eco, b)) return false;
+  if (!b.where.includes(site.body) || !isUnlocked(eco, b) || !holdsHere(buildingId, site.worldBody))
+    return false;
   const process = unlockedProcesses(eco, site, buildingId)[0]?.id ?? null;
   const same = site.groups.find((g) => g.building === buildingId && g.process === process && g.on);
   if (same) same.count += 1;

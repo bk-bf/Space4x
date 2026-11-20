@@ -122,6 +122,7 @@ export interface Material {
   kcalSource?: string;
   kcalBasis?: string;
   kcalEstimated?: boolean;
+  molarMass?: number;
   why: string;
   source: string;
 }
@@ -173,6 +174,21 @@ export interface Lab {
   source: string;
 }
 
+export interface Biosphere {
+  people: number;
+  powerKw: number;
+  volume: number;
+  shell: number;
+  shield: number;
+  shieldMaterial: Partial<Record<Site, string>>;
+  basis: string;
+  source: string;
+  shellSource: string;
+  shieldSource: string;
+  workersSource: string;
+  estimated: boolean;
+}
+
 export interface Building {
   id: string;
   name: string;
@@ -188,6 +204,7 @@ export interface Building {
   footprint?: { land?: number; habitat?: number };
   plant?: Plant;
   lab?: Lab;
+  biosphere?: Biosphere;
   bp?: number;
   bpSource?: string;
   bpBasis?: string;
@@ -299,5 +316,27 @@ export interface ReserveRecord {
   output: number | null;
   accessibility: number;
   source: string;
+  estimated: boolean;
+}
+
+export interface NichePoint {
+  warming: number;
+  share: number;
+}
+
+export interface Environment {
+  world: string;
+  gravity: number;
+  radius: number;
+  temperature: number;
+  water: number;
+  atmosphere: Amounts;
+  warming?: number;
+  niche?: NichePoint[];
+  basis: string;
+  source: string;
+  temperatureSource?: string;
+  waterSource?: string;
+  nicheSource?: string;
   estimated: boolean;
 }

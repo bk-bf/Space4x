@@ -60,6 +60,45 @@
     "bpEstimated": true
   },
   {
+    "id": "biosphere",
+    "name": "Biosphere",
+    "kind": "habitat",
+    "where": ["moon", "mars", "mercury", "icy-moon", "asteroid-c", "asteroid-s"],
+    "research": 69,
+    "estimated": true,
+    "cost": {
+      "vectran": 143666,
+      "aramid": 57466,
+      "polyimide": 28733,
+      "stainless_steel": 8500,
+      "amine_sorbent": 1700,
+      "platinum": 17,
+      "copper": 850
+    },
+    "workers": 9,
+    "biosphere": {
+      "people": 300,
+      "powerKw": 83,
+      "volume": 6700,
+      "shell": 406000,
+      "shield": 8500000,
+      "shieldMaterial": {
+        "moon": "lunar_regolith",
+        "mars": "martian_regolith",
+        "mercury": "basalt",
+        "asteroid-c": "carbonaceous_chondrite",
+        "asteroid-s": "ordinary_chondrite",
+        "icy-moon": "water"
+      },
+      "basis": "A pressurised dome of 6,700 m3 for 100 people on the Moon, 67 m3 a person as NASA sizes a habitat for four crew on a 380-day mission (268 m3). It holds 300 times the body's suitability, half that under 0.1 g. The inflatable shell, 29 m across, weighs 406 t at the B330's 20 t for 330 m3, made of the inflatable habitat's materials scaled by mass; 17 life support units for six people each weigh 15 t; 3.34 m of local regolith over the dome, 8,500 t at 1.5 t a cubic metre, keeps the dose to 20 mSv a year at solar minimum. It draws 83 kW, the 3 kW of a life support unit and 2 kW of a habitat module for every six people. Nine workers maintain it: NASA Ames' Habot model gives about 1.2 crew-hours a resident a day for inspection and maintenance, 0.85 of them for the habitat's twelve of seventeen systems, over a working day of 9.5 hours",
+      "source": "https://ntrs.nasa.gov/api/citations/20110023257/downloads/20110023257.pdf",
+      "shellSource": "https://en.wikipedia.org/wiki/B330",
+      "shieldSource": "https://arxiv.org/pdf/2004.02241",
+      "workersSource": "https://spacearchitect.org/pubs/SAE-2005-01-2792.pdf",
+      "estimated": true
+    }
+  },
+  {
     "id": "algae_bioreactor",
     "name": "Algae bioreactor",
     "kind": "habitat",

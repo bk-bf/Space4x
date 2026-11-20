@@ -1,4 +1,4 @@
-import type { Site } from '#lib/game/economy/index.ts';
+import { berthsOf, type Site } from '#lib/game/economy/index.ts';
 import { PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { cargoRoom, propellantRoom, statsOf } from './model.ts';
 import type { AllCargo, Item, ManifestLine, Vessel } from './types.ts';
@@ -78,7 +78,7 @@ export function unloadItem(site: Site, v: Vessel, item: Item | AllCargo, amount:
     returnPropellant(site, item.id, n);
     return n;
   }
-  const berths = site.berths;
+  const berths = berthsOf(site);
   const room = berths === null ? Infinity : Math.max(0, Math.round(berths - site.population));
   const n = Math.floor(take(amount, v.crew, room));
   if (n <= 0) return 0;

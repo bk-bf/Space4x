@@ -28,6 +28,7 @@
       { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
       { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
     ],
+    "molarMass": 2.016,
     "why": "Highest-Isp chemical fuel and NTR propellant; reduces CO2 and ilmenite",
     "source": "https://en.wikipedia.org/wiki/Hydrogen_production"
   },
@@ -37,6 +38,7 @@
     "category": "volatile",
     "tier": "P",
     "thin": true,
+    "molarMass": 31.998,
     "why": "Oxidiser for every chemical engine and breathing gas; most of propellant mass",
     "source": "https://en.wikipedia.org/wiki/In_situ_resource_utilization"
   },
@@ -51,6 +53,7 @@
       { "body": "titan", "how": "atmosphere", "building": "atmosphere_skimmer" },
       { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" }
     ],
+    "molarMass": 28.014,
     "why": "Inert buffer gas in cabin air and feedstock for fertiliser and ammonia",
     "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Titan"
   },
@@ -65,6 +68,7 @@
       { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
       { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
     ],
+    "molarMass": 4.0026,
     "why": "Tank pressurant and the coolant for low-temperature superconducting magnets",
     "source": "https://en.wikipedia.org/wiki/Helium"
   },
@@ -75,6 +79,7 @@
     "tier": "P",
     "thin": true,
     "sources": [{ "body": "mars", "how": "atmosphere", "building": "air_separation_plant" }],
+    "molarMass": 39.948,
     "why": "Cheap Hall-thruster propellant (Starlink V2) and inert process gas",
     "source": "https://en.wikipedia.org/wiki/Hall-effect_thruster"
   },
@@ -97,6 +102,7 @@
       { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" },
       { "body": "comet", "how": "ice", "building": "asteroid_miner" }
     ],
+    "molarMass": 44.009,
     "why": "Feed for MOXIE-type oxygen production, Sabatier methane and plant growth",
     "source": "https://en.wikipedia.org/wiki/Mars_Oxygen_ISRU_Experiment"
   },
@@ -110,6 +116,7 @@
       { "body": "earth", "how": "wells", "building": "mine_earth" },
       { "body": "titan", "how": "liquid", "building": "atmosphere_skimmer" }
     ],
+    "molarMass": 16.043,
     "why": "Fuel that can be made in situ on Mars; feedstock for polymers and diamond",
     "source": "https://en.wikipedia.org/wiki/Sabatier_reaction"
   },
@@ -123,6 +130,7 @@
       { "body": "comet", "how": "ice", "building": "asteroid_miner" },
       { "body": "icy-moon", "how": "ice", "building": "ice_mine" }
     ],
+    "molarMass": 17.031,
     "why": "ISS external coolant loop fluid, fertiliser and hydrazine feedstock",
     "source": "https://ntrs.nasa.gov/citations/20110023292"
   },
@@ -149,6 +157,7 @@
     "tier": "P",
     "thin": true,
     "sources": [{ "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" }],
+    "molarMass": 98.079,
     "why": "Universal industrial reagent for ore leaching and wafer cleaning",
     "source": "https://en.wikipedia.org/wiki/Atmosphere_of_Venus"
   },

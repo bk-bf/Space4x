@@ -12,6 +12,7 @@ import {
   buildings,
   dataFiles,
   depositGrade,
+  environments,
   regions,
   regionsOf,
   reserves,
@@ -384,7 +385,7 @@ describe('buildings and components', () => {
     }
   });
 
-  it('cost build points with a source and a basis, except the buildings open on #72 and #88', () => {
+  it('cost build points with a source and a basis, except the buildings open on #72, #88 and #91', () => {
     const open = new Set([
       'university',
       'mine_earth',
@@ -407,7 +408,8 @@ describe('buildings and components', () => {
       'regolith_oxygen_plant',
       'sinter_printer',
       'asteroid_processor',
-      'metal_refinery'
+      'metal_refinery',
+      'biosphere'
     ]);
     expect(unknown([...open], buildingIds)).toEqual([]);
     for (const b of buildings) {
@@ -471,6 +473,94 @@ const opens = (n: number) => {
   return [...u.buildings, ...u.recipes, ...u.components];
 };
 
+describe('body environments', () => {
+  const HAND_MADE = Object.keys(WORLD_BODIES);
+  const URL = /^https:\/\//;
+
+  it('describe the hand-made bodies and Ceres once each, with a source url', () => {
+    const worlds = environments.map((e) => e.world);
+    expect(new Set(worlds).size).toBe(worlds.length);
+    expect([...worlds].sort()).toEqual([...HAND_MADE, 'ceres'].sort());
+    for (const e of environments) {
+      expect(bodyTypeOf(e.world), e.world).toBeDefined();
+      expect(e.source, e.world).toMatch(URL);
+      for (const extra of [e.temperatureSource, e.waterSource, e.nicheSource])
+        if (extra !== undefined) expect(extra, e.world).toMatch(URL);
+      expect(e.basis.length, e.world).toBeGreaterThan(20);
+      expect(typeof e.estimated).toBe('boolean');
+    }
+  });
+
+  it('give gravity, radius and mean temperature as positive numbers and water cover as a share', () => {
+    for (const e of environments) {
+      expect(e.gravity, e.world).toBeGreaterThan(0);
+      expect(e.radius, e.world).toBeGreaterThan(1e5);
+      expect(e.temperature, e.world).toBeGreaterThan(0);
+      expect(e.water, e.world).toBeGreaterThanOrEqual(0);
+      expect(e.water, e.world).toBeLessThanOrEqual(1);
+    }
+    expect(environments.filter((e) => e.water > 0).map((e) => e.world)).toEqual(['earth']);
+  });
+
+  it('hold their air as kilograms of gases that are materials with a molar mass', () => {
+    for (const e of environments)
+      for (const [gas, kg] of Object.entries(e.atmosphere)) {
+        expect(materialIds.has(gas), `${e.world} ${gas}`).toBe(true);
+        expect(material(gas).category, gas).toBe('volatile');
+        expect(material(gas).molarMass, gas).toBeGreaterThan(0);
+        expect(kg, `${e.world} ${gas}`).toBeGreaterThan(0);
+      }
+  });
+
+  it('give Earth its warming and the climate niche from no warming upwards', () => {
+    const withNiche = environments.filter((e) => e.niche);
+    expect(withNiche.map((e) => e.world)).toEqual(['earth']);
+    const niche = withNiche[0]!.niche!;
+    expect(niche[0]).toEqual({ warming: 0, share: 1 });
+    for (let i = 1; i < niche.length; i++) {
+      expect(niche[i]!.warming).toBeGreaterThan(niche[i - 1]!.warming);
+      expect(niche[i]!.share).toBeLessThan(niche[i - 1]!.share);
+    }
+    expect(withNiche[0]!.warming).toBe(1.4);
+  });
+});
+
+describe('the biosphere', () => {
+  const b = buildings.find((x) => x.id === 'biosphere')!;
+  const bio = b.biosphere!;
+
+  it('opens with the Biosphere project, holds 300 people at full suitability and needs nine workers', () => {
+    expect(b.research).toBe(num('biosphere'));
+    expect(bio.people).toBe(300);
+    expect(bio.powerKw).toBe(83);
+    expect(bio.volume).toBe(6700);
+    expect(b.workers).toBe(9);
+    expect(b.where).not.toContain('earth');
+    expect(b.where).not.toContain('orbit');
+  });
+
+  it('costs the inflatable habitat scaled to its 406 t shell and 17 life support units', () => {
+    const habitat = shipComponents.find((c) => c.id === 'inflatable_habitat')!;
+    const support = shipComponents.find((c) => c.id === 'life_support_unit')!;
+    const k = bio.shell / habitat.design.mass!;
+    for (const [m, kg] of Object.entries(habitat.cost)) expect(b.cost[m], m).toBeCloseTo(kg * k, -1);
+    for (const [m, kg] of Object.entries(support.cost)) expect(b.cost[m], m).toBe(kg * 17);
+    expect(support.design.mass! * 17).toBeCloseTo(15_000, -3);
+  });
+
+  it('shields with 8,500 t of a material dug where it stands, for every body type it stands on', () => {
+    expect(bio.shield).toBe(8_500_000);
+    expect(Object.keys(bio.shieldMaterial).sort()).toEqual([...b.where].sort());
+    for (const [where, m] of Object.entries(bio.shieldMaterial))
+      expect(
+        material(m!).sources?.some((s) => s.body === where),
+        `${m} on ${where}`
+      ).toBe(true);
+    for (const url of [bio.source, bio.shellSource, bio.shieldSource, bio.workersSource])
+      expect(url).toMatch(/^https:\/\//);
+  });
+});
+
 describe('research projects', () => {
   const unlocks = projects.filter((p) => !p.line);
   const levels = projects.filter((p) => p.line);
@@ -518,11 +608,10 @@ describe('research projects', () => {
     for (const p of projects) for (const r of p.requires) expect(dependentsOf(r), p.id).toContain(p.number);
   });
 
-  it('give each unlock project something to open, but booster recovery, helium-3 extraction and the biosphere', () => {
+  it('give each unlock project something to open, but booster recovery and helium-3 extraction', () => {
     expect(unlocks.filter((p) => opens(p.number).length === 0).map((p) => p.id)).toEqual([
       'booster_recovery',
-      'helium_3_extraction',
-      'biosphere'
+      'helium_3_extraction'
     ]);
   });
 

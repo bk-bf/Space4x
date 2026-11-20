@@ -1,12 +1,15 @@
 import { building, material, region as regionRecord, regionsOf } from '#lib/game/data/index.ts';
 import type { Building, Region } from '#lib/game/data/index.ts';
 import {
+  addsModuleBerths,
+  buildCost,
   economy,
   firstBuildings,
   newSite,
   siteIn,
   standFirst,
   touch,
+  whereOf,
   type Site,
   type SitePlace
 } from '#lib/game/economy/index.ts';
@@ -21,6 +24,7 @@ import { clearTripOption, isJump, NO_SURFACE } from './world.ts';
 
 export interface FoundOption {
   building: Building;
+  cost: Record<string, number>;
   missing: { id: string; need: number; have: number }[];
 }
 
@@ -59,9 +63,11 @@ export function foundOptionsAt(
 ): FoundOption[] {
   if (siteIn(economy, p.worldBody, p.place, p.place === 'surface' ? region : null)) return [];
   if (placeNeedsRegion(p) && !region) return [];
+  const where = whereOf(p.worldBody, p.place);
   return firstBuildings(economy, p.worldBody, p.place, region).map((b) => ({
     building: b,
-    missing: Object.entries(b.cost)
+    cost: buildCost(b.id, where),
+    missing: Object.entries(buildCost(b.id, where))
       .filter(([m, need]) => (cargo[m] ?? 0) + 1e-9 < need)
       .map(([id, need]) => ({ id, need, have: cargo[id] ?? 0 }))
   }));
@@ -88,7 +94,7 @@ function absorb(site: Site, v: Vessel): void {
   for (const k of PROPELLANT_KINDS)
     if ((v.propellant[k] ?? 0) > 0) returnPropellant(site, k, v.propellant[k] ?? 0);
   site.population += v.crew;
-  site.berths = (site.berths ?? 0) + (stats?.berths ?? 0);
+  if (addsModuleBerths(site)) site.berths = (site.berths ?? 0) + (stats?.berths ?? 0);
   site.gridKw += Math.max(0, stats?.power.made ?? 0);
   ships.vessels = ships.vessels.filter((x) => x !== v);
   clearTripOption(v.id);
@@ -121,7 +127,7 @@ export function foundSite(
     return `${material(first.id).name} is short by ${Math.ceil(first.need - first.have).toLocaleString('en-US')} kg.`;
   const site = newSite(economy, { ...p, region: where, bodyName: bodyLabel });
   if (!site) return 'This place cannot hold a site.';
-  for (const [m, need] of Object.entries(building(buildingId).cost)) v.cargo[m] = (v.cargo[m] ?? 0) - need;
+  for (const [m, need] of Object.entries(option.cost)) v.cargo[m] = (v.cargo[m] ?? 0) - need;
   standFirst(economy, site, buildingId);
   absorb(site, v);
   if (p.place === 'surface') {

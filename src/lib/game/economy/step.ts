@@ -8,6 +8,7 @@ import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
 import { chargeUpkeep, marketEvents, marketHours } from './market.ts';
 import { startShips } from './yard.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
+import { berthsOf } from './housing.ts';
 
 export const SEGMENT_HOURS = 24;
 const MAX_SEGMENTS = 100_000;
@@ -17,8 +18,9 @@ const noLog: LogFn = () => {};
 
 function nextEvent(eco: Economy, site: Site, flows: SiteFlows, warnDays: number): number {
   let t = nextWarning(site, flows, warnDays);
-  if (flows.growthPerHour > 0 && site.berths !== null && site.population > 0)
-    t = Math.min(t, Math.log(site.berths / site.population) / flows.growthPerHour);
+  const berths = berthsOf(site);
+  if (flows.growthPerHour > 0 && berths !== null && site.population > 0)
+    t = Math.min(t, Math.log(berths / site.population) / flows.growthPerHour);
   for (const [m, rate] of Object.entries(flows.net)) {
     if (isStockless(m) || rate >= 0) continue;
     const stock = site.stock[m] ?? 0;
@@ -103,8 +105,8 @@ function applySegment(
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
   site.population *= Math.exp(flows.growthPerHour * hours);
-  if (flows.growthPerHour > 0 && site.berths !== null)
-    site.population = Math.min(site.population, site.berths);
+  const berths = berthsOf(site);
+  if (flows.growthPerHour > 0 && berths !== null) site.population = Math.min(site.population, berths);
 
   for (const a of flows.actors) {
     if (a.kind === 'build') {

@@ -15,6 +15,8 @@ import {
   WATER_DRAWN_ON
 } from './processes.ts';
 import { labFigures, LAB, researchSite, rpPerHour } from './programmes.ts';
+import { growthScale } from '#lib/game/suitability.ts';
+import { berthsOf } from './housing.ts';
 import { MONTH_HOURS } from './calendar.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
 import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
@@ -24,7 +26,10 @@ export const STARVE_PER_YEAR = 0.25;
 
 const ROOM_EPS = 1e-9;
 
-const hasRoom = (site: Site): boolean => site.berths === null || site.population < site.berths - ROOM_EPS;
+function hasRoom(site: Site): boolean {
+  const berths = berthsOf(site);
+  return berths === null || site.population < berths - ROOM_EPS;
+}
 export const HOURS_PER_YEAR = 8766;
 
 export type Limit =
@@ -136,6 +141,17 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
     };
   }
   if (g.building === LAB) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: null };
+  const biosphere = building(g.building).biosphere;
+  if (biosphere)
+    return {
+      ...base,
+      cap: workerShare,
+      worst: workerShare,
+      inputs: { [POWER]: biosphere.powerKw * g.count },
+      outputs: {},
+      extracts: {},
+      limit: workerShare < 1 ? { kind: 'workers' } : null
+    };
   if (!g.process) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'idle' } };
   const p = boosted(eco, process(g.process, site.body), g.building);
   const { grade, missing } = deposit(site, p);
@@ -191,15 +207,15 @@ function yardActor(eco: Economy, site: Site, o: YardOrder): YardActor {
   };
 }
 
-function buildActor(eco: Economy, o: BuildOrder): BuildActor {
-  const hours = buildHours(o.building) / boostOf(eco.done, 'build_speed');
+function buildActor(eco: Economy, site: Site, o: BuildOrder): BuildActor {
+  const hours = buildHours(o.building, site.body) / boostOf(eco.done, 'build_speed');
   return {
     kind: 'build',
     order: o,
     hours,
     cap: 1,
     share: 0,
-    inputs: scaled(buildCost(o.building), 1 / hours),
+    inputs: scaled(buildCost(o.building, site.body), 1 / hours),
     outputs: {},
     extracts: {},
     limit: null,
@@ -337,7 +353,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const workerShare = needed > available ? available / needed : 1;
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
-    ...activeOrders(site).map((o) => buildActor(eco, o)),
+    ...activeOrders(site).map((o) => buildActor(eco, site, o)),
     ...activeYardOrders(site).map((o) => yardActor(eco, site, o)),
     ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : [])
   ];
@@ -385,7 +401,7 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     cover < 1 - 1e-9
       ? (-STARVE_PER_YEAR * (1 - cover)) / HOURS_PER_YEAR
       : hasRoom(site)
-        ? site.growthPerYear / HOURS_PER_YEAR
+        ? (site.growthPerYear * (site.place === 'surface' ? growthScale(site.worldBody) : 1)) / HOURS_PER_YEAR
         : 0;
 
   return {
