@@ -22,7 +22,7 @@
   },
   {
     "id": "rocket_factory",
-    "name": "Rocket factory",
+    "name": "Shipyard",
     "kind": "infrastructure",
     "where": ["earth"],
     "milestone": 1,

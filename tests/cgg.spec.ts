@@ -118,7 +118,7 @@ test.describe('ship designer', () => {
   }) => {
     await open(page, 'screen=classes&new=crewed&reached=6');
     await expect(page.locator('#clsYard')).toHaveValue('orbital_shipyard');
-    await expect(page.locator('#clsYard option')).toHaveText(['Rocket factory', 'Orbital shipyard (locked)']);
+    await expect(page.locator('#clsYard option')).toHaveText(['Shipyard', 'Orbital shipyard (locked)']);
     await expect(label(page, 'built-at')).toHaveText('can be built at');
     await expect(value(page, 'built-at')).toContainText('Orbital shipyard');
     await page.locator('#clsYard').selectOption('rocket_factory');

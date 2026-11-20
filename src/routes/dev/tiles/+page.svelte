@@ -186,7 +186,7 @@
           <Tile
             variant="bld"
             icons={[bld('rocket_factory')]}
-            name="Rocket factory"
+            name="Shipyard"
             kind="infrastructure"
             corner="×3"
             mark="lock"
