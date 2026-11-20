@@ -53,14 +53,24 @@ export const bonusOf = (s: Scientist, subject: string): number =>
 
 export const labCap = (eco: Economy, s: Scientist): number => Math.min(s.admin, freeLabs(eco));
 
-export type ProgrammeStatus = 'done' | 'running' | 'queued' | 'ready' | 'locked';
+export type ProgrammeStatus = 'done' | 'running' | 'queued' | 'waiting' | 'ready' | 'locked';
 
 export function programmeStatus(eco: Economy, p: Project): ProgrammeStatus {
   if (eco.done.includes(p.number)) return 'done';
   if (eco.running.some((r) => r.number === p.number)) return 'running';
-  if (eco.queued.some((q) => q.number === p.number)) return 'queued';
-  return requiresDone(eco.done, p.number) ? 'ready' : 'locked';
+  const ready = requiresDone(eco.done, p.number);
+  if (eco.queued.some((q) => q.number === p.number)) return ready ? 'queued' : 'waiting';
+  return ready ? 'ready' : 'locked';
 }
+
+const underWay = (eco: Economy, number: number): boolean =>
+  eco.running.some((r) => r.number === number) || eco.queued.some((q) => q.number === number);
+
+export const missingRequires = (eco: Economy, p: Project): number[] =>
+  p.requires.filter((n) => !eco.done.includes(n));
+
+export const canQueue = (eco: Economy, p: Project): boolean =>
+  programmeStatus(eco, p) === 'locked' && missingRequires(eco, p).every((n) => underWay(eco, n));
 
 export const runningProgramme = (eco: Economy, number: number): Programme | undefined =>
   eco.running.find((p) => p.number === number);
@@ -70,8 +80,11 @@ export const queuedProgramme = (eco: Economy, number: number): Queued | undefine
 
 export function createProject(eco: Economy, number: number, lead: number, labs: number): boolean {
   const s = scientistById(eco, lead);
-  if (!s || !hasProject(number) || programmeStatus(eco, project(number)) !== 'ready') return false;
-  if (leading(eco, lead)) {
+  if (!s || !hasProject(number)) return false;
+  const p = project(number);
+  const ready = programmeStatus(eco, p) === 'ready';
+  if (!ready && !canQueue(eco, p)) return false;
+  if (!ready || leading(eco, lead)) {
     eco.queued.push({ number, lead });
     return true;
   }
@@ -178,6 +191,13 @@ export function finishProgramme(eco: Economy, p: Programme, at: number, log: Log
     const next = moveOn(eco, s, p.labs);
     if (next)
       log(`${s.name} moves on to ${project(next.number).name}.`, false, at, site, { project: next.number });
+  }
+  for (const idle of eco.scientists.filter((x) => !leading(eco, x.id))) {
+    const next = moveOn(eco, idle, labCap(eco, idle));
+    if (next)
+      log(`${idle.name} moves on to ${project(next.number).name}.`, false, at, site, {
+        project: next.number
+      });
   }
   log(`${project(p.number).name} researched.`, false, at, site, { kind: 'research', project: p.number });
 }

@@ -82,6 +82,7 @@ const QUERIES = [
   'screen=research&project=38&reached=37',
   'screen=research&project=1&start=1&start=3&start=7',
   'screen=research&project=3&start=1&start=3',
+  'screen=research&project=2&start=1',
   'screen=research&project=53',
   'screen=research&rtab=programmes&project=6&start=1',
   'screen=research&rtab=unlocks&project=3',

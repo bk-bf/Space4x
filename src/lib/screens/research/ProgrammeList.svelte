@@ -7,7 +7,8 @@
     researchDaysLeft,
     researchSite,
     runningProgramme,
-    scientistById
+    scientistById,
+    missingRequires
   } from '#lib/game/economy/index.ts';
   import type { ProgrammeStatus } from '#lib/game/economy/index.ts';
   import { projectIcon } from '#lib/gfx/icons/index.ts';
@@ -19,6 +20,7 @@
   const ICON: Record<ProgrammeStatus, IconName> = {
     running: 'hammer',
     queued: 'clock',
+    waiting: 'clock',
     ready: 'play',
     locked: 'lock',
     done: 'check'
@@ -27,6 +29,7 @@
   const TONE: Record<ProgrammeStatus, 'accent' | 'cool' | 'dim'> = {
     running: 'cool',
     queued: 'cool',
+    waiting: 'dim',
     ready: 'cool',
     locked: 'dim',
     done: 'accent'
@@ -53,13 +56,11 @@
       const q = queuedProgramme(economy, n);
       return { note: q ? (scientistById(economy, q.lead)?.name ?? '') : '' };
     }
-    if (status === 'locked')
-      return {
-        note: `needs ${p.requires
-          .filter((r) => !economy.done.includes(r))
-          .map((r) => project(r).name)
-          .join(', ')}`
-      };
+    const missing = missingRequires(economy, p)
+      .map((r) => project(r).name)
+      .join(', ');
+    if (status === 'waiting') return { note: `waiting on ${missing}` };
+    if (status === 'locked') return { note: `needs ${missing}` };
     return { note: `${p.rp} RP` };
   }
 </script>

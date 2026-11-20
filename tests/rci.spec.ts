@@ -173,7 +173,7 @@ test.describe('research', () => {
     await open(page, 'screen=research&rtab=programmes');
     const group = (status: string) => page.locator(`.slot[data-status="${status}"]`);
     await expect(page.locator('h3[data-group="running"]')).toContainText('0');
-    await expect(page.locator('h3[data-group]')).toHaveCount(5);
+    await expect(page.locator('h3[data-group]')).toHaveCount(6);
     await expect(group('ready')).toHaveCount(READY_AT_START.length);
     await expect(group('locked')).toHaveCount(69 - READY_AT_START.length);
     await page.locator('.slot[data-project="6"] button').click();
@@ -246,6 +246,26 @@ test.describe('research', () => {
     await expect(page.locator('#programmeQueued')).toContainText('Queued for Aiko Tanaka');
     await page.locator('#programmeCancel').click();
     await expect(slot(page, 9)).toHaveAttribute('data-status', 'ready');
+  });
+
+  test('a project behind a running prerequisite is queued, waits on it and can be removed', async ({
+    page
+  }) => {
+    await open(page, 'screen=research&project=2&start=1');
+    await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
+    await page.locator('#programmeScientists .ui-tile', { hasText: 'Marcus Bell' }).click();
+    await expect(page.locator('#programmeStart')).toHaveText('Queue for Marcus');
+    await expect(page.locator('#programmePlanLabs')).toHaveCount(0);
+    await page.locator('#programmeStart').click();
+    await expect(slot(page, 2)).toHaveAttribute('data-status', 'waiting');
+    await expect(page.locator('#programmeWaiting')).toHaveText('Waiting on Booster recovery');
+    await expect(page.locator('#programmeQueued')).toContainText('Queued for Marcus Bell');
+    await rtab(page, 'programmes');
+    await expect(page.locator('.slot[data-status="waiting"]')).toHaveCount(1);
+    await page.locator('#programmeCancel').click();
+    await expect(page.locator('.slot[data-status="waiting"]')).toHaveCount(0);
+    await rtab(page, 'tree');
+    await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
   });
 
   test('the scientists tab shows every scientist with a portrait, and their card creates a project', async ({

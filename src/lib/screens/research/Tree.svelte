@@ -31,6 +31,7 @@
     done: { icon: 'check', tone: 'accent' },
     running: { icon: 'hammer', tone: 'cool' },
     queued: { icon: 'clock', tone: 'cool' },
+    waiting: { icon: 'clock', tone: 'dim' },
     ready: { icon: 'play', tone: 'cool' },
     locked: { icon: 'lock', tone: 'dim' }
   };
@@ -51,7 +52,11 @@
       p.name,
       dim(`${p.rp} RP, ${subjectName(p.subject)}`),
       ...effectLines(p),
-      status === 'locked' ? warn(`Locked until ${before.join(' and ')} researched`) : STATE_LINE[status]
+      status === 'locked'
+        ? warn(`Locked until ${before.join(' and ')} researched`)
+        : status === 'waiting'
+          ? `Waiting on ${before.join(' and ')}`
+          : STATE_LINE[status]
     );
   }
 

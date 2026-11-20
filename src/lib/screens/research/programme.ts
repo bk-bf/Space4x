@@ -39,11 +39,12 @@ export function checkFor(eco: Economy, p: Project): Check {
   return { requires, blockers: requires.filter((r) => !r.ok).length };
 }
 
-export const GROUPS = ['running', 'queued', 'ready', 'locked', 'done'] as const;
+export const GROUPS = ['running', 'queued', 'waiting', 'ready', 'locked', 'done'] as const;
 
 export const GROUP_NAMES: Record<ProgrammeStatus, string> = {
   running: 'Running',
   queued: 'Queued',
+  waiting: 'Waiting',
   ready: 'Ready to start',
   locked: 'Locked behind prerequisites',
   done: 'Researched'
@@ -52,6 +53,7 @@ export const GROUP_NAMES: Record<ProgrammeStatus, string> = {
 export const STATUS_LABEL: Record<ProgrammeStatus, string> = {
   running: 'running',
   queued: 'queued',
+  waiting: 'waiting',
   ready: 'ready',
   locked: 'locked',
   done: 'researched'

@@ -54,7 +54,7 @@ describe('the tiles', () => {
   });
 
   it('group every status', () => {
-    expect(GROUPS).toEqual(['running', 'queued', 'ready', 'locked', 'done']);
+    expect(GROUPS).toEqual(['running', 'queued', 'waiting', 'ready', 'locked', 'done']);
   });
 
   it('list what is open at the start, what each project opens and what each boost level does', () => {

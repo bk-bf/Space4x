@@ -545,6 +545,43 @@ describe('milestones as programmes', () => {
     ).toBe(true);
   });
 
+  it('queues a project behind prerequisites that are running or queued and starts it when they are researched', () => {
+    const eco = startEconomy();
+    const [aiko, marcus, leila] = eco.scientists;
+    const recovery = num('booster_recovery');
+    const transfer = num('propellant_transfer_in_orbit');
+    const loop = num('closed_loop_water_and_air');
+    const arrays = num('space_solar_arrays');
+    expect(createProject(eco, arrays, leila!.id, 0)).toBe(false);
+    expect(createProject(eco, transfer, marcus!.id, 0)).toBe(false);
+    expect(createProject(eco, recovery, aiko!.id, 2)).toBe(true);
+    expect(createProject(eco, transfer, marcus!.id, 0)).toBe(true);
+    expect(programmeStatus(eco, project(transfer))).toBe('waiting');
+    expect(eco.running.map((p) => p.lead)).toEqual([aiko!.id]);
+    expect(createProject(eco, arrays, leila!.id, 0)).toBe(false);
+    expect(createProject(eco, loop, aiko!.id, 0)).toBe(true);
+    expect(programmeStatus(eco, project(loop))).toBe('queued');
+    expect(createProject(eco, arrays, leila!.id, 0)).toBe(true);
+    expect(programmeStatus(eco, project(arrays))).toBe('waiting');
+    const logs: string[] = [];
+    advanceEconomy(eco, 2 * 365 * DAY, (t) => logs.push(t));
+    expect(eco.done).toContain(recovery);
+    expect(logs).toContain(`${marcus!.name} moves on to ${project(transfer).name}.`);
+    expect(logs).toContain(`${aiko!.name} moves on to ${project(loop).name}.`);
+    expect(eco.done.includes(transfer) || eco.running.some((p) => p.number === transfer)).toBe(true);
+  });
+
+  it('removes a waiting project from the queue', () => {
+    const eco = startEconomy();
+    const [aiko, marcus] = eco.scientists;
+    const transfer = num('propellant_transfer_in_orbit');
+    createProject(eco, num('booster_recovery'), aiko!.id, 2);
+    createProject(eco, transfer, marcus!.id, 0);
+    expect(cancelQueued(eco, transfer)).toBe(true);
+    expect(programmeStatus(eco, project(transfer))).toBe('locked');
+    expect(eco.queued).toEqual([]);
+  });
+
   it('gives the lead experience by fixed chances of a half, the same in every game', () => {
     const run = () => {
       const s = { ...startEconomy().scientists[0]!, skill: 1 };

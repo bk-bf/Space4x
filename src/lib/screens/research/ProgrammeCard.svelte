@@ -3,6 +3,7 @@
   import { game } from '#lib/game/index.ts';
   import {
     bonusOf,
+    canQueue,
     cancelQueued,
     createProject,
     economy,
@@ -67,6 +68,13 @@
   const perMonth = $derived(researchRate(flows, p.number) * MONTH_HOURS);
   const left = $derived(running ? researchDaysLeft(flows, running) : Infinity);
   const icon = $derived(projectIcon(p.number));
+  const queueable = $derived(canQueue(economy, p));
+  const missing = $derived(
+    check.requires
+      .filter((r) => !r.ok)
+      .map((r) => project(r.number).name)
+      .join(' and ')
+  );
 
   const order = $derived(
     [...economy.scientists].sort(
@@ -153,12 +161,20 @@
         onstep={stepLabs}
       />
     {:else if queued && queuedFor}
+      {#if status === 'waiting'}
+        <div class="row"><span id="programmeWaiting">Waiting on {missing}</span></div>
+      {/if}
       <div class="row" id="programmeQueued">
         <Portrait spec={scientistFace(queuedFor, game.time)} view="head" scale={1} />
         <span>Queued for {queuedFor.name}</span>
         <button id="programmeCancel" onclick={cancel}><Icon name="cross" class="xs" /></button>
       </div>
-    {:else if status === 'ready'}
+    {:else if status === 'ready' || queueable}
+      {#if queueable}
+        <div class="row">
+          <span class="hot" id="programmeWhy" data-missing={check.blockers}>Needs {missing}</span>
+        </div>
+      {/if}
       <CardSection label="Scientist">
         <div class="grid" id="programmeScientists">
           {#each order as s (s.id)}
@@ -166,12 +182,12 @@
           {/each}
         </div>
       </CardSection>
-      {#if !pickBusy}
+      {#if !pickBusy && !queueable}
         <LabsControl id="programmePlanLabs" labs={planned} {cap} {free} onstep={stepPlan} />
       {/if}
       <div class="row">
         <button id="programmeStart" disabled={!pick} onclick={create}>
-          <Icon name={pickBusy ? 'list' : 'play'} class="sm" />{pickBusy && pick
+          <Icon name={pickBusy || queueable ? 'list' : 'play'} class="sm" />{(pickBusy || queueable) && pick
             ? `Queue for ${pick.name.split(' ')[0]}`
             : 'Create project'}
         </button>
@@ -180,12 +196,7 @@
       <div class="row"><Pill icon="check" text="Researched" tone="cool" /></div>
     {:else}
       <div class="row">
-        <span class="hot" id="programmeWhy" data-missing={check.blockers}
-          >Needs {check.requires
-            .filter((r) => !r.ok)
-            .map((r) => project(r.number).name)
-            .join(' and ')}</span
-        >
+        <span class="hot" id="programmeWhy" data-missing={check.blockers}>Needs {missing}</span>
       </div>
     {/if}
   </div>
