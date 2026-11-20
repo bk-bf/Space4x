@@ -108,7 +108,8 @@ describe('units', () => {
   it('shows an amount by the unit of the material', () => {
     expect(amount(5000)).toBe('5 t');
     expect(amount(5000, 'kg')).toBe('5 t');
-    expect(amount(1234.6, 'cu')).toBe('1,235 cu');
+    expect(amount(1234.6, 'eflops')).toBe('1,235 EFLOP/s');
+    expect(amount(90, 'eflops')).toBe('90 EFLOP/s');
     expect(amount(2.345, 'model')).toBe('2.35');
   });
 });
@@ -137,8 +138,8 @@ describe('gain and loss', () => {
     expect(signedAmount(5000)).toBe('+5 t');
     expect(signedAmount(-5000)).toBe('-5 t');
     expect(signedAmount(0.2)).toBe('0');
-    expect(signedAmount(-12, 'cu')).toBe('-12 cu');
-    expect(signedAmount(0, 'cu')).toBe('0');
+    expect(signedAmount(-12, 'eflops')).toBe('-12 EFLOP/s');
+    expect(signedAmount(0, 'eflops')).toBe('0');
     expect(signedPower(-3000)).toBe('-3 MW');
     expect(signedPct(0.12)).toBe('+12%');
     expect(signedPct(-0.04)).toBe('-4%');
@@ -165,7 +166,7 @@ describe('rates', () => {
   it('shows an hourly rate over a day or a year', () => {
     expect(rate(1000, 'day')).toBe('24 t/d');
     expect(rate(1000, 'year')).toBe('8,760 t/yr');
-    expect(rate(1000, 'day', 'cu')).toBe('24,000 cu/d');
+    expect(rate(144, 'year', 'eflops')).toBe('144 EFLOP/s');
     expect(rate(0, 'day')).toBe('0');
   });
 

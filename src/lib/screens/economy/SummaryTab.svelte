@@ -53,11 +53,10 @@
   const spareFood = $derived(food.demand > 0 ? food.made / food.demand - 1 : 0);
   const spareKw = $derived(flows.power.supply - flows.power.demand);
   const kcalEach = $derived(site.population > 0 ? (food.made * 24) / site.population : 0);
-  const computeText = $derived(
-    flows.compute.supply > 0 || flows.compute.demand > 0
-      ? fmt.rate(flows.compute.supply, ui.period, 'cu')
-      : 'None'
+  const computeShare = $derived(
+    flows.compute.demand > 0 ? Math.min(1, flows.compute.supply / flows.compute.demand) : 1
   );
+  const spareCompute = $derived(Math.max(0, flows.compute.supply - flows.compute.demand));
 
   const foods = $derived(foodIds.filter((m) => (site.stock[m] ?? 0) > 0 || (flows.produced[m] ?? 0) > 0));
   const foodParts = $derived(
@@ -167,13 +166,13 @@
       />
       <Stat
         icon="chip"
-        value={computeText}
-        label="wanted {fmt.rate(flows.compute.demand, ui.period, 'cu')}"
-        warn={flows.compute.demand > flows.compute.supply + 1e-9}
+        value={fmt.eflops(flows.compute.supply)}
+        label="{fmt.eflops(spareCompute)} spare"
+        warn={computeShare < 1}
         tip={tipText(
           'Compute',
-          `Made ${fmt.rate(flows.compute.supply, ui.period, 'cu')}`,
-          `Wanted ${fmt.rate(flows.compute.demand, ui.period, 'cu')}`
+          `Made ${fmt.eflops(flows.compute.supply)}`,
+          `Wanted ${fmt.eflops(flows.compute.demand)}`
         )}
       />
       <Stat

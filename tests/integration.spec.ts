@@ -95,7 +95,7 @@ test.describe('the top bar', () => {
       'People',
       'Food: calories made against calories needed',
       'Power: generation less demand',
-      'Compute produced an hour',
+      'Compute',
       'Scarcest material'
     ]) {
       await expect(chip(page, title).locator('svg, canvas, .ic').first()).toBeVisible();

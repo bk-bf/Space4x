@@ -57,9 +57,9 @@
     { text: m.tier, tip: TIER_NAMES[m.tier] },
     {
       icon: 'chip',
-      text: compute ? `${fmt.group(compute)} cu an hour` : 'no compute',
+      text: compute ? fmt.eflops(compute) : 'no compute',
       tone: compute && supply < compute ? 'hot' : undefined,
-      tip: tipText('Compute', compute ? `Made now ${fmt.group(supply)} cu an hour` : '')
+      tip: tipText('Compute', compute ? `Made now ${fmt.eflops(supply)}` : '')
     }
   ]);
 

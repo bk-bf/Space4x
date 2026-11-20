@@ -63,8 +63,8 @@
         <Stat
           compact
           icon="chip"
-          value="{fmt.group(made)} cu"
-          label="wants {fmt.group(wanted)} cu an hour"
+          value={fmt.eflops(made)}
+          label="wants {fmt.eflops(wanted)}"
           warn={wanted > made}
           tip="Compute"
         />
