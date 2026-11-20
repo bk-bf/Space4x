@@ -182,7 +182,7 @@ test.describe('ship designer', () => {
   });
 
   test('a crewed vehicle reports crew, life support, power and heat, and has no errors', async ({ page }) => {
-    await open(page, 'screen=classes&reached=6&new=crewed');
+    await open(page, 'screen=classes&reached=20&new=crewed');
     await expect(value(page, 'crew')).toHaveText('2');
     await expect(label(page, 'crew')).toHaveText('berths 4');
     await expect(value(page, 'endurance')).toHaveText('100 days');

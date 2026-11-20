@@ -18,7 +18,8 @@ export const research: {
 } = $state({ selected: 1, tab: 'tree', scientist: null, plans: {} });
 
 export function planOf(number: number): Plan {
-  return (research.plans[number] ??= { lead: null, labs: 0, touched: false });
+  if (!research.plans[number]) research.plans[number] = { lead: null, labs: 0, touched: false };
+  return research.plans[number];
 }
 
 export function applyResearchParams(params: URLSearchParams): void {

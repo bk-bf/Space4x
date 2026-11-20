@@ -17,7 +17,7 @@
   const sub = $derived(
     subject !== undefined
       ? `${inField ? '★ ' : ''}${pct(bonusOf(s, subject))} · ${s.admin} labs`
-      : `${subjectName(s.subject)} ${s.skill}`
+      : `${subjectName(s.subject).split(' ')[0]} ${s.skill}`
   );
   const tip = $derived(
     tipText(

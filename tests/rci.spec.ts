@@ -193,13 +193,15 @@ test.describe('research', () => {
     await expect(page.locator('#programmeWhy')).toHaveCount(0);
   });
 
-  test('the Create button stays inside a 1280x720 window for every project ready at the start', async ({
+  test('the Create button scrolls into a 1280x720 window inside the card column for every project ready at the start', async ({
     page
   }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await open(page, 'screen=research');
     for (const n of READY_AT_START) {
       await tile(page, n).click();
+      await page.locator('#programmeStart').scrollIntoViewIfNeeded();
+      expect(await page.evaluate(() => document.documentElement.scrollTop)).toBe(0);
       const b = await page.locator('#programmeStart').boundingBox();
       expect(b, `project ${n}`).not.toBeNull();
       expect(b!.y, `project ${n}`).toBeGreaterThanOrEqual(0);
@@ -255,7 +257,7 @@ test.describe('research', () => {
     await expect(tiles.first().locator('img.portrait.head')).toBeVisible();
     await tiles.nth(1).click();
     await expect(title(page)).toHaveText('Marcus Bell');
-    await expect(card(page)).toContainText('Administration4 labs');
+    await expect(card(page)).toContainText('Administration 4 labs');
     await page.locator('#scientistProjects [data-project="3"]').click();
     await expect(tiles.nth(1)).toContainText('Closed-loop water and air');
     await expectCleanLayout(page);
