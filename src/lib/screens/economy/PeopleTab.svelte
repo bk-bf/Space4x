@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { flowsOf, type Site } from '#lib/game/economy/index.ts';
+  import { berthsOf, flowsOf, type Site } from '#lib/game/economy/index.ts';
+  import { biospherePeople, suitability } from '#lib/game/suitability.ts';
   import { BUILDING_KIND_DESCRIPTIONS, BUILDING_KIND_NAMES } from '#lib/gfx/icons/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
   import { Bar, Card, CardSection, Icon, Tile, TileGrid, dim, fmt, tipText } from '#lib/ui/index.ts';
@@ -30,9 +31,10 @@
   const totalJobs = $derived(jobs.reduce((a, j) => a + j.workers, 0));
   const spare = $derived(Math.max(0, flows.workers.available - flows.workers.needed));
   const growth = $derived(flows.growthPerHour * 8766);
-  const housed = $derived(
-    site.berths === null ? undefined : Math.min(1, site.berths / Math.max(1, site.population))
-  );
+  const berths = $derived(berthsOf(site));
+  const housed = $derived(berths === null ? undefined : Math.min(1, berths / Math.max(1, site.population)));
+  const fit = $derived(site.place === 'surface' ? suitability(site.worldBody) : undefined);
+  const perBiosphere = $derived(site.berths === null ? 0 : biospherePeople(site.worldBody));
   const fed = $derived(Math.min(1, flows.food.cover));
   const jobsFilled = $derived(Math.min(1, flows.workers.share));
 </script>
@@ -115,13 +117,17 @@
             value: `${growth >= 0 ? '+' : ''}${(growth * 100).toFixed(2)}% a year`
           },
           { icon: 'gear', label: 'Workers not needed', value: people(spare) },
-          ...(site.berths === null
+          ...(fit ? [{ icon: 'leaf' as const, label: 'Suitability', value: fit.s.toFixed(2) }] : []),
+          ...(fit && perBiosphere > 0
+            ? [{ icon: 'dome' as const, label: 'A biosphere holds', value: people(perBiosphere) }]
+            : []),
+          ...(berths === null
             ? []
             : [
                 {
                   icon: 'dome' as const,
                   label: 'Berths',
-                  value: `${fmt.group(site.population)} of ${fmt.group(site.berths)}`
+                  value: `${fmt.group(site.population)} of ${fmt.group(berths)}`
                 }
               ])
         ]}

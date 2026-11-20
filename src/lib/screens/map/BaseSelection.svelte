@@ -1,6 +1,6 @@
 <script lang="ts">
   import { building, region } from '#lib/game/data/index.ts';
-  import { flowsOf, type Site } from '#lib/game/economy/index.ts';
+  import { berthsOf, flowsOf, type Site } from '#lib/game/economy/index.ts';
   import { game } from '#lib/game/index.ts';
   import { ships } from '#lib/game/ships/index.ts';
   import { formatPower } from '#lib/screens/economy/format.ts';
@@ -21,7 +21,7 @@
     ['Kind', siteKind(site)],
     ['Around', game.placeName(site.worldBody) ?? site.worldBody],
     ...(site.region ? [['Region', region(site.region)?.name ?? ''] as [string, string]] : []),
-    ['People', `${Math.round(site.population)} of ${site.berths ?? 0} berths`],
+    ['People', `${Math.round(site.population)} of ${berthsOf(site) ?? 0} berths`],
     ['Fed', `${Math.round(flows.food.cover * 100)}%`],
     ['Power', `${formatPower(flows.power.used)} of ${formatPower(flows.power.supply)}`],
     ['Buildings', made || 'None'],
