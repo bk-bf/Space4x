@@ -5,7 +5,7 @@ import { economy, minedOf, remainingMass } from '#lib/game/economy/index.ts';
 import { ships } from '#lib/game/ships/index.ts';
 import { isSurveyable, isSurveyed } from '#lib/game/survey.svelte.ts';
 import type { Body } from '#lib/game/types.ts';
-import { formatMass } from '#lib/screens/economy/format.ts';
+import { formatBodyMass } from '#lib/screens/economy/format.ts';
 
 export function surveyText(b: Body): string {
   const type = bodyTypeOf(b.id);
@@ -30,7 +30,7 @@ export function asteroidRows(b: Body): [string, string][] {
       ],
       ['Group', a.dwarf ? 'Dwarf planet' : groupOf(a)],
       ['Orbit', `${a.a < 100 ? a.a.toFixed(2) : Math.round(a.a)} AU, ${formatYears(years)}`],
-      ['Mass', `${formatMass(a.mass)}${a.massEstimated ? ' est.' : ''}`]
+      ['Mass', `${formatBodyMass(a.mass)}${a.massEstimated ? ' est.' : ''}`]
     ];
     if (minedOf(economy, a.id) > 0)
       rows.push(['Left', `${((remainingMass(economy, a.id) / a.mass) * 100).toFixed(2)}%`]);
@@ -41,7 +41,7 @@ export function asteroidRows(b: Body): [string, string][] {
     return [
       ['Class', `${m.irregular ? 'Irregular' : 'Regular'}, ${TYPE_NAMES[m.type].toLowerCase()}`],
       ['Orbit', `${formatDistance(m.aKm * KM)}, ${formatYears(m.period / YEAR_DAYS)}`],
-      ['Mass', `${formatMass(m.mass)}${m.massEstimated ? ' est.' : ''}`]
+      ['Mass', `${formatBodyMass(m.mass)}${m.massEstimated ? ' est.' : ''}`]
     ];
   const c = cometRecord(b.id);
   if (c) {
@@ -51,7 +51,7 @@ export function asteroidRows(b: Body): [string, string][] {
         'Orbit',
         `${c.a < 100 ? c.a.toFixed(2) : Math.round(c.a)} AU, ${formatYears(periodDays(c) / YEAR_DAYS)}`
       ],
-      ['Mass', `${formatMass(c.mass)} est.`]
+      ['Mass', `${formatBodyMass(c.mass)} est.`]
     ];
     if (minedOf(economy, c.id) > 0)
       rows.push(['Left', `${((remainingMass(economy, c.id) / c.mass) * 100).toFixed(2)}%`]);

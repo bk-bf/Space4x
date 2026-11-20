@@ -11,7 +11,8 @@ import {
   type Vessel,
   type Whereabouts
 } from '#lib/game/ships/index.ts';
-import { formatAmount, formatMass } from './format.ts';
+import { formatAmount } from './format.ts';
+import { mass } from '#lib/ui/format.ts';
 
 export const bodyName = (id: string): string => game.placeName(id) ?? id;
 
@@ -29,7 +30,7 @@ export function vesselWhere(v: Vessel): string {
 
 export function propellantText(v: Vessel): string {
   const parts = PROPELLANT_KINDS.filter((k) => (v.propellant[k] ?? 0) > 0).map(
-    (k) => `${formatMass(v.propellant[k] ?? 0)} ${PROPELLANTS[k].name.toLowerCase()}`
+    (k) => `${mass(v.propellant[k] ?? 0)} ${PROPELLANTS[k].name.toLowerCase()}`
   );
   return parts.length ? parts.join(', ') : 'None';
 }
@@ -43,7 +44,7 @@ export function cargoText(v: Vessel): string {
 
 export function holdText(v: Vessel): string {
   const s = statsOf(v);
-  return `${formatMass(cargoMass(v))} of ${formatMass(s?.payloadCapacity ?? 0)}`;
+  return `${mass(cargoMass(v))} of ${mass(s?.payloadCapacity ?? 0)}`;
 }
 
 export function tankText(v: Vessel): string {

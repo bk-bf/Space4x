@@ -1,4 +1,5 @@
 import { material } from '#lib/game/data/index.ts';
+import { mass } from '#lib/ui/format.ts';
 
 const group = (n: number): string => Math.round(n).toLocaleString('en-US');
 
@@ -31,7 +32,7 @@ export function formatPeople(n: number): string {
 
 export const formatCount = (n: number): string => (Math.abs(n) >= 1e6 ? formatPeople(n) : group(n));
 
-export function formatMass(kg: number): string {
+export function formatBodyMass(kg: number): string {
   if (Math.abs(kg) < 0.5) return '0';
   return scaled(kg, [
     [1e12, 'Gt'],
@@ -46,7 +47,7 @@ export function formatAmount(id: string, amount: number): string {
   const unit = material(id).unit;
   if (unit === 'cu') return `${formatCount(amount)} cu`;
   if (unit === 'model') return `${amount.toFixed(amount < 10 ? 1 : 0)}`;
-  return formatMass(amount);
+  return mass(amount);
 }
 
 export function formatSignedAmount(id: string, amount: number): string {

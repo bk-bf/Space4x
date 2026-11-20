@@ -47,6 +47,10 @@ describe('numbers', () => {
 describe('units', () => {
   it('turns kilograms into tonnes', () => {
     expect(mass(1_500_000)).toBe('1,500 t');
+    expect(mass(2.5e12)).toBe('2,500,000,000 t');
+    expect(mass(12_500)).toBe('13 t');
+    expect(mass(-12_600)).toBe('-13 t');
+    expect(mass(9_500)).toBe('9.5 t');
     expect(mass(1000)).toBe('1 t');
     expect(mass(2500)).toBe('2.5 t');
     expect(mass(5)).toBe('0.005 t');

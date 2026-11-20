@@ -23,7 +23,7 @@ export const count = (n: number): string => group(n);
 
 export const people = (n: number): string => `${group(n / 1e6)} M`;
 
-export const mass = (kg: number): string => `${num(kg / 1000)} t`;
+export const mass = (kg: number): string => `${Math.abs(kg) >= 10_000 ? group(kg / 1000) : num(kg / 1000)} t`;
 
 export const power = (kw: number): string => `${num(kw / 1000)} MW`;
 

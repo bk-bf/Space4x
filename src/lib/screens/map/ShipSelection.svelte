@@ -1,7 +1,6 @@
 <script lang="ts">
   import { className, game } from '#lib/game/index.ts';
   import { orderLabel, statsOf, type Vessel } from '#lib/game/ships/index.ts';
-  import { formatMass } from '#lib/screens/economy/format.ts';
   import { ui } from '#lib/screens/economy/state.svelte.ts';
   import {
     cargoText,
@@ -11,7 +10,7 @@
     vesselWhere,
     whereabouts
   } from '#lib/screens/economy/shipsView.ts';
-  import { DefList, shell, Table, type Cell } from '#lib/ui/index.ts';
+  import { DefList, fmt, shell, Table, type Cell } from '#lib/ui/index.ts';
 
   let { vessel }: { vessel: Vessel } = $props();
 
@@ -22,7 +21,7 @@
     ['Propellant', propellantText(vessel)],
     ['Cargo', cargoText(vessel)],
     ['Crew', `${vessel.crew} of ${stats?.berths ?? 0} berths`],
-    ['Dry mass', formatMass(stats?.dryMass ?? 0)]
+    ['Dry mass', fmt.mass(stats?.dryMass ?? 0)]
   ]);
   const trip = $derived(vessel.trip);
   const tripFacts = $derived<[string, string][]>(
@@ -34,7 +33,7 @@
           ['Arrives', dateText(trip.arrival)],
           ['Duration', dayText(trip.arrival - trip.departure)],
           ['Delta-v', `${(trip.dv / 1000).toFixed(2)} km/s`],
-          ['Burns', formatMass(trip.propellant)]
+          ['Burns', fmt.mass(trip.propellant)]
         ]
       : []
   );

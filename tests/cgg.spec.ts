@@ -49,7 +49,7 @@ test.describe('ship designer', () => {
     await expect(issue(page, 'no-engine')).toHaveCount(0);
     await expect(page.locator('#issues .error')).toHaveCount(0);
     await expect(label(page, 'mass')).toHaveText('dry 2.1 t');
-    await expect(value(page, 'propellant')).toHaveText('16.3 t');
+    await expect(value(page, 'propellant')).toHaveText('16 t');
     await expect(label(page, 'propellant')).toHaveText('methane and oxygen');
 
     await setCount(page, 'propellant_tank', 40);
@@ -154,9 +154,9 @@ test.describe('ship designer', () => {
   test('the numbers follow the design: mass, delta-v and thrust to weight', async ({ page }) => {
     await open(page, 'screen=classes&new=stage');
     await expect(label(page, 'mass')).toHaveText('dry 5 t');
-    await expect(value(page, 'mass')).toHaveText('74.3 t');
+    await expect(value(page, 'mass')).toHaveText('74 t');
     await expect(value(page, 'payload')).toHaveText('4 t');
-    await expect(value(page, 'propellant')).toHaveText('65.3 t');
+    await expect(value(page, 'propellant')).toHaveText('65 t');
     await expect(value(page, 'delta-v')).toHaveText('7.51 km/s');
     await expect(value(page, 'dv-empty')).toHaveText('9.41 km/s');
     await expect(value(page, 'twr')).toHaveText('3.15');
@@ -174,12 +174,12 @@ test.describe('ship designer', () => {
     await expect(page.locator('#payload')).toHaveValue('4');
     await page.locator('#payload').fill('0');
     await page.locator('#payload').press('Tab');
-    await expect(value(page, 'mass')).toHaveText('70.3 t');
+    await expect(value(page, 'mass')).toHaveText('70 t');
     await expect(value(page, 'delta-v')).toHaveText('9.41 km/s');
     await page.locator('#payload').fill('99');
     await page.locator('#payload').press('Tab');
     await expect(page.locator('#payload')).toHaveValue('4');
-    await expect(value(page, 'mass')).toHaveText('74.3 t');
+    await expect(value(page, 'mass')).toHaveText('74 t');
   });
 
   test('a crewed vehicle reports crew, life support, power and heat, and has no errors', async ({ page }) => {
@@ -230,7 +230,7 @@ test.describe('ship designer', () => {
     await expect(page.locator('#classList [data-class]')).toHaveText(['Small stage']);
     await expect(value(page, 'propellant')).toHaveText('10 t');
     await page.locator('[data-fill="methalox"]').click();
-    await expect(value(page, 'propellant')).toHaveText('65.3 t');
+    await expect(value(page, 'propellant')).toHaveText('65 t');
   });
 
   test('the other screens that read classes work with none designed', async ({ page }) => {
