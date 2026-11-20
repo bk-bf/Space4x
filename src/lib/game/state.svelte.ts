@@ -24,7 +24,7 @@ export interface EventDetails {
   subject?: Selection;
   kind?: EventKind;
   site?: string;
-  milestone?: number;
+  project?: number;
   material?: string;
 }
 
@@ -103,7 +103,7 @@ export class Game {
     if (details.subject) e.subject = details.subject;
     if (details.kind) e.kind = details.kind;
     if (details.site) e.site = details.site;
-    if (details.milestone !== undefined) e.milestone = details.milestone;
+    if (details.project !== undefined) e.project = details.project;
     if (details.material) e.material = details.material;
     const i = this.events.findIndex((x) => x.at <= at);
     this.events.splice(i < 0 ? this.events.length : i, 0, e);

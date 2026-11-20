@@ -6,7 +6,6 @@ import {
   siteById,
   type Site
 } from '#lib/game/economy/index.ts';
-import { milestones } from '#lib/game/data/index.ts';
 import { game } from '#lib/game/index.ts';
 import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
 import { resetShips, seedBelt, seedJump, seedTravel, ships } from '#lib/game/ships/index.ts';
@@ -62,7 +61,6 @@ interface EconomyUi {
   showEmpty: boolean;
   mineral: string;
   deposit: string;
-  milestone: number;
   vessel: string | null;
   yardOrder: number | null;
 }
@@ -86,7 +84,6 @@ const initial = (): EconomyUi => ({
   showEmpty: false,
   mineral: '',
   deposit: '',
-  milestone: 1,
   vessel: null,
   yardOrder: null
 });
@@ -121,9 +118,6 @@ export function applyEconomyParams(params: URLSearchParams): void {
   if (colony) showColony(colony);
   const period = params.get('per');
   if (period === 'day' || period === 'year') ui.period = period;
-  const milestone = Number(params.get('milestone'));
-  if (Number.isInteger(milestone) && milestone >= 1 && milestone <= milestones.length)
-    ui.milestone = milestone;
   const vessel = params.get('vessel');
   if (vessel) ui.vessel = vessel;
   if (params.has('launch'))

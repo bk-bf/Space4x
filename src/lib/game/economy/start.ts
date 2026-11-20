@@ -3,6 +3,7 @@ import type { Site as Where } from '#lib/game/data/index.ts';
 import { siteFlows } from './flows.ts';
 import { makeOffers, startMarket } from './market.ts';
 import { isStockless } from './processes.ts';
+import { startingScientists } from './programmes.ts';
 import type { Economy, Site } from './types.ts';
 
 export interface StartGroup {
@@ -67,6 +68,8 @@ export function startEconomy(): Economy {
     sites: [],
     done: [],
     running: [],
+    queued: [],
+    scientists: startingScientists(),
     elapsed: 0,
     nextId: 1,
     delivered: [],

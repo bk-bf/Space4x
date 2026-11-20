@@ -21,7 +21,7 @@ import type { Game } from './state.svelte.ts';
 import { resetSurvey, survey } from './survey.svelte.ts';
 import type { GameEvent } from './types.ts';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 type SavedTrip = Omit<TripOption, 'system'> & { system: number };
 
@@ -124,6 +124,8 @@ export function checkSave(raw: unknown, game: Game): string | null {
     return 'its economy is missing';
   if (!isObject(e.market) || !isNumber(e.market.treasury) || !Array.isArray(e.market.contracts))
     return 'its treasury is missing';
+  if (!Array.isArray(e.running) || !Array.isArray(e.queued) || !Array.isArray(e.scientists))
+    return 'its research is missing';
   const s = raw.ships;
   if (!isObject(s) || !Array.isArray(s.vessels) || !Array.isArray(s.launches)) return 'its ships are missing';
   const c = raw.classes;

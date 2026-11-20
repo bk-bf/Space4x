@@ -32,7 +32,11 @@ export function installTestApi(params: URLSearchParams): void {
       return player.report;
     },
     crewedStation: () => player.crewedStation(),
-    startProgramme: (number) => startProgramme(economy, homeSite(), number),
+    startProgramme: (number) => {
+      const started = startProgramme(economy, number);
+      touch();
+      return started;
+    },
     stock: (material, kg) => {
       homeSite().stock[material] = kg;
       touch();

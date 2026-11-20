@@ -18,10 +18,12 @@ import {
   material,
   materials,
   materialSites,
-  milestone,
-  milestones,
+  boostOf,
+  dependentsOf,
   missingPrerequisites,
-  opensTags,
+  project,
+  projectById,
+  projects,
   reach,
   recipes,
   recipesProducing,
@@ -29,6 +31,7 @@ import {
   subjects,
   tagOpen,
   tagsOf,
+  unlockedAt,
   type Amounts,
   type Body,
   type Site
@@ -65,7 +68,8 @@ const HOWS = [
   'solar-wind',
   'liquid'
 ];
-const LAST = milestones.length;
+const known = new Set([0, ...projects.map((p) => p.number)]);
+const num = (id: string) => projectById(id).number;
 
 const materialIds = new Set(materials.map((m) => m.id));
 const buildingIds = new Set(buildings.map((b) => b.id));
@@ -112,7 +116,7 @@ describe('ids', () => {
     expect(duplicates(recipes.map((r) => r.id))).toEqual([]);
     expect(duplicates(buildings.map((b) => b.id))).toEqual([]);
     expect(duplicates(shipComponents.map((c) => c.id))).toEqual([]);
-    expect(duplicates(milestones.map((m) => m.id))).toEqual([]);
+    expect(duplicates(projects.map((p) => p.id))).toEqual([]);
   });
 
   it('never collide between materials, buildings, components and recipes', () => {
@@ -121,7 +125,7 @@ describe('ids', () => {
   });
 
   it('are snake_case everywhere', () => {
-    const all = [...materials, ...recipes, ...buildings, ...shipComponents, ...milestones].map((x) => x.id);
+    const all = [...materials, ...recipes, ...buildings, ...shipComponents, ...projects].map((x) => x.id);
     expect(all.filter((id) => !SNAKE.test(id))).toEqual([]);
   });
 });
@@ -284,12 +288,12 @@ describe('materials', () => {
 });
 
 describe('recipes', () => {
-  it('run in a known building, from a known milestone, on known materials', () => {
+  it('run in a known building, from a known project that opens no sooner than the building, on known materials', () => {
     for (const r of recipes) {
       const host = buildings.find((b) => b.id === r.building);
       expect(host, `${r.id} building`).toBeDefined();
-      expect(r.milestone, r.id).toBeGreaterThanOrEqual(host?.milestone ?? 0);
-      expect(r.milestone, r.id).toBeLessThanOrEqual(LAST);
+      expect(known.has(r.research), r.id).toBe(true);
+      expect(tagsOf(r.research).has(host?.research ?? -1), `${r.id} after its building`).toBe(true);
       expect(unknown(Object.keys(r.inputs), materialIds), `${r.id} inputs`).toEqual([]);
       expect(unknown(Object.keys(r.outputs), materialIds), `${r.id} outputs`).toEqual([]);
       for (const amount of [...Object.values(r.inputs), ...Object.values(r.outputs)])
@@ -369,20 +373,20 @@ describe('buildings and components', () => {
     }
   });
 
-  it('cost known materials and parts, and unlock at a known milestone', () => {
+  it('cost known materials and parts, and unlock with a known project', () => {
     for (const b of buildings) {
       expect(unknown(Object.keys(b.cost), materialIds), `${b.id} cost`).toEqual([]);
       expect(unknown(b.parts ?? [], componentIds), `${b.id} parts`).toEqual([]);
-      expect(b.milestone, b.id).toBeGreaterThanOrEqual(1);
-      expect(b.milestone, b.id).toBeLessThanOrEqual(LAST);
+      expect(known.has(b.research), b.id).toBe(true);
       for (const site of b.where) expect(SITES, `${b.id} where`).toContain(site);
       expect(b.where.length, b.id).toBeGreaterThan(0);
-      if (b.start) expect(b.milestone, `${b.id} exists at the start`).toBe(1);
+      if (b.start) expect(b.research, `${b.id} exists at the start`).toBe(0);
     }
   });
 
-  it('cost build points with a source and a basis, except the buildings open on #72', () => {
+  it('cost build points with a source and a basis, except the buildings open on #72 and #88', () => {
     const open = new Set([
+      'university',
       'mine_earth',
       'regolith_excavator',
       'asteroid_miner',
@@ -439,81 +443,154 @@ describe('buildings and components', () => {
     }
   });
 
-  it('cost known materials, are assembled in known buildings and unlock at a known milestone', () => {
+  it('cost known materials, are assembled in known buildings and unlock with a known project', () => {
     for (const c of shipComponents) {
       expect(unknown(Object.keys(c.cost), materialIds), `${c.id} cost`).toEqual([]);
       expect(unknown(c.builtAt, buildingIds), `${c.id} builtAt`).toEqual([]);
-      expect(c.milestone, c.id).toBeGreaterThanOrEqual(1);
-      expect(c.milestone, c.id).toBeLessThanOrEqual(LAST);
+      expect(known.has(c.research), c.id).toBe(true);
     }
   });
 });
 
-describe('milestones', () => {
-  it('number 1 to 29 in order', () => {
-    expect(milestones.map((m) => m.number)).toEqual(Array.from({ length: 29 }, (_, i) => i + 1));
+const LADDER = [30, 60, 120, 240, 360, 600, 1200];
+const EFFECTS = [
+  'booster_thrust',
+  'booster_load',
+  'shipyard_points',
+  'build_speed',
+  'extraction',
+  'research',
+  'chip_output',
+  'data_centre_compute',
+  'solar_array_output',
+  'battery_storage',
+  'electrolysis_power'
+];
+const opens = (n: number) => {
+  const u = unlockedAt(n);
+  return [...u.buildings, ...u.recipes, ...u.components];
+};
+
+describe('research projects', () => {
+  const unlocks = projects.filter((p) => !p.line);
+  const levels = projects.filter((p) => p.line);
+
+  it('number from 1 in order, each requiring only lower numbers that exist', () => {
+    expect(projects.map((p) => p.number)).toEqual(projects.map((_, i) => i + 1));
+    for (const p of projects) {
+      for (const r of p.requires) expect(r, p.id).toBeLessThan(p.number);
+      expect(p.rp, p.id).toBeGreaterThan(0);
+      if (p.tier !== undefined) expect(TIERS, p.id).toContain(p.tier);
+    }
   });
 
-  it('require only earlier milestones and need things that exist', () => {
-    for (const m of milestones) {
-      expect(TIERS, m.id).toContain(m.tier);
-      expect(m.sources.length, m.id).toBeGreaterThan(0);
-      for (const r of m.requires) expect(r, m.id).toBeLessThan(m.number);
-      expect(unknown(m.needs.materials, materialIds), `${m.id} materials`).toEqual([]);
-      expect(unknown(m.needs.buildings, buildingIds), `${m.id} buildings`).toEqual([]);
-      expect(unknown(m.needs.components, componentIds), `${m.id} components`).toEqual([]);
+  it('hold the 39 projects of the tree and the 30 levels of the ten boost lines', () => {
+    expect(unlocks).toHaveLength(39);
+    expect(levels).toHaveLength(30);
+    expect(new Set(levels.map((p) => p.line)).size).toBe(10);
+  });
+
+  it("cost a rung of Aurora's engine ladder by their place in their lane", () => {
+    for (const p of unlocks) expect(LADDER, p.id).toContain(p.rp);
+    expect(project(num('jump_point_stabilisation')).rp).toBe(240);
+    expect(project(num('solar_power_stations_in_orbit')).rp).toBe(1200);
+  });
+
+  it('chain each boost line level after level, with known effects and a source', () => {
+    for (const p of levels) {
+      const before = levels.find((q) => q.line === p.line && q.level === (p.level ?? 0) - 1);
+      if (before) expect(p.requires, p.id).toEqual([before.number]);
+      expect(Object.keys(p.effects ?? {}).length, p.id).toBeGreaterThan(0);
+      for (const k of Object.keys(p.effects ?? {})) expect(EFFECTS, p.id).toContain(k);
+      expect(p.source, p.id).toMatch(/^https?:\/\//);
+      expect(p.basis?.length, p.id).toBeGreaterThan(20);
+      expect(typeof p.estimated, p.id).toBe('boolean');
+      expect(opens(p.number), p.id).toEqual([]);
     }
-    expect(milestone(1).requires).toEqual([]);
+  });
+
+  it('open what they list when they finish, and tag 0 from the start', () => {
+    expect(tagOpen([], 0)).toBe(true);
+    expect(tagOpen([], 1)).toBe(false);
+    expect(tagOpen([1], 1)).toBe(true);
+    expect(tagOpen([1], 2)).toBe(false);
+    expect(missingPrerequisites([], num('propellant_transfer_in_orbit'))).toEqual([num('booster_recovery')]);
+    for (const p of projects) for (const r of p.requires) expect(dependentsOf(r), p.id).toContain(p.number);
+  });
+
+  it('give each unlock project something to open, but booster recovery, helium-3 extraction and the biosphere', () => {
+    expect(unlocks.filter((p) => opens(p.number).length === 0).map((p) => p.id)).toEqual([
+      'booster_recovery',
+      'helium_3_extraction',
+      'biosphere'
+    ]);
+  });
+
+  it('place the biosphere of #91 after the greenhouse and regolith excavation, at 600 RP and tier E', () => {
+    const b = projectById('biosphere');
+    expect(b.subject).toBe('habitats');
+    expect(b.rp).toBe(600);
+    expect(b.tier).toBe('E');
+    expect(b.requires).toEqual(
+      [num('regolith_excavation'), num('greenhouse_at_low_gravity')].sort((x, y) => x - y)
+    );
   });
 
   it.each([true, false])(
-    'makes what each milestone needs from its own ancestors alone (thin path: %s)',
+    'make everything a project opens from the start and its own prerequisites alone (thin path: %s)',
     (thinOnly) => {
-      for (const m of milestones) {
-        const got = reach({ tags: tagsOf(m.number), thinOnly });
+      for (const p of projects) {
+        const got = reach({ tags: tagsOf(p.number), thinOnly });
+        const u = unlockedAt(p.number);
+        const keep = (x: { thin?: boolean }) => !thinOnly || x.thin === true;
         expect(
-          m.needs.materials.filter((id) => !got.materials.has(id)),
-          `${m.id} materials`
+          u.buildings
+            .filter(keep)
+            .filter((b) => !got.buildings.has(b.id))
+            .map((b) => b.id),
+          `${p.id} buildings`
         ).toEqual([]);
         expect(
-          m.needs.buildings.filter((id) => !got.buildings.has(id)),
-          `${m.id} buildings`
+          u.recipes
+            .filter(keep)
+            .filter((r) => !got.recipes.has(r.id))
+            .map((r) => r.id),
+          `${p.id} recipes`
         ).toEqual([]);
         expect(
-          m.needs.components.filter((id) => !got.components.has(id)),
-          `${m.id} components`
+          u.components
+            .filter(keep)
+            .filter((c) => !got.components.has(c.id))
+            .map((c) => c.id),
+          `${p.id} components`
         ).toEqual([]);
       }
     }
   );
 
   it('name a known subject each, and every subject is used', () => {
-    const known = subjects.map((s) => s.id);
-    expect(new Set(known).size).toBe(known.length);
-    for (const m of milestones) expect(known, m.id).toContain(m.subject);
+    const ids = subjects.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const p of projects) expect(ids, p.id).toContain(p.subject);
     for (const s of subjects)
       expect(
-        milestones.some((m) => m.subject === s.id),
+        unlocks.some((p) => p.subject === s.id),
         s.id
       ).toBe(true);
   });
 
-  it('unlock a tag once its own requires are done, and tag 0 from the start', () => {
-    expect(tagOpen([], 0)).toBe(true);
-    expect(tagOpen([], 1)).toBe(true);
-    expect(tagOpen([1], 2)).toBe(true);
-    expect(tagOpen([1], 3)).toBe(false);
-    expect(tagOpen([1, 2], 3)).toBe(true);
-    expect(missingPrerequisites([1], 4)).toEqual([3]);
-  });
-
-  it('opens a tag from each of its prerequisites', () => {
-    expect(opensTags(1)).toEqual(expect.arrayContaining([2, 3, 4, 15]));
-    for (const m of milestones) for (const r of m.requires) expect(opensTags(r), m.id).toContain(m.number);
+  it('boost by the highest level researched in a line, and by nothing before', () => {
+    const one = num('research_rate_1');
+    const two = num('research_rate_2');
+    expect(boostOf([], 'research')).toBe(1);
+    expect(boostOf([one], 'research')).toBe(1.2);
+    expect(boostOf([one, two], 'research')).toBe(1.4);
   });
 
   it('end at jump point stabilisation', () => {
-    expect(milestone(29).needs.buildings).toEqual(['jump_point_stabiliser']);
+    expect(unlockedAt(num('jump_point_stabilisation')).buildings.map((b) => b.id)).toEqual([
+      'jump_point_stabiliser'
+    ]);
   });
 });
 
@@ -553,56 +630,21 @@ describe('the thin path', () => {
     }
   });
 
-  it('holds every material the milestones need', () => {
-    for (const m of milestones) {
-      expect(
-        m.needs.materials.filter((id) => !material(id).thin),
-        `${m.id}`
-      ).toEqual([]);
-      expect(
-        m.needs.buildings.filter((id) => !buildings.find((b) => b.id === id)?.thin),
-        `${m.id}`
-      ).toEqual([]);
-      expect(
-        m.needs.components.filter((id) => !shipComponents.find((c) => c.id === id)?.thin),
-        `${m.id}`
-      ).toEqual([]);
-    }
-  });
-
   it('keeps food on it from the first crew that stays for months', () => {
-    expect(milestone(3).needs.materials).toContain('food_ration');
+    expect(material('food_ration').thin).toBe(true);
     expect(thinMaterials.map((m) => m.id)).toEqual(
       expect.arrayContaining(['food_ration', 'plant_biomass', 'urea', 'map_fertiliser', 'potassium_sulfate'])
     );
   });
 
-  it('reaches every milestone 1 to 29 in order from what present-day Earth can extract', () => {
-    for (const m of milestones) {
-      const got = reach({ upTo: m.number, thinOnly: true });
-      expect(
-        m.needs.materials.filter((id) => !got.materials.has(id)),
-        `${m.id} materials`
-      ).toEqual([]);
-      expect(
-        m.needs.buildings.filter((id) => !got.buildings.has(id)),
-        `${m.id} buildings`
-      ).toEqual([]);
-      expect(
-        m.needs.components.filter((id) => !got.components.has(id)),
-        `${m.id} components`
-      ).toEqual([]);
-    }
-  });
-
-  it('starts from extraction alone: nothing is reachable with no milestone unlocked', () => {
-    const got = reach({ upTo: 0, thinOnly: true });
+  it('starts from extraction alone: nothing is reachable with nothing open', () => {
+    const got = reach({ tags: new Set(), thinOnly: true });
     expect(got.materials.size).toBe(0);
     expect(got.buildings.size).toBe(0);
   });
 
-  it('runs on only the first milestone unlocks at the start', () => {
-    const first = reach({ upTo: 1, thinOnly: true });
+  it('runs on what is open at the start', () => {
+    const first = reach({ upTo: 0, thinOnly: true });
     expect(first.materials.has('oxygen')).toBe(true);
     expect(first.materials.has('cfrp')).toBe(true);
     expect(first.materials.has('haleu')).toBe(false);
@@ -627,14 +669,14 @@ describe('the whole data set', () => {
 
 describe('make or import', () => {
   it('lets the Moon make its own propellant once lunar ice and regolith are worked', () => {
-    const moon = reach({ upTo: 12, thinOnly: true, site: 'moon' });
+    const moon = reach({ tags: tagsOf(num('regolith_oxygen_extraction')), thinOnly: true, site: 'moon' });
     expect(moon.materials.has('lox')).toBe(true);
     expect(moon.materials.has('lh2')).toBe(true);
     expect(moon.materials.has('lch4')).toBe(false);
   });
 
   it('lets a gas giant supply fusion fuel', () => {
-    const giant = reach({ upTo: 25, thinOnly: true, site: 'gas-giant' });
+    const giant = reach({ tags: tagsOf(num('gas_giant_scooping')), thinOnly: true, site: 'gas-giant' });
     for (const id of ['helium3', 'deuterium', 'hydrogen', 'helium4'])
       expect(giant.materials.has(id), id).toBe(true);
   });
@@ -797,8 +839,8 @@ describe('regions', () => {
     for (const [world, type] of Object.entries(WORLD_BODIES)) expect(BODIES, world).toContain(type);
   });
 
-  it('keep the thin path closed through regions: ice only from the south pole still reaches milestone 12', () => {
-    const moon = reach({ upTo: 12, thinOnly: true, site: 'moon' });
+  it('keep the thin path closed through regions: ice only from the south pole still reaches lunar oxygen', () => {
+    const moon = reach({ tags: tagsOf(num('regolith_oxygen_extraction')), thinOnly: true, site: 'moon' });
     expect(moon.materials.has('water')).toBe(true);
     expect(moon.materials.has('lox')).toBe(true);
   });
@@ -961,11 +1003,11 @@ describe('comets', () => {
 });
 
 describe('the survey instrument', () => {
-  it('is one real component, unlocked early and needed by asteroid prospecting', () => {
+  it('is one real component, opened by remote-sensing instruments before asteroid sampling', () => {
     const suites = shipComponents.filter((c) => c.design.surveys);
     expect(suites.map((c) => c.id)).toEqual(['survey_suite']);
     expect(suites[0]?.design.source).toMatch(/^https:\/\//);
-    expect(suites[0]?.milestone).toBeLessThan(15);
-    expect(milestone(15).needs.components).toContain('survey_suite');
+    expect(suites[0]?.research).toBe(num('remote_sensing_instruments'));
+    expect(project(num('asteroid_sampling')).requires).toContain(num('remote_sensing_instruments'));
   });
 });

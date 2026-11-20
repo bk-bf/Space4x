@@ -8,17 +8,24 @@ import { OuterPlayer } from './playOuter.ts';
 import { freshGame } from './ships/fixtures.ts';
 import { ships } from './ships/index.ts';
 import type { Game } from './state.svelte.ts';
+import { stageProjects } from './stages.ts';
 import { isSurveyed } from './survey.svelte.ts';
 
 const year = (ms: number) => new Date(ms).getUTCFullYear();
+const researchedAt = (game: Game) =>
+  game.events
+    .filter((e) => e.kind === 'research' && e.project !== undefined)
+    .map((e) => [e.project, formatDay(e.at)])
+    .reverse();
 const upTo = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
 describe('the scripted player from the start state', () => {
   let game: Game;
   let player: OuterPlayer;
 
+  const researched = (n: number) => stageProjects(n).filter((p) => !economy.done.includes(p));
   const reach = (numbers: number[]) => {
-    for (const n of numbers) expect(player.reach(n), `milestone ${n}`).toBe(true);
+    for (const n of numbers) expect(player.reach(n), `stage ${n}`).toBe(true);
   };
 
   it('reaches milestones 1 to 17: a station, a Moon base, lunar propellant, nuclear ships and two asteroid mines', () => {
@@ -37,7 +44,8 @@ describe('the scripted player from the start state', () => {
     expect(moon).toBeDefined();
     expect(moon.region).toBe('luna-south-pole');
     expect(moon.population).toBeGreaterThanOrEqual(1);
-    expect(economy.done).toEqual([1, 2, 3, 4, 5, 6]);
+    expect([...player.stagesReached].sort((a, b) => a - b)).toEqual(upTo(6));
+    expect(researched(6)).toEqual([]);
 
     reach([7, 8, 9, 10, 11, 12]);
     for (const b of [
@@ -64,7 +72,8 @@ describe('the scripted player from the start state', () => {
     const lunarLoxAt = game.time;
 
     reach([13, 14, 15, 16, 17]);
-    expect(economy.done).toEqual(upTo(17));
+    expect([...player.stagesReached].sort((a, b) => a - b)).toEqual(upTo(17));
+    expect(researched(17)).toEqual([]);
 
     const perKg = (f: { launches: number; kg: number }) => f.launches / f.kg;
     const fills = player.path.fills.filter((f) => f.kind === 'methalox' && f.launches > 0);
@@ -97,7 +106,9 @@ describe('the scripted player from the start state', () => {
     expect(reached.map((r) => r.number)).toEqual(upTo(17));
     const times = reached.map((r) => r.at);
     expect([...times].sort((a, b) => a - b)).toEqual(times);
-    expect(year(times[0]!)).toBe(2027);
+    console.info('stages 1 to 17', JSON.stringify(reached.map((r) => [r.number, formatDay(r.at)])));
+    console.info('researched', JSON.stringify(researchedAt(game)));
+    expect(year(times[0]!)).toBe(2026);
     expect(year(times[5]!)).toBeLessThan(2035);
     expect(year(times[16]!)).toBeLessThan(2075);
 
@@ -133,7 +144,8 @@ describe('the scripted player from the start state', () => {
     expect(standing(station, 'solar_cell_fab')).toBeGreaterThan(0);
     expect(standing(station, 'solar_power_station')).toBeGreaterThan(0);
     expect(flowsOf(station).power.supply).toBeGreaterThan(50_000);
-    expect(economy.done).toEqual(upTo(21));
+    expect([...player.stagesReached].sort((a, b) => a - b)).toEqual(upTo(21));
+    expect(researched(21)).toEqual([]);
     const steelAt18 = player.report.reached.find((r) => r.number === 18)!;
     expect(year(steelAt18.at)).toBeLessThan(2100);
   }, 300_000);
@@ -148,12 +160,14 @@ describe('the scripted player from the start state', () => {
     expect(maria.groups.some((g) => g.process === 'extract:helium3' && g.count > 0)).toBe(true);
     expect(game.jump('sol-a')!.point.surveyed).toBe(true);
     expect(game.jump('sol-a')!.point.stable).toBe(false);
-    expect(economy.done).toEqual(upTo(24));
+    expect([...player.stagesReached].sort((a, b) => a - b)).toEqual(upTo(24));
+    expect(researched(24)).toEqual([]);
   }, 300_000);
 
   it('reaches 25 to 29: a scoop at Uranus, carbon nanotube fibre, superconductors, exotic matter and a stabilised jump point', () => {
     reach([25, 26, 27, 28, 29]);
-    expect(economy.done).toEqual(upTo(29));
+    expect([...player.stagesReached].sort((a, b) => a - b)).toEqual(upTo(29));
+    expect(researched(29)).toEqual([]);
 
     const uranus = siteIn(economy, 'uranus', 'surface', null)!;
     expect(uranus).toBeDefined();
@@ -217,7 +231,7 @@ describe('the scripted player from the start state', () => {
       .map((e) => `${formatDay(e.at)} ${e.text}`)
       .reverse();
     console.info(
-      'milestones',
+      'stages',
       JSON.stringify(reached.map((r) => [r.number, formatDay(r.at), year(r.at)])),
       'launches',
       player.report.launches.length,

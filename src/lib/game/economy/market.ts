@@ -1,13 +1,12 @@
 import earth from '#lib/game/data/earth.json';
 import { building, material } from '#lib/game/data/index.ts';
+import { MONTH_HOURS, MONTH_SECONDS } from './calendar.ts';
 import { siteFlows } from './flows.ts';
 import { activePlants, isPlant } from './grid.ts';
 import { process } from './processes.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import type { Contract, Economy, Group, LogFn, Market, Offer, Site, Terms } from './types.ts';
 
-export const MONTH_HOURS = 8766 / 12;
-export const MONTH_SECONDS = MONTH_HOURS * 3600;
 export const START_TREASURY = 15e9;
 export const LEASE_YIELD = 0.015;
 export const DOLLARS_PER_BP = 1e9;

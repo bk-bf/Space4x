@@ -94,7 +94,7 @@ describe('building ships', () => {
     expect(o!.percent).toBe(100);
     expect(o!.paid).toBe(true);
     expect(site.stock.stainless_steel).toBeCloseTo(before - (cost.stainless_steel ?? 0));
-    const days = o!.points / yardPointsPerDay(site, 'rocket_factory');
+    const days = o!.points / yardPointsPerDay(economy, site, 'rocket_factory');
     g.advance(days * 0.9 * DAY);
     expect(ships.vessels).toHaveLength(0);
     g.advance(days * 0.2 * DAY);
@@ -157,7 +157,7 @@ describe('building ships', () => {
     expect(freeShipyards(site, 'rocket_factory')).toBe(needed - 1);
     g.advance(0.01 * DAY);
     expect(l!.done).toBe(0);
-    const perDay = yardPointsPerDay(site, 'rocket_factory') / 2;
+    const perDay = yardPointsPerDay(economy, site, 'rocket_factory') / 2;
     expect(s!.done).toBeCloseTo((0.01 * perDay) / s!.points);
     g.advance((s!.points / perDay) * DAY);
     expect(site.yard).toEqual([l]);

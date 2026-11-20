@@ -1,5 +1,5 @@
-import { depthOf, milestones, subjects } from '#lib/game/data/index.ts';
-import type { Milestone, Subject } from '#lib/game/data/index.ts';
+import { depthOf, projects, subjects } from '#lib/game/data/index.ts';
+import type { Project, Subject } from '#lib/game/data/index.ts';
 import type { IconName } from '#lib/gfx/icons.ts';
 
 export const TILE_W = 144;
@@ -92,7 +92,7 @@ export function segmentHitsRect(a: Point, b: Point, r: Rect, margin = 0): boolea
 export const segmentsOf = (points: readonly Point[]): [Point, Point][] =>
   points.slice(1).map((p, i) => [points[i]!, p]);
 
-function place(ms: readonly Milestone[], groups: readonly Subject[]) {
+function place(ms: readonly Project[], groups: readonly Subject[]) {
   const depth = new Map(ms.map((m) => [m.number, depthOf(m.number)]));
   const cols = Math.max(...depth.values()) + 1;
   const laneOf = new Map(ms.map((m) => [m.number, groups.findIndex((s) => s.id === m.subject)]));
@@ -114,7 +114,7 @@ function place(ms: readonly Milestone[], groups: readonly Subject[]) {
     for (let lane = 0; lane < groups.length; lane++) {
       const here = ms.filter((m) => laneOf.get(m.number) === lane && depth.get(m.number) === c);
       if (!here.length) continue;
-      const desired = (m: Milestone): number => {
+      const desired = (m: Project): number => {
         const ys = m.requires.map((r) => placed.get(r)).filter((p): p is Placed => p !== undefined);
         return ys.length
           ? ys.reduce((a, p) => a + p.y, 0) / ys.length
@@ -190,10 +190,7 @@ class Slots {
   }
 }
 
-export function layoutChain(
-  ms: readonly Milestone[] = milestones,
-  groups: readonly Subject[] = subjects
-): Chain {
+export function layoutChain(ms: readonly Project[] = projects, groups: readonly Subject[] = subjects): Chain {
   const { placed, cols, rows, rowsIn, firstRow, rowTop } = place(ms, groups);
   const nodes = ms.map((m) => placed.get(m.number)!);
   const at = (number: number): Placed => placed.get(number)!;

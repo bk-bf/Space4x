@@ -1,4 +1,4 @@
-import { material, type Amounts } from '#lib/game/data/index.ts';
+import { boostOf, material, type Amounts } from '#lib/game/data/index.ts';
 import { isMass } from './processes.ts';
 import { standing } from './programmes.ts';
 import type { Economy, LogFn, Site, YardOrder } from './types.ts';
@@ -25,8 +25,8 @@ export const shipPoints = (dryMass: number): number =>
 
 export const hasYard = (site: Site, yard: string): boolean => standing(site, yard) > 0;
 
-export const yardPointsPerDay = (site: Site, yard: string): number =>
-  standing(site, yard) * SP_PER_SHIPYARD_DAY;
+export const yardPointsPerDay = (eco: Economy, site: Site, yard: string): number =>
+  standing(site, yard) * SP_PER_SHIPYARD_DAY * boostOf(eco.done, 'shipyard_points');
 
 export const allocatedPercent = (site: Site, yard: string, except?: YardOrder): number =>
   site.yard.filter((o) => o.yard === yard && o !== except).reduce((a, o) => a + o.percent, 0);

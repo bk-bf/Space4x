@@ -2,7 +2,7 @@
   {
     "id": "fused_silica_oxidation",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": false,
     "inputs": { "silicon": 561.7, "oxygen": 640.0 },
@@ -15,7 +15,7 @@
   {
     "id": "alumina_oxidation",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 3,
     "estimated": false,
     "inputs": { "aluminium": 1079.0, "oxygen": 959.9 },
     "outputs": { "alumina": 2039.0 },
@@ -27,7 +27,7 @@
   {
     "id": "boron_carbide_synthesis",
     "building": "ceramics_works",
-    "milestone": 7,
+    "research": 10,
     "thin": true,
     "estimated": false,
     "inputs": { "boron": 864.8, "carbon": 240.2 },
@@ -40,7 +40,7 @@
   {
     "id": "silicon_carbide_synthesis",
     "building": "ceramics_works",
-    "milestone": 13,
+    "research": 10,
     "thin": true,
     "estimated": false,
     "inputs": { "silicon": 842.6, "carbon": 360.3 },
@@ -53,7 +53,7 @@
   {
     "id": "ysz_sintering",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 16,
     "estimated": false,
     "inputs": { "zirconium": 638.6, "yttrium": 108.2, "oxygen": 253.2 },
     "outputs": { "ysz": 1000 },
@@ -65,7 +65,7 @@
   {
     "id": "uhtc_sintering",
     "building": "ceramics_works",
-    "milestone": 24,
+    "research": 33,
     "thin": true,
     "estimated": true,
     "inputs": { "zirconium": 400, "boron": 95, "hafnium": 280, "carbon": 20, "tantalum": 205 },
@@ -76,7 +76,7 @@
   {
     "id": "nextel_weaving",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 16,
     "estimated": true,
     "inputs": { "alumina": 620, "fused_silica": 240, "boron": 43, "oxygen": 97 },
     "outputs": { "nextel": 1000 },
@@ -86,7 +86,7 @@
   {
     "id": "zeolite_synthesis",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 3,
     "estimated": true,
     "inputs": { "alumina": 280, "fused_silica": 450, "sodium": 100, "water": 170 },
     "outputs": { "zeolite": 1000 },
@@ -96,7 +96,7 @@
   {
     "id": "silica_aerogel_drying",
     "building": "ceramics_works",
-    "milestone": 3,
+    "research": 3,
     "estimated": true,
     "inputs": { "fused_silica": 1000 },
     "outputs": { "silica_aerogel": 1000 },
@@ -106,7 +106,7 @@
   {
     "id": "glass_fibre_drawing",
     "building": "fibre_works",
-    "milestone": 18,
+    "research": 14,
     "estimated": true,
     "inputs": { "fused_silica": 700, "alumina": 200, "boron": 30, "oxygen": 70 },
     "outputs": { "glass_fibre": 1000 },
@@ -116,7 +116,7 @@
   {
     "id": "basalt_fibre_spinning",
     "building": "fibre_works",
-    "milestone": 10,
+    "research": 23,
     "estimated": true,
     "inputs": { "basalt": 1000 },
     "outputs": { "basalt_fibre": 950 },
@@ -126,7 +126,7 @@
   {
     "id": "cvd_diamond_growth",
     "building": "ceramics_works",
-    "milestone": 18,
+    "research": 14,
     "estimated": false,
     "inputs": { "methane": 1604.0 },
     "outputs": { "cvd_diamond": 1201.0, "hydrogen": 403.2 },
@@ -138,7 +138,7 @@
   {
     "id": "cnt_fibre_growth",
     "building": "fibre_works",
-    "milestone": 26,
+    "research": 31,
     "thin": true,
     "estimated": false,
     "inputs": { "methane": 1604.0 },
@@ -151,7 +151,7 @@
   {
     "id": "bnnt_growth",
     "building": "ceramics_works",
-    "milestone": 26,
+    "research": 31,
     "estimated": false,
     "inputs": { "boron": 648.6, "nitrogen": 840.4 },
     "outputs": { "bnnt": 1489.0 },
@@ -163,7 +163,7 @@
   {
     "id": "sinter_regolith",
     "building": "sinter_printer",
-    "milestone": 10,
+    "research": 23,
     "thin": true,
     "estimated": true,
     "inputs": { "lunar_regolith": 1000 },
@@ -174,7 +174,7 @@
   {
     "id": "sulfur_concrete_mixing",
     "building": "sinter_printer",
-    "milestone": 10,
+    "research": 23,
     "estimated": true,
     "inputs": { "sulfur": 300, "lunar_regolith": 700 },
     "outputs": { "sulfur_concrete": 1000 },
@@ -184,7 +184,7 @@
   {
     "id": "carbon_fibre_carbonisation",
     "building": "fibre_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "pan": 2000 },
@@ -195,7 +195,7 @@
   {
     "id": "cfrp_layup",
     "building": "composite_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "carbon_fibre": 600, "epoxy": 400 },
@@ -206,7 +206,7 @@
   {
     "id": "pica_impregnation",
     "building": "composite_works",
-    "milestone": 6,
+    "research": 17,
     "thin": true,
     "estimated": true,
     "inputs": { "carbon_fibre": 640, "phenolic_resin": 360 },
@@ -217,7 +217,7 @@
   {
     "id": "rcc_pyrolysis",
     "building": "composite_works",
-    "milestone": 6,
+    "research": 17,
     "estimated": true,
     "inputs": { "carbon_fibre": 600, "phenolic_resin": 400 },
     "outputs": { "rcc": 900 },

@@ -22,7 +22,7 @@ export const economyLog =
   (game: Game): LogFn =>
   (text, warn, at, siteId, tag) => {
     const body = siteId ? siteById(siteId)?.worldBody : undefined;
-    game.log(tag?.kind === 'milestone' ? 'flask' : 'factory', text, warn, {
+    game.log(tag?.project !== undefined ? 'flask' : 'factory', text, warn, {
       at: START_TIME + at * 1000,
       ...(body ? { subject: { kind: 'body' as const, id: body } } : {}),
       ...(siteId ? { site: siteId } : {}),

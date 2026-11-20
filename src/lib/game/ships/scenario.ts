@@ -1,5 +1,6 @@
 import { classes, statsFor } from '#lib/game/classes.svelte.ts';
-import { milestones, regionsOf } from '#lib/game/data/index.ts';
+import { regionsOf } from '#lib/game/data/index.ts';
+import { stageProjects, stages } from '#lib/game/stages.ts';
 import {
   economy,
   homeSite,
@@ -52,7 +53,7 @@ function vessel(d: ShipDesign, at: Vessel['at'], fill: Partial<Vessel> = {}): Ve
 
 export function seedTravel(game: Game): void {
   if (ships.vessels.length > 0 || classes.saved.length > 0) return;
-  economy.done = milestones.filter((m) => !m.optional && m.number <= 4).map((m) => m.number);
+  economy.done = stageProjects(4);
   const earth = homeSite();
   earth.stock.grcop = 5e5;
   earth.stock.platinum = 5e4;
@@ -107,7 +108,7 @@ export function seedTravel(game: Game): void {
 export function seedBelt(game: Game, outpost = false, asteroid?: string): void {
   if (ships.vessels.length > 0 || classes.saved.length > 0) return;
   const reached = asteroid ? 16 : 14;
-  economy.done = milestones.filter((m) => !m.optional && m.number <= reached).map((m) => m.number);
+  economy.done = stageProjects(reached);
   const probe = design('belt-probe', 'Survey probe', 'probe', [
     ['chemical_engine_methalox', 1],
     ['propellant_tank', 2],
@@ -161,7 +162,7 @@ export function seedBelt(game: Game, outpost = false, asteroid?: string): void {
 
 export function seedJump(game: Game, outpost = false): void {
   if (ships.vessels.length > 0 || classes.saved.length > 0) return;
-  economy.done = milestones.filter((m) => !m.optional && m.number < milestones.length).map((m) => m.number);
+  economy.done = stageProjects(stages.length - 1);
   const jump = game.world.systems[0]?.jumps[0];
   if (!jump) return;
   const probe = design('jump-probe', 'Survey probe', 'probe', [

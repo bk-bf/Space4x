@@ -3,19 +3,21 @@ import { classes } from './classes.svelte.ts';
 import {
   building,
   material,
-  milestone,
+  project,
+  projects,
   recipe,
   recipesProducing,
   reserveOf,
   shipComponent
 } from './data/index.ts';
-import type { Milestone } from './data/index.ts';
 import {
   acceptOffer,
   assign,
   averageOutput,
+  bestFor,
   buildingsAt,
   canAccept,
+  createProject,
   earthStart,
   economy,
   extractionId,
@@ -25,18 +27,21 @@ import {
   flowsOf,
   homeSite,
   isUnlocked,
+  LAB,
+  labFigures,
+  labsActive,
   leaseIncome,
   PEAK_RATIO,
   plantOf,
   process,
-  programmeCompute,
   programmeStatus,
   queueBuilding,
+  scientistById,
+  setLabs,
   setShipPercent,
   siteAt,
   standing,
   setOn,
-  startProgramme,
   switchSome,
   touch,
   unlockedProcesses,
@@ -56,6 +61,7 @@ import {
   ships,
   type Vessel
 } from './ships/index.ts';
+import { ownProjects, stage, stages } from './stages.ts';
 import type { Game } from './state.svelte.ts';
 
 export interface PlayReport {
@@ -76,6 +82,24 @@ const LEASE_MARGIN = 1.03;
 
 type Lease = Offer & { kind: 'lease' };
 const END_PRODUCTS = new Set(Object.keys(earthStart.endProducts));
+
+const BOOST_ORDER = [
+  'research_rate',
+  'chip_output',
+  'construction_rate',
+  'shipbuilding_rate',
+  'extraction_rate'
+];
+const LAB_ORDERS = 1;
+const RESEARCH_WAIT_STEPS = 3000;
+const COMPUTE_MARGIN = 1.1;
+
+export function researchPlan(): number[] {
+  const out: number[] = [];
+  for (const s of stages) for (const n of ownProjects(s)) if (!out.includes(n)) out.push(n);
+  for (const line of BOOST_ORDER) for (const p of projects.filter((x) => x.line === line)) out.push(p.number);
+  return out;
+}
 
 const ORBITER = 'play-orbiter';
 const HABITAT = 'play-habitat';
@@ -211,14 +235,59 @@ export class Player {
     }
   }
 
-  protected readonly reachedAt = new Map<number, number>();
+  protected readonly plan = researchPlan();
+  readonly stagesReached = new Set<number>();
 
-  protected noteReached(): void {
-    for (const n of economy.done) {
-      if (this.reachedAt.has(n)) continue;
-      const e = this.game.events.find((x) => x.text.startsWith(`Milestone ${n} reached`));
-      this.reachedAt.set(n, e?.at ?? this.game.time);
+  protected research(): void {
+    const eco = economy;
+    for (const n of this.plan) {
+      const p = project(n);
+      if (programmeStatus(eco, p) !== 'ready') continue;
+      const s = bestFor(eco, p.subject);
+      if (!s) break;
+      createProject(eco, n, s.id, s.admin);
+      this.say(`${s.name} leads ${p.name}`);
     }
+    const rank = (n: number) => this.plan.indexOf(n);
+    for (const p of [...eco.running].sort((a, b) => rank(a.number) - rank(b.number)))
+      setLabs(eco, p.number, scientistById(eco, p.lead)?.admin ?? 0);
+    this.buildLabs();
+    touch();
+  }
+
+  protected buildLabs(): void {
+    const eco = economy;
+    const site = this.earth;
+    const wanted = eco.running.reduce((a, p) => a + (scientistById(eco, p.lead)?.admin ?? 0), 0);
+    const ordered = site.queue.filter((o) => o.building === LAB).length;
+    if (wanted <= labsActive(eco) + ordered || ordered >= LAB_ORDERS) return;
+    const f = flowsOf(site);
+    const lab = labFigures();
+    if (f.compute.supply < f.compute.demand + lab.compute * (labsActive(eco) - this.labsAssigned() + 1)) {
+      this.moreCompute();
+      return;
+    }
+    if (!this.affords(LAB)) return;
+    queueBuilding(eco, site, LAB, null);
+    this.say('queued a research lab');
+  }
+
+  protected labsAssigned(): number {
+    return economy.running.reduce((a, p) => a + p.labs, 0);
+  }
+
+  protected affords(buildingId: string): boolean {
+    const site = this.earth;
+    return Object.entries(building(buildingId).cost).every(([m, kg]) => (site.stock[m] ?? 0) >= kg);
+  }
+
+  protected moreCompute(): void {
+    const site = this.earth;
+    this.computeForResearch();
+    if (site.queue.some((o) => o.building === 'data_centre')) return;
+    const parked = site.groups.some((g) => g.building === 'data_centre' && !g.on);
+    if (!parked && !this.affords('data_centre')) return;
+    this.produce('compute', flowsOf(site).compute.demand * COMPUTE_MARGIN);
   }
 
   days(n: number): void {
@@ -232,7 +301,7 @@ export class Player {
       const step = Math.min(left, 5);
       this.shareShipyards();
       this.game.advance(step * DAY);
-      this.noteReached();
+      this.research();
       left -= step;
     }
     touch();
@@ -450,7 +519,7 @@ export class Player {
   }
 
   protected prepare(n: number): void {
-    const m = milestone(n);
+    const m = stage(n);
     for (let guard = 0; guard < 120; guard++) {
       const buildings = m.needs.buildings.filter((id) => !this.standsAnywhere(id));
       const builders = m.needs.components
@@ -463,31 +532,31 @@ export class Player {
       if (!buildings.length && !builders.length) return;
       this.fixShortages();
       this.days(3);
-      if (guard % 50 === 49) this.say(`milestone ${n} still lacks ${[...buildings, ...builders].join(', ')}`);
+      if (guard % 50 === 49) this.say(`stage ${n} still lacks ${[...buildings, ...builders].join(', ')}`);
     }
   }
 
   reach(n: number): boolean {
-    const site = this.earth;
-    const m = milestone(n);
-    for (const r of m.requires) if (!economy.done.includes(r)) this.reach(r);
-    if (programmeStatus(economy, m) === 'ready') {
-      this.computeForProgramme();
-      this.ensureCompute(m);
-      startProgramme(economy, site, n);
-      this.say(`started milestone ${n}`);
-    }
-    this.prepare(n);
+    if (this.stagesReached.has(n)) return true;
+    const s = stage(n);
+    for (const r of s.requires) if (!this.stagesReached.has(r)) this.reach(r);
+    const wanted = ownProjects(s);
+    const open = () => wanted.every((p) => economy.done.includes(p));
+    this.research();
     let guard = 0;
-    while (economy.running.some((p) => p.number === n) && guard++ < 1000) {
-      this.computeForProgramme();
+    while (!open() && guard++ < RESEARCH_WAIT_STEPS) {
+      this.fixShortages();
       this.days(10);
     }
-    if (economy.done.includes(n) && !this.report.reached.some((r) => r.number === n)) {
-      this.noteReached();
-      this.report.reached.push({ number: n, at: this.reachedAt.get(n) ?? this.game.time });
+    if (!open()) {
+      this.say(`stage ${n} still waits on research`);
+      return false;
     }
-    return economy.done.includes(n);
+    this.prepare(n);
+    this.stagesReached.add(n);
+    this.report.reached.push({ number: n, at: this.game.time });
+    this.say(`reached stage ${n}: ${s.name}`);
+    return true;
   }
 
   crewedStation(crew = 6): boolean {
@@ -549,24 +618,7 @@ export class Player {
     return result === undefined;
   }
 
-  protected ensureCompute(m: Milestone): void {
-    const site = this.earth;
-    const need = programmeCompute(m) * 1.1;
-    if (need <= 0) return;
-    const have = () =>
-      site.groups
-        .filter((g) => g.building === 'data_centre' && g.process === 'compute_generation')
-        .reduce((a, g) => a + g.count, 0) * (process('compute_generation', site.body).outputs.compute ?? 0);
-    let guard = 0;
-    while (have() < need && guard++ < 100) {
-      this.produce('compute', need);
-      this.fixShortages();
-      this.days(3);
-      this.computeForProgramme();
-    }
-  }
-
-  protected computeForProgramme(): void {
+  protected computeForResearch(): void {
     const site = this.earth;
     for (const g of [...site.groups])
       if (g.building === 'data_centre' && g.process === 'ai_model_training')

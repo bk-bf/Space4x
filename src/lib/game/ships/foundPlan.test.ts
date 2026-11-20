@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { milestones } from '#lib/game/data/index.ts';
+import { stageProjects } from '#lib/game/stages.ts';
 import { economy, touch } from '#lib/game/economy/index.ts';
 import { completeSurvey } from '#lib/game/survey.svelte.ts';
 import {
@@ -16,7 +16,7 @@ import { addDesign, freshGame, spawn } from './fixtures.ts';
 const CARGO = { stainless_steel: 2600, copper: 120, aluminium: 500 };
 
 function reachAll(): void {
-  economy.done = milestones.filter((m) => !m.optional && m.number <= 17).map((m) => m.number);
+  economy.done = stageProjects(17);
   touch();
 }
 

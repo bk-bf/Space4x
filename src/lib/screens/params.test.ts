@@ -11,11 +11,10 @@ beforeEach(resetEconomyScreen);
 describe('URL parameters', () => {
   it('set each screen once, and the screen state wins afterwards', () => {
     applyScreenParams(
-      new URLSearchParams('colony=earth&tab=stockpiles&milestone=4&group=civilian&cmd=3&sys=barn')
+      new URLSearchParams('colony=earth&tab=stockpiles&project=4&group=civilian&cmd=3&sys=barn')
     );
     expect(ui.site).toBe('earth');
     expect(ui.tab).toBe('stockpiles');
-    expect(ui.milestone).toBe(4);
     expect(research.selected).toBe(4);
     expect(intel.group).toBe('');
     expect(roster.selected).toBe(roster.officers[3]!.id);
@@ -25,10 +24,9 @@ describe('URL parameters', () => {
   });
 
   it('ignore a value that names nothing', () => {
-    applyScreenParams(new URLSearchParams('colony=nowhere&tab=nothing&milestone=99'));
+    applyScreenParams(new URLSearchParams('colony=nowhere&tab=nothing&project=99'));
     expect(ui.site).toBe('earth');
     expect(ui.tab).toBe('summary');
-    expect(ui.milestone).toBe(1);
     showColony('nowhere');
     expect(ui.site).toBe('earth');
   });

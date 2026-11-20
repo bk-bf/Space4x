@@ -102,7 +102,7 @@ export interface Contact {
 
 export type EventCategory = 'ship' | 'eye' | 'factory' | 'flask';
 
-export type EventKind = 'arrival' | 'blocked' | 'finished' | 'milestone' | 'shortage';
+export type EventKind = 'arrival' | 'blocked' | 'finished' | 'research' | 'shortage';
 
 export interface GameEvent {
   at: number;
@@ -112,7 +112,7 @@ export interface GameEvent {
   subject?: Selection;
   kind?: EventKind;
   site?: string;
-  milestone?: number;
+  project?: number;
   material?: string;
 }
 

@@ -37,6 +37,6 @@ export const catalogue = (): Component[] =>
     (a, b) =>
       COMPONENT_KINDS.indexOf(a.kind as (typeof COMPONENT_KINDS)[number]) -
         COMPONENT_KINDS.indexOf(b.kind as (typeof COMPONENT_KINDS)[number]) ||
-      a.milestone - b.milestone ||
+      a.research - b.research ||
       a.name.localeCompare(b.name)
   );

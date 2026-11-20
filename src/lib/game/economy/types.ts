@@ -72,10 +72,27 @@ export interface Site {
   alerts: Alerts;
 }
 
+export interface Scientist {
+  id: number;
+  name: string;
+  gender: 'm' | 'f';
+  subject: string;
+  skill: number;
+  admin: number;
+  seed: number;
+  born: number;
+}
+
 export interface Programme {
   number: number;
-  site: string;
-  progress: number;
+  lead: number;
+  labs: number;
+  rp: number;
+}
+
+export interface Queued {
+  number: number;
+  lead: number;
 }
 
 export interface Ledger {
@@ -106,6 +123,8 @@ export interface Economy {
   sites: Site[];
   done: number[];
   running: Programme[];
+  queued: Queued[];
+  scientists: Scientist[];
   elapsed: number;
   nextId: number;
   delivered: Delivery[];
@@ -117,8 +136,8 @@ export interface Economy {
 }
 
 export interface LogTag {
-  kind: EventKind;
-  milestone?: number;
+  kind?: EventKind;
+  project?: number;
   material?: string;
 }
 

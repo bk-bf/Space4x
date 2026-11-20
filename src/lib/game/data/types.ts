@@ -129,7 +129,7 @@ export interface Material {
 export interface Recipe {
   id: string;
   building: string;
-  milestone: number;
+  research: number;
   thin?: boolean;
   estimated: boolean;
   inputs: Amounts;
@@ -164,12 +164,21 @@ export interface Plant {
   waterPerMwh: number;
 }
 
+export interface Lab {
+  rpPerMonth: number;
+  compute: number;
+  powerKw: number;
+  waterPerMonth: number;
+  basis: string;
+  source: string;
+}
+
 export interface Building {
   id: string;
   name: string;
   kind: BuildingKind;
   where: Site[];
-  milestone: number;
+  research: number;
   start?: boolean;
   thin?: boolean;
   estimated: boolean;
@@ -178,6 +187,7 @@ export interface Building {
   workers: number;
   footprint?: { land?: number; habitat?: number };
   plant?: Plant;
+  lab?: Lab;
   bp?: number;
   bpSource?: string;
   bpBasis?: string;
@@ -228,7 +238,7 @@ export interface Component {
   id: string;
   name: string;
   kind: string;
-  milestone: number;
+  research: number;
   thin?: boolean;
   estimated: boolean;
   builtAt: string[];
@@ -242,21 +252,43 @@ export interface Subject {
   name: string;
 }
 
-export interface Milestone {
+export type Effect =
+  | 'booster_thrust'
+  | 'booster_load'
+  | 'shipyard_points'
+  | 'build_speed'
+  | 'extraction'
+  | 'research'
+  | 'chip_output'
+  | 'data_centre_compute'
+  | 'solar_array_output'
+  | 'battery_storage'
+  | 'electrolysis_power';
+
+export interface ScientistRecord {
+  name: string;
+  gender: 'm' | 'f';
+  subject: string;
+  skill: number;
+  admin: number;
+  seed: number;
+  born: number;
+}
+
+export interface Project {
   id: string;
   number: number;
   name: string;
   subject: string;
-  tier: Tier;
-  optional?: boolean;
-  unlocks: string;
+  tier?: Tier;
+  rp: number;
   requires: number[];
-  needs: {
-    materials: string[];
-    buildings: string[];
-    components: string[];
-  };
-  sources: string[];
+  line?: string;
+  level?: number;
+  effects?: Partial<Record<Effect, number>>;
+  basis?: string;
+  source?: string;
+  estimated?: boolean;
 }
 
 export interface ReserveRecord {

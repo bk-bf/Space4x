@@ -1,5 +1,5 @@
 import { classes, classInUse, game, specFor, statsFor, type ClassRegistry } from '#lib/game/index.ts';
-import { milestones } from '#lib/game/data/index.ts';
+import { projects } from '#lib/game/data/index.ts';
 import { economy, touch, waitingOn, unlockedTag } from '#lib/game/economy/index.ts';
 import { payloadFor, loadedWith, type Loaded } from './figures.ts';
 import {
@@ -182,7 +182,7 @@ export const designer = new Designer();
 export function applyClassParams(params: URLSearchParams): void {
   const reached = Number(params.get('reached'));
   if (Number.isInteger(reached) && reached > 0) {
-    economy.done = milestones.filter((m) => !m.optional && m.number <= reached).map((m) => m.number);
+    economy.done = projects.filter((p) => p.number <= reached).map((p) => p.number);
     touch();
   }
   const key = params.get('new');

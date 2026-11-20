@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Aiko Tanaka",
+    "gender": "f",
+    "subject": "launch",
+    "skill": 7,
+    "admin": 3,
+    "seed": 11,
+    "born": 1981
+  },
+  {
+    "name": "Marcus Bell",
+    "gender": "m",
+    "subject": "habitats",
+    "skill": 5,
+    "admin": 4,
+    "seed": 23,
+    "born": 1993
+  },
+  {
+    "name": "Leila Haddad",
+    "gender": "f",
+    "subject": "computing",
+    "skill": 8,
+    "admin": 2,
+    "seed": 4,
+    "born": 1974
+  },
+  {
+    "name": "Viktor Sokolov",
+    "gender": "m",
+    "subject": "power",
+    "skill": 6,
+    "admin": 3,
+    "seed": 17,
+    "born": 1987
+  },
+  {
+    "name": "Nadia Petrova",
+    "gender": "f",
+    "subject": "launch",
+    "skill": 4,
+    "admin": 5,
+    "seed": 29,
+    "born": 1974
+  },
+  {
+    "name": "Samuel Osei",
+    "gender": "m",
+    "subject": "habitats",
+    "skill": 6,
+    "admin": 2,
+    "seed": 8,
+    "born": 1978
+  }
+]

@@ -4,7 +4,7 @@
     "name": "Life support plant",
     "kind": "habitat",
     "where": ["moon", "mars", "orbit"],
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": true,
     "cost": {
@@ -19,7 +19,7 @@
     "name": "Farmland",
     "kind": "habitat",
     "where": ["earth"],
-    "milestone": 1,
+    "research": 0,
     "start": true,
     "thin": true,
     "estimated": true,
@@ -41,7 +41,7 @@
     "name": "Greenhouse",
     "kind": "habitat",
     "where": ["moon", "mars", "orbit"],
-    "milestone": 11,
+    "research": 24,
     "thin": true,
     "estimated": true,
     "cost": {
@@ -64,7 +64,7 @@
     "name": "Algae bioreactor",
     "kind": "habitat",
     "where": ["earth", "moon", "mars", "orbit"],
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "cost": {
       "al_li_alloy": 1000,
@@ -85,7 +85,7 @@
     "name": "Protein fermenter",
     "kind": "habitat",
     "where": ["earth", "moon", "mars", "orbit"],
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "cost": {
       "stainless_steel": 1500,
@@ -105,7 +105,7 @@
     "name": "Food plant",
     "kind": "habitat",
     "where": ["earth", "moon", "mars", "orbit"],
-    "milestone": 3,
+    "research": 15,
     "thin": true,
     "estimated": true,
     "cost": {
@@ -126,7 +126,7 @@
     "name": "Ranch",
     "kind": "habitat",
     "where": ["earth"],
-    "milestone": 1,
+    "research": 0,
     "start": true,
     "estimated": true,
     "cost": {

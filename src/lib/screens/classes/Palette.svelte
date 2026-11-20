@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { milestone } from '#lib/game/data/index.ts';
   import { COMPONENT_KINDS, KIND_NAMES, catalogue, countOf } from '#lib/game/shipdesign/index.ts';
   import { PixIcon, Tile, TileGrid, componentTip, dim, requestRender, warn } from '#lib/ui/index.ts';
   import { designer } from './designer.svelte.ts';
@@ -26,10 +25,10 @@
   </div>
   <TileGrid min={86} gap={5}>
     {#each k.items as c (c.id)}
-      {@const open = designer.unlocked(c.milestone)}
-      {@const waits = open ? [] : designer.waitsFor(c.milestone)}
+      {@const open = designer.unlocked(c.research)}
+      {@const waits = open ? [] : designer.waitsFor(c.research)}
       {@const have = designer.design ? countOf(designer.design, c.id) : 0}
-      <div class="cell" data-part={c.id} data-locked={open ? undefined : c.milestone}>
+      <div class="cell" data-part={c.id} data-locked={open ? undefined : c.research}>
         <Tile
           variant="cmp"
           icons={[{ kind: 'component', id: c.id }]}
@@ -41,11 +40,7 @@
           selected={have > 0}
           dimmed={!open}
           disabled={!open || !editable}
-          tip={componentTip(
-            c.id,
-            ...factList(c).map(dim),
-            open ? '' : warn(`Part of ${milestone(c.milestone).name}; needs ${waits.join(' and ')} first`)
-          )}
+          tip={componentTip(c.id, ...factList(c).map(dim), open ? '' : warn(`Needs ${waits.join(' and ')}`))}
           onselect={() => pick(c.id)}
         />
       </div>
