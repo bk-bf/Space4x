@@ -25,7 +25,6 @@ const FOOD_MIN_DAYS = 700;
 const FOOD_TOP_UP_DAYS = 2_300;
 const MOON_FOOD_KG = 7_500;
 const FOOD_RESERVE_LAUNCHES = 14;
-const ACCELERATOR_KG = 3_000;
 const FOOD_RESERVE_CHUNK_KG = 36_000;
 const XENON_CHUNK_KG = 36_000;
 const BARGE_METHALOX_KG = 9_000;
@@ -210,8 +209,6 @@ export class JumpPlayer extends PathPlayer {
       }
       const st = this.orbital();
       if (st && this.reserved) {
-        if (standing(st, 'data_centre') > 0 && (st.stock.ai_accelerator ?? 0) < 150)
-          this.deliverToStation({ ai_accelerator: ACCELERATOR_KG });
         if (standing(st, 'fission_reactor') > 0 && (st.stock.haleu ?? 0) < 40)
           this.deliverToStation({ haleu: 300 });
       }
@@ -331,7 +328,6 @@ export class JumpPlayer extends PathPlayer {
       this.deliverToStation({ haleu: 300 });
     this.stationBuild('fission_reactor');
     this.stationBuild('data_centre');
-    this.deliverToStation(this.missingAtStation({ ai_accelerator: ACCELERATOR_KG }));
   }
 
   protected provideBuilding(id: string): void {

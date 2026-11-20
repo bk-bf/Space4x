@@ -10,6 +10,7 @@ import {
   flowsOf,
   homeSite,
   isUnlocked,
+  process,
   programmeCompute,
   programmeStatus,
   queueBuilding,
@@ -376,7 +377,7 @@ export class Player {
     const have = () =>
       site.groups
         .filter((g) => g.building === 'data_centre' && g.process === 'compute_generation')
-        .reduce((a, g) => a + g.count, 0) * 1000;
+        .reduce((a, g) => a + g.count, 0) * (process('compute_generation', site.body).outputs.compute ?? 0);
     let guard = 0;
     while (have() < need && guard++ < 100) {
       this.produce('compute', need);

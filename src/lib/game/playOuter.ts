@@ -217,6 +217,7 @@ export class OuterPlayer extends JumpPlayer {
     this.stationBuild('semiconductor_fab');
     this.stationBuild('solar_cell_fab');
     for (const b of ['semiconductor_fab', 'solar_cell_fab']) this.switchOff(st, b);
+    this.switchOn(st, 'data_centre');
   }
 
   protected fusionPlant(): void {
@@ -422,10 +423,8 @@ export class OuterPlayer extends JumpPlayer {
       f = this.buildAtStation(this.founderDesign());
       if (!f) throw new Error('there is no founder ship');
       const kit = {
-        stainless_steel: 1000,
-        copper: 300,
-        aluminium: 300,
-        ai_accelerator: 650,
+        machinery: 2000,
+        rad_hard_ic: 6000,
         ai_models: 21,
         rt_superconductor: 520,
         exotic_matter: 0.0105,
