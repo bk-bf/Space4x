@@ -1,12 +1,24 @@
 import { DAY, formatClock } from './clock.ts';
 import { classes } from './classes.svelte.ts';
-import { building, material, milestone, recipesProducing, shipComponent } from './data/index.ts';
+import {
+  building,
+  material,
+  milestone,
+  recipe,
+  recipesProducing,
+  reserveOf,
+  shipComponent
+} from './data/index.ts';
 import type { Milestone } from './data/index.ts';
 import {
   assign,
   buildingsAt,
+  earthStart,
   economy,
   extractionId,
+  extractRate,
+  isExtraction,
+  isStockless,
   flowsOf,
   homeSite,
   isUnlocked,
@@ -17,7 +29,9 @@ import {
   setShipPercent,
   siteAt,
   standing,
+  setOn,
   startProgramme,
+  switchSome,
   touch,
   unlockedProcesses,
   unlockedTag,
@@ -43,7 +57,13 @@ export interface PlayReport {
   log: string[];
 }
 
-const floor = (materialId: string): number => (material(materialId).unit ? 1 : 1000);
+const floor = (materialId: string): number => (material(materialId).unit ? 1 : extractRate(materialId));
+
+const SPARE = 1.2;
+const TRIM_STOCK_DAYS = 365;
+const TRIM_PASSES = 5;
+const TRIM_EVERY_DAYS = 30;
+const END_PRODUCTS = new Set(Object.keys(earthStart.endProducts));
 
 const BOOSTER = 'play-booster';
 const ORBITER = 'play-orbiter';
@@ -99,9 +119,55 @@ export class Player {
       }
   }
 
+  protected trimmedAt = -Infinity;
+
+  protected trimmable(processId: string): string | undefined {
+    const p = process(processId, this.earth.body);
+    const finite = (m: string) => (reserveOf(m)?.content ?? null) !== null;
+    const outputs = Object.entries(p.outputs).sort((a, b) => b[1] - a[1]);
+    const end = outputs.find(([m]) => END_PRODUCTS.has(m));
+    if (end) return end[0];
+    if (isExtraction(processId)) return outputs.find(([m]) => finite(m))?.[0];
+    if (!Object.keys(p.inputs).some(finite)) return undefined;
+    return recipe(processId).product ?? outputs.find(([m]) => !isStockless(m))?.[0];
+  }
+
+  protected economise(): void {
+    for (let i = 0; i < TRIM_PASSES && this.trimPass(); i++);
+    touch();
+  }
+
+  protected trimPass(): boolean {
+    const site = this.earth;
+    const f = flowsOf(site);
+    let changed = false;
+    for (const g of [...site.groups]) {
+      if (!g.on || !g.process || this.pinned.has(g.process)) continue;
+      const id = this.trimmable(g.process);
+      if (!id) continue;
+      const per = process(g.process, site.body).outputs[id] ?? 0;
+      const need = Math.max(((f.consumed[id] ?? 0) + (f.eaten[id] ?? 0)) * SPARE, this.floorRate(id));
+      if (per <= 0 || (site.stock[id] ?? 0) < need * 24 * TRIM_STOCK_DAYS) continue;
+      const running = site.groups
+        .filter((x) => x.on && x.building === g.building && x.process === g.process)
+        .reduce((a, x) => a + x.count, 0);
+      const surplus = Math.min(g.count, running - Math.max(1, Math.ceil(need / per)));
+      if (surplus <= 0) continue;
+      switchSome(economy, site, g.id, surplus);
+      this.say(`switched off ${surplus} ${building(g.building).name} on ${material(id).name}`);
+      changed = true;
+    }
+    touch();
+    return changed;
+  }
+
   days(n: number): void {
     let left = n;
     while (left > 1e-9) {
+      if (this.game.elapsed - this.trimmedAt >= TRIM_EVERY_DAYS * 86_400) {
+        this.economise();
+        this.trimmedAt = this.game.elapsed;
+      }
       const step = Math.min(left, 5);
       this.shareShipyards();
       this.game.advance(step * DAY);
@@ -133,6 +199,7 @@ export class Player {
       ? (m.sources?.find((s) => s.body === 'earth')?.building ?? 'mine_earth')
       : recipesProducing(materialId).find((r) => r.id === id)!.building;
     this.chosen.set(materialId, id);
+    this.standOnly.delete(b);
     if (standing(site, b) <= 0) {
       if (!site.queue.some((o) => o.building === b)) {
         queueBuilding(economy, site, b, id);
@@ -145,16 +212,34 @@ export class Player {
     const per = proc.outputs[materialId] ?? 0;
     if (per <= 0) return false;
     const have = site.groups
-      .filter((g) => g.building === b && g.process === id)
+      .filter((g) => g.building === b && g.process === id && g.on)
       .reduce((a, g) => a + g.count, 0);
     const want = Math.ceil(kgPerHour / per);
     if (have >= want) return true;
+    const parked =
+      site.groups.find((g) => g.building === b && g.process === id && !g.on) ??
+      site.groups
+        .filter((g) => g.building === b && !g.on && g.process !== null)
+        .sort((x, y) => y.count - x.count)[0];
+    if (parked) {
+      const n = Math.min(want - have, parked.count);
+      const moved = parked.process === id ? parked : assign(economy, site, parked.id, id, n);
+      if (moved) {
+        switchSome(economy, site, moved.id, n);
+        this.say(`switched on ${n} ${building(b).name} on ${proc.name}`);
+        touch();
+        return true;
+      }
+    }
     const donors = site.groups
-      .filter((g) => g.building === b && g.process !== id && g.on && g.process !== null)
+      .filter((g) => g.building === b && g.process !== id && g.on)
       .sort((x, y) => y.count - x.count);
-    const donor = donors[0];
-    if (donor && donor.count > 1) {
-      const n = Math.min(want - have, Math.max(1, Math.floor(donor.count / 2)));
+    const donor = donors.find((g) => g.process === null) ?? donors[0];
+    if (donor && (donor.count > 1 || donor.process === null)) {
+      const n = Math.min(
+        want - have,
+        donor.process === null ? donor.count : Math.max(1, Math.floor(donor.count / 2))
+      );
       assign(economy, site, donor.id, id, n);
       this.say(`switched ${n} ${building(b).name} to ${proc.name}`);
     } else {
@@ -172,8 +257,29 @@ export class Player {
     return floor(id);
   }
 
+  protected readonly standOnly = new Set<string>();
+  protected readonly pinned = new Set<string>();
+
+  protected restStanding(): void {
+    const site = this.earth;
+    for (const g of site.groups)
+      if (g.on && g.process && this.standOnly.has(g.building) && !this.pinned.has(g.process))
+        setOn(site, g.id, false);
+    touch();
+  }
+
+  protected pin(buildingId: string, processId: string): void {
+    const site = this.earth;
+    this.pinned.add(processId);
+    this.standOnly.delete(buildingId);
+    for (const g of site.groups)
+      if (!g.on && g.building === buildingId && g.process === processId) setOn(site, g.id, true);
+    touch();
+  }
+
   protected fixShortages(): void {
     const site = this.earth;
+    this.restStanding();
     const f = flowsOf(site);
     for (const a of f.actors) {
       if (a.limit?.kind === 'material' && a.worst < 0.999) {
@@ -199,8 +305,8 @@ export class Player {
     const b = building(id);
     if (!b.where.includes('earth')) return;
     if (standing(site, id) > 0 || site.queue.some((o) => o.building === id)) return;
-    const p = unlockedProcesses(economy, site, id)[0];
-    queueBuilding(economy, site, id, p?.id ?? null);
+    queueBuilding(economy, site, id, null);
+    this.standOnly.add(id);
     this.say(`queued a ${b.name}`);
   }
 
@@ -337,8 +443,15 @@ export class Player {
       const have = here(d.id).length + site.yard.filter((o) => o.design === d.id).length;
       if (have < 1) orderShips(site, d.id, 1);
     }
+    const rations = 3000;
+    const short = () => (site.stock.food_ration ?? 0) < rations;
     let guard = 0;
-    while ([booster, orbiter, habitat].some((d) => here(d.id).length < 1) && guard++ < 200) {
+    while ((short() || [booster, orbiter, habitat].some((d) => here(d.id).length < 1)) && guard++ < 200) {
+      if (short())
+        this.produce(
+          'food_ration',
+          Math.max(this.floorRate('food_ration'), (rations - (site.stock.food_ration ?? 0)) / 48)
+        );
       this.fixShortages();
       this.days(2);
     }
@@ -347,7 +460,7 @@ export class Player {
       type: 'manifest',
       lines: [
         { item: { kind: 'crew' }, amount: crew },
-        { item: { kind: 'cargo', id: 'food_ration' }, amount: 3000 }
+        { item: { kind: 'cargo', id: 'food_ration' }, amount: rations }
       ]
     });
     this.days(1);

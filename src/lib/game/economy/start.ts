@@ -20,6 +20,7 @@ export interface StartSite {
   gridKw: number;
   stockDays: number;
   startStock: Record<string, number>;
+  endProducts: Record<string, number>;
   groups: StartGroup[];
 }
 

@@ -146,7 +146,7 @@ export class PathPlayer extends Player {
   }
 
   protected supplyRate(id: string, short: number): number {
-    return Math.max(material(id).unit ? 1 : 1000, short / 24);
+    return Math.max(this.floorRate(id), short / 24);
   }
 
   protected supply(cargo: Record<string, number>): void {

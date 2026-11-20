@@ -77,6 +77,7 @@ export class OuterPlayer extends JumpPlayer {
 
   protected earthProcess(buildingId: string, process: string, count: number, limit = 1500): boolean {
     const earth = this.earth;
+    this.pin(buildingId, process);
     const have = () =>
       earth.groups
         .filter((g) => g.building === buildingId && g.process === process)
