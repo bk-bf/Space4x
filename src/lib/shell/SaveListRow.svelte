@@ -45,7 +45,7 @@
       />
     </span>
     <span class="sub">
-      <span use:tooltip={'Milestones reached'}><Icon name="flask" class="sm" />{save.meta.milestones}</span>
+      <span use:tooltip={'Projects researched'}><Icon name="flask" class="sm" />{save.meta.researched}</span>
       <span use:tooltip={'Sites'}><Icon name="dome" class="sm" />{save.meta.sites}</span>
       <span use:tooltip={'Ships'}><Icon name="ship" class="sm" />{save.meta.ships}</span>
     </span>

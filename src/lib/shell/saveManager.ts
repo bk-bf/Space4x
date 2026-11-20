@@ -100,7 +100,7 @@ export function isActiveCommitted(): boolean {
 export interface SaveMeta {
   version: number;
   time: number;
-  milestones: number;
+  researched: number;
   sites: number;
   ships: number;
   savedAt: number;
@@ -119,7 +119,7 @@ function buildMeta(
   return {
     version: data.version,
     time: data.game.time,
-    milestones: data.economy.done.length,
+    researched: data.economy.done.length,
     sites: data.economy.sites.length,
     ships: data.ships.vessels.length,
     savedAt: Date.now(),
@@ -234,7 +234,7 @@ export async function listSaves(): Promise<SaveEntry[]> {
         meta = {
           version: typeof dyn?.version === 'number' ? dyn.version : 0,
           time: dyn?.game?.time ?? START_TIME,
-          milestones: dyn?.economy?.done?.length ?? 0,
+          researched: dyn?.economy?.done?.length ?? 0,
           sites: dyn?.economy?.sites?.length ?? 0,
           ships: dyn?.ships?.vessels?.length ?? 0,
           savedAt: 0,

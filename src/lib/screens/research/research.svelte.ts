@@ -1,4 +1,5 @@
 import { hasProject } from '#lib/game/data/index.ts';
+import { economy, startProgramme, touch } from '#lib/game/economy/index.ts';
 
 export const RESEARCH_TABS = ['tree', 'programmes', 'unlocks', 'scientists'] as const;
 export type ResearchTab = (typeof RESEARCH_TABS)[number];
@@ -28,4 +29,5 @@ export function applyResearchParams(params: URLSearchParams): void {
   if (found) research.tab = found;
   const s = Number(params.get('scientist'));
   if (Number.isInteger(s) && s > 0) research.scientist = s;
+  for (const v of params.getAll('start')) if (startProgramme(economy, Number(v))) touch();
 }

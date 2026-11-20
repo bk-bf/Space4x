@@ -50,9 +50,7 @@ test.describe('cross-screen buttons', () => {
 });
 
 test.describe('the top bar', () => {
-  test('people, power and milestones agree with the Economy screen and follow the clock', async ({
-    page
-  }) => {
+  test('people, power and research agree with the Economy screen and follow the clock', async ({ page }) => {
     await open(page, 'screen=economy');
     const stat = (n: number) => page.locator('#summaryStats .ui-kpi').nth(n).locator('.big');
     const people = stat(0);
@@ -70,7 +68,7 @@ test.describe('the top bar', () => {
     await expect(people).not.toHaveText(before);
     await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
     await goTo(page, 'research');
-    await expect(page.locator('[data-screen="research"]')).toContainText('0 of 29 reached');
+    await expect(page.locator('[data-screen="research"]')).toContainText('0 of 69 researched');
   });
 
   test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {

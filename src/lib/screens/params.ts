@@ -7,8 +7,8 @@ import { applyResearchParams } from './research/research.svelte.ts';
 
 export function applyScreenParams(params: URLSearchParams): void {
   applyEconomyParams(params);
-  applyResearchParams(params);
   applyClassParams(params);
+  applyResearchParams(params);
   applyCommandersParams(params);
   applyIntelParams(params);
   applyGalaxyParams(params);

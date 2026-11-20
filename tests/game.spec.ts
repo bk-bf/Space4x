@@ -122,7 +122,9 @@ test('boosters lift a design to orbit in the designer and a site is planned befo
 
 const MONTH_STEP = '[data-step="2592000"]';
 
-test('running at a month a second pauses at a milestone, which shows from Economy', async ({ page }) => {
+test('running at a month a second pauses when a project is researched, which shows from Economy', async ({
+  page
+}) => {
   await page.goto('/?test&screen=economy');
   await expect(page.locator('#top[data-ready="true"]')).toBeAttached({ timeout: 20_000 });
   const started = await page.evaluate(() => {
@@ -136,7 +138,7 @@ test('running at a month a second pauses at a milestone, which shows from Econom
   await page.locator('#bPlay').click();
   await expect(page.locator('#bPause')).toHaveAttribute(
     'aria-label',
-    'Paused by: Milestone 1 reached: Reusable orbital launch.',
+    'Paused by: Booster recovery researched.',
     { timeout: 60_000 }
   );
   await expect(page.locator('#bPlay')).not.toHaveClass(/on/);
@@ -145,7 +147,7 @@ test('running at a month a second pauses at a milestone, which shows from Econom
   await page.waitForTimeout(400);
   await expect(page.locator('#clock')).toHaveText(clock);
   await page.locator('[data-nav="map"]').click();
-  await expect(page.locator('#events .ev.paused')).toContainText('Milestone 1 reached');
+  await expect(page.locator('#events .ev.paused')).toContainText('Booster recovery researched');
 });
 
 test('a station running out of food pauses the game and warns in the top bar, which opens it', async ({

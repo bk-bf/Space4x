@@ -12,10 +12,11 @@ import { stageProjects } from './stages.ts';
 import { isSurveyed } from './survey.svelte.ts';
 
 const year = (ms: number) => new Date(ms).getUTCFullYear();
+const date = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const researchedAt = (game: Game) =>
   game.events
     .filter((e) => e.kind === 'research' && e.project !== undefined)
-    .map((e) => [e.project, formatDay(e.at)])
+    .map((e) => [e.project, date(e.at)])
     .reverse();
 const upTo = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
@@ -106,7 +107,7 @@ describe('the scripted player from the start state', () => {
     expect(reached.map((r) => r.number)).toEqual(upTo(17));
     const times = reached.map((r) => r.at);
     expect([...times].sort((a, b) => a - b)).toEqual(times);
-    console.info('stages 1 to 17', JSON.stringify(reached.map((r) => [r.number, formatDay(r.at)])));
+    console.info('stages 1 to 17', JSON.stringify(reached.map((r) => [r.number, date(r.at)])));
     console.info('researched', JSON.stringify(researchedAt(game)));
     expect(year(times[0]!)).toBe(2026);
     expect(year(times[5]!)).toBeLessThan(2035);

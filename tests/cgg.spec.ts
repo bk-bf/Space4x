@@ -125,21 +125,20 @@ test.describe('ship designer', () => {
     await expect(page.locator('#clsYard')).toHaveValue('rocket_factory');
   });
 
-  test('components the milestones have not reached are dimmed and name what they wait for', async ({
+  test('components whose project is not researched are dimmed and name what they wait for', async ({
     page
   }) => {
     await open(page, 'screen=classes');
     await expect(add(page, 'chemical_engine_methalox')).toBeEnabled();
     await expect(add(page, 'chemical_engine_hydrolox')).toBeDisabled();
-    await expect(part(page, 'chemical_engine_hydrolox')).toHaveAttribute('data-locked', '6');
+    await expect(part(page, 'chemical_engine_hydrolox')).toHaveAttribute('data-locked', '9');
     await expect(part(page, 'chemical_engine_hydrolox')).toContainText('locked');
     await part(page, 'chemical_engine_hydrolox').hover();
-    await expect(page.locator('#ui-tip')).toContainText('Crewed lunar landing and surface outpost');
-    await expect(page.locator('#ui-tip')).toContainText('needs LEO station first');
-    await open(page, 'screen=classes&reached=6');
+    await expect(page.locator('#ui-tip')).toContainText('Needs Hydrolox and storable engines');
+    await open(page, 'screen=classes&reached=9');
     await expect(add(page, 'chemical_engine_hydrolox')).toBeEnabled();
     await expect(part(page, 'chemical_engine_hydrolox')).not.toHaveAttribute('data-locked', /./);
-    await expect(part(page, 'hall_thruster')).toHaveAttribute('data-locked', '13');
+    await expect(part(page, 'hall_thruster')).toHaveAttribute('data-locked', '11');
   });
 
   test('the components are grouped by kind with a name and a key figure', async ({ page }) => {

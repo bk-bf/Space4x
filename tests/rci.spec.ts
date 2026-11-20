@@ -24,43 +24,44 @@ async function eventTexts(page: Page): Promise<string[]> {
 }
 
 test.describe('research', () => {
-  const tile = (page: Page, n: number): Locator => page.locator(`#techTree [data-milestone="${n}"] button`);
-  const slot = (page: Page, n: number): Locator => page.locator(`#techTree [data-milestone="${n}"]`);
+  const tile = (page: Page, n: number): Locator => page.locator(`#techTree [data-project="${n}"] button`);
+  const slot = (page: Page, n: number): Locator => page.locator(`#techTree [data-project="${n}"]`);
   const card = (page: Page): Locator => page.locator('[data-screen="research"] .ui-card');
   const title = (page: Page): Locator => card(page).locator('header .t');
   const kpi = (page: Page, label: string): Locator =>
     page.locator('[data-screen="research"] .ui-kpi').filter({ has: page.getByText(label, { exact: true }) });
   const rtab = (page: Page, id: string) =>
     page.locator(`[data-screen="research"] [data-tab="${id}"]`).click();
+  const READY_AT_START = [1, 3, 7, 9, 20, 41, 45, 53, 57, 65];
 
-  test('shows the 29 milestones as tiles in a dependency tree, and a tile click selects one', async ({
+  test('shows the 69 projects as tiles in a dependency tree, and a tile click selects one', async ({
     page
   }) => {
     await open(page, 'screen=research');
-    await expect(page.locator('#techTree .tpos')).toHaveCount(29);
+    await expect(page.locator('#techTree .tpos')).toHaveCount(69);
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
     await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
-    await expect(title(page)).toHaveText('1. Reusable orbital launch');
-    await tile(page, 29).click();
-    await expect(title(page)).toHaveText('29. Jump point stabilisation');
-    await expect(tile(page, 29)).toHaveClass(/sel/);
+    await expect(title(page)).toHaveText('1. Booster recovery');
+    await tile(page, 38).click();
+    await expect(title(page)).toHaveText('38. Jump point stabilisation');
+    await expect(tile(page, 38)).toHaveClass(/sel/);
     await expect(tile(page, 1)).not.toHaveClass(/sel/);
     await expectCleanLayout(page);
   });
 
-  test('selecting a milestone outlines what it needs and what it opens, and colours the lines to match', async ({
+  test('selecting a project outlines what it needs and what needs it, and colours the lines to match', async ({
     page
   }) => {
-    await open(page, 'screen=research&milestone=3');
-    await expect(tile(page, 1)).toHaveClass(/needs/);
+    await open(page, 'screen=research&project=4');
     await expect(tile(page, 2)).toHaveClass(/needs/);
-    await expect(tile(page, 6)).toHaveClass(/feeds/);
-    await expect(tile(page, 11)).toHaveClass(/feeds/);
-    await expect(tile(page, 5)).not.toHaveClass(/needs|feeds/);
+    await expect(tile(page, 3)).toHaveClass(/needs/);
+    await expect(tile(page, 5)).toHaveClass(/feeds/);
+    await expect(tile(page, 49)).toHaveClass(/feeds/);
+    await expect(tile(page, 7)).not.toHaveClass(/needs|feeds/);
     await expect(page.locator('#techTree path.e.into')).toHaveCount(2);
-    await expect(page.locator('#techTree path.e.out')).toHaveCount(3);
+    await expect(page.locator('#techTree path.e.out')).toHaveCount(5);
     await expect(page.locator('#techTree path.e.done')).toHaveCount(0);
-    await open(page, 'screen=research&milestone=12&reached=3');
+    await open(page, 'screen=research&project=12&reached=3');
     await expect(page.locator('#techTree path.e.done').first()).toHaveAttribute('d', /^M/);
   });
 
@@ -71,36 +72,25 @@ test.describe('research', () => {
     ]) {
       await page.setViewportSize(size);
       await open(page, 'screen=research');
-      const boxes = [];
-      for (let n = 1; n <= 29; n++) {
-        const b = await tile(page, n).boundingBox();
-        expect(b, `milestone ${n}`).not.toBeNull();
-        expect(b!.width, `milestone ${n}`).toBe(144);
-        expect(b!.height, `milestone ${n}`).toBe(56);
-        boxes.push({ n, ...b! });
+      const boxes = await page
+        .locator('#techTree .tpos button')
+        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect));
+      expect(boxes).toHaveLength(69);
+      for (const [i, b] of boxes.entries()) {
+        expect(b.width, `project ${i + 1}`).toBe(144);
+        expect(b.height, `project ${i + 1}`).toBe(56);
       }
-      for (const a of boxes)
-        for (const b of boxes) {
-          if (a.n >= b.n) continue;
+      for (const [i, a] of boxes.entries())
+        for (const [j, b] of boxes.entries()) {
+          if (i >= j) continue;
           const apart =
             a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y;
-          expect(apart, `${a.n} and ${b.n} at ${size.width}`).toBe(true);
+          expect(apart, `${i + 1} and ${j + 1} at ${size.width}`).toBe(true);
         }
     }
   });
 
-  test('the whole tree is in view without vertical scrolling at 1440x900', async ({ page }) => {
-    await open(page, 'screen=research');
-    const m = await page.locator('#techTree').evaluate((el) => ({
-      sh: el.scrollHeight,
-      ch: el.clientHeight,
-      page: document.documentElement.scrollHeight - innerHeight
-    }));
-    expect(m.sh).toBeLessThanOrEqual(m.ch + 1);
-    expect(m.page).toBeLessThanOrEqual(0);
-  });
-
-  test('the tree scrolls sideways inside its panel and brings the selected tile into view', async ({
+  test('the tree scrolls inside its panel, never the page, and brings the selected tile into view', async ({
     page
   }) => {
     await open(page, 'screen=research');
@@ -111,19 +101,17 @@ test.describe('research', () => {
     expect(first.wide).toBeGreaterThan(first.shown);
     expect(first.left).toBe(0);
     const box = (await tree.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.wheel(0, 400);
-    await expect.poll(async () => (await metrics()).left).toBeGreaterThan(0);
-    expect(await page.evaluate(() => document.documentElement.scrollTop)).toBe(0);
-    const wheeled = (await metrics()).left;
     await page.mouse.move(box.x + box.width - 30, box.y + 4);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width - 230, box.y + 4, { steps: 5 });
     await page.mouse.up();
-    await expect.poll(async () => (await metrics()).left).toBeGreaterThan(wheeled + 100);
+    await expect.poll(async () => (await metrics()).left).toBeGreaterThan(100);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)
+    ).toBeLessThanOrEqual(0);
 
-    await open(page, 'screen=research&milestone=29');
-    const t = (await tile(page, 29).boundingBox())!;
+    await open(page, 'screen=research&project=38');
+    const t = (await tile(page, 38).boundingBox())!;
     const v = (await page.locator('#techTree').boundingBox())!;
     expect((await metrics()).left).toBeGreaterThan(0);
     expect(t.x).toBeGreaterThanOrEqual(v.x + 132);
@@ -133,7 +121,7 @@ test.describe('research', () => {
   });
 
   test('the lane labels stay in place while the tree scrolls', async ({ page }) => {
-    await open(page, 'screen=research&milestone=29');
+    await open(page, 'screen=research&project=38');
     const label = page.locator('#techTree [data-lane="launch"]');
     const v = (await page.locator('#techTree').boundingBox())!;
     expect(Math.abs((await label.boundingBox())!.x - v.x)).toBeLessThanOrEqual(1);
@@ -141,107 +129,136 @@ test.describe('research', () => {
     await expect(page.locator('#techTree [data-lane]')).toHaveCount(8);
   });
 
-  test('a locked tile names the prerequisites it waits for, and a milestone whose prerequisites are done is not locked while a lower unrelated one is open', async ({
+  test('a locked tile names the prerequisites it waits for, and a project whose prerequisites are researched is ready while an unrelated one is not', async ({
     page
   }) => {
     await open(page, 'screen=research');
-    await tile(page, 3).hover();
-    await expect(page.locator('#ui-tip')).toContainText(
-      'Locked until Orbital launch and Propellant transfer done'
-    );
-    await open(page, 'screen=research&reached=4&milestone=6');
-    await expect(slot(page, 5)).toHaveAttribute('data-status', 'ready');
-    await expect(slot(page, 6)).toHaveAttribute('data-status', 'ready');
-    await expect(slot(page, 7)).toHaveAttribute('data-status', 'locked');
-    await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
+    await tile(page, 2).hover();
+    await expect(page.locator('#ui-tip')).toContainText('Locked until Booster recovery researched');
+    await open(page, 'screen=research&reached=3&project=4');
+    await expect(slot(page, 4)).toHaveAttribute('data-status', 'ready');
+    await expect(slot(page, 5)).toHaveAttribute('data-status', 'locked');
+    await expect(page.locator('#requires .ui-tile')).toHaveCount(2);
     await expect(page.locator('#programmeWhy')).toHaveCount(0);
     await expect(page.locator('#programmeStart')).toBeEnabled();
-    await tile(page, 7).hover();
-    await expect(page.locator('#ui-tip')).toContainText('Locked until Lunar outpost done');
   });
 
-  test('the query selects a milestone and a tab', async ({ page }) => {
-    await open(page, 'screen=research&milestone=12&rtab=unlocks');
-    await expect(title(page)).toHaveText('12. Cislunar propellant economy');
+  test('the query selects a project and a tab', async ({ page }) => {
+    await open(page, 'screen=research&project=12&rtab=unlocks');
+    await expect(title(page)).toHaveText('12. Asteroid mining');
     await expect(page.locator('[data-unlock="12"]')).toHaveClass(/sel/);
     await expect(page.locator('[data-unlock="0"]')).toContainText('At the start');
+    await expect(page.locator('[data-unlock="53"]')).toContainText('×1.2 research points a lab');
     await page.locator('[data-unlock="5"]').click();
-    await expect(title(page)).toHaveText('5. Data centres and autonomy');
+    await expect(title(page)).toHaveText('5. Autonomous operations');
   });
 
-  test('the strip counts reached, running and ready projects, compute and what is open', async ({ page }) => {
+  test('the strip counts researched and running projects, labs, compute and scientists, and the top bar the labs', async ({
+    page
+  }) => {
     await open(page, 'screen=research');
-    await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('0 of 29');
+    await expect(kpi(page, 'researched').locator('.big')).toHaveText('0 of 69');
     await expect(kpi(page, 'none running')).toBeVisible();
-    await expect(kpi(page, 'ready to start').locator('.big')).toHaveText('1');
-    await expect(kpi(page, 'buildings and parts open').locator('.big')).not.toHaveText('0');
-    await open(page, 'screen=research&reached=3');
-    await expect(kpi(page, 'milestones reached').locator('.big')).toHaveText('3 of 29');
+    await expect(kpi(page, 'labs assigned').locator('.big')).toHaveText('0 / 4');
+    await expect(kpi(page, '6 unassigned')).toBeVisible();
+    await expect(page.locator('#chips [data-chip="labs"]')).toContainText('0 / 4');
+    await open(page, 'screen=research&reached=3&start=4');
+    await expect(kpi(page, 'researched').locator('.big')).toHaveText('3 of 69');
+    await expect(kpi(page, 'labs assigned').locator('.big')).toHaveText('3 / 4');
+    await expect(kpi(page, '5 unassigned')).toBeVisible();
+    await expect(kpi(page, 'to labs').locator('.big')).toHaveText('54 EFLOP/s');
   });
 
-  test('the programmes tab groups milestones by state and a tile selects one', async ({ page }) => {
+  test('the projects tab groups projects by state and a tile selects one', async ({ page }) => {
     await open(page, 'screen=research&rtab=programmes');
     const group = (status: string) => page.locator(`.slot[data-status="${status}"]`);
     await expect(page.locator('h3[data-group="running"]')).toContainText('0');
-    await expect(page.locator('h3[data-group]')).toHaveCount(4);
-    await expect(group('ready')).toHaveCount(1);
-    await expect(group('locked')).toHaveCount(28);
-    await expect(group('ready').locator('.ui-nm')).toHaveText('Orbital launch');
-    await page.locator('.slot[data-milestone="6"] button').click();
-    await expect(title(page)).toHaveText('6. Crewed lunar landing and surface outpost');
+    await expect(page.locator('h3[data-group]')).toHaveCount(5);
+    await expect(group('ready')).toHaveCount(READY_AT_START.length);
+    await expect(group('locked')).toHaveCount(69 - READY_AT_START.length);
+    await page.locator('.slot[data-project="6"] button').click();
+    await expect(title(page)).toHaveText('6. Remote-sensing instruments');
     await expectCleanLayout(page);
   });
 
   test('the card checks the prerequisites and nothing else', async ({ page }) => {
-    await open(page, 'screen=research&milestone=6');
-    await expect(page.locator('#programmeStart')).toBeDisabled();
+    await open(page, 'screen=research&project=6');
+    await expect(page.locator('#programmeStart')).toHaveCount(0);
     await expect(page.locator('#programmeWhy')).toContainText('Needs');
-    await expect(page.locator('#requires')).toContainText('LEO station');
+    await expect(page.locator('#requires')).toContainText('Autonomous operations');
     await expect(page.locator('#programmeBill, #siteNeeds, .ui-have')).toHaveCount(0);
-    await open(page, 'screen=research&milestone=6&reached=5');
+    await open(page, 'screen=research&project=6&reached=5');
     await expect(page.locator('#programmeStart')).toBeEnabled();
+    await expect(page.locator('#programmeScientists .ui-tile')).toHaveCount(6);
     await expect(page.locator('#programmeWhy')).toHaveCount(0);
-    await open(page, 'screen=research&milestone=2&reached=1');
-    await expect(page.locator('#requires .ui-tile')).toHaveCount(1);
   });
 
-  test('the Start button stays inside a 1280x720 window for every milestone', async ({ page }) => {
+  test('the Create button stays inside a 1280x720 window for every project ready at the start', async ({
+    page
+  }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await open(page, 'screen=research');
-    for (let n = 1; n <= 29; n++) {
+    for (const n of READY_AT_START) {
       await tile(page, n).click();
       const b = await page.locator('#programmeStart').boundingBox();
-      expect(b, `milestone ${n}`).not.toBeNull();
-      expect(b!.y, `milestone ${n}`).toBeGreaterThanOrEqual(0);
-      expect(b!.y + b!.height, `milestone ${n}`).toBeLessThanOrEqual(720);
-      expect(b!.x + b!.width, `milestone ${n}`).toBeLessThanOrEqual(1280);
+      expect(b, `project ${n}`).not.toBeNull();
+      expect(b!.y, `project ${n}`).toBeGreaterThanOrEqual(0);
+      expect(b!.y + b!.height, `project ${n}`).toBeLessThanOrEqual(720);
+      expect(b!.x + b!.width, `project ${n}`).toBeLessThanOrEqual(1280);
     }
   });
 
-  test('a programme is started here, runs with the clock, survives a screen switch and writes an event', async ({
+  test('a project is created on a scientist and labs, runs with the clock, survives a screen switch and writes an event', async ({
     page
   }) => {
     await open(page, 'screen=research');
-    await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
-    await expect(page.locator('#programmeWhy')).toHaveCount(0);
-    await expect(page.locator('#programmeStart')).toBeEnabled();
+    await expect(page.locator('#programmeScientists .ui-tile').first()).toContainText('Aiko Tanaka');
+    await expect(page.locator('#programmePlanLabs')).toContainText('3 / 3');
     await page.locator('#programmeStart').click();
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'running');
-    await expect(page.locator('#programmeStart')).toHaveCount(0);
-    await expect(page.locator('#programmeProgress')).toBeVisible();
-    await expect(kpi(page, 'next done in 60 d')).toBeVisible();
+    await expect(page.locator('#programmeLead')).toContainText('Aiko Tanaka');
+    await expect(page.locator('#programmeLabs')).toContainText('3 / 3');
+    await page.locator('#programmeLabs button').first().click();
+    await expect(page.locator('#programmeLabs')).toContainText('2 / 3');
+    await expect(kpi(page, 'labs assigned').locator('.big')).toHaveText('2 / 4');
     await rtab(page, 'programmes');
     await expect(page.locator('.slot[data-status="running"]')).toHaveCount(1);
     await page.locator('[data-nav="economy"]').click();
     await page.locator('[data-nav="research"]').click();
     await expect(page.locator('.slot[data-status="running"]')).toHaveCount(1);
-    await advance(page, 30 * DAY, 3);
+    await advance(page, 30 * DAY, 12);
     await expect(page.locator('.slot[data-status="done"]')).toHaveCount(1);
     await rtab(page, 'tree');
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'done');
-    await expect(page.locator('#techTree path.e').first()).toHaveAttribute('d', /^M/);
     const events = await eventTexts(page);
-    expect(events.some((e) => e.includes('Milestone 1 reached: Reusable orbital launch.'))).toBe(true);
+    expect(events.some((e) => e.includes('Booster recovery researched.'))).toBe(true);
+  });
+
+  test("a busy scientist's project is queued and can be cancelled", async ({ page }) => {
+    await open(page, 'screen=research&project=9&start=1');
+    await page.locator('#programmeScientists .ui-tile', { hasText: 'Aiko Tanaka' }).click();
+    await expect(page.locator('#programmeStart')).toHaveText('Queue for Aiko');
+    await expect(page.locator('#programmePlanLabs')).toHaveCount(0);
+    await page.locator('#programmeStart').click();
+    await expect(slot(page, 9)).toHaveAttribute('data-status', 'queued');
+    await expect(page.locator('#programmeQueued')).toContainText('Queued for Aiko Tanaka');
+    await page.locator('#programmeCancel').click();
+    await expect(slot(page, 9)).toHaveAttribute('data-status', 'ready');
+  });
+
+  test('the scientists tab shows every scientist with a portrait, and their card creates a project', async ({
+    page
+  }) => {
+    await open(page, 'screen=research&rtab=scientists');
+    const tiles = page.locator('#scientists .ui-tile.off');
+    await expect(tiles).toHaveCount(6);
+    await expect(tiles.first().locator('img.portrait.head')).toBeVisible();
+    await tiles.nth(1).click();
+    await expect(title(page)).toHaveText('Marcus Bell');
+    await expect(card(page)).toContainText('Administration4 labs');
+    await page.locator('#scientistProjects [data-project="3"]').click();
+    await expect(tiles.nth(1)).toContainText('Closed-loop water and air');
+    await expectCleanLayout(page);
   });
 });
 

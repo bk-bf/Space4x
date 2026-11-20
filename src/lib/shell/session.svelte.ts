@@ -32,6 +32,7 @@ const TEST_PARAMS = [
   'test',
   'scenario',
   'reached',
+  'start',
   'new',
   'surveyed',
   'outpost',
