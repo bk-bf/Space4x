@@ -36,10 +36,15 @@ export function depthOf(number: number): number {
   return requires.length ? 1 + Math.max(...requires.map(depthOf)) : 0;
 }
 
-const withEffect = (effect: Effect) =>
-  projects.filter((p) => p.effects?.[effect] !== undefined).sort((a, b) => b.number - a.number);
+const levels = new Map<Effect, { number: number; factor: number }[]>();
+for (const p of [...projects].sort((a, b) => b.number - a.number))
+  for (const [effect, factor] of Object.entries(p.effects ?? {}) as [Effect, number][]) {
+    const list = levels.get(effect) ?? [];
+    list.push({ number: p.number, factor });
+    levels.set(effect, list);
+  }
 
 export function boostOf(done: readonly number[], effect: Effect): number {
-  const found = withEffect(effect).find((p) => done.includes(p.number));
-  return found?.effects?.[effect] ?? 1;
+  if (!done.length) return 1;
+  return levels.get(effect)?.find((l) => done.includes(l.number))?.factor ?? 1;
 }
