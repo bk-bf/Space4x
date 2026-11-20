@@ -156,6 +156,7 @@
     "thin": true,
     "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
     "why": "Compact high-reliability capacitors in flight electronics",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Tantalum_capacitor"
   },
   {
@@ -185,6 +186,7 @@
     "tier": "P",
     "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
     "why": "Iridium-coated rhenium chambers run hot in storable bipropellant thrusters; superalloy additive",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Rhenium"
   },
   {
@@ -210,6 +212,7 @@
       { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
     ],
     "why": "Catalyst in PEM electrolysers, fuel cells and chemical processing",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Platinum_group"
   },
   {
@@ -223,6 +226,7 @@
       { "body": "asteroid-m", "how": "mined", "building": "asteroid_miner" }
     ],
     "why": "Corrosion-free contacts and infrared-reflective thermal coatings",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Gold"
   },
   {
@@ -243,6 +247,7 @@
     "thin": true,
     "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
     "why": "Light stiff metal for mirrors and neutron reflectors in compact reactors",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Beryllium"
   },
   {

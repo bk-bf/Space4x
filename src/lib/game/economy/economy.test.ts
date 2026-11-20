@@ -3,6 +3,7 @@ import { milestone, milestones, material } from '#lib/game/data/index.ts';
 import { newSite } from './index.ts';
 import {
   advanceEconomy,
+  EXTRACT_KG_PER_HOUR,
   assign,
   isMass,
   moveOrder,
@@ -73,9 +74,11 @@ describe('the start state', () => {
     expect(f.workers.needed).toBeLessThan(f.workers.available);
   });
 
-  it('waits on silicon for polysilicon, which Earth does not make at the start', () => {
+  it('waits on silicon for polysilicon when Earth mines none and holds none', () => {
     const eco = startEconomy();
     const site = earthOf(eco);
+    setOn(site, groupOf(site, 'extract:silicon').id, false);
+    site.stock.silicon = 0;
     const poly = actorOf(eco, site, groupOf(site, 'electronic_silicon_purification').id);
     expect(poly.share).toBe(0);
     expect(poly.limit).toEqual({ kind: 'material', id: 'silicon' });
@@ -161,7 +164,8 @@ describe('production', () => {
     const before = siteFlows(eco, site);
     const supply = before.produced.chromium ?? 0;
     setOn(site, mines.id, false);
-    const half = Math.round(mines.count / 2);
+    const wanted = (before.consumed.chromium ?? 0) / actorOf(eco, site, steel.id).share;
+    const half = Math.round(wanted / 2 / EXTRACT_KG_PER_HOUR);
     assign(eco, site, mines.id, 'extract:chromium', 0);
     site.groups.push({ ...mines, id: 9999, count: half, on: true });
     site.stock.chromium = 0;

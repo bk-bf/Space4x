@@ -21,6 +21,7 @@
     "thin": true,
     "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
     "why": "Element of GaAs, InGaP and GaN; recovered as a by-product of bauxite and zinc processing",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Gallium"
   },
   {
@@ -41,6 +42,7 @@
     "thin": true,
     "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
     "why": "Element of InGaP top junctions and transparent conductors",
+    "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Indium"
   },
   {

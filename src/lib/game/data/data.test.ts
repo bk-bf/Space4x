@@ -14,6 +14,7 @@ import {
   depositGrade,
   regions,
   regionsOf,
+  reserves,
   material,
   materials,
   materialSites,
@@ -32,6 +33,7 @@ import {
   type Body,
   type Site
 } from './index.ts';
+import earth from './earth.json';
 
 const SNAKE = /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/;
 const TIERS = ['P', 'E', 'S'];
@@ -140,6 +142,63 @@ describe('files', () => {
     );
     const long = files.filter((f) => readFileSync(root + f, 'utf8').split('\n').length > 420);
     expect(long).toEqual([]);
+  });
+});
+
+describe("Earth's reserves", () => {
+  const HOURS_A_YEAR = 8766;
+  const mineKgAYear = (id: string) => (material(id).extractKgH ?? 1000) * HOURS_A_YEAR;
+  const counts = new Map(
+    earth.groups.filter((g) => g.process?.startsWith('extract:')).map((g) => [g.process!.slice(8), g.count])
+  );
+
+  it('name materials Earth mines, once each, with a basis and a source url', () => {
+    expect(
+      unknown(
+        reserves.map((r) => r.material),
+        materialIds
+      )
+    ).toEqual([]);
+    expect(new Set(reserves.map((r) => r.material)).size).toBe(reserves.length);
+    for (const r of reserves) {
+      expect(r.basis, r.material).not.toBe('');
+      expect(r.source, r.material).toMatch(/^https:\/\//);
+      expect(
+        material(r.material).sources?.some((s) => s.body === 'earth' && s.building === 'mine_earth')
+      ).toBe(true);
+    }
+  });
+
+  it('give a mine rate only as a positive number of kg an hour', () => {
+    for (const m of materials.filter((x) => x.extractKgH !== undefined))
+      expect(m.extractKgH, m.id).toBeGreaterThan(0);
+  });
+
+  it('hold no more content than the published reserve, and positive amounts', () => {
+    for (const r of reserves) {
+      expect(r.reserve, r.material).toBeGreaterThan(0);
+      if (r.content !== null) expect(r.content, r.material).toBeLessThanOrEqual(r.reserve);
+      if (r.content !== null) expect(r.content, r.material).toBeGreaterThan(0);
+      if (r.output !== null) expect(r.output, r.material).toBeGreaterThan(0);
+    }
+  });
+
+  it('convert an ore or oxide reserve to content by the share its mine count takes of world output', () => {
+    for (const r of reserves.filter((x) => x.content !== null && x.content !== x.reserve)) {
+      const count = counts.get(r.material) ?? 0;
+      expect(count, r.material).toBeGreaterThan(0);
+      expect(r.content! / r.reserve).toBeCloseTo((count * mineKgAYear(r.material)) / r.output!, 6);
+    }
+  });
+
+  it('mine no more at the start than world output, within one mine', () => {
+    for (const r of reserves) {
+      const count = counts.get(r.material);
+      if (count === undefined || r.output === null) continue;
+      expect(count * mineKgAYear(r.material), r.material).toBeLessThanOrEqual(
+        r.output + mineKgAYear(r.material)
+      );
+    }
   });
 });
 

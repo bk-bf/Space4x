@@ -172,6 +172,7 @@ describe('a launch', () => {
     const a = spawn('s1e');
     const b = spawn('s2');
     const stack = { stages: [a.id, b.id], payload: { kind: 'none' as const } };
+    site.stock.rp1 = 0;
     const dry = planStack(g, site, stack);
     expect(dry.ok).toBe(false);
     expect(dry.reasons.join(' ')).toMatch(/Kerosene|RP-1|short/i);

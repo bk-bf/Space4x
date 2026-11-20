@@ -13,6 +13,8 @@ import type { Amounts, Building, Recipe, Site as Where } from '#lib/game/data/in
 export const POWER = '@power';
 export const COMPUTE = 'compute';
 export const EXTRACT_KG_PER_HOUR = 1000;
+export const extractRate = (materialId: string): number =>
+  material(materialId).extractKgH ?? EXTRACT_KG_PER_HOUR;
 export const EXTRACT_KW = 200;
 export const FOOD_CATEGORY = 'food';
 
@@ -107,8 +109,8 @@ function extractionProcess(materialId: string, b: Building): Process {
     building: b.id,
     milestone: b.milestone,
     inputs: { [POWER]: EXTRACT_KW },
-    outputs: { [materialId]: EXTRACT_KG_PER_HOUR },
-    extracts: { [materialId]: EXTRACT_KG_PER_HOUR },
+    outputs: { [materialId]: extractRate(materialId) },
+    extracts: { [materialId]: extractRate(materialId) },
     estimated: true
   };
 }

@@ -117,6 +117,7 @@ export interface Material {
   unit?: Unit;
   sources?: Source[];
   kcalPerKg?: number;
+  extractKgH?: number;
   kcalSource?: string;
   kcalBasis?: string;
   kcalEstimated?: boolean;
@@ -241,4 +242,15 @@ export interface Milestone {
     components: string[];
   };
   sources: string[];
+}
+
+export interface ReserveRecord {
+  material: string;
+  reserve: number;
+  basis: string;
+  content: number | null;
+  output: number | null;
+  accessibility: number;
+  source: string;
+  estimated: boolean;
 }

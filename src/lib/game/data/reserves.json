@@ -1,0 +1,432 @@
+[
+  {
+    "material": "phosphorus",
+    "reserve": 74000000000000,
+    "basis": "marketable phosphate rock",
+    "content": 9619443150000,
+    "output": 240000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-phosphate.pdf",
+    "estimated": false
+  },
+  {
+    "material": "graphite",
+    "reserve": 290000000000,
+    "basis": "natural graphite",
+    "content": 290000000000,
+    "output": 1600000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-graphite.pdf",
+    "estimated": false
+  },
+  {
+    "material": "ilmenite",
+    "reserve": 510000000000,
+    "basis": "TiO2 content of ilmenite",
+    "content": null,
+    "output": 8900000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-titanium-minerals.pdf",
+    "estimated": false
+  },
+  {
+    "material": "iron",
+    "reserve": 88000000000000,
+    "basis": "iron content",
+    "content": 88000000000000,
+    "output": 1600000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-iron-ore.pdf",
+    "estimated": false
+  },
+  {
+    "material": "nickel",
+    "reserve": 130000000000,
+    "basis": "nickel content",
+    "content": 130000000000,
+    "output": 3700000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-nickel.pdf",
+    "estimated": false
+  },
+  {
+    "material": "cobalt",
+    "reserve": 11000000000,
+    "basis": "cobalt content",
+    "content": 11000000000,
+    "output": 290000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-cobalt.pdf",
+    "estimated": false
+  },
+  {
+    "material": "aluminium",
+    "reserve": 29000000000000,
+    "basis": "bauxite",
+    "content": 4640252880000,
+    "output": 450000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-bauxite-alumina.pdf",
+    "estimated": false
+  },
+  {
+    "material": "titanium",
+    "reserve": 560000000000,
+    "basis": "TiO2 content, ilmenite and rutile",
+    "content": 335271523404,
+    "output": 9400000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-titanium-minerals.pdf",
+    "estimated": false
+  },
+  {
+    "material": "lithium",
+    "reserve": 30000000000,
+    "basis": "lithium content",
+    "content": 30000000000,
+    "output": 240000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-lithium.pdf",
+    "estimated": false
+  },
+  {
+    "material": "copper",
+    "reserve": 980000000000,
+    "basis": "copper content",
+    "content": 980000000000,
+    "output": 23000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-copper.pdf",
+    "estimated": false
+  },
+  {
+    "material": "chromium",
+    "reserve": 1200000000000,
+    "basis": "chromite ore",
+    "content": 369514876596,
+    "output": 47000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-chromium.pdf",
+    "estimated": false
+  },
+  {
+    "material": "molybdenum",
+    "reserve": 15000000000,
+    "basis": "molybdenum content",
+    "content": 15000000000,
+    "output": 260000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-molybdenum.pdf",
+    "estimated": false
+  },
+  {
+    "material": "tungsten",
+    "reserve": 4600000000,
+    "basis": "tungsten content",
+    "content": 4600000000,
+    "output": 81000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-tungsten.pdf",
+    "estimated": false
+  },
+  {
+    "material": "vanadium",
+    "reserve": 18000000000,
+    "basis": "vanadium content",
+    "content": 18000000000,
+    "output": 100000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-vanadium.pdf",
+    "estimated": false
+  },
+  {
+    "material": "niobium",
+    "reserve": 17000000000,
+    "basis": "niobium content",
+    "content": 17000000000,
+    "output": 110000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-niobium.pdf",
+    "estimated": false
+  },
+  {
+    "material": "tin",
+    "reserve": 4200000000,
+    "basis": "tin content",
+    "content": 4200000000,
+    "output": 300000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-tin.pdf",
+    "estimated": false
+  },
+  {
+    "material": "tantalum",
+    "reserve": 140000000,
+    "basis": "tantalum content",
+    "content": 140000000,
+    "output": 2100000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-tantalum.pdf",
+    "estimated": true
+  },
+  {
+    "material": "zirconium",
+    "reserve": 70000000000,
+    "basis": "ZrO2 content",
+    "content": 34771800000,
+    "output": 1500000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-zirconium-hafnium.pdf",
+    "estimated": false
+  },
+  {
+    "material": "rhenium",
+    "reserve": 2400000,
+    "basis": "rhenium content",
+    "content": 2400000,
+    "output": 62000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-rhenium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "platinum",
+    "reserve": 81000000,
+    "basis": "all platinum-group metals",
+    "content": 81000000,
+    "output": 170000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-platinum-group.pdf",
+    "estimated": false
+  },
+  {
+    "material": "gold",
+    "reserve": 64000000,
+    "basis": "gold content",
+    "content": 64000000,
+    "output": 3300000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-gold.pdf",
+    "estimated": false
+  },
+  {
+    "material": "silver",
+    "reserve": 640000000,
+    "basis": "silver content",
+    "content": 640000000,
+    "output": 25000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-silver.pdf",
+    "estimated": false
+  },
+  {
+    "material": "beryllium",
+    "reserve": 100000000,
+    "basis": "beryllium content",
+    "content": 100000000,
+    "output": 360000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-beryllium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "lead",
+    "reserve": 96000000000,
+    "basis": "lead content",
+    "content": 96000000000,
+    "output": 4300000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-lead.pdf",
+    "estimated": false
+  },
+  {
+    "material": "potassium",
+    "reserve": 4800000000000,
+    "basis": "K2O equivalent",
+    "content": 3984147000000,
+    "output": 48000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-potash.pdf",
+    "estimated": false
+  },
+  {
+    "material": "neodymium",
+    "reserve": 90000000000,
+    "basis": "all rare-earth oxides",
+    "content": null,
+    "output": 390000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-rare-earths.pdf",
+    "estimated": false
+  },
+  {
+    "material": "samarium",
+    "reserve": 90000000000,
+    "basis": "all rare-earth oxides",
+    "content": null,
+    "output": 390000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-rare-earths.pdf",
+    "estimated": false
+  },
+  {
+    "material": "yttrium",
+    "reserve": 90000000000,
+    "basis": "all rare-earth oxides",
+    "content": null,
+    "output": 390000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-rare-earths.pdf",
+    "estimated": false
+  },
+  {
+    "material": "barium",
+    "reserve": 230000000000,
+    "basis": "barium content of barite",
+    "content": 230000000000,
+    "output": 8200000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-barite.pdf",
+    "estimated": true
+  },
+  {
+    "material": "boron",
+    "reserve": 370000000000,
+    "basis": "boron content",
+    "content": 370000000000,
+    "output": null,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-boron.pdf",
+    "estimated": true
+  },
+  {
+    "material": "uranium",
+    "reserve": 3870000000,
+    "basis": "reasonably assured, below $130/kgU",
+    "content": 3870000000,
+    "output": 54345000,
+    "accessibility": 1,
+    "source": "https://oecd-nea.org/upload/docs/application/pdf/2025-04/7683_uranium_2024_-_resources_production_and_demand_2025-04-22_14-29-2_928.pdf",
+    "estimated": false
+  },
+  {
+    "material": "thorium",
+    "reserve": 6400000000,
+    "basis": "thorium, identified resources",
+    "content": 6400000000,
+    "output": null,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-thorium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "silicon",
+    "reserve": 1000000000000000,
+    "basis": "silicon content of quartzite and quartz sand",
+    "content": 1000000000000000,
+    "output": 9700000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-silicon.pdf",
+    "estimated": true
+  },
+  {
+    "material": "gallium",
+    "reserve": 100000000,
+    "basis": "recoverable gallium in bauxite",
+    "content": 100000000,
+    "output": 760000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-gallium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "germanium",
+    "reserve": 8600000,
+    "basis": "germanium in zinc ores",
+    "content": 8600000,
+    "output": null,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-germanium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "indium",
+    "reserve": 15000000,
+    "basis": "indium in zinc ores",
+    "content": 15000000,
+    "output": 1080000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-indium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "arsenic",
+    "reserve": 880000000,
+    "basis": "arsenic content",
+    "content": 880000000,
+    "output": 58000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-arsenic.pdf",
+    "estimated": true
+  },
+  {
+    "material": "fluorite",
+    "reserve": 320000000000,
+    "basis": "fluorspar",
+    "content": 320000000000,
+    "output": 9500000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-fluorspar.pdf",
+    "estimated": false
+  },
+  {
+    "material": "sulfur",
+    "reserve": 5000000000000,
+    "basis": "sulfur in oil, gas and sulfide ores",
+    "content": 5000000000000,
+    "output": 85000000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-sulfur.pdf",
+    "estimated": true
+  },
+  {
+    "material": "iodine",
+    "reserve": 6200000000,
+    "basis": "iodine",
+    "content": 6200000000,
+    "output": 33000000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-iodine.pdf",
+    "estimated": false
+  },
+  {
+    "material": "helium4",
+    "reserve": 5350000000,
+    "basis": "helium in natural gas",
+    "content": 5350000000,
+    "output": 30500000,
+    "accessibility": 1,
+    "source": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-helium.pdf",
+    "estimated": true
+  },
+  {
+    "material": "methane",
+    "reserve": 152000000000000,
+    "basis": "natural gas, proven",
+    "content": 152000000000000,
+    "output": 3130000000000,
+    "accessibility": 1,
+    "source": "https://www.opec.org/assets/assetdb/asb-2025.pdf",
+    "estimated": false
+  },
+  {
+    "material": "rp1",
+    "reserve": 214000000000000,
+    "basis": "crude oil, proven",
+    "content": 214000000000000,
+    "output": 3620000000000,
+    "accessibility": 1,
+    "source": "https://www.opec.org/assets/assetdb/asb-2025.pdf",
+    "estimated": false
+  }
+]
