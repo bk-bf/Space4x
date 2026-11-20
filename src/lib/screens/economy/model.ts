@@ -4,6 +4,7 @@ import {
   isStockless,
   POWER,
   process,
+  workersAt,
   type GroupActor,
   type Site,
   type SiteFlows
@@ -57,6 +58,7 @@ export function stockView(site: Site, flows: SiteFlows, id: string): StockView {
 export interface GroupView {
   actor: GroupActor;
   building: Building;
+  workers: number;
   main: string | undefined;
   plant: Plant | undefined;
   label: string;
@@ -80,6 +82,7 @@ export function groupViews(site: Site, flows: SiteFlows): GroupView[] {
       return {
         actor,
         building: b,
+        workers: workersAt(b, site.body),
         main,
         plant: b.plant,
         label: proc?.name ?? b.name,
@@ -123,7 +126,7 @@ export function kindTotals(views: readonly GroupView[]): KindTotal[] {
     const g = v.actor.group;
     row.count += g.count;
     row.groups++;
-    row.workers += g.on && g.process ? g.count * v.building.workers : 0;
+    row.workers += g.on && g.process ? g.count * v.workers : 0;
     row.power += (v.actor.inputs[POWER] ?? 0) * v.actor.share;
   }
   return KIND_ORDER.flatMap((k) => (by[k] ? [by[k]] : []));

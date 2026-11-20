@@ -17,6 +17,7 @@
     touch,
     waitingOn,
     unlockedProcesses,
+    workersAt,
     type BuildOrder,
     type Site
   } from '#lib/game/economy/index.ts';
@@ -263,7 +264,7 @@
         subtitle={BUILDING_KIND_NAMES[picked.kind] ?? picked.kind}
         icon={bld(picked.id)}
         chips={[
-          { icon: 'people', text: picked.workers, tip: 'Workers' },
+          { icon: 'people', text: workersAt(picked, site.body), tip: 'Workers' },
           { icon: 'clock', text: fmt.days(buildHours(picked.id) / 24), tip: 'Build time' },
           { icon: 'factory', text: fmt.count(standing(site, picked.id)), tip: 'Standing' },
           ...(picked.start
