@@ -6,3 +6,4 @@ export * from './stats.ts';
 export * from './climb.ts';
 export * from './flight.ts';
 export * from './art.ts';
+export * from './boosts.ts';

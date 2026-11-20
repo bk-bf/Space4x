@@ -1,4 +1,4 @@
-import { building, milestone, type Amounts, type Component } from '#lib/game/data/index.ts';
+import { building, project, type Amounts, type Component } from '#lib/game/data/index.ts';
 import { MIN_LANDING_TWR, MIN_LIFTOFF_TWR, shipDeltaV, type Ship } from '#lib/game/flight/index.ts';
 import { earth, mars, moon } from '#lib/game/flight/reference.ts';
 import { surfaceGravity } from '#lib/game/flight/wells.ts';
@@ -164,7 +164,7 @@ export type Unlocked = (tag: number) => boolean;
 
 export const yardName = (yard: Yard): string => building(yard).name;
 
-export const yardMilestone = (yard: Yard): number => building(yard).milestone;
+export const yardResearch = (yard: Yard): number => building(yard).research;
 
 export function designStats(design: ShipDesign, unlocked: Unlocked = () => true): DesignStats {
   const items = design.parts.flatMap((p) => {
@@ -302,10 +302,12 @@ function issuesOf(
     return out;
   }
   for (const { c } of items)
-    if (!unlocked(c.milestone))
+    if (!unlocked(c.research))
       error(
         'locked-part',
-        `${c.name} is locked until the research that leads to ${milestone(c.milestone).name} is done.`
+        c.research > 0
+          ? `${c.name} is locked until ${project(c.research).name} is researched.`
+          : `${c.name} is locked.`
       );
 
   if (!has(isEngine)) error('no-engine', 'No engine: the ship cannot change its velocity.');

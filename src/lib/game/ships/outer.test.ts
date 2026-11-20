@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { DAY } from '#lib/game/clock.ts';
-import { milestones } from '#lib/game/data/index.ts';
+import { projectById } from '#lib/game/data/index.ts';
+import { stageProjects } from '#lib/game/stages.ts';
 import { economy, siteAt, standing, standFirst, touch, type Site } from '#lib/game/economy/index.ts';
 import { settleJumps } from '#lib/game/jump.ts';
 import { foundSite } from './colonise.ts';
@@ -10,7 +11,7 @@ import { addOrder } from './orders.ts';
 import { ships } from './state.svelte.ts';
 
 const unlock = (upTo: number) => {
-  economy.done = milestones.filter((m) => !m.optional && m.number <= upTo).map((m) => m.number);
+  economy.done = stageProjects(upTo);
 };
 
 const SURVEYOR = {
@@ -72,7 +73,7 @@ describe('the jump point', () => {
     expect(v.orders).toHaveLength(0);
   });
 
-  it('holds a site that receives cargo, builds there, and goes stable when the last milestone is reached', () => {
+  it('holds a site that receives cargo, builds there, and goes stable when jump point stabilisation is researched', () => {
     const g = freshGame();
     unlock(28);
     addDesign(SURVEYOR);
@@ -108,10 +109,10 @@ describe('the jump point', () => {
 
     settleJumps(g);
     expect(jump.stable).toBe(false);
-    standFirst(economy, site, 'jump_point_stabiliser');
+    economy.done.push(projectById('jump_point_stabilisation').number);
     settleJumps(g);
     expect(jump.stable).toBe(false);
-    economy.done.push(29);
+    standFirst(economy, site, 'jump_point_stabiliser');
     settleJumps(g);
     expect(jump.stable).toBe(true);
     const ending = g.events.filter((e) => e.text.includes('is stable'));

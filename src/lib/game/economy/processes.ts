@@ -1,14 +1,15 @@
 import {
+  boostOf,
   building,
   buildings,
   hasMaterial,
   material,
   materials,
-  milestones,
   recipe,
   recipesAt
 } from '#lib/game/data/index.ts';
 import type { Amounts, Building, Recipe, Site as Where } from '#lib/game/data/index.ts';
+import type { Economy } from './types.ts';
 
 export const POWER = '@power';
 export const COMPUTE = 'compute';
@@ -24,7 +25,7 @@ export interface Process {
   id: string;
   name: string;
   building: string;
-  milestone: number;
+  research: number;
   inputs: Amounts;
   outputs: Amounts;
   extracts: Amounts;
@@ -63,7 +64,7 @@ function recipeProcess(r: Recipe, body: Where): Process {
     id: r.id,
     name: processName(r),
     building: r.building,
-    milestone: r.milestone,
+    research: r.research,
     inputs,
     outputs,
     extracts,
@@ -115,7 +116,7 @@ function extractionProcess(materialId: string, b: Building): Process {
     id: extractionId(materialId),
     name: `Extract ${material(materialId).name}`,
     building: b.id,
-    milestone: b.milestone,
+    research: b.research,
     inputs: { [POWER]: EXTRACT_KW },
     outputs: { [materialId]: extractRate(materialId) },
     extracts: { [materialId]: extractRate(materialId) },
@@ -162,4 +163,37 @@ export const isFood = (id: string): boolean => hasMaterial(id) && material(id).c
 
 export const foodIds = materials.filter((m) => m.category === FOOD_CATEGORY).map((m) => m.id);
 
-export const lastMilestone = milestones.length;
+export const CHIP_FAB = 'semiconductor_fab';
+export const COMPUTE_PROCESS = 'compute_generation';
+export const ELECTROLYSIS = 'water_electrolysis';
+
+const isMaterialFlow = (id: string): boolean => id !== POWER && id !== COMPUTE && id !== WATER;
+
+const scaleWhere = (amounts: Amounts, k: number, pick: (id: string) => boolean): Amounts =>
+  Object.fromEntries(Object.entries(amounts).map(([m, v]) => [m, pick(m) ? v * k : v]));
+
+export function boosted(eco: Economy, p: Process, buildingId: string): Process {
+  const done = eco.done;
+  let { inputs, outputs, extracts } = p;
+  if (isExtraction(p.id)) {
+    const f = boostOf(done, 'extraction');
+    if (f !== 1) {
+      outputs = scaleWhere(outputs, f, isMaterialFlow);
+      extracts = scaleWhere(extracts, f, isMaterialFlow);
+    }
+  }
+  if (buildingId === CHIP_FAB) {
+    const f = boostOf(done, 'chip_output');
+    if (f !== 1) {
+      inputs = scaleWhere(inputs, f, isMaterialFlow);
+      outputs = scaleWhere(outputs, f, isMaterialFlow);
+    }
+  }
+  const compute = boostOf(done, 'data_centre_compute');
+  if (p.id === COMPUTE_PROCESS && compute !== 1) outputs = scaleWhere(outputs, compute, (m) => m === COMPUTE);
+  const electrolysis = boostOf(done, 'electrolysis_power');
+  if (p.id === ELECTROLYSIS && electrolysis !== 1)
+    inputs = scaleWhere(inputs, electrolysis, (m) => m === POWER);
+  if (inputs === p.inputs && outputs === p.outputs && extracts === p.extracts) return p;
+  return { ...p, inputs, outputs, extracts };
+}

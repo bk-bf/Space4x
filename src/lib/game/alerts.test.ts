@@ -10,7 +10,7 @@ import {
   queueBuilding,
   startProgramme
 } from './economy/index.ts';
-import { milestone } from './data/index.ts';
+import { project } from './data/index.ts';
 import { restore, resetGame, serialise } from './save.ts';
 import { addDesign, freshGame, spawn } from './ships/fixtures.ts';
 import { addOrder, ships } from './ships/index.ts';
@@ -60,17 +60,16 @@ const tug = () => {
 };
 
 describe('pausing on chosen events', () => {
-  it('pauses at the moment a milestone is reached, inside a 30-day step', () => {
+  it('pauses at the moment a project is researched, inside a 30-day step', () => {
     const game = freshGame();
-    const earth = homeSite();
     only(game, null);
-    expect(programmeStatus(economy, milestone(1))).toBe('ready');
-    expect(startProgramme(economy, earth, 1)).toBe(true);
-    only(game, 'milestone');
+    expect(programmeStatus(economy, project(1))).toBe('ready');
+    expect(startProgramme(economy, 1)).toBe(true);
+    only(game, 'research');
     const start = runUntilPaused(game);
-    expectPausedAtEvent(game, 'milestone', start);
-    expect(game.pausedBy?.text).toBe('Milestone 1 reached: Reusable orbital launch.');
-    expect(game.pausedBy?.milestone).toBe(1);
+    expectPausedAtEvent(game, 'research', start);
+    expect(game.pausedBy?.text).toBe('Booster recovery researched.');
+    expect(game.pausedBy?.project).toBe(1);
     expect(economy.done).toEqual([1]);
     expect(economy.elapsed * 1000).toBeCloseTo(game.time - game.events.at(-1)!.at, -1);
   });
@@ -149,7 +148,7 @@ describe('pausing on chosen events', () => {
       addOrder(v, { type: 'fly', body: 'luna', angle: 0 });
       addOrder(v, { type: 'wait', seconds: 3 * DAY });
       addOrder(v, { type: 'fly', body: 'earth', angle: 0 });
-      only(game, pausing ? 'milestone' : null);
+      only(game, pausing ? 'research' : null);
       if (pausing) {
         game.run();
         for (let i = 0; i < 4; i++) game.tick(STEP);

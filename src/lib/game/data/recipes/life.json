@@ -2,7 +2,7 @@
   {
     "id": "water_reclamation",
     "building": "life_support_plant",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -17,7 +17,7 @@
   {
     "id": "co2_concentration",
     "building": "life_support_plant",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -33,7 +33,7 @@
   {
     "id": "farm_mixed_crops",
     "building": "farmland",
-    "milestone": 3,
+    "research": 15,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -51,7 +51,7 @@
   {
     "id": "farm_wheat",
     "building": "farmland",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": {
       "water": 1800,
@@ -68,7 +68,7 @@
   {
     "id": "farm_potato",
     "building": "farmland",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": {
       "water": 290,
@@ -85,7 +85,7 @@
   {
     "id": "farm_soybean",
     "building": "farmland",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": {
       "water": 2100,
@@ -101,7 +101,7 @@
   {
     "id": "farm_leafy_greens",
     "building": "farmland",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": {
       "water": 240,
@@ -118,7 +118,7 @@
   {
     "id": "ranch_meat",
     "building": "ranch",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": {
       "wheat": 2250,
@@ -136,7 +136,7 @@
   {
     "id": "greenhouse_mixed_crops",
     "building": "greenhouse",
-    "milestone": 11,
+    "research": 24,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -156,7 +156,7 @@
   {
     "id": "greenhouse_wheat",
     "building": "greenhouse",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "carbon_dioxide": 650,
@@ -175,7 +175,7 @@
   {
     "id": "greenhouse_potato",
     "building": "greenhouse",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "carbon_dioxide": 125,
@@ -194,7 +194,7 @@
   {
     "id": "greenhouse_soybean",
     "building": "greenhouse",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "carbon_dioxide": 650,
@@ -212,7 +212,7 @@
   {
     "id": "greenhouse_leafy_greens",
     "building": "greenhouse",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "carbon_dioxide": 22,
@@ -231,7 +231,7 @@
   {
     "id": "spirulina_culture",
     "building": "algae_bioreactor",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "carbon_dioxide": 1830,
@@ -248,7 +248,7 @@
   {
     "id": "methanotroph_fermentation",
     "building": "protein_fermenter",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "methane": 1540,
@@ -266,7 +266,7 @@
   {
     "id": "ration_from_crops",
     "building": "food_plant",
-    "milestone": 3,
+    "research": 15,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -281,7 +281,7 @@
   {
     "id": "ration_staples",
     "building": "food_plant",
-    "milestone": 3,
+    "research": 15,
     "estimated": true,
     "inputs": {
       "wheat": 450,
@@ -298,7 +298,7 @@
   {
     "id": "ration_closed_loop",
     "building": "food_plant",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": {
       "spirulina": 300,

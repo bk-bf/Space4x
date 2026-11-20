@@ -2,7 +2,7 @@
   {
     "id": "air_separation",
     "building": "air_separation_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "air": 10000 },
@@ -23,7 +23,7 @@
   {
     "id": "water_electrolysis",
     "building": "electrolysis_plant",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": false,
     "inputs": { "water": 900.8 },
@@ -36,7 +36,7 @@
   {
     "id": "sabatier_methanation",
     "building": "sabatier_plant",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": false,
     "inputs": { "carbon_dioxide": 880.2, "hydrogen": 161.3 },
@@ -49,7 +49,7 @@
   {
     "id": "haber_bosch",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "nitrogen": 840.4, "hydrogen": 181.4 },
@@ -62,7 +62,7 @@
   {
     "id": "steam_methane_reforming",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "methane": 481.3, "water": 1081.0 },
@@ -75,7 +75,7 @@
   {
     "id": "methane_pyrolysis",
     "building": "chemical_plant",
-    "milestone": 16,
+    "research": 12,
     "estimated": false,
     "inputs": { "methane": 802.1 },
     "outputs": { "carbon": 600.5, "hydrogen": 201.6 },
@@ -87,7 +87,7 @@
   {
     "id": "bosch_reaction",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 3,
     "estimated": false,
     "inputs": { "carbon_dioxide": 1320.0, "hydrogen": 121.0 },
     "outputs": { "carbon": 360.3, "water": 1081.0 },
@@ -99,7 +99,7 @@
   {
     "id": "ethylene_from_methane",
     "building": "chemical_plant",
-    "milestone": 6,
+    "research": 9,
     "estimated": false,
     "inputs": { "methane": 962.6 },
     "outputs": { "ethylene": 841.6, "hydrogen": 121.0 },
@@ -111,7 +111,7 @@
   {
     "id": "sulfuric_acid_synthesis",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "sulfur": 641.2, "oxygen": 959.9, "water": 360.3 },
@@ -124,7 +124,7 @@
   {
     "id": "phosphoric_acid_thermal",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "phosphorus": 1239.0, "oxygen": 1600.0, "water": 1081.0 },
@@ -137,7 +137,7 @@
   {
     "id": "map_neutralisation",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "ammonia": 510.9, "phosphoric_acid": 2940.0 },
@@ -150,7 +150,7 @@
   {
     "id": "urea_synthesis",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "ammonia": 1022.0, "carbon_dioxide": 1320.0 },
@@ -163,7 +163,7 @@
   {
     "id": "potassium_sulfate_synthesis",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "potassium": 782.0, "sulfuric_acid": 980.8 },
@@ -176,7 +176,7 @@
   {
     "id": "lithium_hydroxide_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 3,
     "estimated": false,
     "inputs": { "lithium": 416.4, "water": 1081.0 },
     "outputs": { "lioh": 1437.0, "hydrogen": 60.48 },
@@ -188,7 +188,7 @@
   {
     "id": "nto_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 9,
     "estimated": false,
     "inputs": { "ammonia": 681.2, "oxygen": 2240.0 },
     "outputs": { "nto": 1840.0, "water": 1081.0 },
@@ -200,7 +200,7 @@
   {
     "id": "hydrazine_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 9,
     "estimated": true,
     "inputs": { "ammonia": 1100 },
     "outputs": { "hydrazine": 1000 },
@@ -210,7 +210,7 @@
   {
     "id": "mmh_synthesis",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 9,
     "estimated": true,
     "inputs": { "hydrazine": 700, "methane": 350 },
     "outputs": { "mmh": 1000 },
@@ -220,7 +220,7 @@
   {
     "id": "af_m315e_blending",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 9,
     "estimated": true,
     "inputs": { "ammonia": 500, "oxygen": 600, "nitrogen": 100 },
     "outputs": { "af_m315e": 1000 },
@@ -230,7 +230,7 @@
   {
     "id": "apcp_casting",
     "building": "chemical_plant",
-    "milestone": 1,
+    "research": 0,
     "estimated": true,
     "inputs": { "ammonia": 450, "aluminium": 160, "ethylene": 140, "oxygen": 250 },
     "outputs": { "apcp": 1000 },
@@ -240,7 +240,7 @@
   {
     "id": "amine_sorbent_loading",
     "building": "chemical_plant",
-    "milestone": 3,
+    "research": 3,
     "thin": true,
     "estimated": true,
     "inputs": { "fused_silica": 650, "ammonia": 350 },
@@ -251,7 +251,7 @@
   {
     "id": "graphitisation",
     "building": "chemical_plant",
-    "milestone": 16,
+    "research": 12,
     "estimated": true,
     "inputs": { "carbon": 1000 },
     "outputs": { "graphite": 1000 },
@@ -261,7 +261,7 @@
   {
     "id": "metallic_hydrogen_compression",
     "building": "chemical_plant",
-    "milestone": 28,
+    "research": 37,
     "estimated": true,
     "inputs": { "hydrogen": 1000 },
     "outputs": { "metallic_hydrogen": 900 },
@@ -271,7 +271,7 @@
   {
     "id": "lox_liquefaction",
     "building": "cryogenic_liquefaction_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "oxygen": 1000.0 },
@@ -284,7 +284,7 @@
   {
     "id": "lh2_liquefaction",
     "building": "cryogenic_liquefaction_plant",
-    "milestone": 6,
+    "research": 9,
     "thin": true,
     "estimated": false,
     "inputs": { "hydrogen": 100.0 },
@@ -297,7 +297,7 @@
   {
     "id": "lch4_liquefaction",
     "building": "cryogenic_liquefaction_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "methane": 1000.0 },

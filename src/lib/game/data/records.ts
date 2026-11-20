@@ -1,6 +1,7 @@
 import components from './components.json';
-import milestoneRecords from './milestones.json';
-import type { Building, Component, Material, Milestone, Recipe } from './types.ts';
+import projectRecords from './research.json';
+import scientistRecords from './scientists.json';
+import type { Building, Component, Material, Project, Recipe, ScientistRecord } from './types.ts';
 
 const files = <T>(modules: Record<string, T[]>): { name: string; items: T[] }[] =>
   Object.entries(modules)
@@ -21,7 +22,8 @@ export const materials: Material[] = materialFiles.flatMap((f) => f.items);
 export const recipes: Recipe[] = recipeFiles.flatMap((f) => f.items);
 export const buildings: Building[] = buildingFiles.flatMap((f) => f.items);
 export const shipComponents = components as unknown as Component[];
-export const milestones = (milestoneRecords as Milestone[]).slice().sort((a, b) => a.number - b.number);
+export const startScientists = scientistRecords as ScientistRecord[];
+export const projects = (projectRecords as Project[]).slice().sort((a, b) => a.number - b.number);
 
 const index = <T extends { id: string }>(items: T[]): Map<string, T> => new Map(items.map((i) => [i.id, i]));
 
@@ -42,9 +44,19 @@ export const material = lookup('material', materialIndex);
 export const recipe = lookup('recipe', recipeIndex);
 export const building = lookup('building', buildingIndex);
 export const shipComponent = lookup('component', componentIndex);
-export const milestone = (number: number): Milestone => {
-  const found = milestones.find((m) => m.number === number);
-  if (!found) throw new Error(`unknown milestone: ${number}`);
+const projectIndex = new Map(projects.map((p) => [p.number, p]));
+
+export const project = (number: number): Project => {
+  const found = projectIndex.get(number);
+  if (!found) throw new Error(`unknown project: ${number}`);
+  return found;
+};
+
+export const hasProject = (number: number) => projectIndex.has(number);
+
+export const projectById = (id: string): Project => {
+  const found = projects.find((p) => p.id === id);
+  if (!found) throw new Error(`unknown project: ${id}`);
   return found;
 };
 

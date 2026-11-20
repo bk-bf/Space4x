@@ -2,7 +2,7 @@
   {
     "id": "stainless_steel_304",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "iron": 740, "chromium": 180, "nickel": 80 },
@@ -15,7 +15,7 @@
   {
     "id": "al_li_alloy_blending",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "aluminium": 950, "copper": 40, "lithium": 10 },
@@ -26,7 +26,7 @@
   {
     "id": "ti_6al_4v_melting",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "titanium": 900, "aluminium": 60, "vanadium": 40 },
@@ -39,7 +39,7 @@
   {
     "id": "nickel_superalloy_melting",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "nickel": 535, "chromium": 190, "iron": 185, "niobium": 55, "molybdenum": 35 },
@@ -50,7 +50,7 @@
   {
     "id": "grcop_42_melting",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": false,
     "inputs": { "copper": 938, "chromium": 33, "niobium": 29 },
@@ -63,7 +63,7 @@
   {
     "id": "c103_melting",
     "building": "alloy_works",
-    "milestone": 1,
+    "research": 0,
     "estimated": false,
     "inputs": { "niobium": 890, "hafnium": 100, "titanium": 10 },
     "outputs": { "c103": 1000 },
@@ -75,7 +75,7 @@
   {
     "id": "haynes_230_melting",
     "building": "alloy_works",
-    "milestone": 7,
+    "research": 18,
     "thin": true,
     "estimated": true,
     "inputs": { "nickel": 600, "chromium": 220, "tungsten": 140, "molybdenum": 20, "iron": 20 },
@@ -86,7 +86,7 @@
   {
     "id": "zircaloy_melting",
     "building": "alloy_works",
-    "milestone": 7,
+    "research": 10,
     "estimated": true,
     "inputs": { "zirconium": 985, "tin": 15 },
     "outputs": { "zircaloy": 1000 },
@@ -96,7 +96,7 @@
   {
     "id": "asteroidal_steel_refining",
     "building": "metal_refinery",
-    "milestone": 17,
+    "research": 13,
     "thin": true,
     "estimated": true,
     "inputs": { "fe_ni_metal": 990, "carbon": 10 },
@@ -107,7 +107,7 @@
   {
     "id": "asteroid_metal_separation",
     "building": "metal_refinery",
-    "milestone": 17,
+    "research": 13,
     "estimated": true,
     "inputs": { "fe_ni_metal": 1000 },
     "outputs": { "iron": 700, "nickel": 250, "cobalt": 15, "platinum": 1, "iridium": 0.5, "copper": 2 },
@@ -117,7 +117,7 @@
   {
     "id": "regolith_oxygen_extraction",
     "building": "regolith_oxygen_plant",
-    "milestone": 9,
+    "research": 22,
     "thin": true,
     "estimated": true,
     "inputs": { "lunar_regolith": 1000 },
@@ -128,7 +128,7 @@
   {
     "id": "martian_regolith_oxygen",
     "building": "regolith_oxygen_plant",
-    "milestone": 21,
+    "research": 30,
     "estimated": true,
     "inputs": { "martian_regolith": 1000 },
     "outputs": { "oxygen": 250, "iron": 120, "silicon": 150 },
@@ -138,7 +138,7 @@
   {
     "id": "ilmenite_reduction",
     "building": "smelter",
-    "milestone": 9,
+    "research": 22,
     "estimated": false,
     "inputs": { "ilmenite": 3034.0 },
     "outputs": { "iron": 1117.0, "titanium": 957.3, "oxygen": 959.9 },
@@ -150,7 +150,7 @@
   {
     "id": "anorthite_electrolysis",
     "building": "smelter",
-    "milestone": 9,
+    "research": 22,
     "estimated": false,
     "inputs": { "anorthite": 2782.0 },
     "outputs": { "calcium": 400.8, "aluminium": 539.6, "silicon": 561.7, "oxygen": 1280.0 },
@@ -163,7 +163,7 @@
     "id": "machinery_machining",
     "upkeep": 60000000,
     "building": "machine_shop",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "stainless_steel": 1800, "nickel_superalloy": 900, "ti_6al_4v": 600 },

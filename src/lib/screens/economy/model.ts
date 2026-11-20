@@ -1,4 +1,4 @@
-import { building, milestone } from '#lib/game/data/index.ts';
+import { building } from '#lib/game/data/index.ts';
 import type { Building, BuildingKind, Plant } from '#lib/game/data/index.ts';
 import {
   isStockless,
@@ -9,7 +9,7 @@ import {
   type SiteFlows
 } from '#lib/game/economy/index.ts';
 import { BUILDING_KIND_NAMES, KIND_EXAMPLES, type IconRef } from '#lib/gfx/icons/index.ts';
-import { bld, comp, mat } from './refs.ts';
+import { bld } from './refs.ts';
 import { coverDays, limitText } from './view.ts';
 
 export const KIND_ORDER = Object.keys(BUILDING_KIND_NAMES) as BuildingKind[];
@@ -96,16 +96,6 @@ export function groupViews(site: Site, flows: SiteFlows): GroupView[] {
 }
 
 export const kindIcon = (kind: string): IconRef => bld(KIND_EXAMPLES[kind] ?? 'smelter');
-
-export function milestoneIcon(number: number): IconRef {
-  const needs = milestone(number).needs;
-  const b = needs.buildings[needs.buildings.length - 1];
-  if (b) return bld(b);
-  const c = needs.components[needs.components.length - 1];
-  if (c) return comp(c);
-  const m = needs.materials[needs.materials.length - 1];
-  return m ? mat(m) : mat('compute');
-}
 
 export interface KindTotal {
   kind: BuildingKind;

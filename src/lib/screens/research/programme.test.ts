@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { SHORT_NAMES, milestones, opensTags } from '#lib/game/data/index.ts';
-import { programmeStatus, startEconomy, startProgramme, type Economy } from '#lib/game/economy/index.ts';
-import { GROUPS, checkFor, milestoneIcon, openedBy, openedCount } from './programme.ts';
+import { projectById, projects, unlockedAt } from '#lib/game/data/index.ts';
+import { createProject, programmeStatus, startEconomy, type Economy } from '#lib/game/economy/index.ts';
+import { projectIcon } from '#lib/gfx/icons/index.ts';
+import { GROUPS, checkFor, effectLines, openedBy, openedCount } from './programme.ts';
+
+const num = (id: string) => projectById(id).number;
 
 const states = (): Economy[] => {
   const start = startEconomy();
@@ -14,62 +17,51 @@ const states = (): Economy[] => {
   return [start, later, bare];
 };
 
-describe('the programme card checks what the game checks', () => {
+describe('the project card checks what the game checks', () => {
   it('counts a blocker for each prerequisite not researched, and none exactly when the project is not locked', () => {
     for (const eco of states())
-      for (const m of milestones) {
-        const blockers = checkFor(eco, m).blockers;
-        expect(blockers, `milestone ${m.number}`).toBe(
-          m.requires.filter((r) => !eco.done.includes(r)).length
-        );
-        expect(blockers > 0, `milestone ${m.number}`).toBe(programmeStatus(eco, m) === 'locked');
+      for (const p of projects) {
+        const blockers = checkFor(eco, p).blockers;
+        expect(blockers, `project ${p.number}`).toBe(p.requires.filter((r) => !eco.done.includes(r)).length);
+        expect(blockers > 0, `project ${p.number}`).toBe(programmeStatus(eco, p) === 'locked');
       }
   });
 
-  it('starts a project whose prerequisites are done while a lower unrelated one is still open, with nothing in stock', () => {
+  it('creates a project whose prerequisites are done while an unrelated one is still open, with nothing in stock', () => {
     const [, , bare] = states();
     const eco = bare!;
-    eco.done = [1, 2, 3, 4];
-    const six = milestones.find((m) => m.number === 6)!;
-    expect(checkFor(eco, six).requires.every((r) => r.ok)).toBe(true);
-    expect(programmeStatus(eco, six)).toBe('ready');
-    expect(startProgramme(eco, eco.sites[0]!, 6)).toBe(true);
-    expect(eco.running.map((p) => p.number)).toEqual([6]);
-    expect(eco.done).not.toContain(5);
+    const fission = projectById('small_modular_fission');
+    eco.done = [num('closed_loop_water_and_air')];
+    expect(checkFor(eco, fission).requires.every((r) => r.ok)).toBe(true);
+    expect(programmeStatus(eco, fission)).toBe('ready');
+    expect(createProject(eco, fission.number, eco.scientists[0]!.id, 0)).toBe(true);
+    expect(eco.running.map((p) => p.number)).toEqual([fission.number]);
   });
 
   it('keeps a project locked until its own prerequisites are done', () => {
     const eco = startEconomy();
-    const seventeen = milestones.find((m) => m.number === 17)!;
-    expect(checkFor(eco, seventeen).requires.every((r) => !r.ok)).toBe(true);
-    expect(programmeStatus(eco, seventeen)).toBe('locked');
-    expect(startProgramme(eco, eco.sites[0]!, 17)).toBe(false);
+    const jump = projectById('jump_point_stabilisation');
+    expect(checkFor(eco, jump).requires.every((r) => !r.ok)).toBe(true);
+    expect(programmeStatus(eco, jump)).toBe('locked');
+    expect(createProject(eco, jump.number, eco.scientists[0]!.id, 1)).toBe(false);
   });
 });
 
 describe('the tiles', () => {
-  it('give every milestone a short name and an icon', () => {
-    for (const m of milestones) {
-      expect(SHORT_NAMES[m.number], `milestone ${m.number}`).toBeTruthy();
-      expect(milestoneIcon(m.number), `milestone ${m.number}`).toBeDefined();
-    }
-  });
-
-  it('give the milestones different icons where the data allows', () => {
-    const used = milestones.map((m) => {
-      const i = milestoneIcon(m.number)!;
-      return `${i.kind}:${i.id}`;
-    });
-    expect(new Set(used).size).toBeGreaterThan(milestones.length - 4);
+  it('give every project an icon but construction rate and the biosphere', () => {
+    const without = projects.filter((p) => !projectIcon(p.number)).map((p) => p.line ?? p.id);
+    expect([...new Set(without)]).toEqual(['construction_rate', 'biosphere']);
   });
 
   it('group every status', () => {
-    expect(GROUPS).toEqual(['running', 'ready', 'locked', 'done']);
+    expect(GROUPS).toEqual(['running', 'queued', 'ready', 'locked', 'done']);
   });
 
-  it('list what is open at the start and what each milestone opens', () => {
+  it('list what is open at the start, what each project opens and what each boost level does', () => {
     expect(openedCount(openedBy(0))).toBeGreaterThan(0);
-    expect(openedBy(1).buildings.every((b) => opensTags(1).includes(b.milestone))).toBe(true);
-    expect(openedCount(openedBy(1))).toBeGreaterThan(0);
+    const transfer = num('propellant_transfer_in_orbit');
+    expect(openedBy(transfer).buildings).toEqual(unlockedAt(transfer).buildings);
+    expect(openedCount(openedBy(transfer))).toBeGreaterThan(0);
+    expect(effectLines(projectById('research_rate_2'))).toEqual(['×1.4 research points a lab']);
   });
 });

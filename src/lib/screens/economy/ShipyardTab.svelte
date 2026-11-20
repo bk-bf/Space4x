@@ -62,7 +62,7 @@
   );
 
   function pool(yard: Yard) {
-    const made = yardPointsPerDay(site, yard);
+    const made = yardPointsPerDay(economy, site, yard);
     const holding = new Set(activeYardOrders(site).map((o) => o.id));
     const orders = site.yard.filter((o) => o.yard === yard);
     const used = orders.filter((o) => holding.has(o.id)).reduce((a, o) => a + o.percent, 0);

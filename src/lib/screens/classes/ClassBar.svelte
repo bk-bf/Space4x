@@ -5,7 +5,7 @@
     YARDS,
     component,
     designStats,
-    yardMilestone,
+    yardResearch,
     yardName
   } from '#lib/game/shipdesign/index.ts';
   import { Pill, requestRender } from '#lib/ui/index.ts';
@@ -64,7 +64,7 @@
         onchange={(e) => designer.yard(e.currentTarget.value as (typeof YARDS)[number])}
       >
         {#each yards as y (y)}
-          <option value={y}>{yardName(y)}{designer.unlocked(yardMilestone(y)) ? '' : ' (locked)'}</option>
+          <option value={y}>{yardName(y)}{designer.unlocked(yardResearch(y)) ? '' : ' (locked)'}</option>
         {/each}
       </select>
     </label>

@@ -2,7 +2,7 @@
   {
     "id": "antihydrogen_trapping",
     "building": "antimatter_facility",
-    "milestone": 28,
+    "research": 37,
     "estimated": true,
     "inputs": { "hydrogen": 1 },
     "outputs": { "antihydrogen": 1e-9 },
@@ -13,7 +13,7 @@
     "id": "electronic_silicon_purification",
     "upkeep": 80000000,
     "building": "semiconductor_fab",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "silicon": 2750, "hydrogen": 12.5 },
@@ -26,7 +26,7 @@
   {
     "id": "gallium_arsenide_synthesis",
     "building": "semiconductor_fab",
-    "milestone": 4,
+    "research": 4,
     "thin": true,
     "estimated": false,
     "inputs": { "gallium": 697.2, "arsenic": 749.2 },
@@ -39,7 +39,7 @@
   {
     "id": "gallium_nitride_synthesis",
     "building": "semiconductor_fab",
-    "milestone": 13,
+    "research": 11,
     "estimated": false,
     "inputs": { "gallium": 1394.0, "nitrogen": 280.1 },
     "outputs": { "gan": 1675.0 },
@@ -51,7 +51,7 @@
   {
     "id": "ingap_epitaxy",
     "building": "semiconductor_fab",
-    "milestone": 4,
+    "research": 4,
     "thin": true,
     "estimated": false,
     "inputs": { "indium": 466, "gallium": 283, "phosphorus": 251 },
@@ -65,7 +65,7 @@
     "id": "rad_hard_ic_fabrication",
     "upkeep": 120000000,
     "building": "semiconductor_fab",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "electronic_silicon": 1800, "compute": 36 },
@@ -78,7 +78,7 @@
   {
     "id": "ai_accelerator_fabrication",
     "building": "semiconductor_fab",
-    "milestone": 5,
+    "research": 29,
     "thin": true,
     "estimated": true,
     "inputs": { "electronic_silicon": 800, "copper": 190, "neon": 10 },
@@ -89,7 +89,7 @@
   {
     "id": "mj_solar_cell_assembly",
     "building": "solar_cell_fab",
-    "milestone": 4,
+    "research": 4,
     "thin": true,
     "estimated": true,
     "inputs": { "germanium": 800, "gaas": 100, "ingap": 40, "silver": 60 },
@@ -100,7 +100,7 @@
   {
     "id": "si_solar_cell_assembly",
     "building": "solar_cell_fab",
-    "milestone": 4,
+    "research": 4,
     "estimated": true,
     "inputs": { "electronic_silicon": 900, "silver": 20, "aluminium": 80 },
     "outputs": { "si_solar_cell": 1000 },
@@ -110,7 +110,7 @@
   {
     "id": "li_ion_cell_assembly",
     "building": "battery_plant",
-    "milestone": 4,
+    "research": 20,
     "thin": true,
     "estimated": true,
     "inputs": {
@@ -128,7 +128,7 @@
   {
     "id": "ndfeb_magnet_sintering",
     "building": "magnet_works",
-    "milestone": 8,
+    "research": 7,
     "thin": true,
     "estimated": false,
     "inputs": { "neodymium": 267, "iron": 723, "boron": 10 },
@@ -141,7 +141,7 @@
   {
     "id": "smco_magnet_sintering",
     "building": "magnet_works",
-    "milestone": 13,
+    "research": 11,
     "thin": true,
     "estimated": false,
     "inputs": { "samarium": 338, "cobalt": 662 },
@@ -154,7 +154,7 @@
   {
     "id": "nbti_wire_drawing",
     "building": "magnet_works",
-    "milestone": 22,
+    "research": 7,
     "estimated": true,
     "inputs": { "niobium": 265, "titanium": 235, "copper": 500 },
     "outputs": { "nbti": 1000 },
@@ -164,7 +164,7 @@
   {
     "id": "nb3sn_wire_drawing",
     "building": "magnet_works",
-    "milestone": 22,
+    "research": 7,
     "estimated": false,
     "inputs": { "niobium": 701, "tin": 299 },
     "outputs": { "nb3sn": 1000 },
@@ -176,7 +176,7 @@
   {
     "id": "rebco_tape_deposition",
     "building": "magnet_works",
-    "milestone": 22,
+    "research": 7,
     "thin": true,
     "estimated": true,
     "inputs": { "yttrium": 133.4, "barium": 412.3, "copper": 286.2, "oxygen": 168.1 },
@@ -188,7 +188,7 @@
   {
     "id": "rt_superconductor_synthesis",
     "building": "magnet_works",
-    "milestone": 27,
+    "research": 36,
     "thin": true,
     "estimated": true,
     "inputs": { "yttrium": 100, "hydrogen": 20, "compute": 90 },
@@ -199,7 +199,7 @@
   {
     "id": "exotic_matter_production",
     "building": "exotic_matter_facility",
-    "milestone": 28,
+    "research": 37,
     "thin": true,
     "estimated": true,
     "inputs": { "rt_superconductor": 1, "compute": 9000 },
@@ -211,7 +211,7 @@
     "id": "compute_generation",
     "upkeep": 100000000,
     "building": "data_centre",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": {},
@@ -225,7 +225,7 @@
     "id": "ai_model_training",
     "upkeep": 100000000,
     "building": "data_centre",
-    "milestone": 5,
+    "research": 5,
     "thin": true,
     "estimated": true,
     "inputs": { "compute": 9000 },

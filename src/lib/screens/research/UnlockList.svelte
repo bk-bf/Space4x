@@ -1,22 +1,17 @@
 <script lang="ts">
-  import { milestones, shortName } from '#lib/game/data/index.ts';
+  import { projects } from '#lib/game/data/index.ts';
   import { economy } from '#lib/game/economy/index.ts';
   import { PixIcon } from '#lib/ui/index.ts';
-  import { openedBy, openedCount, statusOf } from './programme.ts';
+  import { effectLines, openedBy, openedCount, statusOf } from './programme.ts';
   import { research } from './research.svelte.ts';
 
   const rows = $derived([
-    {
-      number: 0,
-      label: 'At the start',
-      unlocks: 'Buildings and parts open before any research.',
-      status: 'done'
-    },
-    ...milestones.map((m) => ({
-      number: m.number,
-      label: shortName(m.number),
-      unlocks: m.unlocks,
-      status: statusOf(economy, m)
+    { number: 0, label: 'At the start', effects: [] as string[], status: 'done' },
+    ...projects.map((p) => ({
+      number: p.number,
+      label: p.name,
+      effects: effectLines(p),
+      status: statusOf(economy, p)
     }))
   ]);
 
@@ -27,15 +22,13 @@
   {@const o = openedBy(r.number)}
   {@const n = openedCount(o)}
   <div class="uh">
-    <span class="num">{r.number || '-'}</span><b>{r.label}</b><small class="dim"
-      >{n} items{o.alsoNeeds ? ', some need more' : ''}</small
-    >
+    <span class="num">{r.number || '-'}</span><b>{r.label}</b>{#if n}<small class="dim">{n} items</small>{/if}
   </div>
   <div class="eq">
     {#each o.buildings as b (b.id)}<PixIcon kind="building" id={b.id} size={16} />{/each}
     {#each o.components as c (c.id)}<PixIcon kind="component" id={c.id} size={32} />{/each}
     {#each o.materials as id (id)}<PixIcon kind="material" {id} size={32} />{/each}
-    {#if !n}<span class="dim">a gate for later milestones</span>{/if}
+    {#each r.effects as e (e)}<span class="fx">{e}</span>{/each}
   </div>
 {/snippet}
 
@@ -111,6 +104,10 @@
   }
   .dim {
     color: var(--dim);
+  }
+  .fx {
+    font: 18px 'VT';
+    color: var(--cool);
   }
   .eq {
     display: flex;

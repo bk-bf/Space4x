@@ -1,10 +1,21 @@
-import { building, material, milestone } from '#lib/game/data/index.ts';
+import { boostOf, building, material, project } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { gradeAt, isDepleted, isReserveSpent } from './deposits.ts';
 import { activePlants, averageOutput, gridOf, plantOf, plantWater, type Grid } from './grid.ts';
-import { foodIds, isExtraction, isMass, isStockless, POWER, process, WATER } from './processes.ts';
-import { programmeCompute } from './programmes.ts';
+import {
+  boosted,
+  foodIds,
+  isExtraction,
+  isMass,
+  isStockless,
+  POWER,
+  process,
+  WATER,
+  WATER_DRAWN_ON
+} from './processes.ts';
+import { labFigures, LAB, researchSite, rpPerHour } from './programmes.ts';
+import { MONTH_HOURS } from './calendar.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
 import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
 
@@ -55,7 +66,7 @@ export interface BuildActor extends ActorBase {
 export interface ProgrammeActor extends ActorBase {
   kind: 'programme';
   programme: Programme;
-  hours: number;
+  rate: number;
 }
 
 export interface YardActor extends ActorBase {
@@ -124,8 +135,9 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
       limit: cap > 0 ? null : { kind: 'off' }
     };
   }
+  if (g.building === LAB) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: null };
   if (!g.process) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'idle' } };
-  const p = process(g.process, site.body);
+  const p = boosted(eco, process(g.process, site.body), g.building);
   const { grade, missing } = deposit(site, p);
   const none = { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {} };
   if (missing) return { ...none, grade: 0, limit: { kind: 'deposit', id: missing } };
@@ -163,8 +175,8 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
 export const activeOrders = (site: Site): BuildOrder[] =>
   site.queue.filter((o) => !o.paused).slice(0, BUILD_SLOTS);
 
-function yardActor(site: Site, o: YardOrder): YardActor {
-  const perHour = (yardPointsPerDay(site, o.yard) * o.percent) / 100 / 24;
+function yardActor(eco: Economy, site: Site, o: YardOrder): YardActor {
+  const perHour = (yardPointsPerDay(eco, site, o.yard) * o.percent) / 100 / 24;
   return {
     kind: 'yard',
     order: o,
@@ -179,8 +191,8 @@ function yardActor(site: Site, o: YardOrder): YardActor {
   };
 }
 
-function buildActor(o: BuildOrder): BuildActor {
-  const hours = buildHours(o.building);
+function buildActor(eco: Economy, o: BuildOrder): BuildActor {
+  const hours = buildHours(o.building) / boostOf(eco.done, 'build_speed');
   return {
     kind: 'build',
     order: o,
@@ -195,16 +207,24 @@ function buildActor(o: BuildOrder): BuildActor {
   };
 }
 
-function programmeActor(p: Programme): ProgrammeActor {
-  const m = milestone(p.number);
-  const compute = programmeCompute(m);
+function programmeActor(eco: Economy, site: Site, p: Programme): ProgrammeActor {
+  const lab = labFigures();
+  const n = p.labs;
+  const inputs: Amounts =
+    n > 0
+      ? {
+          compute: lab.compute * n,
+          [POWER]: lab.powerKw * n,
+          ...(site.body === WATER_DRAWN_ON ? { [WATER]: (lab.waterPerMonth * n) / MONTH_HOURS } : {})
+        }
+      : {};
   return {
     kind: 'programme',
     programme: p,
-    hours: 0,
-    cap: 1,
+    rate: rpPerHour(eco, p),
+    cap: n > 0 ? 1 : 0,
     share: 0,
-    inputs: compute > 0 ? { compute } : {},
+    inputs,
     outputs: {},
     extracts: {},
     limit: null,
@@ -280,6 +300,18 @@ function settle(site: Site, actors: Actor[], gridKw: number): void {
 
 export const kcalOf = (id: string): number => material(id).kcalPerKg ?? 0;
 
+export function researchRate(flows: SiteFlows | undefined, number: number): number {
+  const a = flows?.actors.find(
+    (x): x is ProgrammeActor => x.kind === 'programme' && x.programme.number === number
+  );
+  return a ? a.rate * a.share : 0;
+}
+
+export function researchDaysLeft(flows: SiteFlows | undefined, p: Programme): number {
+  const rate = researchRate(flows, p.number);
+  return rate > 0 ? (project(p.number).rp - p.rp) / rate / 24 : Infinity;
+}
+
 function eat(site: Site, net: Amounts, demand: number): Amounts {
   const eaten: Amounts = {};
   const surplus = foodIds
@@ -305,9 +337,9 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const workerShare = needed > available ? available / needed : 1;
   const actors: Actor[] = [
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
-    ...activeOrders(site).map(buildActor),
-    ...activeYardOrders(site).map((o) => yardActor(site, o)),
-    ...eco.running.filter((p) => p.site === site.id).map(programmeActor)
+    ...activeOrders(site).map((o) => buildActor(eco, o)),
+    ...activeYardOrders(site).map((o) => yardActor(eco, site, o)),
+    ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : [])
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);
   const grid = gridOf(site, wanted(POWER));

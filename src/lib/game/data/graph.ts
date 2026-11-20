@@ -1,4 +1,4 @@
-import { buildings, materials, milestone, recipes, shipComponents } from './records.ts';
+import { buildings, materials, recipes, shipComponents } from './records.ts';
 import { typeHolds } from './regions.ts';
 import type { Body, Building, Component, Material, Recipe, Site } from './types.ts';
 
@@ -6,12 +6,10 @@ export const recipesProducing = (id: string): Recipe[] => recipes.filter((r) => 
 export const recipesConsuming = (id: string): Recipe[] => recipes.filter((r) => id in r.inputs);
 export const recipesAt = (buildingId: string): Recipe[] => recipes.filter((r) => r.building === buildingId);
 
-export const milestoneNeeds = (number: number) => milestone(number).needs;
-
 export const unlockedAt = (number: number) => ({
-  recipes: recipes.filter((r) => r.milestone === number),
-  buildings: buildings.filter((b) => b.milestone === number),
-  components: shipComponents.filter((c) => c.milestone === number)
+  recipes: recipes.filter((r) => r.research === number),
+  buildings: buildings.filter((b) => b.research === number),
+  components: shipComponents.filter((c) => c.research === number)
 });
 
 export const extractionBodies = (id: string): Body[] => {
@@ -45,8 +43,8 @@ export interface Reach {
 }
 
 export const reach = ({ upTo = Infinity, tags, thinOnly = false, site }: ReachOptions = {}): Reach => {
-  const included = (item: { milestone: number; thin?: boolean }): boolean =>
-    (tags ? tags.has(item.milestone) : item.milestone <= upTo) && (!thinOnly || item.thin === true);
+  const included = (item: { research: number; thin?: boolean }): boolean =>
+    (tags ? tags.has(item.research) : item.research <= upTo) && (!thinOnly || item.thin === true);
   const have = new Set<string>();
   const used = new Set<string>();
   const built = new Set<string>();

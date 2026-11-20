@@ -56,7 +56,7 @@
   const locked = $derived(lockedBuildings(economy, site));
   const catalogue = $derived(
     [...open, ...locked].sort(
-      (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.milestone - b.milestone
+      (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.research - b.research
     )
   );
   const kinds = $derived(KIND_ORDER.filter((k) => catalogue.some((b) => b.kind === k)));
@@ -204,7 +204,7 @@
             selected={ui.side === 'pick' && picked?.id === b.id}
             tip={buildingTip(
               b.id,
-              isOpenB ? 'Open' : warn(`Needs ${waitingOn(economy, b.milestone).join(' and ')}`),
+              isOpenB ? 'Open' : warn(`Needs ${waitingOn(economy, b.research).join(' and ')}`),
               standingN ? `${fmt.count(standingN)} standing` : dim('None standing'),
               `Build time ${fmt.days(buildHours(b.id) / 24)}`
             )}
@@ -310,7 +310,7 @@
           </div>
         {:else}
           <div class="hot" id="lockedNote">
-            <Icon name="lock" class="sm" /> Needs {waitingOn(economy, picked.milestone).join(' and ')}
+            <Icon name="lock" class="sm" /> Needs {waitingOn(economy, picked.research).join(' and ')}
           </div>
         {/if}
       </Card>

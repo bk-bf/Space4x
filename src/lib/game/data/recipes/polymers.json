@@ -2,7 +2,7 @@
   {
     "id": "pan_polymerisation",
     "building": "polymer_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "ethylene": 800, "ammonia": 400, "oxygen": 200 },
@@ -13,7 +13,7 @@
   {
     "id": "epoxy_curing_resin",
     "building": "polymer_plant",
-    "milestone": 1,
+    "research": 0,
     "thin": true,
     "estimated": true,
     "inputs": { "ethylene": 700, "oxygen": 300 },
@@ -24,7 +24,7 @@
   {
     "id": "phenolic_resin_synthesis",
     "building": "polymer_plant",
-    "milestone": 6,
+    "research": 17,
     "thin": true,
     "estimated": true,
     "inputs": { "ethylene": 700, "oxygen": 300 },
@@ -35,7 +35,7 @@
   {
     "id": "polyimide_synthesis",
     "building": "polymer_plant",
-    "milestone": 2,
+    "research": 2,
     "thin": true,
     "estimated": true,
     "inputs": { "ethylene": 800, "nitrogen": 100, "oxygen": 200 },
@@ -46,7 +46,7 @@
   {
     "id": "pet_film_extrusion",
     "building": "polymer_plant",
-    "milestone": 2,
+    "research": 2,
     "estimated": true,
     "inputs": { "ethylene": 700, "oxygen": 450 },
     "outputs": { "pet_film": 1000 },
@@ -56,7 +56,7 @@
   {
     "id": "aramid_spinning",
     "building": "polymer_plant",
-    "milestone": 3,
+    "research": 16,
     "thin": true,
     "estimated": true,
     "inputs": { "ethylene": 800, "nitrogen": 150, "oxygen": 100 },
@@ -67,7 +67,7 @@
   {
     "id": "vectran_spinning",
     "building": "polymer_plant",
-    "milestone": 11,
+    "research": 24,
     "estimated": true,
     "inputs": { "ethylene": 1050 },
     "outputs": { "vectran": 1000 },
@@ -77,7 +77,7 @@
   {
     "id": "uhmwpe_polymerisation",
     "building": "polymer_plant",
-    "milestone": 6,
+    "research": 17,
     "thin": true,
     "estimated": false,
     "inputs": { "ethylene": 1000 },
@@ -90,7 +90,7 @@
   {
     "id": "ptfe_polymerisation",
     "building": "polymer_plant",
-    "milestone": 18,
+    "research": 14,
     "estimated": true,
     "inputs": { "fluorite": 1800, "ethylene": 250 },
     "outputs": { "ptfe": 1000 },
@@ -100,7 +100,7 @@
   {
     "id": "silicone_synthesis",
     "building": "polymer_plant",
-    "milestone": 3,
+    "research": 15,
     "estimated": false,
     "inputs": { "silicon": 561.7, "methane": 641.7, "oxygen": 320.0 },
     "outputs": { "silicone": 1483.0, "hydrogen": 40.32 },

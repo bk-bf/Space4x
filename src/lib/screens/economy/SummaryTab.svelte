@@ -3,8 +3,8 @@
     depletableRecord,
     building,
     materials,
-    milestone,
-    milestones,
+    project,
+    projects,
     region as regionRecord
   } from '#lib/game/data/index.ts';
   import {
@@ -13,8 +13,9 @@
     flowsOf,
     foodIds,
     kcalOf,
-    programmeDays,
     remainingMass,
+    researchDaysLeft,
+    researchSite,
     siteDeposits,
     type Site
   } from '#lib/game/economy/index.ts';
@@ -38,7 +39,8 @@
   import PowerBlock from './PowerBlock.svelte';
   import StockTile from './StockTile.svelte';
   import TabBody from './TabBody.svelte';
-  import { type KindTotal, groupViews, kindIcon, kindTotals, milestoneIcon, stockView } from './model.ts';
+  import { projectIcon } from '#lib/gfx/icons/index.ts';
+  import { type KindTotal, groupViews, kindIcon, kindTotals, stockView } from './model.ts';
   import { bld, mat } from './refs.ts';
   import { ui } from './state.svelte.ts';
   import { limitText } from './view.ts';
@@ -98,7 +100,7 @@
   const kinds = $derived(kindTotals(views));
   const maxPower = $derived(Math.max(1, ...kinds.map((k) => k.power)));
 
-  const programmes = $derived(economy.running.filter((p) => p.site === site.id));
+  const programmes = $derived(researchSite(economy) === site ? economy.running : []);
   const activeBuilds = $derived(activeOrders(site));
 
   const peopleText = (n: number) => fmt.population(n);
@@ -300,29 +302,24 @@
       </div>
       <div>
         <h3>
-          Programmes
-          <small class="dim">{economy.done.length} of {milestones.length} researched</small>
+          Research
+          <small class="dim">{economy.done.length} of {projects.length} researched</small>
         </h3>
         {#if programmes.length}
           <TileGrid min={120} gap={5}>
             {#each programmes as p (p.number)}
-              {@const m = milestone(p.number)}
-              {@const left = (1 - p.progress) * programmeDays(m)}
+              {@const m = project(p.number)}
+              {@const left = researchDaysLeft(flows, p)}
+              {@const icon = projectIcon(p.number)}
               <Tile
                 variant="q"
-                icons={[milestoneIcon(p.number)]}
+                icons={icon ? [icon] : []}
                 name={m.name}
-                corner="M{p.number}"
-                meter={p.progress}
+                corner={String(p.number)}
+                meter={p.rp / m.rp}
                 meterTone="cool"
                 note="{fmt.days(left)} left"
-                tip={tipText(
-                  m.name,
-                  dim(m.unlocks),
-                  `Programme ${p.number}`,
-                  `${fmt.pct(p.progress)} done`,
-                  `${fmt.days(left)} left`
-                )}
+                tip={tipText(m.name, `${fmt.num(p.rp)} of ${m.rp} RP`, `${fmt.days(left)} left`)}
               />
             {/each}
           </TileGrid>

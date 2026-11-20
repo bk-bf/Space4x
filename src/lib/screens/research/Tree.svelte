@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { milestone, milestones, shortName, TIER_NAMES } from '#lib/game/data/index.ts';
+  import { project, projects } from '#lib/game/data/index.ts';
   import { economy, runningProgramme } from '#lib/game/economy/index.ts';
+  import { projectIcon } from '#lib/gfx/icons/index.ts';
   import { Icon, Tile, dim, tipText, warn, type Tip } from '#lib/ui/index.ts';
   import type { IconName } from '#lib/gfx/icons.ts';
   import { CHAIN, LABEL_W, SUBJECT_ICONS, TILE_W } from './chain.ts';
-  import { milestoneIcon, statusOf } from './programme.ts';
+  import { effectLines, statusOf, subjectName } from './programme.ts';
   import { research } from './research.svelte.ts';
 
   const VIEW_PAD = 16;
@@ -13,8 +14,8 @@
   let hovered = $state<number | null>(null);
 
   const focus = $derived(hovered ?? research.selected);
-  const needs = $derived(new Set(milestone(focus).requires));
-  const feeds = $derived(new Set(milestones.filter((m) => m.requires.includes(focus)).map((m) => m.number)));
+  const needs = $derived(new Set(project(focus).requires));
+  const feeds = $derived(new Set(projects.filter((p) => p.requires.includes(focus)).map((p) => p.number)));
 
   type Kind = 'into' | 'out' | 'done' | 'open';
 
@@ -29,26 +30,28 @@
   const GLYPH: Record<string, { icon: IconName; tone: 'accent' | 'cool' | 'dim' | 'hot' }> = {
     done: { icon: 'check', tone: 'accent' },
     running: { icon: 'hammer', tone: 'cool' },
+    queued: { icon: 'clock', tone: 'cool' },
     ready: { icon: 'play', tone: 'cool' },
     locked: { icon: 'lock', tone: 'dim' }
   };
 
   const STATE_LINE = {
-    done: 'Done',
-    running: 'Programme running',
+    done: 'Researched',
+    running: 'Running',
+    queued: 'Queued',
     ready: 'Ready to start',
     locked: 'Locked'
   } as const;
 
   function tipFor(n: number): Tip {
-    const m = milestone(n);
-    const status = statusOf(economy, m);
-    const before = m.requires.filter((r) => !economy.done.includes(r)).map(shortName);
+    const p = project(n);
+    const status = statusOf(economy, p);
+    const before = p.requires.filter((r) => !economy.done.includes(r)).map((r) => project(r).name);
     return tipText(
-      m.name,
-      dim(m.unlocks),
-      status === 'locked' ? warn(`Locked until ${before.join(' and ')} done`) : STATE_LINE[status],
-      TIER_NAMES[m.tier]
+      p.name,
+      dim(`${p.rp} RP, ${subjectName(p.subject)}`),
+      ...effectLines(p),
+      status === 'locked' ? warn(`Locked until ${before.join(' and ')} researched`) : STATE_LINE[status]
     );
   }
 
@@ -126,14 +129,14 @@
         {/each}
       </svg>
       {#each CHAIN.nodes as n (n.number)}
-        {@const status = statusOf(economy, milestone(n.number))}
+        {@const status = statusOf(economy, project(n.number))}
         {@const glyph = GLYPH[status]!}
         {@const running = runningProgramme(economy, n.number)}
-        {@const icon = milestoneIcon(n.number)}
+        {@const icon = projectIcon(n.number)}
         <div
           class="tpos"
           role="presentation"
-          data-milestone={n.number}
+          data-project={n.number}
           data-status={status}
           style:left="{n.x}px"
           style:top="{n.y}px"
@@ -148,8 +151,8 @@
             mark={glyph.icon}
             markTone={glyph.tone}
             icons={icon ? [icon] : []}
-            name={shortName(n.number)}
-            meter={running ? running.progress : undefined}
+            name={project(n.number).name}
+            meter={running ? running.rp / project(n.number).rp : undefined}
             meterTone="cool"
             locked={status === 'locked'}
             selected={n.number === research.selected}
@@ -172,7 +175,7 @@
     <span><i class="d"></i>done</span>
     <span><i class="a"></i>open or running</span>
     <span><i class="l"></i>locked</span>
-    <span><u class="done"></u>from a done milestone</span>
+    <span><u class="done"></u>from a researched project</span>
     <span
       ><Icon name="arrowR" class="sm" />selected: <b class="amber">prerequisites</b>,
       <b class="teal">opens</b></span

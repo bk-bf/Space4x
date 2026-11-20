@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { milestone, milestones, material, reserveOf } from '#lib/game/data/index.ts';
+import { material, project, projectById, projects, reserveOf } from '#lib/game/data/index.ts';
 import { newSite } from './index.ts';
 import {
   advanceEconomy,
@@ -9,8 +9,15 @@ import {
   isMass,
   moveOrder,
   pauseOrder,
-  programmeDays,
+  bonusOf,
+  cancelQueued,
+  gainExperience,
+  createProject,
+  freeLabs,
+  labsActive,
+  MONTH_HOURS,
   programmeStatus,
+  setLabs,
   queueBuilding,
   removeOrder,
   reserveLeft,
@@ -18,6 +25,7 @@ import {
   siteFlows,
   startEconomy,
   startProgramme,
+  switchSome,
   isUnlocked,
   isPlant,
   PEAK_RATIO,
@@ -120,12 +128,20 @@ describe('the start state', () => {
     expect(site.stock.nickel).toBe(275_118_000);
   });
 
-  it('unlocks only the first milestone records and nothing is done', () => {
+  it('opens only the records open from the start, with nothing researched, four labs and six scientists', () => {
     const eco = startEconomy();
     expect(eco.done).toEqual([]);
-    expect(isUnlocked(eco, { milestone: 0 })).toBe(true);
-    expect(isUnlocked(eco, { milestone: 1 })).toBe(true);
-    expect(isUnlocked(eco, { milestone: 2 })).toBe(false);
+    expect(isUnlocked(eco, { research: 0 })).toBe(true);
+    expect(isUnlocked(eco, { research: 1 })).toBe(false);
+    expect(labsActive(eco)).toBe(4);
+    expect(eco.scientists.map((s) => s.name)).toEqual([
+      'Aiko Tanaka',
+      'Marcus Bell',
+      'Leila Haddad',
+      'Viktor Sokolov',
+      'Nadia Petrova',
+      'Samuel Osei'
+    ]);
     const site = earthOf(eco);
     expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).not.toContain(
       'polyimide_synthesis'
@@ -162,7 +178,7 @@ describe('production', () => {
     queueBuilding(eco, site, 'alloy_works', 'grcop_42_melting', 2);
     assign(eco, site, groupOf(site, 'stainless_steel_304').id, 'grcop_42_melting', 5);
     advanceEconomy(eco, 5 * DAY);
-    expect(startProgramme(eco, site, 1)).toBe(true);
+    expect(startProgramme(eco, 1)).toBe(true);
     advanceEconomy(eco, 200 * DAY);
     const { extracted, eaten, built, lost } = eco.ledger;
     expect(lost).toBeGreaterThanOrEqual(0);
@@ -457,26 +473,103 @@ describe('construction', () => {
 });
 
 describe('milestones as programmes', () => {
-  it('reaches milestone 1 from the start state, spending nothing to start it', () => {
+  const num = (id: string) => projectById(id).number;
+
+  it('researches a project on its lead and labs, spending nothing to start it', () => {
     const eco = startEconomy();
     const site = earthOf(eco);
-    const m1 = milestone(1);
-    expect(programmeStatus(eco, m1)).toBe('ready');
+    const first = project(1);
+    expect(programmeStatus(eco, first)).toBe('ready');
     const stock = { ...site.stock };
-    expect(startProgramme(eco, site, 1)).toBe(true);
+    const aiko = eco.scientists[0]!;
+    expect(createProject(eco, 1, aiko.id, 99)).toBe(true);
     expect(site.stock).toEqual(stock);
-    expect(startProgramme(eco, site, 1)).toBe(false);
-    expect(programmeStatus(eco, m1)).toBe('running');
+    expect(eco.running[0]).toEqual({ number: 1, lead: aiko.id, labs: aiko.admin, rp: 0 });
+    expect(programmeStatus(eco, first)).toBe('running');
+    const perMonth = aiko.admin * (1 + bonusOf(aiko, first.subject));
+    const months = first.rp / perMonth;
     const logs: string[] = [];
-    advanceEconomy(eco, programmeDays(m1) * DAY, (t) => logs.push(t));
+    advanceEconomy(eco, months * 0.99 * MONTH_HOURS * 3600, (t) => logs.push(t));
+    expect(eco.done).toEqual([]);
+    expect(eco.running[0]!.rp).toBeCloseTo(first.rp * 0.99, 3);
+    advanceEconomy(eco, months * 0.02 * MONTH_HOURS * 3600, (t) => logs.push(t));
     expect(eco.done).toEqual([1]);
-    expect(logs).toContain('Milestone 1 reached: Reusable orbital launch.');
-    expect(isUnlocked(eco, { milestone: 2 })).toBe(true);
-    expect(isUnlocked(eco, { milestone: 3 })).toBe(false);
+    expect(logs).toContain('Booster recovery researched.');
+    expect(programmeStatus(eco, project(num('propellant_transfer_in_orbit')))).toBe('ready');
+    expect(programmeStatus(eco, project(num('orbital_shipbuilding')))).toBe('locked');
+  });
+
+  it('opens a record only once the project that lists it is researched', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const transfer = num('propellant_transfer_in_orbit');
+    eco.done = [num('booster_recovery')];
+    expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).not.toContain(
+      'polyimide_synthesis'
+    );
+    eco.done.push(transfer);
     expect(unlockedProcesses(eco, site, 'polymer_plant').map((p) => p.id)).toContain('polyimide_synthesis');
-    expect(programmeStatus(eco, milestone(2))).toBe('ready');
-    expect(programmeStatus(eco, milestone(3))).toBe('locked');
-    expect(programmeStatus(eco, milestone(15))).toBe('locked');
+  });
+
+  it("caps labs by the lead scientist's administration and the free labs", () => {
+    const eco = startEconomy();
+    const [aiko, marcus] = eco.scientists;
+    expect(createProject(eco, num('booster_recovery'), aiko!.id, 99)).toBe(true);
+    expect(freeLabs(eco)).toBe(4 - aiko!.admin);
+    expect(createProject(eco, num('closed_loop_water_and_air'), marcus!.id, 99)).toBe(true);
+    expect(eco.running[1]!.labs).toBe(4 - aiko!.admin);
+    expect(freeLabs(eco)).toBe(0);
+    expect(setLabs(eco, num('booster_recovery'), 1)).toBe(true);
+    expect(setLabs(eco, num('closed_loop_water_and_air'), 99)).toBe(true);
+    expect(eco.running[1]!.labs).toBe(Math.min(marcus!.admin, 3));
+  });
+
+  it("queues a busy scientist's next project and moves on to it with the same labs", () => {
+    const eco = startEconomy();
+    const aiko = eco.scientists[0]!;
+    const recovery = num('booster_recovery');
+    const hydrolox = num('hydrolox_and_storable_engines');
+    const magnets = num('magnets');
+    expect(createProject(eco, recovery, aiko.id, 2)).toBe(true);
+    expect(createProject(eco, hydrolox, aiko.id, 3)).toBe(true);
+    expect(createProject(eco, magnets, aiko.id, 3)).toBe(true);
+    expect(programmeStatus(eco, project(hydrolox))).toBe('queued');
+    expect(cancelQueued(eco, magnets)).toBe(true);
+    expect(programmeStatus(eco, project(magnets))).toBe('ready');
+    const logs: string[] = [];
+    advanceEconomy(eco, 2 * 365 * DAY, (t) => logs.push(t));
+    expect(eco.done).toContain(recovery);
+    expect(logs).toContain(`${aiko.name} moves on to ${project(hydrolox).name}.`);
+    expect(
+      eco.done.includes(hydrolox) || eco.running.some((p) => p.number === hydrolox && p.labs === 2)
+    ).toBe(true);
+  });
+
+  it('gives the lead experience by fixed chances of a half, the same in every game', () => {
+    const run = () => {
+      const s = { ...startEconomy().scientists[0]!, skill: 1 };
+      const gains = projects.map((p) => gainExperience(s, p.number));
+      return { s, gains };
+    };
+    const one = run();
+    expect(run()).toEqual(one);
+    const admin = one.gains.filter((g) => g.admin).length;
+    expect(admin / projects.length).toBeGreaterThan(0.3);
+    expect(admin / projects.length).toBeLessThan(0.7);
+    expect(one.s.admin).toBe(startEconomy().scientists[0]!.admin + admin);
+    expect(one.s.skill).toBeLessThanOrEqual(10);
+  });
+
+  it('takes labs switched off from the newest projects first', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const [aiko, marcus] = eco.scientists;
+    createProject(eco, num('booster_recovery'), aiko!.id, 2);
+    createProject(eco, num('closed_loop_water_and_air'), marcus!.id, 2);
+    const labs = site.groups.find((g) => g.building === 'research_lab')!;
+    switchSome(eco, site, labs.id, 3);
+    advanceEconomy(eco, DAY);
+    expect(eco.running.map((p) => p.labs)).toEqual([1, 0]);
   });
 
   it('makes every project ready once its prerequisites are researched, whatever stands and whatever is in stock', () => {
@@ -484,26 +577,41 @@ describe('milestones as programmes', () => {
     const site = earthOf(eco);
     site.stock = {};
     site.groups = [];
-    for (const m of milestones) {
-      eco.done = [...m.requires];
-      expect(programmeStatus(eco, m), `${m.number}`).toBe('ready');
-      eco.done = m.requires.slice(1);
-      if (m.requires.length) expect(programmeStatus(eco, m), `${m.number}`).toBe('locked');
+    for (const p of projects) {
+      eco.done = [...p.requires];
+      expect(programmeStatus(eco, p), `${p.number}`).toBe('ready');
+      eco.done = p.requires.slice(1);
+      if (p.requires.length) expect(programmeStatus(eco, p), `${p.number}`).toBe('locked');
     }
   });
 
-  it('slows a programme that needs compute to what data centres supply', () => {
+  it('slows research to the compute data centres supply, and labs draw power and compute', () => {
     const eco = startEconomy();
-    for (let n = 1; n <= 5; n++) eco.done.push(n);
     const site = earthOf(eco);
-    eco.running.push({ number: 6, site: 'earth', progress: 0 });
+    createProject(eco, 1, eco.scientists[0]!.id, 3);
+    const flows = siteFlows(eco, site);
+    const actor = flows.actors.find((a) => a.kind === 'programme')!;
+    expect(actor.inputs.compute).toBe(54);
+    expect(actor.inputs[POWER]).toBe(30_000);
     const centres = groupOf(site, 'compute_generation');
     setOn(site, centres.id, false);
     advanceEconomy(eco, DAY);
-    expect(eco.running[0]?.progress).toBe(0);
+    expect(eco.running[0]?.rp).toBe(0);
     setOn(site, centres.id, true);
     advanceEconomy(eco, DAY);
-    expect(eco.running[0]?.progress).toBeGreaterThan(0);
+    expect(eco.running[0]?.rp).toBeGreaterThan(0);
+  });
+
+  it('speeds research by the research rate boost line', () => {
+    const eco = startEconomy();
+    createProject(eco, 1, eco.scientists[0]!.id, 3);
+    advanceEconomy(eco, 30 * DAY);
+    const base = eco.running[0]!.rp;
+    const other = startEconomy();
+    other.done = [num('research_rate_1')];
+    createProject(other, 1, other.scientists[0]!.id, 3);
+    advanceEconomy(other, 30 * DAY);
+    expect(other.running[0]!.rp / base).toBeCloseTo(1.2, 6);
   });
 });
 

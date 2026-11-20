@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildings, material, reach, shipComponents } from '#lib/game/data/index.ts';
+import { buildings, material, reach, shipComponents, tagsOf } from '#lib/game/data/index.ts';
 import { catalogue, isEngine, isTank, massOf } from './catalogue.ts';
 import { PROPELLANT_KINDS, PROPELLANTS, isPropellant } from './propellants.ts';
 
@@ -47,17 +47,17 @@ describe('the component design records', () => {
       for (const y of c.builtAt) expect(yards.has(y), `${c.id} ${y}`).toBe(true);
   });
 
-  it('make each added component from materials the world can supply by its milestone', () => {
+  it('make each added component from materials the world can supply once its project is researched', () => {
     for (const id of NEW) {
       const c = shipComponents.find((x) => x.id === id)!;
-      const got = reach({ upTo: c.milestone });
-      expect(got.components.has(id), `${id} at milestone ${c.milestone}`).toBe(true);
+      const got = reach({ tags: tagsOf(c.research) });
+      expect(got.components.has(id), `${id} with project ${c.research}`).toBe(true);
     }
   });
 
-  it('count the first stage a design can start from among the milestone 1 unlocks', () => {
+  it('count the first stage a design can start from among what is open at the start', () => {
     const first = catalogue()
-      .filter((c) => c.milestone === 1)
+      .filter((c) => c.research === 0)
       .map((c) => c.id);
     expect(first).toEqual(
       expect.arrayContaining(['propellant_tank', 'kerolox_engine', 'cargo_bay', 'landing_legs'])

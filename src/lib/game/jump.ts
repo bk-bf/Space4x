@@ -1,11 +1,11 @@
 import { economy, standing } from './economy/index.ts';
-import { milestones } from './data/index.ts';
+import { building } from './data/index.ts';
 import type { Game } from './state.svelte.ts';
 
 export const STABILISER = 'jump_point_stabiliser';
 
 export function settleJumps(game: Game): void {
-  if (!economy.done.includes(milestones.length)) return;
+  if (!economy.done.includes(building(STABILISER).research)) return;
   for (const system of game.world.systems)
     for (const point of system.jumps) {
       if (point.stable) continue;

@@ -1,7 +1,7 @@
 import { WARN_DAYS } from '#lib/game/alerts.ts';
-import { building, depletableRecord, finiteContent, material, milestone } from '#lib/game/data/index.ts';
+import { building, depletableRecord, finiteContent, material, project } from '#lib/game/data/index.ts';
 import { DEPLETED_EPS, remainingMass, reserveLeft } from './deposits.ts';
-import { programmeDays } from './programmes.ts';
+import { finishProgramme, RP_EPS, trimLabs } from './programmes.ts';
 import { isStockless } from './processes.ts';
 import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
 import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
@@ -27,10 +27,8 @@ function nextEvent(eco: Economy, site: Site, flows: SiteFlows, warnDays: number)
   for (const a of flows.actors) {
     if (a.share <= 0) continue;
     if (a.kind === 'build' || a.kind === 'yard') t = Math.min(t, ((1 - a.order.done) * a.hours) / a.share);
-    if (a.kind === 'programme') {
-      const hours = programmeDays(milestone(a.programme.number)) * 24;
-      t = Math.min(t, ((1 - a.programme.progress) * hours) / a.share);
-    }
+    if (a.kind === 'programme' && a.rate > 0)
+      t = Math.min(t, (project(a.programme.number).rp - a.programme.rp) / (a.rate * a.share));
   }
   return t;
 }
@@ -140,16 +138,9 @@ function applySegment(
     }
     if (a.kind === 'programme') {
       const p = a.programme;
-      const m = milestone(p.number);
-      p.progress = Math.min(1, p.progress + (a.share * hours) / (programmeDays(m) * 24));
-      if (p.progress >= 1 - 1e-9) {
-        eco.running.splice(eco.running.indexOf(p), 1);
-        eco.done.push(p.number);
-        log(`Milestone ${p.number} reached: ${m.name}.`, false, at, site.id, {
-          kind: 'milestone',
-          milestone: p.number
-        });
-      }
+      const cost = project(p.number).rp;
+      p.rp = Math.min(cost, p.rp + a.rate * a.share * hours);
+      if (p.rp >= cost - RP_EPS) finishProgramme(eco, p, at, log);
     }
   }
 }
@@ -229,11 +220,13 @@ function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: nu
   return Math.max(hours, 0);
 }
 
-const statesOf = (eco: Economy, log?: LogFn): SiteState[] =>
-  eco.sites.map((site) => {
+const statesOf = (eco: Economy, log?: LogFn): SiteState[] => {
+  trimLabs(eco);
+  return eco.sites.map((site) => {
     if (log) startShips(eco, site, eco.elapsed, log);
     return { site, flows: siteFlows(eco, site) };
   });
+};
 
 export function economyHorizon(eco: Economy, warnDays = WARN_DAYS): number {
   return segmentHours(eco, statesOf(eco), Infinity, warnDays) * 3600;

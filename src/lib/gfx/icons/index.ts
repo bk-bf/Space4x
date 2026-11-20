@@ -42,3 +42,4 @@ export { materialLook, SHAPE_NAMES, type MaterialLook, type MaterialShape } from
 export { KIND_COLOURS, KIND_EXAMPLES, FALLBACK_KIND_COLOUR } from './buildings.ts';
 export * from './catalogue.ts';
 export type { Sprite } from './sprite.ts';
+export { projectIcon } from './projects.ts';

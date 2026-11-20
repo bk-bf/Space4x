@@ -140,7 +140,7 @@ test('a save of another version is dropped with an event instead of loading', as
           const store = tx.objectStore('saves');
           store.put({ version: 0, game: { time: 0, step: 1 } }, 'save:old');
           store.put(
-            { version: 0, time: 0, milestones: 0, sites: 1, ships: 0, savedAt: Date.now(), kind: 'auto' },
+            { version: 0, time: 0, researched: 0, sites: 1, ships: 0, savedAt: Date.now(), kind: 'auto' },
             'meta:old'
           );
           tx.oncomplete = () => resolve();
@@ -171,7 +171,7 @@ test('a test link neither loads nor writes the save', async ({ page }) => {
   await expect(page.locator('#clock')).toHaveText(month);
 });
 
-test('a scripted game at milestone 6 is saved and loaded exactly, and opens again after a reload', async ({
+test('a scripted game at stage 6 is saved and loaded exactly, and opens again after a reload', async ({
   page
 }) => {
   test.setTimeout(180_000);
@@ -183,7 +183,7 @@ test('a scripted game at milestone 6 is saved and loaded exactly, and opens agai
     t.play(6);
     return t.state();
   });
-  expect(reached.done).toContain(6);
+  expect(reached.done.length).toBeGreaterThan(6);
   const saved = await page.evaluate(() => window.space4xTest!.snapshot());
   const time = await clock(page);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { milestones, subjects } from '#lib/game/data/index.ts';
+import { projects, subjects } from '#lib/game/data/index.ts';
 import {
   CHAIN,
   GUTTER,
@@ -13,10 +13,10 @@ import {
 } from './chain.ts';
 
 describe('the research tree layout', () => {
-  it('places every milestone once, in the lane of its subject, at a column of its prerequisite depth', () => {
-    expect(CHAIN.nodes.map((n) => n.number)).toEqual(milestones.map((m) => m.number));
+  it('places every project once, in the lane of its subject, at a column of its prerequisite depth', () => {
+    expect(CHAIN.nodes.map((n) => n.number)).toEqual(projects.map((m) => m.number));
     for (const n of CHAIN.nodes) {
-      const m = milestones.find((x) => x.number === n.number)!;
+      const m = projects.find((x) => x.number === n.number)!;
       expect(subjects[n.lane]!.id).toBe(m.subject);
       for (const r of m.requires) expect(CHAIN.at(r).col, `${r} before ${n.number}`).toBeLessThan(n.col);
     }
@@ -39,15 +39,15 @@ describe('the research tree layout', () => {
       }
   });
 
-  it('fits the eight lanes in nine rows', () => {
+  it('fits the eight lanes, with the boost lines, in seventeen rows', () => {
     expect(CHAIN.lanes).toHaveLength(8);
-    expect(CHAIN.rows).toBe(9);
+    expect(CHAIN.rows).toBe(17);
   });
 });
 
 describe('the research tree lines', () => {
   it('has one line for each prerequisite, leaving its source at the right edge and entering its target at the left edge', () => {
-    const count = milestones.reduce((a, m) => a + m.requires.length, 0);
+    const count = projects.reduce((a, m) => a + m.requires.length, 0);
     expect(CHAIN.edges).toHaveLength(count);
     for (const e of CHAIN.edges) {
       const a = CHAIN.at(e.from);

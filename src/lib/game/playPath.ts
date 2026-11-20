@@ -164,7 +164,7 @@ export class PathPlayer extends Player {
       this.fixShortages();
       this.days(3);
     }
-    this.computeForProgramme();
+    this.computeForResearch();
     const left = short();
     if (left.length) this.say(`short of ${left.map(([m]) => material(m).name).join(', ')}`);
   }

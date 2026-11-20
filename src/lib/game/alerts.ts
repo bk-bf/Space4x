@@ -4,7 +4,7 @@ export const PAUSE_KINDS: readonly { id: EventKind; label: string }[] = [
   { id: 'arrival', label: 'Ship arrives' },
   { id: 'blocked', label: 'Order blocked' },
   { id: 'finished', label: 'Building or ship finished' },
-  { id: 'milestone', label: 'Milestone reached' },
+  { id: 'research', label: 'Project researched' },
   { id: 'shortage', label: 'Shortage or forecast' }
 ];
 
@@ -18,7 +18,7 @@ export const defaultPauses = (): PauseKinds => ({
   arrival: true,
   blocked: true,
   finished: true,
-  milestone: true,
+  research: true,
   shortage: true
 });
 

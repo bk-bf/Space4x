@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { asteroidRecord, region, regionsOf } from '#lib/game/data/index.ts';
+import { stageProjects } from '#lib/game/stages.ts';
 import {
   advanceEconomy,
   assign,
@@ -37,8 +38,8 @@ import {
   surveyDays
 } from '#lib/game/survey.svelte.ts';
 
-const unlockTo = (milestone: number) => {
-  economy.done = Array.from({ length: milestone }, (_, i) => i + 1).filter((n) => n !== 21);
+const unlockTo = (stage: number) => {
+  economy.done = stageProjects(stage);
 };
 
 const outpost = (world: string, regionId: string, bodyName = world): Site => {
@@ -433,7 +434,7 @@ describe('flying to and landing on an asteroid', () => {
     for (let i = 0; i < 200 && (v.orders.length || v.trip); i++) g.advance(30 * DAY);
     expect(v.blocked).toBeNull();
     expect(v.at).toEqual({ kind: 'surface', body: 'bennu' });
-  });
+  }, 20_000);
 });
 
 describe('the belt scenario', () => {

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import '#lib/screens/economy/system.ts';
 import { classes } from './classes.svelte.ts';
 import { DAY } from './clock.ts';
-import { economy } from './economy/index.ts';
+import { projectById } from './data/index.ts';
+import { economy, startingScientists } from './economy/index.ts';
 import { PathPlayer } from './playPath.ts';
 import { checkSave, restore, resetGame, SAVE_VERSION, serialise, type SaveData } from './save.ts';
 import { addDesign, freshGame, spawn } from './ships/fixtures.ts';
@@ -34,13 +35,15 @@ const live = () =>
   });
 
 describe('saving and loading', () => {
-  it('restores the game after milestone 6 and runs on exactly as the original', () => {
+  it('restores the game after stage 6, with research running, and runs on exactly as the original', () => {
     const game = freshGame();
     const player = new PathPlayer(game);
     expect(player.reach(4)).toBe(true);
     expect(player.crewedStation()).toBe(true);
     expect(player.reach(6)).toBe(true);
-    expect(economy.done).toContain(6);
+    expect(economy.done).toContain(projectById('lunar_surface_habitat').number);
+    expect(economy.running.length).toBeGreaterThan(0);
+    expect(economy.scientists.some((s, i) => s.admin !== startingScientists()[i]!.admin)).toBe(true);
     expect(economy.sites.some((s) => s.worldBody === 'luna' && s.population > 0)).toBe(true);
     expect(economy.sites.length).toBeGreaterThan(2);
     expect(ships.vessels.length).toBeGreaterThan(0);
@@ -97,6 +100,9 @@ describe('saving and loading', () => {
     expect(checkSave({ ...good, version: SAVE_VERSION + 1 }, game)).toMatch(/version/);
     expect(checkSave({ ...good, angles: [1, 2] }, game)).toMatch(/bodies/);
     expect(checkSave({ ...good, economy: { sites: [] } }, game)).toMatch(/economy/);
+    expect(checkSave({ ...good, economy: { ...good.economy, scientists: undefined } }, game)).toMatch(
+      /research/
+    );
     expect(checkSave('nonsense', game)).toMatch(/not a saved game/);
     expect(checkSave(null, game)).toMatch(/not a saved game/);
   });

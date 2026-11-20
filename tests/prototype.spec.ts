@@ -164,14 +164,14 @@ test.describe('the prototype on present-day Earth', () => {
     await expectCleanLayout(page);
   });
 
-  test('starts milestone 1 at once and opens what it unlocks', async ({ page }) => {
-    await open(page, 'screen=economy&tab=production&test');
-    const start = () => page.evaluate(() => window.space4xTest?.startProgramme(1));
+  test('starts a project at once and opens what it lists when it is researched', async ({ page }) => {
+    await open(page, 'screen=economy&tab=production&test&reached=1');
+    const start = () => page.evaluate(() => window.space4xTest?.startProgramme(2));
     expect(await start()).toBe(true);
     expect(await start()).toBe(false);
     await group(page, 'Polymer plant').first().click();
     await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(0);
-    for (let i = 0; i < 3; i++) await page.locator(MONTH).click();
+    for (let i = 0; i < 14; i++) await page.locator(MONTH).click();
     await expect(page.locator('#recipes').getByRole('button', { name: /Polyimide/ })).toHaveCount(1);
     await expectCleanLayout(page);
   });

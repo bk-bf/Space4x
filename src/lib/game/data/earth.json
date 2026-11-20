@@ -13,6 +13,7 @@
     "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%, water included with what the power plants, semiconductor fabs, flight machine shops and data centres draw",
     "power": "the power plants and storage keep the real 2024 mix of Ember 2025, the counts of the design sketch scaled together so that average generation covers the start power demand of the groups with 5% to spare",
     "stock": "each material in stocks starts with the stock its market reports as held in store in November 2026: world grain and oilseed stocks carried into 2026/27 from the USDA WASDE, global observed oil inventories from the IEA, LME warehouse stocks for base metals, London vault holdings for gold and silver and above ground stocks for platinum; every other material starts with stockDays of its start production",
+    "labs": "four research labs stand at the start, as in the design sketch",
     "goods": "the semiconductor fabs, flight machine shops and data centres stand at the counts of the design sketch, and polysilicon, machinery and integrated circuits start at its stock, in stocks"
   },
   "stocks": {
@@ -501,6 +502,11 @@
       "building": "data_centre",
       "process": "compute_generation",
       "count": 2
+    },
+    {
+      "building": "research_lab",
+      "process": null,
+      "count": 4
     }
   ],
   "kcalPerPersonDay": 2800,

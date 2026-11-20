@@ -1,0 +1,797 @@
+[
+  {
+    "id": "booster_recovery",
+    "number": 1,
+    "name": "Booster recovery",
+    "subject": "launch",
+    "rp": 30,
+    "requires": []
+  },
+  {
+    "id": "propellant_transfer_in_orbit",
+    "number": 2,
+    "name": "Propellant transfer in orbit",
+    "subject": "launch",
+    "rp": 60,
+    "requires": [1]
+  },
+  {
+    "id": "closed_loop_water_and_air",
+    "number": 3,
+    "name": "Closed-loop water and air",
+    "subject": "habitats",
+    "rp": 30,
+    "requires": []
+  },
+  {
+    "id": "space_solar_arrays",
+    "number": 4,
+    "name": "Space solar arrays",
+    "subject": "power",
+    "rp": 120,
+    "requires": [2, 3]
+  },
+  {
+    "id": "autonomous_operations",
+    "number": 5,
+    "name": "Autonomous operations",
+    "subject": "computing",
+    "rp": 30,
+    "requires": [4]
+  },
+  {
+    "id": "remote_sensing_instruments",
+    "number": 6,
+    "name": "Remote-sensing instruments",
+    "subject": "mining",
+    "rp": 30,
+    "requires": [3, 5]
+  },
+  {
+    "id": "magnets",
+    "number": 7,
+    "name": "Magnets",
+    "subject": "physics",
+    "rp": 30,
+    "requires": []
+  },
+  {
+    "id": "asteroid_sampling",
+    "number": 8,
+    "name": "Asteroid sampling",
+    "subject": "mining",
+    "rp": 60,
+    "requires": [6, 7]
+  },
+  {
+    "id": "hydrolox_and_storable_engines",
+    "number": 9,
+    "name": "Hydrolox and storable engines",
+    "subject": "propulsion",
+    "rp": 30,
+    "requires": []
+  },
+  {
+    "id": "small_modular_fission",
+    "number": 10,
+    "name": "Small modular fission",
+    "subject": "power",
+    "rp": 60,
+    "requires": [3]
+  },
+  {
+    "id": "electric_propulsion",
+    "number": 11,
+    "name": "Electric propulsion",
+    "subject": "propulsion",
+    "rp": 60,
+    "requires": [4, 7, 9, 10]
+  },
+  {
+    "id": "asteroid_mining",
+    "number": 12,
+    "name": "Asteroid mining",
+    "subject": "mining",
+    "rp": 120,
+    "requires": [4, 8, 11]
+  },
+  {
+    "id": "in_space_metal_refining",
+    "number": 13,
+    "name": "In-space metal refining",
+    "subject": "chemistry",
+    "rp": 30,
+    "requires": [12]
+  },
+  {
+    "id": "orbital_shipbuilding",
+    "number": 14,
+    "name": "Orbital shipyard",
+    "subject": "launch",
+    "rp": 120,
+    "requires": [2, 13]
+  },
+  {
+    "id": "regenerative_life_support",
+    "number": 15,
+    "name": "Regenerative life support",
+    "subject": "habitats",
+    "rp": 60,
+    "requires": [3]
+  },
+  {
+    "id": "orbital_habitat_module",
+    "number": 16,
+    "name": "Orbital habitat module",
+    "subject": "habitats",
+    "rp": 120,
+    "requires": [2, 15]
+  },
+  {
+    "id": "lunar_surface_habitat",
+    "number": 17,
+    "name": "Lunar surface habitat",
+    "subject": "habitats",
+    "rp": 240,
+    "requires": [9, 16]
+  },
+  {
+    "id": "fission_surface_power",
+    "number": 18,
+    "name": "Fission surface power",
+    "subject": "power",
+    "rp": 240,
+    "requires": [10, 17]
+  },
+  {
+    "id": "lunar_ice_extraction",
+    "number": 19,
+    "name": "Lunar ice extraction",
+    "subject": "mining",
+    "rp": 60,
+    "requires": [5, 17, 18]
+  },
+  {
+    "id": "space_batteries",
+    "number": 20,
+    "name": "Space batteries",
+    "subject": "power",
+    "rp": 30,
+    "requires": []
+  },
+  {
+    "id": "regolith_excavation",
+    "number": 21,
+    "name": "Regolith excavation",
+    "subject": "mining",
+    "rp": 120,
+    "requires": [7, 19, 20]
+  },
+  {
+    "id": "regolith_oxygen_extraction",
+    "number": 22,
+    "name": "Regolith oxygen extraction",
+    "subject": "chemistry",
+    "rp": 30,
+    "requires": [21]
+  },
+  {
+    "id": "regolith_construction",
+    "number": 23,
+    "name": "Regolith construction",
+    "subject": "habitats",
+    "rp": 360,
+    "requires": [17, 21, 22]
+  },
+  {
+    "id": "greenhouse_at_low_gravity",
+    "number": 24,
+    "name": "Greenhouse at low gravity",
+    "subject": "habitats",
+    "rp": 600,
+    "requires": [17, 23]
+  },
+  {
+    "id": "d_t_fusion",
+    "number": 25,
+    "name": "D-T fusion",
+    "subject": "power",
+    "rp": 360,
+    "requires": [7, 10, 19]
+  },
+  {
+    "id": "helium_3_extraction",
+    "number": 26,
+    "name": "Helium-3 extraction",
+    "subject": "mining",
+    "rp": 240,
+    "requires": [21, 25]
+  },
+  {
+    "id": "d_he3_fusion",
+    "number": 27,
+    "name": "D-He3 fusion",
+    "subject": "power",
+    "rp": 600,
+    "requires": [25, 26]
+  },
+  {
+    "id": "solar_power_stations_in_orbit",
+    "number": 28,
+    "name": "Solar power stations in orbit",
+    "subject": "power",
+    "rp": 1200,
+    "requires": [4, 14]
+  },
+  {
+    "id": "ai_accelerators",
+    "number": 29,
+    "name": "AI accelerators",
+    "subject": "computing",
+    "rp": 60,
+    "requires": [5]
+  },
+  {
+    "id": "mars_isru",
+    "number": 30,
+    "name": "Mars ISRU",
+    "subject": "chemistry",
+    "rp": 60,
+    "requires": [22]
+  },
+  {
+    "id": "carbon_nanotube_fibre",
+    "number": 31,
+    "name": "Carbon nanotube fibre",
+    "subject": "chemistry",
+    "rp": 120,
+    "requires": [13, 14]
+  },
+  {
+    "id": "nuclear_electric_propulsion",
+    "number": 32,
+    "name": "Nuclear electric propulsion",
+    "subject": "propulsion",
+    "rp": 120,
+    "requires": [11, 18]
+  },
+  {
+    "id": "fusion_drives",
+    "number": 33,
+    "name": "Fusion drives",
+    "subject": "propulsion",
+    "rp": 240,
+    "requires": [14, 27, 32]
+  },
+  {
+    "id": "gas_giant_scooping",
+    "number": 34,
+    "name": "Gas giant scooping",
+    "subject": "mining",
+    "rp": 360,
+    "requires": [12, 33]
+  },
+  {
+    "id": "nuclear_thermal_propulsion",
+    "number": 35,
+    "name": "Nuclear thermal propulsion",
+    "subject": "propulsion",
+    "rp": 120,
+    "requires": [9, 18]
+  },
+  {
+    "id": "room_temperature_superconductors",
+    "number": 36,
+    "name": "Room-temperature superconductors",
+    "subject": "physics",
+    "rp": 60,
+    "requires": [7, 25]
+  },
+  {
+    "id": "exotic_matter",
+    "number": 37,
+    "name": "Exotic matter",
+    "subject": "physics",
+    "rp": 120,
+    "requires": [13, 36]
+  },
+  {
+    "id": "jump_point_stabilisation",
+    "number": 38,
+    "name": "Jump point stabilisation",
+    "subject": "physics",
+    "rp": 240,
+    "requires": [31, 34, 37]
+  },
+  {
+    "id": "booster_thrust_1",
+    "number": 39,
+    "name": "Booster thrust 1",
+    "subject": "launch",
+    "rp": 180,
+    "requires": [1],
+    "line": "booster_thrust",
+    "level": 1,
+    "effects": {
+      "booster_thrust": 1.09,
+      "booster_load": 1.07
+    },
+    "basis": "Super Heavy V3 with Raptor 3 at 250 tf, flown 22 May 2026, 80 MN at lift-off; 3,650 t of propellant is the pre-flight design figure",
+    "source": "https://spaceflightnow.com/2026/05/23/musk-praises-epic-super-heavy-starship-launch/",
+    "estimated": false
+  },
+  {
+    "id": "booster_thrust_2",
+    "number": 40,
+    "name": "Booster thrust 2",
+    "subject": "launch",
+    "rp": 300,
+    "requires": [39],
+    "line": "booster_thrust",
+    "level": 2,
+    "effects": {
+      "booster_thrust": 1.3,
+      "booster_load": 1.07
+    },
+    "basis": "Raptor 4 at 300 tf, a target stated by Musk; not built or flown",
+    "source": "https://spaceflightnow.com/2026/05/23/musk-praises-epic-super-heavy-starship-launch/",
+    "estimated": true
+  },
+  {
+    "id": "shipbuilding_rate_1",
+    "number": 41,
+    "name": "Shipbuilding rate 1",
+    "subject": "launch",
+    "rp": 180,
+    "requires": [],
+    "line": "shipbuilding_rate",
+    "level": 1,
+    "effects": {
+      "shipyard_points": 1.2
+    },
+    "basis": "Aurora's ladder; no per-yard real series, and the aerospace learning curve is 85% per doubling of output",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "shipbuilding_rate_2",
+    "number": 42,
+    "name": "Shipbuilding rate 2",
+    "subject": "launch",
+    "rp": 300,
+    "requires": [41],
+    "line": "shipbuilding_rate",
+    "level": 2,
+    "effects": {
+      "shipyard_points": 1.4
+    },
+    "basis": "Aurora's ladder; no per-yard real series, and the aerospace learning curve is 85% per doubling of output",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "shipbuilding_rate_3",
+    "number": 43,
+    "name": "Shipbuilding rate 3",
+    "subject": "launch",
+    "rp": 600,
+    "requires": [42],
+    "line": "shipbuilding_rate",
+    "level": 3,
+    "effects": {
+      "shipyard_points": 1.6
+    },
+    "basis": "Aurora's ladder; no per-yard real series, and the aerospace learning curve is 85% per doubling of output",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "shipbuilding_rate_4",
+    "number": 44,
+    "name": "Shipbuilding rate 4",
+    "subject": "launch",
+    "rp": 1200,
+    "requires": [43],
+    "line": "shipbuilding_rate",
+    "level": 4,
+    "effects": {
+      "shipyard_points": 2
+    },
+    "basis": "Aurora's ladder; no per-yard real series, and the aerospace learning curve is 85% per doubling of output",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "construction_rate_1",
+    "number": 45,
+    "name": "Construction rate 1",
+    "subject": "habitats",
+    "rp": 180,
+    "requires": [],
+    "line": "construction_rate",
+    "level": 1,
+    "effects": {
+      "build_speed": 1.2
+    },
+    "basis": "Aurora's construction rate 12, 14, 16, 20 over 10; no real series, since construction productivity has been flat or falling",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "construction_rate_2",
+    "number": 46,
+    "name": "Construction rate 2",
+    "subject": "habitats",
+    "rp": 300,
+    "requires": [45],
+    "line": "construction_rate",
+    "level": 2,
+    "effects": {
+      "build_speed": 1.4
+    },
+    "basis": "Aurora's construction rate 12, 14, 16, 20 over 10; no real series, since construction productivity has been flat or falling",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "construction_rate_3",
+    "number": 47,
+    "name": "Construction rate 3",
+    "subject": "habitats",
+    "rp": 600,
+    "requires": [46],
+    "line": "construction_rate",
+    "level": 3,
+    "effects": {
+      "build_speed": 1.6
+    },
+    "basis": "Aurora's construction rate 12, 14, 16, 20 over 10; no real series, since construction productivity has been flat or falling",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "construction_rate_4",
+    "number": 48,
+    "name": "Construction rate 4",
+    "subject": "habitats",
+    "rp": 1200,
+    "requires": [47],
+    "line": "construction_rate",
+    "level": 4,
+    "effects": {
+      "build_speed": 2
+    },
+    "basis": "Aurora's construction rate 12, 14, 16, 20 over 10; no real series, since construction productivity has been flat or falling",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "solar_array_output_1",
+    "number": 49,
+    "name": "Solar array output 1",
+    "subject": "power",
+    "rp": 180,
+    "requires": [4],
+    "line": "solar_array_output",
+    "level": 1,
+    "effects": {
+      "solar_array_output": 1.5
+    },
+    "basis": "120 W/kg in place of 80: Redwire ROSA, the maker's figure",
+    "source": "https://www.pv-magazine.com/2025/07/07/redwire-deploys-60-kw-roll-out-solar-array-for-first-lunar-orbit-space-station/",
+    "estimated": false
+  },
+  {
+    "id": "solar_array_output_2",
+    "number": 50,
+    "name": "Solar array output 2",
+    "subject": "power",
+    "rp": 300,
+    "requires": [49],
+    "line": "solar_array_output",
+    "level": 2,
+    "effects": {
+      "solar_array_output": 6.25
+    },
+    "basis": "500 W/kg in place of 80: ROSA's development goal with IMM cells; a target",
+    "source": "https://www.pv-magazine.com/2025/07/07/redwire-deploys-60-kw-roll-out-solar-array-for-first-lunar-orbit-space-station/",
+    "estimated": true
+  },
+  {
+    "id": "battery_storage_1",
+    "number": 51,
+    "name": "Battery storage 1",
+    "subject": "power",
+    "rp": 180,
+    "requires": [20],
+    "line": "battery_storage",
+    "level": 1,
+    "effects": {
+      "battery_storage": 1.67
+    },
+    "basis": "Amprius SiCore at 450 Wh/kg in 2025, against 269 for the Panasonic 2170",
+    "source": "https://www.businesswire.com/news/home/20250424560971/en",
+    "estimated": false
+  },
+  {
+    "id": "battery_storage_2",
+    "number": 52,
+    "name": "Battery storage 2",
+    "subject": "power",
+    "rp": 300,
+    "requires": [51],
+    "line": "battery_storage",
+    "level": 2,
+    "effects": {
+      "battery_storage": 1.87
+    },
+    "basis": "An Amprius cell at 504 Wh/kg, verified by a third party in 2023",
+    "source": "https://www.businesswire.com/news/home/20250424560971/en",
+    "estimated": false
+  },
+  {
+    "id": "research_rate_1",
+    "number": 53,
+    "name": "Research rate 1",
+    "subject": "computing",
+    "rp": 300,
+    "requires": [],
+    "line": "research_rate",
+    "level": 1,
+    "effects": {
+      "research": 1.2
+    },
+    "basis": "Aurora's research rate 240, 280, 320, 400 over 200, at Aurora's own cost of 5,000 to 40,000 RP times 0.06",
+    "source": "https://erikevenson.github.io/aurora-manual/7-research/7.3-research-facilities.html",
+    "estimated": false
+  },
+  {
+    "id": "research_rate_2",
+    "number": 54,
+    "name": "Research rate 2",
+    "subject": "computing",
+    "rp": 600,
+    "requires": [53],
+    "line": "research_rate",
+    "level": 2,
+    "effects": {
+      "research": 1.4
+    },
+    "basis": "Aurora's research rate 240, 280, 320, 400 over 200, at Aurora's own cost of 5,000 to 40,000 RP times 0.06",
+    "source": "https://erikevenson.github.io/aurora-manual/7-research/7.3-research-facilities.html",
+    "estimated": false
+  },
+  {
+    "id": "research_rate_3",
+    "number": 55,
+    "name": "Research rate 3",
+    "subject": "computing",
+    "rp": 1200,
+    "requires": [54],
+    "line": "research_rate",
+    "level": 3,
+    "effects": {
+      "research": 1.6
+    },
+    "basis": "Aurora's research rate 240, 280, 320, 400 over 200, at Aurora's own cost of 5,000 to 40,000 RP times 0.06",
+    "source": "https://erikevenson.github.io/aurora-manual/7-research/7.3-research-facilities.html",
+    "estimated": false
+  },
+  {
+    "id": "research_rate_4",
+    "number": 56,
+    "name": "Research rate 4",
+    "subject": "computing",
+    "rp": 2400,
+    "requires": [55],
+    "line": "research_rate",
+    "level": 4,
+    "effects": {
+      "research": 2
+    },
+    "basis": "Aurora's research rate 240, 280, 320, 400 over 200, at Aurora's own cost of 5,000 to 40,000 RP times 0.06",
+    "source": "https://erikevenson.github.io/aurora-manual/7-research/7.3-research-facilities.html",
+    "estimated": false
+  },
+  {
+    "id": "chip_output_1",
+    "number": 57,
+    "name": "Chip output 1",
+    "subject": "computing",
+    "rp": 180,
+    "requires": [],
+    "line": "chip_output",
+    "level": 1,
+    "effects": {
+      "chip_output": 1.2
+    },
+    "basis": "Aurora's ladder; no public per-fab series",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "chip_output_2",
+    "number": 58,
+    "name": "Chip output 2",
+    "subject": "computing",
+    "rp": 300,
+    "requires": [57],
+    "line": "chip_output",
+    "level": 2,
+    "effects": {
+      "chip_output": 1.4
+    },
+    "basis": "Aurora's ladder; no public per-fab series",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "chip_output_3",
+    "number": 59,
+    "name": "Chip output 3",
+    "subject": "computing",
+    "rp": 600,
+    "requires": [58],
+    "line": "chip_output",
+    "level": 3,
+    "effects": {
+      "chip_output": 1.6
+    },
+    "basis": "Aurora's ladder; no public per-fab series",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "chip_output_4",
+    "number": 60,
+    "name": "Chip output 4",
+    "subject": "computing",
+    "rp": 1200,
+    "requires": [59],
+    "line": "chip_output",
+    "level": 4,
+    "effects": {
+      "chip_output": 2
+    },
+    "basis": "Aurora's ladder; no public per-fab series",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": false
+  },
+  {
+    "id": "compute_per_data_centre_1",
+    "number": 61,
+    "name": "Compute per data centre 1",
+    "subject": "computing",
+    "rp": 180,
+    "requires": [29],
+    "line": "compute_per_data_centre",
+    "level": 1,
+    "effects": {
+      "data_centre_compute": 1.9
+    },
+    "basis": "Rubin at FP8: 1.9 times the compute for the same 120 MW; announced, its power figure preliminary",
+    "source": "https://epoch.ai/data-insights/fp16-performance-trend",
+    "estimated": false
+  },
+  {
+    "id": "compute_per_data_centre_2",
+    "number": 62,
+    "name": "Compute per data centre 2",
+    "subject": "computing",
+    "rp": 300,
+    "requires": [61],
+    "line": "compute_per_data_centre",
+    "level": 2,
+    "effects": {
+      "data_centre_compute": 3.8
+    },
+    "basis": "Twice again: Epoch AI's trend, efficiency doubling about every 2 years; a projection",
+    "source": "https://epoch.ai/data-insights/fp16-performance-trend",
+    "estimated": true
+  },
+  {
+    "id": "compute_per_data_centre_3",
+    "number": 63,
+    "name": "Compute per data centre 3",
+    "subject": "computing",
+    "rp": 600,
+    "requires": [62],
+    "line": "compute_per_data_centre",
+    "level": 3,
+    "effects": {
+      "data_centre_compute": 7.6
+    },
+    "basis": "Twice again on the same trend; a projection",
+    "source": "https://epoch.ai/data-insights/fp16-performance-trend",
+    "estimated": true
+  },
+  {
+    "id": "electrolysis_efficiency_1",
+    "number": 64,
+    "name": "Electrolysis efficiency 1",
+    "subject": "chemistry",
+    "rp": 180,
+    "requires": [3],
+    "line": "electrolysis_efficiency",
+    "level": 1,
+    "effects": {
+      "electrolysis_power": 0.89
+    },
+    "basis": "46 kWh a kg of hydrogen against 51.6 today: the DOE's ultimate target for PEM electrolysis; 39.4 is the physical floor",
+    "source": "https://www.energy.gov/eere/fuelcells/technical-targets-proton-exchange-membrane-electrolysis",
+    "estimated": true
+  },
+  {
+    "id": "extraction_rate_1",
+    "number": 65,
+    "name": "Extraction rate 1",
+    "subject": "mining",
+    "rp": 180,
+    "requires": [],
+    "line": "extraction_rate",
+    "level": 1,
+    "effects": {
+      "extraction": 1.2
+    },
+    "basis": "Aurora's mining production 12, 14, 16, 20 over 10",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.2-mining.html",
+    "estimated": false
+  },
+  {
+    "id": "extraction_rate_2",
+    "number": 66,
+    "name": "Extraction rate 2",
+    "subject": "mining",
+    "rp": 300,
+    "requires": [65],
+    "line": "extraction_rate",
+    "level": 2,
+    "effects": {
+      "extraction": 1.4
+    },
+    "basis": "Aurora's mining production 12, 14, 16, 20 over 10",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.2-mining.html",
+    "estimated": false
+  },
+  {
+    "id": "extraction_rate_3",
+    "number": 67,
+    "name": "Extraction rate 3",
+    "subject": "mining",
+    "rp": 600,
+    "requires": [66],
+    "line": "extraction_rate",
+    "level": 3,
+    "effects": {
+      "extraction": 1.6
+    },
+    "basis": "Aurora's mining production 12, 14, 16, 20 over 10",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.2-mining.html",
+    "estimated": false
+  },
+  {
+    "id": "extraction_rate_4",
+    "number": 68,
+    "name": "Extraction rate 4",
+    "subject": "mining",
+    "rp": 1200,
+    "requires": [67],
+    "line": "extraction_rate",
+    "level": 4,
+    "effects": {
+      "extraction": 2
+    },
+    "basis": "Aurora's mining production 12, 14, 16, 20 over 10",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.2-mining.html",
+    "estimated": false
+  },
+  {
+    "id": "biosphere",
+    "number": 69,
+    "name": "Biosphere",
+    "subject": "habitats",
+    "tier": "E",
+    "rp": 600,
+    "requires": [21, 24]
+  }
+]

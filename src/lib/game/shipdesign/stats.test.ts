@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { projectById, tagsOf, type Effect } from '#lib/game/data/index.ts';
+import { setComponentBoosts } from './boosts.ts';
 import { MIN_LIFTOFF_TWR } from '#lib/game/flight/index.ts';
 import { designStats } from './stats.ts';
 import { crewedVehicle, build, upperStage } from './fixtures.ts';
 import { setLoad } from './edit.ts';
 import type { IssueCode, ShipDesign } from './types.ts';
 
-const upTo = (n: number) => (tag: number) => tag <= n;
+const nothing = () => false;
+const start = (tag: number) => tag === 0;
+const upTo = (id: string) => {
+  const open = tagsOf(projectById(id).number);
+  return (tag: number) => open.has(tag);
+};
 
 const codes = (
   d: ShipDesign,
@@ -191,8 +198,8 @@ describe('design errors', () => {
   });
 
   it('rejects a class that uses a locked component', () => {
-    expect(errors(build(stage), upTo(0))).toContain('locked-part');
-    expect(errors(build(stage), upTo(1))).not.toContain('locked-part');
+    expect(errors(build(stage), nothing)).toContain('locked-part');
+    expect(errors(build(stage), start)).not.toContain('locked-part');
   });
 
   it('rejects a ship with no engine', () => {
@@ -259,16 +266,17 @@ describe('design errors', () => {
       ['propellant_tank', 1],
       ['structure_truss', 1]
     ]);
-    expect(codes(d, upTo(3), 'error')).toEqual([]);
-    expect(codes(d, upTo(3), 'warning')).toContain('power-deficit');
-    expect(codes(d, upTo(3))).not.toContain('locked-part');
+    const habitat = upTo('orbital_habitat_module');
+    expect(codes(d, habitat, 'error')).toEqual([]);
+    expect(codes(d, habitat, 'warning')).toContain('power-deficit');
+    expect(codes(d, habitat)).not.toContain('locked-part');
     const without = build([
       ['crew_capsule', 1],
       ['chemical_engine_methalox', 1],
       ['propellant_tank', 1],
       ['structure_truss', 1]
     ]);
-    expect(codes(without, upTo(3), 'error')).toContain('power-deficit');
+    expect(codes(without, upTo('orbital_habitat_module'), 'error')).toContain('power-deficit');
   });
 
   it('warns when a solar ship has no battery for the eclipse', () => {
@@ -443,5 +451,36 @@ describe('design errors', () => {
   it('is clean when nothing is wrong', () => {
     const d = build(crewedVehicle, { role: 'capsule' });
     expect(errors(d)).toEqual([]);
+  });
+});
+
+describe('ship boost lines', () => {
+  it('raise booster thrust and load, solar output and battery storage by the source given', () => {
+    const d = build([
+      ['booster', 33],
+      ['solar_array', 2],
+      ['battery_pack', 1],
+      ['chemical_engine_methalox', 1],
+      ['propellant_tank', 1]
+    ]);
+    const base = designStats(d);
+    const factors: Partial<Record<Effect, number>> = {
+      booster_thrust: 1.3,
+      booster_load: 1.07,
+      solar_array_output: 1.5,
+      battery_storage: 1.67
+    };
+    setComponentBoosts((e) => factors[e] ?? 1);
+    try {
+      const up = designStats(d);
+      expect(up.boosters!.thrust / base.boosters!.thrust).toBeCloseTo(1.3, 9);
+      expect(up.boosters!.load / base.boosters!.load).toBeCloseTo(1.07, 9);
+      expect(up.boosters!.mass).toBe(base.boosters!.mass);
+      expect(up.power.made / base.power.made).toBeCloseTo(1.5, 9);
+      expect(up.power.storage / base.power.storage).toBeCloseTo(1.67, 9);
+      expect(up.dryMass).toBe(base.dryMass);
+    } finally {
+      setComponentBoosts(() => 1);
+    }
   });
 });
