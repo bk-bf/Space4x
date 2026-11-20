@@ -81,7 +81,7 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
     population: 0,
     workforceShare: FOUNDING_CREW_SHARE,
     kcalPerPersonDay: earthStart.kcalPerPersonDay,
-    growthPerYear: 0,
+    growthPerYear: earthStart.growthPerYear,
     gridKw: 0,
     stock: {},
     groups: [],

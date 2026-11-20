@@ -316,7 +316,7 @@ describe('sites off Earth', () => {
     const food = site.stock;
     food.food_ration = 100;
     g.advance(10 * DAY);
-    expect(site.population).toBe(4);
+    expect(site.population).toBeCloseTo(4 * Math.exp((homeSite().growthPerYear * 10) / 365.25), 9);
   });
 
   it('refuses a founding whose cargo falls short and says what is short', () => {
@@ -372,6 +372,62 @@ describe('a lunar outpost', () => {
     expect(site.body).toBe('moon');
     expect(g.body('luna')?.colony).toBe(true);
     expect(economy.sites.map((s) => s.id)).toEqual(['earth', 'luna']);
+  });
+});
+
+describe('colonists', () => {
+  const COLONY_SHIP = {
+    id: 'colony',
+    role: 'lander' as const,
+    parts: [
+      ['chemical_engine_hydrolox', 4],
+      ['propellant_tank', 4],
+      ['structure_truss', 1],
+      ['landing_legs', 1],
+      ['cargo_bay', 1],
+      ['habitat_module', 1],
+      ['life_support_unit', 1]
+    ] as const,
+    load: [['hydrolox', 1e9]] as const
+  };
+
+  it('settle the Moon before it mines anything, and it grows while fed and housed up to its berths', () => {
+    const g = freshGame();
+    addDesign(COLONY_SHIP);
+    const founder = spawn(
+      'colony',
+      { kind: 'surface', body: 'luna' },
+      { crew: 2, cargo: { stainless_steel: 2500, copper: 200 } }
+    );
+    const site = foundSite(g, founder, 'alloy_works', 'luna-maria') as Site;
+    expect(site.population).toBe(2);
+    expect(site.berths).toBe(6);
+    expect(site.groups.some((x) => x.process?.startsWith('extract:'))).toBe(false);
+    site.stock.wheat = 1e5;
+
+    const earth = homeSite();
+    const v = spawn('colony');
+    addOrder(v, { type: 'load', item: { kind: 'crew' }, amount: null });
+    g.advance(DAY);
+    expect(v.crew).toBe(6);
+    v.at = { kind: 'orbit', body: 'earth', angle: 0 };
+    v.propellant.hydrolox = 27_000;
+    goTo(v, site);
+    addOrder(v, { type: 'unload', item: { kind: 'crew' }, amount: null });
+    g.advance(12 * DAY);
+    expect(v.blocked).toBeNull();
+    expect(v.at).toEqual({ kind: 'site', site: site.id });
+    expect(site.population).toBe(6);
+    expect(v.crew).toBe(2);
+
+    expect(installModule(g, v)).toBeUndefined();
+    expect(site.population).toBe(8);
+    expect(site.berths).toBe(12);
+    g.advance(30 * DAY);
+    expect(site.population).toBeCloseTo(8 * Math.exp((earth.growthPerYear * 30) / 365.25), 9);
+    site.population = 11.999;
+    g.advance(30 * DAY);
+    expect(site.population).toBe(12);
   });
 });
 

@@ -78,11 +78,12 @@ export function unloadItem(site: Site, v: Vessel, item: Item | AllCargo, amount:
     returnPropellant(site, item.id, n);
     return n;
   }
-  const room = site.berths === null ? Infinity : Math.max(0, site.berths - site.population);
+  const berths = site.berths;
+  const room = berths === null ? Infinity : Math.max(0, Math.round(berths - site.population));
   const n = Math.floor(take(amount, v.crew, room));
   if (n <= 0) return 0;
   v.crew -= n;
-  site.population += n;
+  site.population = berths === null ? site.population + n : Math.min(berths, site.population + n);
   return n;
 }
 

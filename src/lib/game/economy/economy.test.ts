@@ -273,6 +273,47 @@ describe('population and food', () => {
   });
 });
 
+describe('population off Earth', () => {
+  const outpost = (eco: Economy, people: number, berths: number): Site => {
+    const site = newSite(eco, { worldBody: 'luna', bodyName: 'Luna', place: 'surface', angle: 0 })!;
+    site.population = people;
+    site.berths = berths;
+    site.stock = { wheat: 1e7 };
+    return site;
+  };
+
+  it("grows at Earth's rate while fed and housed", () => {
+    const eco = startEconomy();
+    const site = outpost(eco, 100, 1000);
+    expect(site.growthPerYear).toBe(earthOf(eco).growthPerYear);
+    advanceEconomy(eco, 365.25 * DAY);
+    close(site.population, 100 * Math.exp(earthOf(startEconomy()).growthPerYear), 1e-9);
+  });
+
+  it('stops growing at the berths it has, the same in one step as in many', () => {
+    const one = startEconomy();
+    const a = outpost(one, 100, 100.1);
+    advanceEconomy(one, 60 * DAY);
+    const many = startEconomy();
+    const b = outpost(many, 100, 100.1);
+    for (let d = 0; d < 60; d++) advanceEconomy(many, DAY);
+    expect(a.population).toBe(100.1);
+    expect(b.population).toBe(100.1);
+    expect(siteFlows(one, a).growthPerHour).toBe(0);
+    close(a.stock.wheat ?? 0, b.stock.wheat ?? 0, 1e-9);
+  });
+
+  it('does not grow without a free berth, and still shrinks when starved', () => {
+    const eco = startEconomy();
+    const site = outpost(eco, 100, 100);
+    advanceEconomy(eco, 365.25 * DAY);
+    expect(site.population).toBe(100);
+    site.stock = {};
+    advanceEconomy(eco, 30 * DAY);
+    expect(site.population).toBeLessThan(100);
+  });
+});
+
 describe('food in calories', () => {
   const colony = (eco: Economy, people: number, stock: Record<string, number>): Site => {
     const site = newSite(eco, { worldBody: 'luna', bodyName: 'Luna', place: 'orbit', angle: 0 })!;

@@ -16,6 +16,8 @@ const noLog: LogFn = () => {};
 
 function nextEvent(eco: Economy, site: Site, flows: SiteFlows, warnDays: number): number {
   let t = nextWarning(site, flows, warnDays);
+  if (flows.growthPerHour > 0 && site.berths !== null && site.population > 0)
+    t = Math.min(t, Math.log(site.berths / site.population) / flows.growthPerHour);
   for (const [m, rate] of Object.entries(flows.net)) {
     if (isStockless(m) || rate >= 0) continue;
     const stock = site.stock[m] ?? 0;
@@ -100,6 +102,7 @@ function applySegment(
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
   site.population *= Math.exp(flows.growthPerHour * hours);
+  if (flows.growthPerHour > 0 && site.berths !== null) site.population = Math.min(site.population, site.berths);
 
   for (const a of flows.actors) {
     if (a.kind === 'build') {

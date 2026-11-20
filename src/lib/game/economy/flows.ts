@@ -9,6 +9,11 @@ import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './t
 
 export const STOCK_EPS = 1e-6;
 export const STARVE_PER_YEAR = 0.25;
+
+const ROOM_EPS = 1e-9;
+
+const hasRoom = (site: Site): boolean =>
+  site.berths === null || site.population < site.berths - ROOM_EPS;
 export const HOURS_PER_YEAR = 8766;
 
 export type Limit =
@@ -308,9 +313,11 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
   }
   const cover = demand > 0 ? Math.min(1, eatenKcal / demand) : 1;
   const growthPerHour =
-    cover >= 1 - 1e-9
-      ? site.growthPerYear / HOURS_PER_YEAR
-      : (-STARVE_PER_YEAR * (1 - cover)) / HOURS_PER_YEAR;
+    cover < 1 - 1e-9
+      ? (-STARVE_PER_YEAR * (1 - cover)) / HOURS_PER_YEAR
+      : hasRoom(site)
+        ? site.growthPerYear / HOURS_PER_YEAR
+        : 0;
 
   return {
     actors,
