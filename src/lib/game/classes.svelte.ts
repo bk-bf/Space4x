@@ -1,17 +1,28 @@
-import { designSpec, designStats, type DesignStats, type ShipDesign } from './shipdesign/index.ts';
+import { boostOf } from './data/index.ts';
+import { economy } from './economy/index.ts';
+import {
+  boostKey,
+  designSpec,
+  designStats,
+  setComponentBoosts,
+  type DesignStats,
+  type ShipDesign
+} from './shipdesign/index.ts';
 import type { ShipClass } from './design.ts';
 import type { Game } from './state.svelte';
 import type { Fleet } from './types';
 
-const statsOf = new WeakMap<ShipDesign, DesignStats>();
+setComponentBoosts((effect) => boostOf(economy.done, effect));
+
+const statsOf = new WeakMap<ShipDesign, { key: string; stats: DesignStats }>();
 const specOf = new WeakMap<ShipDesign, ShipClass>();
 
 export function statsFor(design: ShipDesign): DesignStats {
-  let stats = statsOf.get(design);
-  if (!stats) {
-    stats = designStats(design);
-    statsOf.set(design, stats);
-  }
+  const key = boostKey();
+  const hit = statsOf.get(design);
+  if (hit && hit.key === key) return hit.stats;
+  const stats = designStats(design);
+  statsOf.set(design, { key, stats });
   return stats;
 }
 

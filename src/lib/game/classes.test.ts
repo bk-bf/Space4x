@@ -11,6 +11,8 @@ import {
   specFor,
   statsFor
 } from './classes.svelte';
+import { projectById } from './data/index.ts';
+import { economy } from './economy/index.ts';
 import { Game } from './index';
 import { setCount } from './shipdesign/edit.ts';
 import { build, upperStage } from './shipdesign/fixtures.ts';
@@ -61,5 +63,23 @@ describe('the ship class registry', () => {
     const g = withFixture(new Game());
     expect(classInUse(g, 'pathfinder')).toBe(true);
     expect(classInUse(g, 'unused')).toBe(false);
+  });
+});
+
+describe('research boosts', () => {
+  it('give a class the solar array output of the level researched, and drop the cached stats', () => {
+    const d = build([
+      ['solar_array', 2],
+      ['chemical_engine_methalox', 1],
+      ['propellant_tank', 1]
+    ]);
+    const before = statsFor(d).power.made;
+    economy.done = [projectById('space_solar_arrays').number, projectById('solar_array_output_1').number];
+    try {
+      expect(statsFor(d).power.made / before).toBeCloseTo(1.5, 9);
+    } finally {
+      economy.done = [];
+    }
+    expect(statsFor(d).power.made).toBe(before);
   });
 });

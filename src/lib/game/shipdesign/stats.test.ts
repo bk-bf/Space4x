@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { projectById, tagsOf } from '#lib/game/data/index.ts';
+import { projectById, tagsOf, type Effect } from '#lib/game/data/index.ts';
+import { setComponentBoosts } from './boosts.ts';
 import { MIN_LIFTOFF_TWR } from '#lib/game/flight/index.ts';
 import { designStats } from './stats.ts';
 import { crewedVehicle, build, upperStage } from './fixtures.ts';
@@ -450,5 +451,36 @@ describe('design errors', () => {
   it('is clean when nothing is wrong', () => {
     const d = build(crewedVehicle, { role: 'capsule' });
     expect(errors(d)).toEqual([]);
+  });
+});
+
+describe('ship boost lines', () => {
+  it('raise booster thrust and load, solar output and battery storage by the source given', () => {
+    const d = build([
+      ['booster', 33],
+      ['solar_array', 2],
+      ['battery_pack', 1],
+      ['chemical_engine_methalox', 1],
+      ['propellant_tank', 1]
+    ]);
+    const base = designStats(d);
+    const factors: Partial<Record<Effect, number>> = {
+      booster_thrust: 1.3,
+      booster_load: 1.07,
+      solar_array_output: 1.5,
+      battery_storage: 1.67
+    };
+    setComponentBoosts((e) => factors[e] ?? 1);
+    try {
+      const up = designStats(d);
+      expect(up.boosters!.thrust / base.boosters!.thrust).toBeCloseTo(1.3, 9);
+      expect(up.boosters!.load / base.boosters!.load).toBeCloseTo(1.07, 9);
+      expect(up.boosters!.mass).toBe(base.boosters!.mass);
+      expect(up.power.made / base.power.made).toBeCloseTo(1.5, 9);
+      expect(up.power.storage / base.power.storage).toBeCloseTo(1.67, 9);
+      expect(up.dryMass).toBe(base.dryMass);
+    } finally {
+      setComponentBoosts(() => 1);
+    }
   });
 });

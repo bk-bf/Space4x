@@ -1,4 +1,5 @@
 import { shipComponents, type Component, type Propulsion } from '#lib/game/data/index.ts';
+import { boostedComponent } from './boosts.ts';
 
 export const COMPONENT_KINDS = [
   'propulsion',
@@ -20,7 +21,10 @@ export const KIND_NAMES: Readonly<Record<string, string>> = {
   electronics: 'Avionics'
 };
 
-export const component = (id: string): Component | undefined => shipComponents.find((c) => c.id === id);
+export const component = (id: string): Component | undefined => {
+  const found = shipComponents.find((c) => c.id === id);
+  return found && boostedComponent(found);
+};
 
 export const massOf = (c: Component): number => c.design.mass ?? c.performance?.mass ?? 0;
 
