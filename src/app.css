@@ -240,7 +240,7 @@ textarea {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 238px;
+  height: var(--dock-bottom, 238px);
 }
 #w-events[data-dock='bottom'] .wb {
   padding-bottom: 0;

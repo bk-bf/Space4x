@@ -11,6 +11,7 @@ export const TITLE_H = 28;
 export const LEFT_W = 290;
 export const RIGHT_W = 310;
 export const BOTTOM_H = 238;
+const BOTTOM_MIN = 120;
 export const SNAP_EDGE = 40;
 export const SETTINGS_ID = 'settings';
 export const LAYOUT_KEY = 'space4x.windows';
@@ -332,10 +333,13 @@ class WindowManager {
     const L = docked('left'),
       R = docked('right'),
       B = docked('bottom');
-    const bh = B.length ? (B.every((w) => w.min) ? TITLE_H : BOTTOM_H) : 0,
+    const scrolls = new Map([...L, ...R].map((w) => [w, bodyOf(w)?.scrollTop ?? 0])),
+      sides = Math.max(columnHeight(L, LEFT_W), columnHeight(R, RIGHT_W)),
+      bh = B.length ? (B.every((w) => w.min) ? TITLE_H : bottomHeight(H - GAP - sides)) : 0,
       colH = H - (bh ? bh + GAP : 0);
-    stackColumn(L, 0, LEFT_W, colH);
-    stackColumn(R, W - RIGHT_W, RIGHT_W, colH);
+    desk.style.setProperty('--dock-bottom', px(bh || BOTTOM_H));
+    stackColumn(L, 0, LEFT_W, colH, scrolls);
+    stackColumn(R, W - RIGHT_W, RIGHT_W, colH, scrolls);
     B.forEach((w, i) => {
       const x0 = Math.round((i * (W + GAP)) / B.length),
         x1 = Math.round(((i + 1) * (W + GAP)) / B.length) - GAP;
@@ -353,12 +357,26 @@ class WindowManager {
   }
 }
 
-function stackColumn(list: Win[], x: number, width: number, colH: number): void {
+function bottomHeight(room: number): number {
+  return room >= BOTTOM_MIN ? Math.min(room, BOTTOM_H) : BOTTOM_H;
+}
+
+function columnHeight(list: Win[], width: number): number {
+  return list.reduce((sum, w, i) => {
+    if (w.min) return sum + TITLE_H + (i ? GAP : 0);
+    Object.assign(w.el!.style, { width: px(width - 4), height: '' });
+    return sum + w.el!.offsetHeight + 4 + (i ? GAP : 0);
+  }, 0);
+}
+
+const bodyOf = (w: Win) => w.el!.querySelector<HTMLElement>('.wb');
+
+function stackColumn(list: Win[], x: number, width: number, colH: number, scrolls: Map<Win, number>): void {
   let y = 0;
   list.forEach((w, i) => {
     const el = w.el!,
-      body = el.querySelector<HTMLElement>('.wb'),
-      scrolled = body?.scrollTop ?? 0;
+      body = bodyOf(w),
+      scrolled = scrolls.get(w) ?? 0;
     Object.assign(el.style, { left: px(x + 2), top: px(y + 2), width: px(width - 4), height: '' });
     const after = list.slice(i + 1),
       rest = colH - y - after.length * (TITLE_H + GAP),
