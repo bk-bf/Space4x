@@ -3,7 +3,7 @@ import '#lib/screens/economy/system.ts';
 import { classes } from './classes.svelte.ts';
 import { money } from '#lib/ui/format.ts';
 import { formatDay } from './clock.ts';
-import { economy, flowsOf, remainingMass, siteAt, siteIn, standing } from './economy/index.ts';
+import { berthsOf, economy, flowsOf, remainingMass, siteAt, siteIn, standing } from './economy/index.ts';
 import { OuterPlayer } from './playOuter.ts';
 import { freshGame } from './ships/fixtures.ts';
 import { ships } from './ships/index.ts';
@@ -223,7 +223,20 @@ describe('the scripted player from the start state', () => {
       ['bennu', 'hertha', 'luna', 'luna-maria', 'uranus', 'sol-a'].sort()
     );
     const used = new Set(classes.saved.map((d) => d.id));
-    for (const id of ['jump-hauler', 'jump-scout', 'jump-scoop-ship', 'jump-founder', 'jump-power'])
+    expect(player.biospheres.map((x) => x.site).sort()).toEqual(['luna', 'luna-maria']);
+    for (const id of ['luna', 'luna-maria']) {
+      const site = economy.sites.find((x) => x.id === id)!;
+      expect(standing(site, 'biosphere'), id).toBe(1);
+      expect(berthsOf(site), id).toBe(100);
+    }
+    for (const id of [
+      'jump-hauler',
+      'jump-scout',
+      'jump-scoop-ship',
+      'jump-founder',
+      'jump-power',
+      'jump-settler'
+    ])
       expect(used.has(id), id).toBe(true);
     expect(ships.launches.length).toBe(player.report.launches.length);
 
@@ -246,6 +259,7 @@ describe('the scripted player from the start state', () => {
       money(economy.market.treasury)
     );
     console.info('trips', JSON.stringify(player.trips.map((t) => [t.label, Math.round(t.days)])));
+    console.info('biospheres', JSON.stringify(player.biospheres.map((x) => [x.site, date(x.at)])));
     console.info('legs', JSON.stringify(legs.filter((l) => /Fusion|Scoop|founder|barge|Steel/i.test(l))));
   }, 300_000);
 });

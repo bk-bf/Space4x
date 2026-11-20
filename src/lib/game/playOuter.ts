@@ -1,15 +1,19 @@
 import { statsFor } from './classes.svelte.ts';
+import { building, projectById } from './data/index.ts';
 import {
   assign,
+  biospheresAt,
   economy,
   extractionId,
   queueBuilding,
+  setOn,
   siteIn,
   standing,
   touch,
   type Site
 } from './economy/index.ts';
 import { JumpPlayer } from './playJump.ts';
+import { SOUTH_POLE } from './playPath.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 import {
   addOrder,
@@ -26,6 +30,10 @@ const SCOUT = 'jump-scout';
 const SCOOP_SHIP = 'jump-scoop-ship';
 const FOUNDER = 'jump-founder';
 const POWER_SHIP = 'jump-power';
+const SETTLER = 'jump-settler';
+const BIOSPHERE = 'biosphere';
+const DIGGER = 'regolith_excavator';
+const REGOLITH = extractionId('lunar_regolith');
 
 export const MARIA = 'luna-maria';
 export const JUMP = 'sol-a';
@@ -556,5 +564,89 @@ export class OuterPlayer extends JumpPlayer {
     const done = installModule(this.game, h);
     if (done) this.say(done);
     touch();
+  }
+
+  readonly biospheres: { site: string; at: number }[] = [];
+  protected settling = false;
+
+  protected keepFed(): void {
+    super.keepFed();
+    this.settle();
+  }
+
+  protected settle(): void {
+    if (this.settling || this.feeding || this.building > 0) return;
+    if (!economy.done.includes(projectById(BIOSPHERE).number)) return;
+    const site = economy.sites.find(
+      (s) =>
+        s.place === 'surface' &&
+        s.worldBody === 'luna' &&
+        s.population >= 0.5 &&
+        biospheresAt(s) + s.queue.filter((o) => o.building === BIOSPHERE).length === 0
+    );
+    if (!site) return;
+    this.settling = true;
+    try {
+      this.raiseBiosphere(site);
+    } finally {
+      this.settling = false;
+    }
+  }
+
+  protected settlerDesign(): ShipDesign {
+    return this.design(SETTLER, 'Biosphere freighter', 'lander', [
+      ['chemical_engine_methalox', 2],
+      ['propellant_tank', 16],
+      ['structure_truss', 1],
+      ['landing_legs', 3],
+      ['cargo_bay', 8],
+      ['solar_array', 1],
+      ['avionics', 1]
+    ]);
+  }
+
+  protected digsRegolith(site: Site): boolean {
+    return site.groups.some((g) => g.building === DIGGER && g.process === REGOLITH);
+  }
+
+  protected raiseBiosphere(site: Site): void {
+    const design = this.settlerDesign();
+    const digger = !this.digsRegolith(site);
+    const need: Record<string, number> = {};
+    for (const cost of [building(BIOSPHERE).cost, ...(digger ? [building(DIGGER).cost] : [])])
+      for (const [m, kg] of Object.entries(cost)) need[m] = (need[m] ?? 0) + kg;
+    for (const m of Object.keys(need)) need[m] = Math.max(0, need[m]! - (site.stock[m] ?? 0));
+    const cargo = Object.fromEntries(Object.entries(need).filter(([, kg]) => kg > 1e-6));
+    for (const part of this.chunks(cargo, statsFor(design).payloadCapacity))
+      if (!this.ferry(design, part, site.region ?? SOUTH_POLE)) {
+        this.say(`the biosphere kit did not reach ${site.name}`);
+        return;
+      }
+    if (digger) queueBuilding(economy, site, DIGGER, REGOLITH);
+    for (const g of site.groups) if (g.building === DIGGER && g.process === REGOLITH) setOn(site, g.id, true);
+    queueBuilding(economy, site, BIOSPHERE, null);
+    this.biospheres.push({ site: site.id, at: this.game.time });
+    this.say(`queued a biosphere at ${site.name}`);
+    touch();
+  }
+
+  protected ferry(design: ShipDesign, cargo: Record<string, number>, region: string): boolean {
+    this.supply(cargo);
+    this.stationPropellant('methalox', statsFor(design).capacity.methalox ?? 0);
+    this.buildAtEarth(design.id);
+    const v = this.owned(design.id)[0];
+    if (!v) return false;
+    this.loadAtEarth(v, cargo);
+    if (!this.launchHeavy({ kind: 'ship', ship: v.id })) return false;
+    addOrder(v, { type: 'dock', site: this.station().id });
+    addOrder(v, { type: 'load', item: { kind: 'propellant', id: 'methalox' }, amount: null });
+    addOrder(v, { type: 'fly', body: 'luna', angle: 0 });
+    addOrder(v, { type: 'land', body: 'luna', region });
+    addOrder(v, { type: 'unload', item: { kind: 'all-cargo' }, amount: null });
+    if (!this.fly(v, `${v.name} with a biosphere kit`)) return false;
+    const done = installModule(this.game, v);
+    if (done) this.say(done);
+    touch();
+    return !done;
   }
 }

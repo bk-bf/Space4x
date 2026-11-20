@@ -4,6 +4,7 @@ import {
   building,
   material,
   project,
+  projectById,
   projects,
   recipe,
   recipesProducing,
@@ -83,6 +84,8 @@ const LEASE_MARGIN = 1.03;
 type Lease = Offer & { kind: 'lease' };
 const END_PRODUCTS = new Set(Object.keys(earthStart.endProducts));
 
+const SETTLING = ['biosphere'];
+
 const BOOST_ORDER = [
   'research_rate',
   'chip_output',
@@ -97,6 +100,7 @@ const COMPUTE_MARGIN = 1.1;
 export function researchPlan(): number[] {
   const out: number[] = [];
   for (const s of stages) for (const n of ownProjects(s)) if (!out.includes(n)) out.push(n);
+  for (const n of SETTLING.map((id) => projectById(id).number)) if (!out.includes(n)) out.push(n);
   for (const line of BOOST_ORDER) for (const p of projects.filter((x) => x.line === line)) out.push(p.number);
   return out;
 }
