@@ -5,7 +5,7 @@
     "category": "polymer",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "wells", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "wells", "building": "ethylene_cracker" }],
     "why": "Base monomer for polyethylene and many polymers",
     "source": "https://en.wikipedia.org/wiki/Ethylene"
   },

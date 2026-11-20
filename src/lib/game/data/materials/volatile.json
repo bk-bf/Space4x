@@ -6,7 +6,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "earth", "how": "wells", "building": "desalination_plant" },
       { "body": "moon", "how": "ice", "building": "ice_mine" },
       { "body": "mars", "how": "ice", "building": "ice_mine" },
       { "body": "asteroid-c", "how": "ice", "building": "asteroid_miner" },
@@ -61,7 +61,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "earth", "how": "wells", "building": "helium_plant" },
       { "body": "gas-giant", "how": "atmosphere", "building": "gas_giant_scoop" },
       { "body": "ice-giant", "how": "atmosphere", "building": "gas_giant_scoop" }
     ],
@@ -107,7 +107,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "earth", "how": "wells", "building": "gas_field" },
       { "body": "titan", "how": "liquid", "building": "atmosphere_skimmer" }
     ],
     "why": "Fuel that can be made in situ on Mars; feedstock for polymers and diamond",
@@ -133,7 +133,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "sulfur_recovery" },
       { "body": "venus", "how": "atmosphere", "building": "atmosphere_skimmer" },
       { "body": "io", "how": "mined", "building": "regolith_excavator" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
@@ -157,7 +157,7 @@
     "name": "Iodine",
     "category": "volatile",
     "tier": "P",
-    "sources": [{ "body": "earth", "how": "brine", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "brine", "building": "iodine_plant" }],
     "why": "Electric propulsion propellant stored as a solid, demonstrated in orbit (NPT30-I2)",
     "source": "https://en.wikipedia.org/wiki/Ion_thruster"
   },

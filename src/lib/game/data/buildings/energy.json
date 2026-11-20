@@ -8,10 +8,17 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 4000, "nickel_superalloy": 500, "copper": 300 },
-    "workers": 30,
-    "bp": 42,
+    "workers": 500,
+    "scale": { "uranium_enrichment_haleu": 0.1196, "uranium_enrichment_heu": 0.1196 },
+    "real": {
+      "plant": "Urenco USA National Enrichment Facility, Eunice, New Mexico (Urenco)",
+      "basis": "Urenco USA produces about 4.3 million SWU a year with more than 500 staff and long-term contractors (World Nuclear News, 2025), against the 4,100 SWU an hour of 100 kg of HALEU, its HEU line at the same scale; its power and water are not published",
+      "sources": ["https://world-nuclear-news.org/articles/urenco-usa-to-build-new-us-enrichment-plant"],
+      "estimated": false
+    },
+    "bp": 5,
     "bpSource": "https://world-nuclear-news.org/articles/urenco-usa-to-build-new-us-enrichment-plant",
-    "bpBasis": "Sized by HALEU at 100 kg an hour from 4,230 kg of natural uranium, which at 19.75 percent product and 0.25 percent tails is 4,100 SWU an hour, 35.9 million SWU a year; Urenco invested about $5B in its 4.3 million SWU a year plant at Eunice, so $1,160 a SWU a year, scaled linearly to $41.7B, a plant eight times the size of Eunice",
+    "bpBasis": "Urenco has invested about $5 billion in its National Enrichment Facility at Eunice (World Nuclear News, 2025)",
     "bpEstimated": true
   },
   {
@@ -23,10 +30,26 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 2500, "nickel_superalloy": 300 },
-    "workers": 20,
-    "bp": 10.6,
+    "workers": 1000,
+    "batch": { "workers": 20 },
+    "scale": {
+      "u_mo_fuel_casting": 0.1711,
+      "uzrh_fuel_casting": 0.1711,
+      "triso_fabrication": 0.1711,
+      "w_cermet_sintering": 0.1711
+    },
+    "real": {
+      "plant": "Columbia Fuel Fabrication Facility, Hopkins, South Carolina (Westinghouse)",
+      "basis": "Columbia can fabricate 1,500 t of uranium a year (NRC record of decision, 2022), taken as fuel, and employs more than 1,000 people (Westinghouse); every fuel runs at that scale; its power and water are not published",
+      "sources": [
+        "https://www.nrc.gov/docs/ML2218/ML22180A221.pdf",
+        "https://westinghousenuclear.com/media/e2pjg5f1/faqs_cfff.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 1.81,
     "bpSource": "https://fuelcycleoptions.inl.gov/Shared%20Documents/Module_D1-1_rev2.docx.pdf",
-    "bpBasis": "Sized by fuel at 1 t an hour, 8,760 t a year; the INL Fuel Cycle Cost Basis (Module D1-1, 2023) gives $629.1M overnight (2017 dollars) for a 520 tU a year oxide fuel plant, scaled linearly to $10.6B",
+    "bpBasis": "The INL Fuel Cycle Cost Basis (Module D1-1, 2023) gives $629.1M overnight (2017 dollars) for a 520 tU a year oxide fuel plant, scaled linearly to the 1,500 t a year of the Columbia plant, $1.81B",
     "bpEstimated": true
   },
   {
@@ -58,10 +81,22 @@
     "research": 10,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "nickel_superalloy": 400 },
-    "workers": 20,
-    "bp": 136,
+    "workers": 3000,
+    "scale": { "neptunium_recovery": 0.09697 },
+    "power": 67880,
+    "real": {
+      "plant": "Orano la Hague reprocessing plants UP2-800 and UP3-A, Beaumont-Hague, France (Orano)",
+      "basis": "La Hague may treat 1,700 t of used fuel a year in its two plants (Orano, nuclear safety report 2023), against the recipe's 2,000 kg of uranium an hour; Orano la Hague has about 3,000 employees; the site used 595 GWh of energy in 2024 (Orano annual report 2024), 67.9 MW on average, all energy and not electricity alone; its water is not published",
+      "sources": [
+        "https://cdn.orano.group/orano/docs/default-source/orano-doc/groupe/publications-reference/tsn-edition-2023.pdf?sfvrsn=e964e9ce_10",
+        "https://www.orano.group/china/en/our-stories/orano-la-hague",
+        "https://www.orano.group/finance-raa2024/en/95/"
+      ],
+      "estimated": true
+    },
+    "bp": 13.2,
     "bpSource": "https://fuelcycleoptions.inl.gov/Shared%20Documents/2020_Module_F1.pdf",
-    "bpBasis": "Sized by 2,000 kg of uranium an hour, 17,520 t a year; the INL Fuel Cycle Cost Basis (Module F1, 2021) gives $6.2B (2003) for La Hague UP3 at 800 tHM a year, scaled linearly to $136B, a plant 22 times the size of any built",
+    "bpBasis": "The INL Fuel Cycle Cost Basis (Module F1, 2021) gives $6.2B (2003) for La Hague UP3 at 800 tHM a year, scaled linearly to the 1,700 t a year of both plants, $13.2B",
     "bpEstimated": true
   },
   {
@@ -72,7 +107,18 @@
     "research": 10,
     "estimated": true,
     "cost": { "stainless_steel": 800, "nickel_superalloy": 100 },
-    "workers": 8
+    "workers": 8,
+    "scale": { "plutonium_238_irradiation": 0.0001711 },
+    "real": {
+      "plant": "Plutonium-238 supply programme, HFIR and REDC at Oak Ridge (US Department of Energy, for NASA)",
+      "basis": "Oak Ridge is to make 1.5 kg of heat source plutonium oxide a year by 2026 (ORNL), taken as plutonium-238; the reactor and hot cells are shared with research, so its staff, power and water are not published",
+      "sources": ["https://www.ornl.gov/news/pu-238-shipment-quantity-opens-tap-space-missions"],
+      "estimated": true
+    },
+    "bp": 0.235,
+    "bpSource": "https://www.aip.org/fyi/2017/plutonium-supply-robotic-nasa-missions-probed-science-committee-gao",
+    "bpBasis": "Reconstituting plutonium-238 production was estimated to cost upwards of about $235 million by 2017 (AIP FYI, from GAO)",
+    "bpEstimated": true
   },
   {
     "id": "isotope_separator",
@@ -83,7 +129,19 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 3000, "copper": 500, "nickel_superalloy": 200 },
-    "workers": 10
+    "workers": 1485,
+    "batch": { "workers": 10 },
+    "scale": { "deuterium_separation": 42.45 },
+    "power": 81000,
+    "water": 7500000,
+    "real": {
+      "plant": "Heavy Water Plant Manuguru, Telangana, India (Heavy Water Board)",
+      "basis": "Manuguru has a capacity of 185 t of heavy water a year, 37.2 t of deuterium at 20.1% deuterium in D2O, with about 1,485 employees, 81 MW of power and 180,000 m3 of river water a day, 7,500 t an hour (Heavy Water Board plant page, 2005)",
+      "sources": [
+        "https://web.archive.org/web/20120225112137/http://heavywaterboard.org/htmldocs/plants/Manuguru.asp"
+      ],
+      "estimated": true
+    }
   },
   {
     "id": "fusion_plant",

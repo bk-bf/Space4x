@@ -13,7 +13,7 @@
     "category": "nuclear",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "mined", "building": "uranium_mine" }],
     "why": "Feed for all enriched fission fuel",
     "source": "https://en.wikipedia.org/wiki/Uranium"
   },
@@ -80,7 +80,7 @@
     "category": "nuclear",
     "tier": "E",
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "rare_earth_mine" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" }
     ],
     "why": "Fertile fuel for thorium breeder reactors",

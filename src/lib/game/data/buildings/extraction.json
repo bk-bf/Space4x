@@ -1,17 +1,5 @@
 [
   {
-    "id": "mine_earth",
-    "name": "Earth mine and wells",
-    "kind": "extraction",
-    "where": ["earth"],
-    "research": 0,
-    "start": true,
-    "thin": true,
-    "estimated": true,
-    "cost": { "stainless_steel": 2000, "copper": 200 },
-    "workers": 40
-  },
-  {
     "id": "air_separation_plant",
     "name": "Air separation plant",
     "kind": "extraction",
@@ -22,9 +10,18 @@
     "estimated": true,
     "cost": { "stainless_steel": 1500, "aluminium": 300, "copper": 100 },
     "workers": 15,
-    "bp": 0.0033,
-    "bpSource": "https://chemengonline.com/linde-to-build-new-asu-for-sail-in-india",
-    "bpBasis": "Sized by its 2.31 t of oxygen an hour, 55 t a day; Linde is building a 1,000 t a day air separation unit at Rourkela for about $60M (2024), scaled linearly to $3.3M",
+    "scale": { "air_separation": 17.99 },
+    "real": {
+      "plant": "Air separation unit at SAIL Rourkela, Odisha, India (Linde)",
+      "basis": "Linde is building a 1,000 t a day air separation unit at Rourkela, taken as oxygen, the product an air separation unit is rated by (Linde, 2024); its staff, power and water are not published",
+      "sources": [
+        "https://www.linde.com/news-and-media/2024/linde-expands-agreement-with-steel-authority-of-india-limited"
+      ],
+      "estimated": true
+    },
+    "bp": 0.06,
+    "bpSource": "https://www.linde.com/news-and-media/2024/linde-expands-agreement-with-steel-authority-of-india-limited",
+    "bpBasis": "Linde's investment in its 1,000 t a day air separation unit at Rourkela is expected to be about $60 million (2024)",
     "bpEstimated": true
   },
   {
@@ -35,7 +32,13 @@
     "research": 21,
     "thin": true,
     "estimated": true,
-    "cost": { "stainless_steel": 800, "li_ion_cell": 200, "ai_models": 1, "ndfeb_magnet": 50, "copper": 100 },
+    "cost": {
+      "stainless_steel": 800,
+      "li_ion_cell": 200,
+      "ai_models": 1,
+      "ndfeb_magnet": 50,
+      "copper": 100
+    },
     "workers": 2
   },
   {

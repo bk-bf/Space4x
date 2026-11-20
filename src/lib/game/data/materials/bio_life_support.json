@@ -6,7 +6,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "phosphate_mine" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
       { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
       { "body": "asteroid-c", "how": "mined", "building": "asteroid_miner" }

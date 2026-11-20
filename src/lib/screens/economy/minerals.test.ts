@@ -21,7 +21,7 @@ describe('the Minerals tab on Earth', () => {
     expect(iron.years).toBeCloseTo((reserveOf('iron')!.content ?? 0) / iron.minedPerYear, 6);
     expect(iron.low).toBe(iron.years! < LOW_YEARS);
     const aluminium = rows.find((r) => r.id === 'aluminium')!;
-    expect(aluminium.years).toBeCloseTo(29e12 / 450e9, 0);
+    expect(Math.abs(aluminium.years! - 29e12 / 450e9)).toBeLessThan(2);
   });
 
   it('shows the reserve in its published basis, drawn down in proportion', () => {

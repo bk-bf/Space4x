@@ -1,0 +1,370 @@
+[
+  {
+    "id": "iron_ore_mine",
+    "name": "Iron ore mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 600,
+    "extracts": { "iron": 2982000 },
+    "water": 262400,
+    "real": {
+      "plant": "Gudai-Darri iron ore mine, Pilbara, Western Australia (Rio Tinto)",
+      "basis": "Gudai-Darri has an annual capacity of 43 Mt of iron ore (Rio Tinto, 2022), 26.14 Mt of iron at the 60.8% iron of the Pilbara Blend Fines it feeds (Kitco, 2025), and around 600 ongoing permanent roles (Rio Tinto, 2022); its groundwater licence allows 2,300,000 kL a year, 262 t an hour, a licence and not metered use (Pilbara technical report summary, 2021); its power is not published",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/863064/000162828022018359/ex4d15gudaidarri2_.htm",
+        "https://www.kitco.com/news/off-the-wire/2025-06-11/lower-grade-australian-iron-ore-sparks-global-benchmark-change",
+        "https://www.riotinto.com/news/releases/2022/rio-tinto-first-ore-delivered-at-gudai-darri-iron-ore-mine-in-the-pilbara",
+        "https://sec.gov/Archives/edgar/data/863064/000162828022003937/ex96_1xtrsxpilop.htm"
+      ],
+      "estimated": true
+    },
+    "bp": 3.1,
+    "bpSource": "https://www.sec.gov/Archives/edgar/data/863064/000162828022018359/ex4d15gudaidarri2_.htm",
+    "bpBasis": "Rio Tinto estimated the capital cost of Gudai-Darri at $3.1 billion, A$4.3 billion (2022)",
+    "bpEstimated": true
+  },
+  {
+    "id": "copper_mine",
+    "name": "Copper mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 6000,
+    "extracts": { "copper": 49860 },
+    "real": {
+      "plant": "Kamoa-Kakula copper complex, Lualaba, DR Congo (Kamoa Copper: Ivanhoe Mines, Zijin Mining)",
+      "basis": "Kamoa-Kakula produced 437,061 t of copper in concentrate in 2024 with a full-time workforce of about 6,000, contractors not counted (Ivanhoe Mines, 2025); only its grid allocations are published, not its power, and its water is not published",
+      "sources": [
+        "https://www.ivanhoemines.com/wp-content/uploads/20250219-Ivanhoe-Mines-Q4-2024-and-Annual-Financials-ReleaseVF.pdf"
+      ],
+      "estimated": false
+    }
+  },
+  {
+    "id": "nickel_mine",
+    "name": "Nickel mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1100,
+    "extracts": { "nickel": 5133 },
+    "power": 14000,
+    "real": {
+      "plant": "Voisey's Bay nickel mine and mill, Labrador (Vale Base Metals)",
+      "basis": "Voisey's Bay's underground expansion raises its nickel in concentrate to 45,000 t a year, with 1,100 direct employees (International Mining, 2025); its six diesel generators are rated at up to 14 MW (NS Energy), the rating standing for its demand; its water is not published; it also makes copper and cobalt",
+      "sources": [
+        "https://im-mining.com/?p=106593",
+        "https://www.nsenergybusiness.com/projects/voiseys-bay-nickel-mine-expansion"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "cobalt_mine",
+    "name": "Cobalt mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "cobalt": 3422 },
+    "real": {
+      "plant": "Kisanfu copper-cobalt mine, Lualaba, DR Congo (CMOC)",
+      "basis": "Kisanfu is to make an average of 30,000 t of cobalt a year at full output, with 90,000 t of copper (Yicai Global); its staff, power and water are published only for CMOC as a whole",
+      "sources": [
+        "https://yicaiglobal.com/news/chinese-mining-giant-cmoc-to-invest-over-usd18-billion-to-develop-copper-cobalt-mine-in-drc"
+      ],
+      "estimated": true
+    },
+    "bp": 1.83,
+    "bpSource": "https://www.zawya.com/en/projects/bri/chinas-cmoc-to-invest-183bln-in-kfm-project-in-congo-iz445xf3",
+    "bpBasis": "CMOC is investing $1.826 billion in the first phase of Kisanfu (Zawya, 2021)",
+    "bpEstimated": true
+  },
+  {
+    "id": "bauxite_mine",
+    "name": "Bauxite mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1400,
+    "extracts": { "aluminium": 416200 },
+    "power": 20000,
+    "real": {
+      "plant": "Amrun bauxite mine, Cape York, Queensland (Rio Tinto)",
+      "basis": "Amrun's planned initial output is 22.8 Mt of bauxite a year, 3.648 Mt of aluminium at the 0.16 Earth's bauxite reserve is converted by, and it sustains the around 1,400 employees of Rio Tinto's Cape York operations (Rio Tinto, 2015); its 20 MW diesel power station (Aggreko, 2018) stands for its demand; its water is not published",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/0000863064/000100329715000488/ex99-1.htm",
+        "https://www.aggreko.com/en-au/news/2018/auspac-news/amrun-project-20-mw-power"
+      ],
+      "estimated": true
+    },
+    "bp": 1.9,
+    "bpSource": "https://www.sec.gov/Archives/edgar/data/0000863064/000100329715000488/ex99-1.htm",
+    "bpBasis": "Rio Tinto approved Amrun's mine, processing plant and port at $1.9 billion (2015)",
+    "bpEstimated": true
+  },
+  {
+    "id": "mineral_sands_mine",
+    "name": "Mineral sands mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1281,
+    "extracts": { "ilmenite": 37090, "titanium": 11700 },
+    "real": {
+      "plant": "Kwale mineral sands mine, Kwale County, Kenya (Base Titanium)",
+      "basis": "Kwale produced 325,148 t of ilmenite in its year to June 2022 with 1,281 employees and contractors (Base Resources annual report 2022); its titanium is that ilmenite's, 102600 t at the 52.6% TiO2 of FeTiO3 and 59.9% titanium in TiO2, its rutile not counted since no grade is published; its zircon, power and water are not published",
+      "sources": ["https://announcements.asx.com.au/asxpdf/20220822/pdf/45d2m6bkxjnmpy.pdf"],
+      "estimated": true
+    },
+    "bp": 0.298,
+    "bpSource": "https://www.mining-technology.com/projects/kwalemineralsandspro/",
+    "bpBasis": "Kwale's development was estimated to cost $298 million (Mining Technology)",
+    "bpEstimated": true
+  },
+  {
+    "id": "chromite_mine",
+    "name": "Chromite mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1993,
+    "extracts": { "chromium": 54730 },
+    "power": 25750,
+    "water": 554300,
+    "real": {
+      "plant": "Tharisa chrome and PGM mine, Bushveld, South Africa (Tharisa plc)",
+      "basis": "Tharisa produced 1,558.2 kt of chrome concentrate in its year to September 2025 (production report), 479.8 t of chromium at the 0.3079 Earth's chromite reserve is converted by; 1,993 employees and contractors, 225,751 MWh of electricity, 25.75 MW on average, and 4,859,250 m3 of water consumed, 554.3 t an hour, in the same year (sustainability report 2025); the same ore yields PGM concentrate, which these figures include",
+      "sources": [
+        "https://www.ticker.app/lse/THS/rns/2025-10-14/Production-report-for-Q4-and-full-year-FY2025/1661D",
+        "https://tharisa.com/pdf/investors/annual-reports/2025/tharisa-ir-2025-sustainability-pages.pdf"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "molybdenum_mine",
+    "name": "Molybdenum mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 300,
+    "extracts": { "molybdenum": 1552 },
+    "real": {
+      "plant": "Climax molybdenum mine, Colorado (Freeport-McMoRan)",
+      "basis": "Climax can produce 30 million pounds of molybdenum a year, 13.61 t at 0.4536 kg a pound (Freeport-McMoRan 10-K for 2012); it employed 300 people in 2012; power and water are not published",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/0000831259/000083125913000014/a2012form10-k.htm",
+        "https://mineralsmakelife.org/?p=299"
+      ],
+      "estimated": true
+    },
+    "bp": 0.5,
+    "bpSource": "https://www.sec.gov/Archives/edgar/data/0000831259/000083125907000216/ex99-1.htm",
+    "bpBasis": "Freeport-McMoRan approved the restart of open pit mining and a new mill at Climax as an initial $500 million project in 2007",
+    "bpEstimated": true
+  },
+  {
+    "id": "tungsten_mine",
+    "name": "Tungsten mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1197,
+    "extracts": { "tungsten": 615.3 },
+    "power": 17570,
+    "water": 236400,
+    "real": {
+      "plant": "Nui Phao tungsten mine, Thai Nguyen, Vietnam (Masan High-Tech Materials)",
+      "basis": "Nui Phao mined 3,238,940 t of ore in 2024 at the 0.21% WO3 of its reserves, 5394 t of tungsten at 79.3% tungsten in WO3, contained in the ore before the mill's losses, which are not published; 1,197 employees at the end of 2024, 153,991,001 kWh of electricity bought, 17.57 MW on average, and 2,072,000 m3 of river water drawn, 236.4 t an hour, in 2024 (annual report 2024); the mine also makes fluorspar, bismuth and copper",
+      "sources": [
+        "https://masanhightechmaterials.com/wp-content/uploads/2022/04/EN_AnnualReport_2024.pdf",
+        "https://en.wikipedia.org/wiki/N%C3%BAi_Ph%C3%A1o_mine"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "vanadium_mine",
+    "name": "Vanadium mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1458,
+    "extracts": { "vanadium": 618.6 },
+    "power": 7519,
+    "water": 70820,
+    "real": {
+      "plant": "Maracás Menchen vanadium mine and plant, Bahia, Brazil (Largo)",
+      "basis": "Maracás produced 9,681 t of V2O5 in 2023 (Largo annual information form), 5423 t of vanadium at 56.0% vanadium in V2O5; 472 employees and 986 contractors at the end of 2022, 237,279 GJ of grid electricity, 7.52 MW on average, and 620.8 ML of reservoir water, 70.8 t an hour, in 2022 (sustainability report 2022); it also burns heavy fuel oil",
+      "sources": [
+        "https://sec.gov/Archives/edgar/data/1400438/000106299324006942/exhibit99-1.htm",
+        "https://s29.q4cdn.com/562286712/files/doc_downloads/sustainability/2023/Largo-2022-Sustainability-Report.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 0.285,
+    "bpSource": "https://infrastructure.greenstreet.com/articles/124914/latin-american-mining-and-metals-deal-of-the-year-2012-maracas-vanadium",
+    "bpBasis": "Maracás was financed in 2012 as a project of R$556 million, $285 million at the Federal Reserve's 2012 average of 1.9535 reais a dollar",
+    "bpEstimated": true
+  },
+  {
+    "id": "niobium_mine",
+    "name": "Niobium mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 492,
+    "extracts": { "niobium": 604.6 },
+    "real": {
+      "plant": "Niobec niobium mine, Saint-Honoré, Quebec (then IAMGOLD, now Magris Performance Materials)",
+      "basis": "Niobec produced 5.3 million kg of niobium in ferroniobium in 2013 with about 492 people, contractors excluded (IAMGOLD annual information form for 2013); power and water are not published",
+      "sources": ["https://www.sec.gov/Archives/edgar/data/0001203464/000119312514110217/d697067dex991.htm"],
+      "estimated": false
+    }
+  },
+  {
+    "id": "tin_mine",
+    "name": "Tin mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 450,
+    "extracts": { "tin": 1426 },
+    "real": {
+      "plant": "Bisie tin mine, Mpama North, North Kivu, DR Congo (Alphamin Resources)",
+      "basis": "Mpama North produced 12,500 t of contained tin a year before its 2024 expansion (Alphamin), with 450 permanent jobs in operation projected before construction; it runs on its own diesel power station, so electricity and water are not published",
+      "sources": [
+        "https://www.alphaminresources.com/about-us/",
+        "https://www.mining-technology.com/projects/bisie-tin-project/"
+      ],
+      "estimated": true
+    },
+    "bp": 0.126,
+    "bpSource": "https://edisongroup.com/research/still-leading-the-pack/32651",
+    "bpBasis": "The feasibility study for Mpama North put its initial capital at $126.1 million",
+    "bpEstimated": true
+  },
+  {
+    "id": "tantalum_mine",
+    "name": "Tantalum mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 200,
+    "extracts": { "tantalum": 59.33 },
+    "real": {
+      "plant": "Wodgina tantalum mine, Pilbara, Western Australia (Talison Minerals, later Global Advanced Metals)",
+      "basis": "At full production Wodgina could make 1.4 million pounds of tantalum pentoxide a year, 520.1 t of tantalum at 81.9% tantalum in Ta2O5; its suspension in 2008 cost some 200 jobs, more than half of them contractors; it has stood in care and maintenance for tantalum since 2012, and its power, water and capital cost are not published",
+      "sources": [
+        "https://investingnews.com/daily/resource-investing/critical-metals-investing/tantalum-investing/rising-tantalum-prices-wodgina-mine-back-into-production/",
+        "https://www.businessnews.com.au/article/200-jobs-axed-at-Pilbara-mine?amp"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "lead_mine",
+    "name": "Lead mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 768,
+    "extracts": { "lead": 12450 },
+    "power": 24500,
+    "water": 63720,
+    "real": {
+      "plant": "Red Dog zinc-lead mine, Alaska (Teck)",
+      "basis": "Red Dog produced 109,100 t of lead in concentrate in 2024 (Teck annual report 2024) with 653 regular and 115 temporary employees in December 2024 and 24.5 MW of power, generated on site (Teck to the Alaska Legislature, 2025); it withdrew 558,569 m3 of surface water in 2007, 63.7 t an hour (Teck site report 2007); it is mainly a zinc mine, which these figures include",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/886986/000088698625000004/teck-20241231xexx993mda.htm",
+        "https://www.akleg.gov/basis/get_documents.asp?docid=2036",
+        "https://www.teck.com/media/2007_Teck_Sustainability_Report-SiteReport_2007_REDDOG.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 0.414,
+    "bpSource": "https://canadianminingjournal.com/featured-article/cominco-s-alaskan-triumph",
+    "bpBasis": "The Red Dog mine and mill opened in 1989 at a capital cost of $414 million; the state-financed road and port are not included",
+    "bpEstimated": true
+  },
+  {
+    "id": "uranium_mine",
+    "name": "Uranium mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1231,
+    "extracts": { "uranium": 789.8 },
+    "real": {
+      "plant": "Cigar Lake uranium mine, Saskatchewan (Cameco and Orano)",
+      "basis": "Cigar Lake's nameplate capacity is 18 million pounds of U3O8 a year (technical report, 2024), 6924 t of uranium at the report's 0.848 kg of uranium a kg of U3O8; it employed 1,231 people with contractors in 2024 (Cameco), its mill at McClean Lake not counted; its power and water are not published",
+      "sources": [
+        "https://minedocs.com/28/Cigar-Lake-TR-12312023.pdf",
+        "https://www.cameconorth.com/sites/default/files/documents/Cigar%20Lake%202025.pdf"
+      ],
+      "estimated": false
+    }
+  }
+]

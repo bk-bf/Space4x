@@ -16,7 +16,7 @@
     "tier": "P",
     "sources": [
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
-      { "body": "earth", "how": "mined", "building": "mine_earth" }
+      { "body": "earth", "how": "mined", "building": "mineral_sands_mine" }
     ],
     "why": "Hydrogen-reducible to oxygen, iron and titanium oxide",
     "source": "https://en.wikipedia.org/wiki/Ilmenite"
@@ -54,7 +54,7 @@
     "category": "ceramic",
     "tier": "P",
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "basalt_quarry" },
       { "body": "moon", "how": "regolith", "building": "regolith_excavator" },
       { "body": "mars", "how": "regolith", "building": "regolith_excavator" },
       { "body": "mercury", "how": "regolith", "building": "regolith_excavator" }

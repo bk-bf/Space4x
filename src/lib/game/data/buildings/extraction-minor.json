@@ -1,0 +1,353 @@
+[
+  {
+    "id": "gold_mine",
+    "name": "Gold mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1700,
+    "extracts": { "gold": 2.093 },
+    "power": 104700,
+    "water": 3389000,
+    "real": {
+      "plant": "Boddington gold-copper mine, Western Australia (Newmont)",
+      "basis": "Boddington produced 590,000 oz of gold in 2024, 18350 kg at 31.103 g a troy ounce (Newmont operating statistics, Q4 2024); its 1,000 employees and about 700 contractors (technical report summary, 2022) are the 1,700 workers; 3,304,583 GJ of grid electricity in 2024 is 104.7 MW on average, and 29,710 ML of water withdrawn in 2024 is 3,389 t an hour (Newmont 2024 performance data); the mine also makes copper, which these figures include",
+      "sources": [
+        "https://s24.q4cdn.com/382246808/files/doc_earnings/2024/q4/generic/Newmont-Q4-2024-Operating-Statistics_Final.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1164727/000116472722000007/exhibit962-boddingtonopera.htm",
+        "https://s24.q4cdn.com/382246808/files/doc_downloads/sustainability/2025/newmont-2024-performance-data.pdf"
+      ],
+      "estimated": false
+    },
+    "bp": 2.9,
+    "bpSource": "https://www.sec.gov/Archives/edgar/data/0001164727/000114420409038371/v155370_ex99-1.htm",
+    "bpBasis": "Newmont narrowed the capital cost of the Boddington expansion project to $2.8 to $2.9 billion on a 100% basis at its start-up in 2009, capitalised interest excluded; the top of the range",
+    "bpEstimated": true
+  },
+  {
+    "id": "platinum_mine",
+    "name": "Platinum mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 9891,
+    "extracts": { "platinum": 3.363 },
+    "real": {
+      "plant": "Mogalakwena platinum mine, Limpopo, South Africa (Valterra Platinum)",
+      "basis": "Mogalakwena produced 947,800 oz of platinum-group metals in concentrate in 2025, 29480 kg at 31.103 g a troy ounce, the basis of Earth's platinum reserve (Valterra Platinum integrated report 2025); about 2,486 employees and 7,405 contractors at the time of the IRMA audit (2025) are the 9,891 workers; the report gives energy only with diesel included, so power and water are open, and no figure for iridium is published",
+      "sources": [
+        "https://reports.valterraplatinum.com/25/downloads/vp-iar-2025-mogalakwena-mine.pdf",
+        "https://responsiblemining.net/wp-content/uploads/2025/03/Mogalakwena-Audit-Report.pdf"
+      ],
+      "estimated": false
+    }
+  },
+  {
+    "id": "silver_mine",
+    "name": "Silver mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 457,
+    "extracts": { "silver": 32.64 },
+    "power": 7342,
+    "water": 159000,
+    "real": {
+      "plant": "Greens Creek silver mine, Admiralty Island, Alaska (Hecla Mining)",
+      "basis": "Greens Creek produced 9.2 Moz of silver in 2021, 286200 kg at 31.103 g a troy ounce, with 457 employees (technical report summary, 2022); the life of mine plan buys 769 million kWh and generates 132 million kWh over the 14 years to 2035, 64.36 GWh a year or 7.34 MW; its intake draws up to 700 US gallons a minute of fresh water from Greens Creek, 159 t an hour, the intake's capacity rather than metered use; it also makes zinc, lead and gold",
+      "sources": ["https://www.sec.gov/Archives/edgar/data/719413/000143774922004164/ex_338347.htm"],
+      "estimated": true
+    }
+  },
+  {
+    "id": "beryllium_mine",
+    "name": "Beryllium mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 100,
+    "extracts": { "beryllium": 20.53 },
+    "real": {
+      "plant": "Spor Mountain bertrandite mine and Delta mill, Utah (Materion)",
+      "basis": "The only US beryllium mine shipped about 180 t of beryllium content in 2024 (USGS Mineral Commodity Summaries 2025), Materion's Spor Mountain mine and its Delta mill, which employ just over 100 operating personnel (technical report summary, 2021); power and water are not published",
+      "sources": [
+        "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-beryllium.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1104657/000110465722000021/mtrn-ex96_20211231.htm"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "gallium_plant",
+    "name": "Gallium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "gallium": 5.704 },
+    "real": {
+      "plant": "Gallium line at the Aluminium of Greece alumina refinery, Agios Nikolaos (METLEN)",
+      "basis": "METLEN is building a gallium line of 50 t a year at its alumina refinery (METLEN, 2025); its staff, power, water and cost are published only with the alumina expansion",
+      "sources": [
+        "https://persportaal.anp.nl/artikel/CSN-160125055/-new-large-scale-mining-metallurgical-and-industrial-investment-by-metlen-amounting-to-eur2955-million"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "indium_plant",
+    "name": "Indium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "indium": 8.214 },
+    "real": {
+      "plant": "Indium refinery at the Auby zinc smelter, France (Nyrstar)",
+      "basis": "Auby's indium refinery can make 72 t of indium a year (Nyrstar fact sheet, 2016); its staff, power and water are published only for the whole zinc smelter",
+      "sources": ["https://minedocs.com/17/Auby_FactSheet_2016.pdf"],
+      "estimated": false
+    }
+  },
+  {
+    "id": "germanium_plant",
+    "name": "Germanium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "germanium": 1.141 },
+    "real": {
+      "plant": "Germanium plant at the Onsan zinc smelter, Ulsan, South Korea (Korea Zinc)",
+      "basis": "Korea Zinc's new germanium plant at Onsan is to make high-purity germanium dioxide equal to about 10 t of germanium a year (Evertiq, 2025); its staff, power and water are not published",
+      "sources": [
+        "https://evertiq.com/news/2025-08-26-korea-zinc-and-lockheed-martin-ink-mou-on-germanium-supply"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "arsenic_plant",
+    "name": "Arsenic plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "arsenic": 362.9 },
+    "real": {
+      "plant": "Arsenic trioxide plant of the Tsumeb copper smelter, Namibia (Dundee Precious Metals Tsumeb, now Sinomine)",
+      "basis": "Tsumeb produces about 4,200 t of arsenic trioxide a year (New Era, 2024), 3181 t of arsenic at 75.7% arsenic in As2O3; its staff, power and water are published only for the whole smelter",
+      "sources": ["https://neweralive.na/?p=59717"],
+      "estimated": false
+    }
+  },
+  {
+    "id": "rhenium_plant",
+    "name": "Rhenium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "rhenium": 0.9126 },
+    "real": {
+      "plant": "Molyb molybdenite roasting and rhenium recovery plant, Mejillones, Chile (Codelco)",
+      "basis": "Molyb is to process 16,500 t of molybdenum and 8 t of rhenium a year (MundoMarítimo, 2016); its staff, power and water are not published",
+      "sources": ["https://mundomaritimo.cl/noticias/editor/25313"],
+      "estimated": true
+    }
+  },
+  {
+    "id": "hafnium_plant",
+    "name": "Hafnium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40
+  },
+  {
+    "id": "rare_earth_mine",
+    "name": "Rare earth mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 804,
+    "power": 26000,
+    "water": 81700,
+    "real": {
+      "plant": "Mountain Pass rare earth mine and plant, California (MP Materials)",
+      "basis": "Mountain Pass produced 45,455 t of rare earth oxides in concentrate in 2024 with 804 full-time equivalent employees, its Texas magnet plant included (MP Materials 10-K for 2024); its gas-fired combined heat and power plant of up to 26 MW supplies substantially all its power (technical report summary, 2024), the rating standing for its demand; it withdrew 716,150 m3 of fresh water in 2024, 81.7 t an hour (sustainability report 2025); no share of neodymium, samarium, yttrium or thorium is published, so its rates are open",
+      "sources": [
+        "https://s25.q4cdn.com/570172628/files/doc_downloads/2025/02/MPMC-2024-10-K-FINAL.pdf",
+        "https://sec.gov/Archives/edgar/data/1801368/000180136824000014/d781499dex961.htm",
+        "https://mpmaterials.com/images/mediakit/mpmaterials-2025-sustainability-report.pdf"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "graphite_mine",
+    "name": "Graphite mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1250,
+    "extracts": { "graphite": 39930 },
+    "power": 15400,
+    "real": {
+      "plant": "Balama graphite mine and concentrator, Cabo Delgado, Mozambique (Syrah Resources)",
+      "basis": "Balama's plant can make about 350 kt of graphite concentrate a year from 2 Mt of ore (Syrah Resources), with more than 1,250 direct and contractor employees (Syrah annual report 2023); its 15.4 MW diesel power station stands for its demand; its water is not published",
+      "sources": [
+        "https://www.syrahresources.com.au/balama-project",
+        "https://announcements.asx.com.au/asxpdf/20240325/pdf/061vgw6zdgfyqx.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 0.138,
+    "bpSource": "https://announcements.asx.com.au/asxpdf/20150529/pdf/42yw7f27bc6j4d.pdf",
+    "bpBasis": "The Balama feasibility study put its initial capital cost at $138 million with 10% contingency (2015)",
+    "bpEstimated": true
+  },
+  {
+    "id": "fluorspar_mine",
+    "name": "Fluorspar mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 164,
+    "extracts": { "fluorite": 22820 },
+    "water": 220000,
+    "real": {
+      "plant": "AGS Vein fluorspar mine and mill, St. Lawrence, Newfoundland (Canada Fluorspar)",
+      "basis": "St. Lawrence's mill was registered for up to 200,000 t of fluorspar concentrate a year, with 164 full-time positions and 218 m3 an hour of process water plus 2 m3 an hour of fresh water (environmental assessment registration, 2015), the design figures; its power is not published",
+      "sources": ["https://www.gov.nl.ca/eccc/files/env-assessment-projects-y2015-1794-1794-reg-doc.pdf"],
+      "estimated": true
+    }
+  },
+  {
+    "id": "barite_mine",
+    "name": "Barite mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "barium": 48870 },
+    "real": {
+      "plant": "Mangampet barytes mine, Kadapa, Andhra Pradesh (APMDC)",
+      "basis": "Mangampet produced 664,800 t of A-grade and 63,227 t of B-grade barytes in 2013-14 (CAG performance audit, 2017), 428400 t of barium at the 58.8% barium of pure BaSO4, since no grade is published; its staff, power and water are not published for the mine",
+      "sources": [
+        "https://cag.gov.in/uploads/download_audit_report/2017/8%20Section%20A%20Chapter%204%20Performance%20Audit%20(Non-Power%20Sector)-05fce732f2e7265.64982821.pdf"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "quartz_mine",
+    "name": "Quartz mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 50,
+    "extracts": { "silicon": 53320 },
+    "real": {
+      "plant": "Elkem Tana quartzite quarry, Finnmark, Norway (Elkem)",
+      "basis": "Tana has a capacity of 1,000,000 t of quartzite a year with 50 employees, 25 of them contractors (Elkem), 467.4 kt of silicon at the 46.7% silicon of pure SiO2, since no grade is published; its power and water are not published",
+      "sources": ["https://www.elkem.com/about-elkem/worldwide-presence/norway/elkem-tana/"],
+      "estimated": true
+    }
+  },
+  {
+    "id": "coal_mine",
+    "name": "Coal mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1085,
+    "extracts": { "carbon": 2355000 },
+    "power": 29660,
+    "water": 194300,
+    "real": {
+      "plant": "North Antelope Rochelle coal mine, Powder River Basin, Wyoming (Peabody)",
+      "basis": "North Antelope Rochelle produced 62.8 million short tons of coal in 2021, 20.64 Mt of carbon at its 50.6% dry fixed carbon and 28.4% moisture as received, fixed carbon standing for carbon; it has 1,085 employees and typically uses about 260,000,000 kWh of electricity, 29.7 MW on average, and 450,000,000 US gallons of water a year, 194.3 t an hour (technical report summary, 2022)",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1064728/000106472822000008/btu_20211231xex961.htm"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "basalt_quarry",
+    "name": "Basalt quarry",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40
+  }
+]

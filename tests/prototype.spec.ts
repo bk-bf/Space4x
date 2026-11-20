@@ -138,11 +138,11 @@ test.describe('the prototype on present-day Earth', () => {
     await coal.click();
     await expect(coal).toHaveAttribute('aria-pressed', 'true');
     const value = page.locator('#plantActive .val');
-    await expect(value).toHaveText('404 / 404');
+    await expect(value).toHaveText('56 / 56');
     await expect(page.locator('#plantMore')).toBeDisabled();
     await page.locator('#plantFewer').click();
-    await expect(value).toHaveText('403 / 404');
-    await expect(coal).toContainText('403/404');
+    await expect(value).toHaveText('55 / 56');
+    await expect(coal).toContainText('55/56');
     await expect(page.locator('#groupToggle')).toHaveCount(0);
     await expectCleanLayout(page);
   });

@@ -19,7 +19,11 @@
         "iron"
       ],
       "buildings": [
-        "mine_earth",
+        "iron_ore_mine",
+        "copper_mine",
+        "bauxite_mine",
+        "mineral_sands_mine",
+        "helium_plant",
         "alloy_works",
         "air_separation_plant",
         "cryogenic_liquefaction_plant",

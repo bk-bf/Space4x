@@ -4,7 +4,7 @@
     "name": "RP-1 kerosene",
     "category": "propellant",
     "tier": "P",
-    "sources": [{ "body": "earth", "how": "wells", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "wells", "building": "oil_field" }],
     "why": "Dense hydrocarbon fuel for first stages (Merlin)",
     "source": "https://en.wikipedia.org/wiki/RP-1"
   },

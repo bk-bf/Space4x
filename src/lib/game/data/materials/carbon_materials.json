@@ -5,7 +5,7 @@
     "category": "carbon_materials",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "mined", "building": "graphite_mine" }],
     "why": "Battery anodes, nuclear fuel matrix and neutron moderator",
     "source": "https://en.wikipedia.org/wiki/Graphite"
   },
@@ -41,8 +41,8 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
-      { "body": "earth", "how": "wells", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "coal_mine" },
+      { "body": "earth", "how": "wells", "building": "coal_mine" },
       { "body": "asteroid-c", "how": "mined", "building": "asteroid_miner" }
     ],
     "why": "Carbon for steelmaking, carbides and carbon fibre in space",

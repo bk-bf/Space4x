@@ -151,10 +151,15 @@ describe('files', () => {
 
 describe("Earth's reserves", () => {
   const HOURS_A_YEAR = 8766;
-  const mineKgAYear = (id: string) => (material(id).extractKgH ?? 1000) * HOURS_A_YEAR;
+  const earthBuilding = (m: string) => material(m).sources?.find((s) => s.body === 'earth')?.building;
+  const mineKgAYear = (m: string) => {
+    const b = buildings.find((x) => x.id === earthBuilding(m));
+    return (b?.extracts?.[m] ?? material(m).extractKgH ?? 1000) * HOURS_A_YEAR;
+  };
   const counts = new Map(
     earth.groups.filter((g) => g.process?.startsWith('extract:')).map((g) => [g.process!.slice(8), g.count])
   );
+  const extracted = earth.extracted as Record<string, number>;
 
   it('name materials Earth mines, once each, with a basis and a source url', () => {
     expect(
@@ -167,9 +172,8 @@ describe("Earth's reserves", () => {
     for (const r of reserves) {
       expect(r.basis, r.material).not.toBe('');
       expect(r.source, r.material).toMatch(/^https:\/\//);
-      expect(
-        material(r.material).sources?.some((s) => s.body === 'earth' && s.building === 'mine_earth')
-      ).toBe(true);
+      const b = buildings.find((x) => x.id === earthBuilding(r.material));
+      expect([b?.kind, b?.where.includes('earth')], r.material).toEqual(['extraction', true]);
     }
   });
 
@@ -187,11 +191,18 @@ describe("Earth's reserves", () => {
     }
   });
 
-  it('convert an ore or oxide reserve to content by the share its mine count takes of world output', () => {
-    for (const r of reserves.filter((x) => x.content !== null && x.content !== x.reserve)) {
-      const count = counts.get(r.material) ?? 0;
-      expect(count, r.material).toBeGreaterThan(0);
-      expect(r.content! / r.reserve).toBeCloseTo((count * mineKgAYear(r.material)) / r.output!, 6);
+  it('extract each mined material at its 2024 output in content, to the nearest mine', () => {
+    expect(Object.keys(extracted).sort()).toEqual(
+      reserves
+        .filter((r) => r.output !== null && counts.has(r.material))
+        .map((r) => r.material)
+        .sort()
+    );
+    for (const [m, kg] of Object.entries(extracted)) {
+      const r = reserves.find((x) => x.material === m)!;
+      const factor = r.content !== null ? r.content / r.reserve : 1;
+      expect(kg, m).toBeLessThanOrEqual(r.output! * factor * (1 + 1e-9));
+      expect(counts.get(m), m).toBe(Math.max(1, Math.round(kg / mineKgAYear(m))));
     }
   });
 
@@ -386,16 +397,43 @@ describe('buildings and components', () => {
 
   it('cost build points with a source and a basis, except the buildings open on #72 and #88', () => {
     const open = new Set([
-      'university',
-      'mine_earth',
+      'isotope_separator',
+      'copper_mine',
+      'nickel_mine',
+      'chromite_mine',
+      'tungsten_mine',
+      'niobium_mine',
+      'tantalum_mine',
+      'uranium_mine',
+      'platinum_mine',
+      'silver_mine',
+      'beryllium_mine',
+      'gallium_plant',
+      'indium_plant',
+      'germanium_plant',
+      'arsenic_plant',
+      'rhenium_plant',
+      'hafnium_plant',
+      'rare_earth_mine',
+      'fluorspar_mine',
+      'barite_mine',
+      'quartz_mine',
+      'coal_mine',
+      'basalt_quarry',
+      'helium_plant',
+      'iodine_plant',
+      'lithium_mine',
+      'potash_mine',
+      'phosphate_mine',
+      'salt_works',
+      'borate_mine',
+      'limestone_quarry',
       'regolith_excavator',
       'asteroid_miner',
       'gas_giant_scoop',
       'atmosphere_skimmer',
       'life_support_plant',
       'ranch',
-      'rtg_factory',
-      'isotope_separator',
       'exotic_matter_facility',
       'antimatter_facility',
       'propellant_depot',
@@ -407,7 +445,8 @@ describe('buildings and components', () => {
       'regolith_oxygen_plant',
       'sinter_printer',
       'asteroid_processor',
-      'metal_refinery'
+      'metal_refinery',
+      'university'
     ]);
     expect(unknown([...open], buildingIds)).toEqual([]);
     for (const b of buildings) {
@@ -425,6 +464,135 @@ describe('buildings and components', () => {
       expect(b.bpBasis?.length, b.id).toBeGreaterThan(40);
       expect([undefined, true], b.id).toContain(b.bpEstimated);
     }
+  });
+
+  it('stand on Earth as real plants with a cited capacity, staff, power and water, except the figures open on #88', () => {
+    type Figure = 'capacity' | 'power' | 'water';
+    const OPEN: Record<string, Figure[]> = {
+      semiconductor_fab: ['capacity', 'power', 'water'],
+      solar_cell_fab: ['power', 'water'],
+      battery_plant: ['water'],
+      magnet_works: ['power', 'water'],
+      data_centre: ['capacity', 'power', 'water'],
+      enrichment_plant: ['power', 'water'],
+      fuel_fabrication_plant: ['power', 'water'],
+      fission_reactor: ['capacity', 'power', 'water'],
+      reprocessing_plant: ['water'],
+      rtg_factory: ['power', 'water'],
+      fusion_plant: ['capacity', 'power', 'water'],
+      iron_ore_mine: ['power'],
+      copper_mine: ['power', 'water'],
+      nickel_mine: ['water'],
+      cobalt_mine: ['power', 'water'],
+      bauxite_mine: ['water'],
+      mineral_sands_mine: ['power', 'water'],
+      molybdenum_mine: ['power', 'water'],
+      niobium_mine: ['power', 'water'],
+      tin_mine: ['power', 'water'],
+      tantalum_mine: ['power', 'water'],
+      uranium_mine: ['power', 'water'],
+      platinum_mine: ['power', 'water'],
+      beryllium_mine: ['power', 'water'],
+      gallium_plant: ['power', 'water'],
+      indium_plant: ['power', 'water'],
+      germanium_plant: ['power', 'water'],
+      arsenic_plant: ['power', 'water'],
+      rhenium_plant: ['power', 'water'],
+      hafnium_plant: ['capacity', 'power', 'water'],
+      rare_earth_mine: ['capacity'],
+      graphite_mine: ['water'],
+      fluorspar_mine: ['power'],
+      barite_mine: ['power', 'water'],
+      quartz_mine: ['power', 'water'],
+      basalt_quarry: ['capacity', 'power', 'water'],
+      gas_field: ['power', 'water'],
+      oil_field: ['water'],
+      helium_plant: ['water'],
+      ethylene_cracker: ['water'],
+      sulfur_recovery: ['power', 'water'],
+      lithium_mine: ['power'],
+      potash_mine: ['water'],
+      borate_mine: ['power', 'water'],
+      limestone_quarry: ['power'],
+      air_separation_plant: ['power', 'water'],
+      farmland: ['capacity', 'power', 'water'],
+      algae_bioreactor: ['power', 'water'],
+      protein_fermenter: ['power', 'water'],
+      food_plant: ['power', 'water'],
+      ranch: ['capacity', 'power', 'water'],
+      antimatter_facility: ['capacity', 'power', 'water'],
+      rocket_factory: ['capacity', 'power', 'water'],
+      launch_site: ['capacity', 'power', 'water'],
+      machine_shop: ['capacity', 'power', 'water'],
+      smelter: ['power', 'water'],
+      alloy_works: ['power', 'water'],
+      electrolysis_plant: ['water'],
+      sabatier_plant: ['water'],
+      chemical_plant: ['power', 'water'],
+      polymer_plant: ['power', 'water'],
+      fibre_works: ['power', 'water'],
+      composite_works: ['power', 'water'],
+      ceramics_works: ['water'],
+      research_lab: ['capacity', 'power', 'water'],
+      university: ['capacity', 'power', 'water']
+    };
+    const OPEN_RATES = [
+      'basalt',
+      'hafnium',
+      'iridium',
+      'neodymium',
+      'samarium',
+      'thorium',
+      'yttrium',
+      'zirconium'
+    ];
+    const earthOnes = buildings.filter((b) => b.where.includes('earth'));
+    expect(unknown(Object.keys(OPEN), new Set(earthOnes.map((b) => b.id)))).toEqual([]);
+    const runs = (id: string) => recipes.some((r) => r.building === id);
+    const extracted = (id: string) =>
+      materials
+        .filter((m) => m.sources?.some((x) => x.body === 'earth' && x.building === id))
+        .map((m) => m.id);
+    const given = (b: (typeof buildings)[number], f: Figure): boolean => {
+      if (f === 'capacity') {
+        if (b.plant) return true;
+        if (runs(b.id)) return Object.keys(b.scale ?? {}).length > 0;
+        const rated = extracted(b.id).filter((m) => (b.extracts?.[m] ?? 0) > 0);
+        return rated.length > 0;
+      }
+      return (f === 'power' ? b.power : b.water) !== undefined;
+    };
+    for (const b of earthOnes) {
+      const open = OPEN[b.id] ?? [];
+      expect(b.workers, b.id).toBeGreaterThanOrEqual(0);
+      for (const f of ['capacity', 'power', 'water'] as Figure[]) {
+        if (b.plant && f !== 'capacity') continue;
+        expect(given(b, f), `${b.id} ${f}`).toBe(!open.includes(f));
+      }
+      if (!runs(b.id))
+        for (const m of extracted(b.id))
+          expect((b.extracts?.[m] ?? 0) > 0, `${b.id} ${m}`).toBe(!OPEN_RATES.includes(m));
+      if (!b.real) {
+        if (!b.plant) expect(open.length, b.id).toBe(3);
+        continue;
+      }
+      expect(b.real.plant.length, b.id).toBeGreaterThan(5);
+      expect(b.real.basis.length, b.id).toBeGreaterThan(40);
+      expect(b.real.sources.length, b.id).toBeGreaterThan(0);
+      for (const url of b.real.sources) expect(url, b.id).toMatch(/^https:\/\//);
+      expect(typeof b.real.estimated, b.id).toBe('boolean');
+      for (const r of Object.keys(b.scale ?? {}))
+        expect(recipes.find((x) => x.id === r)?.building, `${b.id} ${r}`).toBe(b.id);
+    }
+    for (const b of buildings.filter((x) => !x.where.includes('earth')))
+      expect([b.real, b.scale, b.power, b.water, b.extracts, b.batch], b.id).toEqual([
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      ]);
   });
 
   it('give every farming building a footprint and every extractor a source to work', () => {

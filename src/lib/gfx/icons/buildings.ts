@@ -801,7 +801,7 @@ export const KIND_COLOURS: Record<string, Color> = {
 export const FALLBACK_KIND_COLOUR: Color = [150, 150, 180];
 
 export const KIND_EXAMPLES: Record<string, string> = {
-  extraction: 'mine_earth',
+  extraction: 'iron_ore_mine',
   processing: 'chemical_plant',
   power: 'solar_power_station',
   electronics: 'semiconductor_fab',
@@ -813,11 +813,19 @@ export const KIND_EXAMPLES: Record<string, string> = {
 
 const kindOf = (id: string) => buildings.find((b) => b.id === id)?.kind;
 
-export const hasBuildingArt = (id: string): boolean => id in BLD && buildings.some((b) => b.id === id);
+const earthMine = (id: string): boolean => {
+  const b = buildings.find((x) => x.id === id);
+  return b?.kind === 'extraction' && b.where.length === 1 && b.where[0] === 'earth';
+};
+
+const drawOf = (id: string): Draw | undefined => BLD[id] ?? (earthMine(id) ? BLD.mine_earth : undefined);
+
+export const hasBuildingArt = (id: string): boolean =>
+  drawOf(id) !== undefined && buildings.some((b) => b.id === id);
 
 export function buildingSprite(id: string): Sprite {
   return sprite('b:' + id, 24, 20, (im) => {
-    const f = BLD[id];
+    const f = drawOf(id);
     if (f) f(im);
     else {
       const kind = kindOf(id),

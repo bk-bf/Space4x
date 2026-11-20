@@ -4,7 +4,6 @@ import { newSite } from './index.ts';
 import {
   advanceEconomy,
   earthStart,
-  EXTRACT_KG_PER_HOUR,
   assign,
   isMass,
   moveOrder,
@@ -195,7 +194,7 @@ describe('production', () => {
     const supply = before.produced.chromium ?? 0;
     setOn(site, mines.id, false);
     const wanted = (before.consumed.chromium ?? 0) / actorOf(eco, site, steel.id).share;
-    const half = Math.round(wanted / 2 / EXTRACT_KG_PER_HOUR);
+    const half = Math.round(wanted / 2 / (process('extract:chromium', 'earth').outputs.chromium ?? 1));
     assign(eco, site, mines.id, 'extract:chromium', 0);
     site.groups.push({ ...mines, id: 9999, count: half, on: true });
     site.stock.chromium = 0;
@@ -705,8 +704,9 @@ describe('power plants', () => {
     for (const k of Object.keys(site.stock)) site.stock[k] = 1e15;
     for (const g of site.groups)
       if (isPlant(g.building) && (plantOf(g.building)?.firmShare ?? 0) >= 0.6)
-        setActive(site, g.id, Math.floor(g.count * 0.4));
-    plantGroup(site, 'solar_farm').count = 4000;
+        setActive(site, g.id, Math.floor(g.count * 0.3));
+    const demand = siteFlows(eco, site).power.demand;
+    plantGroup(site, 'solar_farm').count = Math.ceil((1.5 * demand) / (1e6 * 0.13));
     const f = siteFlows(eco, site);
     expect(f.grid.average).toBeGreaterThan(f.grid.demand);
     expect(f.grid.firm).toBeLessThan(f.grid.peak);
@@ -769,18 +769,21 @@ describe('water', () => {
     const a = actorOf(eco, site, coal.id);
     close(a.water, coal.count * 1e3 * 0.55 * 2.6 * 1e3);
     close((a.inputs.water ?? 0) * a.share, a.water);
-    setActive(site, coal.id, coal.count - 100);
+    const off = Math.floor(coal.count / 4);
+    setActive(site, coal.id, coal.count - off);
     const after = actorOf(eco, site, coal.id);
-    close((after.inputs.water ?? 0) * after.share, (coal.count - 100) * 1e3 * 0.55 * 2.6 * 1e3);
+    close((after.inputs.water ?? 0) * after.share, (coal.count - off) * 1e3 * 0.55 * 2.6 * 1e3);
     expect(actorOf(eco, site, groupBy(site, 'wind_farm').id).water).toBe(0);
   });
 
-  it("sizes Earth's water mines to what it uses plus 10%, so its stock grows", () => {
+  it("sizes Earth's desalination plants to the water it uses plus 10%, so its stock grows", () => {
     const eco = startEconomy();
     const site = earthOf(eco);
     const f = siteFlows(eco, site);
-    const mines = groupOf(site, 'extract:water').count;
-    expect(mines).toBe(Math.ceil((1.1 * (f.consumed.water ?? 0)) / EXTRACT_KG_PER_HOUR));
+    const plants = groupOf(site, 'extract:water').count;
+    const each = process('extract:water', 'earth').outputs.water ?? 0;
+    expect(each).toBeCloseTo(7_886_000, -3);
+    expect(plants).toBe(Math.ceil((1.1 * (f.consumed.water ?? 0)) / each));
     expect(f.net.water ?? 0).toBeGreaterThan(0);
   });
 

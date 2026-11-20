@@ -1,0 +1,316 @@
+[
+  {
+    "id": "desalination_plant",
+    "name": "Desalination plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "water": 7886000 },
+    "power": 28060,
+    "water": 0,
+    "real": {
+      "plant": "Claude \"Bud\" Lewis Carlsbad Desalination Plant, California (Poseidon Water)",
+      "basis": "Carlsbad delivers nearly 50 million US gallons of fresh water a day, 189300 m3 or 7886 t an hour, with a staff of about 40 working full time (WWD plant profile, 2020); its design energy use of 246,000 MWh a year is 28.06 MW on average; it draws sea water, so no fresh water",
+      "sources": [
+        "https://wwdmag.com/plant-profile/plant-profile-carlsbad-desalination-plant",
+        "https://delmarsandpiper.org/2023-12-006/"
+      ],
+      "estimated": false
+    },
+    "bp": 1,
+    "bpSource": "https://www.enr.com/articles/38622-with-carlsbad-completed-more-desalination-projects-planned-in-california",
+    "bpBasis": "The Carlsbad seawater desalination plant cost $1 billion, completed in 2015",
+    "bpEstimated": true
+  },
+  {
+    "id": "gas_field",
+    "name": "Gas field",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "methane": 637900 },
+    "real": {
+      "plant": "Ormen Lange gas field, Norwegian Sea (A/S Norske Shell)",
+      "basis": "Ormen Lange sold 7.608 billion Sm3 of gas in 2024 (Norwegian Offshore Directorate fact pages), 5.592 Mt at the Energy Institute's 0.735 million tonnes of LNG a billion m3 (Statistical Review of World Energy 2025, conversion factors); its staff, power and water are not published",
+      "sources": [
+        "https://factpages.sodir.no/en/field/pageview/all/2762452",
+        "https://assets.kpmg.com/content/dam/kpmgsites/sg/pdf/2025/08/2025-statistical-review-of-world-energy.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 5.91,
+    "bpSource": "https://www.norskpetroleum.no/en/facts/field/ormen-lange/",
+    "bpBasis": "Investment in Ormen Lange to the end of 2024 was NOK 63,467 million in nominal terms (Norsk Petroleum), $5.91 billion at Norges Bank's 2024 average of 10.7433 kroner a dollar; it includes the later phases",
+    "bpEstimated": true
+  },
+  {
+    "id": "oil_field",
+    "name": "Oil field",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "rp1": 4292000 },
+    "power": 300000,
+    "real": {
+      "plant": "Johan Sverdrup oil field, North Sea (Equinor)",
+      "basis": "Johan Sverdrup produces 755,000 barrels of oil a day since its second phase (Equinor, 2022), 103000 t a day at the Energy Institute's 7.33 barrels a tonne (Statistical Review of World Energy 2025), and is powered from shore through 300 MW of capacity for both phases (Equinor, 2018), the capacity standing for its demand; its staff and fresh water are not published",
+      "sources": [
+        "https://www.equinor.com/news/20221215-johan-sverdrup-phase-2-on-stream",
+        "https://www.equinor.com/news/archive/2018-10-09-johan-sverdrup-powered-shore",
+        "https://assets.kpmg.com/content/dam/kpmgsites/sg/pdf/2025/08/2025-statistical-review-of-world-energy.pdf"
+      ],
+      "estimated": true
+    },
+    "bp": 14.4,
+    "bpSource": "https://www.equinor.com/news/archive/2019-10-johan-sverdrup",
+    "bpBasis": "Phase 1 of Johan Sverdrup cost NOK 83 billion (Equinor, 2019) and phase 2 NOK 48 billion (Equinor, 2022), $9.43 billion and $4.99 billion at Norges Bank's averages of 8.8037 and 9.6245 kroner a dollar for 2019 and 2022",
+    "bpEstimated": true
+  },
+  {
+    "id": "helium_plant",
+    "name": "Helium plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 300,
+    "extracts": { "helium4": 749.5 },
+    "power": 125000,
+    "real": {
+      "plant": "Shute Creek gas processing and helium plant, LaBarge, Wyoming (ExxonMobil)",
+      "basis": "Shute Creek can produce as much as 1.4 billion cubic feet of helium a year (Center for Land Use Interpretation), 6570 t at USGS's 27.737 m3 for 1,000 cubic feet and NIST's 0.1692 kg a m3 at 15 C and one atmosphere; ExxonMobil employs about 200 workers and 100 long-term contractors for helium operations (Cowboy State Daily, 2024); its 125 MW cogeneration plant (Industrial Info) stands for its demand, which covers the whole gas plant; its water is not published",
+      "sources": [
+        "https://clui.org/projects/lighter-air-exploring-landscape-helium/helium-production-sites/shute-creek-gas-and-helium",
+        "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-helium.pdf",
+        "https://webbook.nist.gov/cgi/fluid.cgi?Action=Data&Wide=on&ID=C7440597&Type=IsoBar&Digits=6&P=0.101325&THigh=21.1&TLow=15&TInc=6.1&TUnit=C&PUnit=MPa&DUnit=kg%2Fm3",
+        "https://cowboystatedaily.com/2024/06/17/exxonmobil-positions-wyoming-plant-for-helium-production-explosion/",
+        "https://www.industrialinfo.com/news/article/exxonmobil-completes-construction-of-375-million-cogen-project-in-wyoming--46802"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "ethylene_cracker",
+    "name": "Ethylene cracker",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 600,
+    "extracts": { "ethylene": 171100 },
+    "power": 250000,
+    "real": {
+      "plant": "Shell Polymers Monaca ethane cracker, Pennsylvania (Shell)",
+      "basis": "Shell's Monaca complex makes 1.5 million t of ethylene a year and feeds 1.6 million t of polyethylene, with a 250 MW gas-fired cogeneration unit (Oil & Gas Journal, 2022), the unit's capacity standing for its demand; it employs more than 600 full-time; its water use is not published",
+      "sources": [
+        "https://www.ogj.com/refining-processing/petrochemicals/article/14285782/shell-commissions-pennsylvania-petrochemical-complex",
+        "https://businessjournaldaily.com/?p=169230"
+      ],
+      "estimated": true
+    },
+    "bp": 6,
+    "bpSource": "https://businessjournaldaily.com/?p=169230",
+    "bpBasis": "Shell decided in 2016 to build the Monaca ethane cracker complex for about $6 billion, its polyethylene units included; no final cost is published",
+    "bpEstimated": true
+  },
+  {
+    "id": "sulfur_recovery",
+    "name": "Sulfur recovery plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "sulfur": 412200 },
+    "real": {
+      "plant": "Shah sour gas plant and its sulfur recovery units, Al Dhafra, Abu Dhabi (Al Hosn Gas)",
+      "basis": "The Shah sour gas development is to yield 9,900 t of sulfur granules a day; it produced 2 million t in its first year, 2015 (NS Energy, 2016); its staff, power and water are not published",
+      "sources": [
+        "https://www.nsenergybusiness.com/news/newsabu-dhabis-adnoc-inaugurates-10bn-al-hosn-ultra-sour-gas-project-270416-4875909/"
+      ],
+      "estimated": true
+    },
+    "bp": 10,
+    "bpSource": "https://www.nsenergybusiness.com/news/newsabu-dhabis-adnoc-inaugurates-10bn-al-hosn-ultra-sour-gas-project-270416-4875909/",
+    "bpBasis": "ADNOC inaugurated the Al Hosn sour gas project, with its wells, gas plant, sulfur recovery and pipelines, at $10 billion (2016)",
+    "bpEstimated": true
+  },
+  {
+    "id": "iodine_plant",
+    "name": "Iodine plant",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1519,
+    "extracts": { "iodine": 1483 },
+    "power": 16000,
+    "water": 2311000,
+    "real": {
+      "plant": "Nueva Victoria caliche mine and iodine plants, Tarapacá, Chile (SQM)",
+      "basis": "Nueva Victoria has a capacity of 13 kt of iodine a year and needs an estimated 1,519 workers; its electricity in 2025 was about 16 MW, and it drew 20,260,752 m3 of industrial water, 2311 t an hour (SQM technical report summary, 2026); the same caliche yields nitrate salts, which these figures include",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/909037/000090903726000018/exhibit962-technicalrepo.htm"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "lithium_mine",
+    "name": "Lithium mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 1092,
+    "extracts": { "lithium": 2471 },
+    "water": 513300,
+    "real": {
+      "plant": "Pilgangoora spodumene operation, Pilbara, Western Australia (PLS Group)",
+      "basis": "Pilgangoora produced 879,543 dmt of spodumene concentrate at 5.3% Li2O in its year to June 2026, 21660 t of lithium at 46.5% lithium in Li2O, and took in 4.5 GL of water, 513 t an hour, some of it brackish; PLS has 1,092 employees in Australia, its Perth office included (PLS annual report 2026); its power is not published",
+      "sources": ["https://announcements.asx.com.au/asxpdf/20260824/pdf/07331p4vgk5jjk.pdf"],
+      "estimated": true
+    }
+  },
+  {
+    "id": "potash_mine",
+    "name": "Potash mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 340,
+    "extracts": { "potassium": 287300 },
+    "power": 112000,
+    "real": {
+      "plant": "Rocanville potash mine, Saskatchewan (Nutrien)",
+      "basis": "Rocanville produced 5.015 Mt of finished potash at 60.49% K2O in 2024, 2.518 Mt of potassium at 83.0% potassium in K2O, and draws 112 MVA of high-voltage power, taken as 112 MW (NI 43-101 technical report, 2025); Mining Technology lists 340 employees; its water is not published",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1725964/000119312525041530/d16198dex994.htm",
+        "https://www.mining-technology.com/projects/rocanville/"
+      ],
+      "estimated": true
+    }
+  },
+  {
+    "id": "phosphate_mine",
+    "name": "Phosphate mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 510,
+    "extracts": { "phosphorus": 99160 },
+    "power": 97240,
+    "water": 665200,
+    "real": {
+      "plant": "Four Corners phosphate mine and beneficiation plant, Florida (Mosaic)",
+      "basis": "Four Corners produced 7.013 Mt of phosphate rock at 28.4% P2O5 in 2021, 0.8692 Mt of phosphorus at 43.6% phosphorus in P2O5, on 852,423,065 kWh of electricity, 97.24 MW on average, and 5.831 million m3 of deep well water, 665.2 t an hour (Mosaic technical report summary, 2023), with 510 employees and no contractors (fact sheet, 2021)",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1285785/000161803423000003/a2022floridaphosphatesk1.htm",
+        "https://minedocs.com/21/Four_Corners_FS_Jan2021.pdf"
+      ],
+      "estimated": false
+    }
+  },
+  {
+    "id": "salt_works",
+    "name": "Salt mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 530,
+    "extracts": { "sodium": 259800 },
+    "power": 8556,
+    "water": 5000,
+    "real": {
+      "plant": "Goderich rock salt mine, Ontario (Compass Minerals)",
+      "basis": "Goderich produces an average of 6.5 million short tons of salt a year at 98.17% NaCl, 2.277 Mt of sodium at 39.3% sodium in NaCl, with a headcount of 530, 74,998,668 kWh of electricity, 8.56 MW on average, and about 31,700 US gallons of town water a day, 5 t an hour, in 2021 (technical report summary, 2022)",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1227654/000122765422000340/cmp-2022xex964amendedgoder.htm"
+      ],
+      "estimated": false
+    }
+  },
+  {
+    "id": "borate_mine",
+    "name": "Borate mine",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 40,
+    "extracts": { "boron": 17790 },
+    "real": {
+      "plant": "Boron open pit mine and refinery, Kern County, California (Rio Tinto)",
+      "basis": "Rio Tinto's Boron operation produced 502 kt of borates as B2O3 in 2025 (Rio Tinto 20-F for 2025), 155.9 kt of boron at 31.1% boron in B2O3; its staff, power and water are not published",
+      "sources": ["https://www.sec.gov/Archives/edgar/data/863064/000162828026009531/rio-20251231.htm"],
+      "estimated": false
+    }
+  },
+  {
+    "id": "limestone_quarry",
+    "name": "Limestone quarry",
+    "kind": "extraction",
+    "where": ["earth"],
+    "research": 0,
+    "start": true,
+    "thin": true,
+    "estimated": true,
+    "cost": { "stainless_steel": 2000, "copper": 200 },
+    "workers": 95,
+    "extracts": { "calcium": 110900 },
+    "water": 10460,
+    "real": {
+      "plant": "Marulan South limestone mine, New South Wales (Boral)",
+      "basis": "Marulan South mined 2,428,400 t of limestone in 2023/2024 with about 95 full-time personnel and took 91.7 ML of river and ground water, 10.5 t an hour (Boral annual review 2023/2024); its calcium is taken at the 40.0% calcium of pure CaCO3, since no grade is published; its power is not published",
+      "sources": [
+        "https://boral.com.au/annual-reviews-and-audit-reports/marulan-south-mine-annual-review-2023-2024"
+      ],
+      "estimated": true
+    }
+  }
+]

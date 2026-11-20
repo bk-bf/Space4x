@@ -30,7 +30,15 @@
     "thin": true,
     "estimated": true,
     "cost": { "stainless_steel": 10000, "al_li_alloy": 2000, "nickel_superalloy": 500, "cfrp": 500 },
-    "workers": 300,
+    "workers": 1000,
+    "real": {
+      "plant": "United Launch Alliance rocket factory, Decatur, Alabama (ULA)",
+      "basis": "About 1,000 employees work at ULA's Decatur factory, which builds 10 to 12 Atlas V and about six Delta rockets a year (Made in Alabama, 2014); a shipyard's capacity stays in shipyard points, and its power and water are not published; the build cost is Blue Origin's rocket factory",
+      "sources": [
+        "https://www.madeinalabama.com/2014/10/united-launch-alliance-alabama-factory-turns-rocket-science-rockets/"
+      ],
+      "estimated": true
+    },
     "bp": 0.2,
     "bpSource": "https://www.nbcnews.com/tech/innovation/amazons-bezos-unveils-rocket-plant-launch-pad-florida-n427696",
     "bpBasis": "One rocket factory; Blue Origin said in 2015 it would invest more than $200M to build its rocket manufacturing facility beside Kennedy Space Center",

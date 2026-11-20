@@ -6,7 +6,7 @@
     "tier": "P",
     "thin": true,
     "sources": [
-      { "body": "earth", "how": "mined", "building": "mine_earth" },
+      { "body": "earth", "how": "mined", "building": "quartz_mine" },
       { "body": "asteroid-s", "how": "mined", "building": "asteroid_miner" },
       { "body": "mars", "how": "regolith", "building": "regolith_excavator" }
     ],
@@ -19,7 +19,7 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "gallium_plant" }],
     "why": "Element of GaAs, InGaP and GaN; recovered as a by-product of bauxite and zinc processing",
     "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Gallium"
@@ -30,7 +30,7 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "germanium_plant" }],
     "why": "Substrate and bottom junction of space multi-junction solar cells",
     "source": "https://en.wikipedia.org/wiki/Germanium"
   },
@@ -40,7 +40,7 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "indium_plant" }],
     "why": "Element of InGaP top junctions and transparent conductors",
     "extractKgH": 1,
     "source": "https://en.wikipedia.org/wiki/Indium"
@@ -51,7 +51,7 @@
     "category": "semiconductor_electronics",
     "tier": "P",
     "thin": true,
-    "sources": [{ "body": "earth", "how": "byproduct", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "byproduct", "building": "arsenic_plant" }],
     "why": "Element of gallium arsenide",
     "source": "https://en.wikipedia.org/wiki/Gallium_arsenide"
   },
@@ -69,7 +69,7 @@
     "name": "Fluorite (fluorspar)",
     "category": "semiconductor_electronics",
     "tier": "P",
-    "sources": [{ "body": "earth", "how": "mined", "building": "mine_earth" }],
+    "sources": [{ "body": "earth", "how": "mined", "building": "fluorspar_mine" }],
     "why": "Source of fluorine for PTFE and fluoropolymers and HF for chip etching",
     "source": "https://en.wikipedia.org/wiki/Fluorite"
   },
