@@ -2,7 +2,7 @@ import type { StatusValue } from './types';
 
 export type StatusSource = () => Omit<StatusValue, 'id'>;
 
-export const STATUS_IDS = ['people', 'food', 'power', 'compute', 'scarce'] as const;
+export const STATUS_IDS = ['treasury', 'people', 'food', 'power', 'compute', 'scarce'] as const;
 
 export type StatusId = (typeof STATUS_IDS)[number];
 

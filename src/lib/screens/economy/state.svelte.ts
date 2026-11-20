@@ -24,7 +24,8 @@ export type TabId =
   | 'yard'
   | 'launch'
   | 'ships'
-  | 'supply';
+  | 'supply'
+  | 'market';
 
 export const TABS: readonly (Tab & { id: TabId })[] = [
   { id: 'summary', label: 'Summary', icon: 'list' },
@@ -36,7 +37,8 @@ export const TABS: readonly (Tab & { id: TabId })[] = [
   { id: 'yard', label: 'Shipyard', icon: 'yard' },
   { id: 'launch', label: 'Launch', icon: 'rocket' },
   { id: 'ships', label: 'Ships', icon: 'ship' },
-  { id: 'supply', label: 'Supply', icon: 'flame' }
+  { id: 'supply', label: 'Supply', icon: 'flame' },
+  { id: 'market', label: 'Market', icon: 'coin' }
 ];
 
 export const isTabId = (id: string | null | undefined): id is TabId => TABS.some((t) => t.id === id);
@@ -98,7 +100,7 @@ export function showColony(id: string): void {
 
 export function applyEconomyParams(params: URLSearchParams): void {
   const scenario = params.get('scenario');
-  applyScenario(scenario);
+  applyScenario(scenario, params.has('broke'));
   if (scenario === 'travel') {
     seedTravel(game);
     ui.vessel ??= ships.vessels.find((v) => v.trip)?.id ?? null;

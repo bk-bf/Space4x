@@ -90,7 +90,7 @@ test.describe('the top bar', () => {
 
   test('every chip is an icon with a title and a value', async ({ page }) => {
     await open(page);
-    await expect(page.locator('#chips .chip')).toHaveCount(5);
+    await expect(page.locator('#chips .chip')).toHaveCount(6);
     for (const title of [
       'People',
       'Food: calories made against calories needed',

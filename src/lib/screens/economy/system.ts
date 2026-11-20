@@ -6,9 +6,11 @@ import {
   homeSite,
   siteById,
   touch,
+  type LogFn,
   type SupplyKind
 } from '#lib/game/economy/index.ts';
 import { game, registerHorizon, registerStatus, registerSystem, START_TIME } from '#lib/game/index.ts';
+import type { Game } from '#lib/game/state.svelte.ts';
 import type { StatusValue } from '#lib/game/types.ts';
 import { advanceShips, shipsHorizon } from '#lib/game/ships/index.ts';
 import { fmt } from '#lib/ui/index.ts';
@@ -16,21 +18,20 @@ import { shortName } from './format.ts';
 import { allTroubles, troubleLine, type Trouble } from './troubles.ts';
 import { scarcest } from './view.ts';
 
+export const economyLog =
+  (game: Game): LogFn =>
+  (text, warn, at, siteId, tag) => {
+    const body = siteId ? siteById(siteId)?.worldBody : undefined;
+    game.log(tag?.kind === 'milestone' ? 'flask' : 'factory', text, warn, {
+      at: START_TIME + at * 1000,
+      ...(body ? { subject: { kind: 'body' as const, id: body } } : {}),
+      ...(siteId ? { site: siteId } : {}),
+      ...(tag ?? {})
+    });
+  };
+
 registerSystem('economy', (game, dt) => {
-  advanceEconomy(
-    economy,
-    dt,
-    (text, warn, at, siteId, tag) => {
-      const body = siteId ? siteById(siteId)?.worldBody : undefined;
-      game.log(tag?.kind === 'milestone' ? 'flask' : 'factory', text, warn, {
-        at: START_TIME + at * 1000,
-        ...(body ? { subject: { kind: 'body' as const, id: body } } : {}),
-        ...(siteId ? { site: siteId } : {}),
-        ...(tag ?? {})
-      });
-    },
-    game.warnDays
-  );
+  advanceEconomy(economy, dt, economyLog(game), game.warnDays);
   advanceShips(game, dt);
   touch();
 });
@@ -55,6 +56,13 @@ function withTroubles(chip: Chip, kind: SupplyKind): Chip {
     open: { site: first.site.id, ...(first.material ? { material: first.material } : {}) }
   };
 }
+
+registerStatus('treasury', () => ({
+  icon: 'coin',
+  value: fmt.money(economy.market.treasury),
+  title: 'Treasury',
+  warn: economy.market.treasury < 0
+}));
 
 registerStatus('people', () => ({
   icon: 'people',
