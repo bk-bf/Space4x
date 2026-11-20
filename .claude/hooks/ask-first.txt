@@ -1,0 +1,1 @@
+Space4x rule: build only what the user named. Any mechanic, building, screen element, figure, name, number or rule the user has not asked for in words is a question first: ask with AskUserQuestion, wait for the answer, then build. This holds for the game, its data, the mockups and the sketches alike. Removing or renaming something the user did not name is also a question first.
