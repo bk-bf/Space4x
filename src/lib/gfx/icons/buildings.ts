@@ -714,6 +714,29 @@ const BLD: Record<string, Draw> = {
     im.rect(3, 8, 2, 3, R.orange.m);
     im.rect(16, 9, 3, 1, R.glass.l);
   },
+  machine_shop(im) {
+    im.box(2, 8, 20, 11, R.steel);
+    im.poly(
+      [
+        [2, 8],
+        [7, 4],
+        [12, 8]
+      ],
+      R.steel.l
+    );
+    im.poly(
+      [
+        [12, 8],
+        [17, 4],
+        [22, 8]
+      ],
+      R.steel.l
+    );
+    im.rect(5, 12, 6, 7, R.dark.d);
+    im.box(14, 11, 6, 4, R.glass);
+    im.disc(17, 3, 2.5, R.amber.m);
+    im.disc(17, 3, 1, R.dark.d);
+  },
   jump_point_stabiliser(im) {
     for (let y = 0; y < 18; y++)
       for (let x = 0; x < 24; x++) {
@@ -742,7 +765,8 @@ const SPACE = new Set([
   'antimatter_facility',
   'isotope_separator',
   'farmland',
-  'greenhouse'
+  'greenhouse',
+  'machine_shop'
 ]);
 
 export const KIND_COLOURS: Record<string, Color> = {

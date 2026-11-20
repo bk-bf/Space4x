@@ -1,0 +1,11 @@
+[
+  {
+    "id": "machinery",
+    "name": "Machinery",
+    "category": "machinery",
+    "tier": "P",
+    "thin": true,
+    "why": "Motors, pumps, valves and turbopumps machined from nickel superalloy",
+    "source": "https://en.wikipedia.org/wiki/Turbopump"
+  }
+]
