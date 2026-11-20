@@ -180,6 +180,8 @@ function checkPage(out: string[]) {
     const mids = [...top.children].map((c) => (R(c).top + R(c).bottom) / 2).sort((p, q) => p - q),
       rows = 1 + mids.filter((v, i) => i && v - mids[i - 1]! > 16).length;
     if (rows > 1) out.push(`top bar: wrapped onto ${rows} rows`);
+    const over = top.scrollWidth - top.clientWidth;
+    if (over > 1) out.push(`top bar: ${over}px wider than the window, so its right end is cut off`);
   }
   const de = document.documentElement;
   if (de.scrollWidth > innerWidth + 1 || de.scrollHeight > innerHeight + 1) out.push('page: scrolls');

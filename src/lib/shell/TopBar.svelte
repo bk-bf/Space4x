@@ -33,6 +33,32 @@
 
   const pauseTitle = $derived(game.pausedBy ? `Paused by: ${game.pausedBy.text}` : 'Pause (space)');
 
+  const TOP_ZOOM_STEP = 0.04;
+  const TOP_ZOOM_MIN = 0.5;
+  let top = $state<HTMLElement>();
+  const chipText = $derived(game.status.map((c) => c.value).join('|'));
+  const clockLength = $derived(formatClock(game.time).length);
+
+  function fitTop() {
+    if (!top) return;
+    let zoom = 1;
+    top.style.setProperty('--tz', String(zoom));
+    while (top.scrollWidth > top.clientWidth + 1 && zoom > TOP_ZOOM_MIN) {
+      zoom = Math.round((zoom - TOP_ZOOM_STEP) * 100) / 100;
+      top.style.setProperty('--tz', String(zoom));
+    }
+  }
+
+  $effect(() => {
+    void chipText;
+    void clockLength;
+    fitTop();
+  });
+
+  $effect(() => {
+    void document.fonts.ready.then(fitTop);
+  });
+
   function togglePanels() {
     if (shell.screen !== 'map') shell.setScreen('map');
     wm.show(SETTINGS_ID, !!wm.get(SETTINGS_ID)?.hidden);
@@ -43,7 +69,9 @@
   >{#if gallery}<title>Space4x gallery</title>{/if}</svelte:head
 >
 
-<header id="top" data-ready={session.ready} class:gallery>
+<svelte:window onresize={fitTop} />
+
+<header id="top" bind:this={top} data-ready={session.ready} class:gallery>
   <span class="brand" use:tooltip={gallery && 'Gallery build: includes mock screens and scenes'}
     ><Icon name="logo" /><b>Space4x</b></span
   >
@@ -96,11 +124,8 @@
           use:tooltip={c.title}><Icon name={c.icon} />{c.value}</span
         >{/if}{/each}
   </div>
-  <button
-    id="bSet"
-    aria-label="Menu"
-    use:tooltip={'Menu: save, load, new game, panels (Esc)'}
-    onclick={openPauseMenu}><Icon name="gear" /></button
+  <button id="bSet" aria-label="Menu" use:tooltip={'Menu (Esc)'} onclick={openPauseMenu}
+    ><Icon name="gear" /></button
   >
 </header>
 
