@@ -23,6 +23,7 @@ import {
   PEAK_RATIO,
   plantOf,
   POWER,
+  process,
   setActive,
   unlockedProcesses,
   type Economy,
@@ -623,5 +624,68 @@ describe('power plants', () => {
     expect(nuclear.active).toBe(nuclear.count - 10);
     setActive(site, nuclear.id, nuclear.count);
     expect(nuclear.active).toBeUndefined();
+  });
+});
+
+describe('water', () => {
+  const MONTH = 730.5;
+  const groupBy = (site: Site, building: string) => {
+    const g = site.groups.find((x) => x.building === building);
+    if (!g) throw new Error(`no ${building}`);
+    return g;
+  };
+
+  it('is drawn by a data centre on Earth at 157,788 t a month, and not off Earth', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const dc = groupOf(site, 'compute_generation');
+    const a = actorOf(eco, site, dc.id);
+    expect(a.share).toBe(1);
+    close((a.water / dc.count) * MONTH, 157_788_000);
+    close(a.inputs.water ?? 0, a.water);
+    expect(process('compute_generation', 'moon').water).toBe(0);
+    expect(process('compute_generation', 'moon').inputs.water).toBeUndefined();
+  });
+
+  it('is drawn by the fabs and the machine shop at the figures of the design sketch', () => {
+    const month = (id: string) => process(id, 'earth').water * MONTH;
+    close(month('electronic_silicon_purification'), 500_000_000);
+    close(month('rad_hard_ic_fabrication'), 1_140_000_000);
+    close(month('machinery_machining'), 1_000_000);
+  });
+
+  it('is drawn by a coal plant at 2.6 t a MWh of its average output, and only while it runs', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const coal = groupBy(site, 'coal_power_station');
+    const a = actorOf(eco, site, coal.id);
+    close(a.water, coal.count * 1e3 * 0.55 * 2.6 * 1e3);
+    close((a.inputs.water ?? 0) * a.share, a.water);
+    setActive(site, coal.id, coal.count - 100);
+    const after = actorOf(eco, site, coal.id);
+    close((after.inputs.water ?? 0) * after.share, (coal.count - 100) * 1e3 * 0.55 * 2.6 * 1e3);
+    expect(actorOf(eco, site, groupBy(site, 'wind_farm').id).water).toBe(0);
+  });
+
+  it("sizes Earth's water mines to what it uses plus 10%, so its stock grows", () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const f = siteFlows(eco, site);
+    const mines = groupOf(site, 'extract:water').count;
+    expect(mines).toBe(Math.ceil((1.1 * (f.consumed.water ?? 0)) / EXTRACT_KG_PER_HOUR));
+    expect(f.net.water ?? 0).toBeGreaterThan(0);
+  });
+
+  it('stops plants without water, and the power they made with them', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    setOn(site, groupOf(site, 'extract:water').id, false);
+    site.stock.water = 0;
+    const f = siteFlows(eco, site);
+    const coal = f.actors.find((x) => x.kind === 'group' && x.group.building === 'coal_power_station');
+    expect(coal?.share).toBeLessThan(0.01);
+    expect(coal?.limit).toEqual({ kind: 'material', id: 'water' });
+    expect(f.power.supply).toBeLessThan(f.grid.supply);
+    expect(f.power.used).toBeLessThanOrEqual(f.power.supply * (1 + 1e-9));
   });
 });

@@ -24,6 +24,8 @@ export const activePlants = (g: Group): number => (g.on ? Math.min(g.count, g.ac
 
 export const averageOutput = (p: Plant, n: number): number => n * p.capacityKw * (p.capacityFactor ?? 0);
 
+export const plantWater = (p: Plant, n: number): number => averageOutput(p, n) * p.waterPerMwh;
+
 export function gridOf(site: Site, demand: number): Grid {
   let average = 0;
   let firm = 0;

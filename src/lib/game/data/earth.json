@@ -10,7 +10,7 @@
     "food": "ranches make meat for 10% of the calories at 2,200 kcal per kg from cereal and soybean feed, farmland makes the other crops, and together they feed the population at kcalPerPersonDay with a 5% surplus, the crops split 40% wheat, 25% potato, 25% soybean, 10% leafy greens by mass after the ranches have taken their feed",
     "extraction": "each material with an Earth reserve in reserves.json is extracted at its 2024 world output, one mine for every 8,766 hours of its mine rate (1,000 kg an hour, or the material's extractKgH), with oxides and ores converted to content",
     "endProducts": "each end product is made at its present-day world output, in kg a year",
-    "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%",
+    "inputs": "every other group supplies what the groups downstream of it use at full rate, plus 10%, water included with what the power plants, semiconductor fabs, flight machine shops and data centres draw",
     "power": "the power plants and storage keep the real 2024 mix of Ember 2025, the counts of the design sketch scaled together so that average generation covers the start power demand of the groups with 5% to spare",
     "stock": "each material in stocks starts with the stock its market reports as held in store in November 2026: world grain and oilseed stocks carried into 2026/27 from the USDA WASDE, global observed oil inventories from the IEA, LME warehouse stocks for base metals, London vault holdings for gold and silver and above ground stocks for platinum; every other material starts with stockDays of its start production",
     "goods": "the semiconductor fabs, flight machine shops and data centres stand at the counts of the design sketch, and polysilicon, machinery and integrated circuits start at its stock, in stocks"
@@ -115,52 +115,52 @@
     {
       "building": "coal_power_station",
       "process": null,
-      "count": 264
+      "count": 404
     },
     {
       "building": "gas_power_station",
       "process": null,
-      "count": 233
+      "count": 356
     },
     {
       "building": "oil_power_station",
       "process": null,
-      "count": 59
+      "count": 90
     },
     {
       "building": "nuclear_power_station",
       "process": null,
-      "count": 46
+      "count": 71
     },
     {
       "building": "hydroelectric_dam",
       "process": null,
-      "count": 163
+      "count": 250
     },
     {
       "building": "bioenergy_plant",
       "process": null,
-      "count": 19
+      "count": 29
     },
     {
       "building": "wind_farm",
       "process": null,
-      "count": 137
+      "count": 209
     },
     {
       "building": "solar_farm",
       "process": null,
-      "count": 224
+      "count": 343
     },
     {
       "building": "battery_storage",
       "process": null,
-      "count": 19
+      "count": 29
     },
     {
       "building": "pumped_hydro_storage",
       "process": null,
-      "count": 22
+      "count": 34
     },
     {
       "building": "farmland",
@@ -190,7 +190,7 @@
     {
       "building": "mine_earth",
       "process": "extract:water",
-      "count": 777619
+      "count": 1843831
     },
     {
       "building": "mine_earth",

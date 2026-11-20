@@ -18,7 +18,9 @@
     "inputs": { "silicon": 2750, "hydrogen": 12.5 },
     "outputs": { "electronic_silicon": 2500 },
     "power": 60000,
-    "hours": 730.5
+    "hours": 730.5,
+    "water": 500000000,
+    "waterSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L13"
   },
   {
     "id": "gallium_arsenide_synthesis",
@@ -67,7 +69,9 @@
     "inputs": { "electronic_silicon": 1800, "compute": 36 },
     "outputs": { "rad_hard_ic": 1200 },
     "power": 80000,
-    "hours": 730.5
+    "hours": 730.5,
+    "water": 1140000000,
+    "waterSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L15"
   },
   {
     "id": "ai_accelerator_fabrication",
@@ -210,7 +214,9 @@
     "inputs": {},
     "outputs": { "compute": 90 },
     "power": 120000,
-    "hours": 1
+    "hours": 1,
+    "water": 216000,
+    "waterSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L16"
   },
   {
     "id": "ai_model_training",

@@ -17,6 +17,8 @@ export const extractRate = (materialId: string): number =>
   material(materialId).extractKgH ?? EXTRACT_KG_PER_HOUR;
 export const EXTRACT_KW = 200;
 export const FOOD_CATEGORY = 'food';
+export const WATER = 'water';
+export const WATER_DRAWN_ON: Where = 'earth';
 
 export interface Process {
   id: string;
@@ -26,6 +28,7 @@ export interface Process {
   inputs: Amounts;
   outputs: Amounts;
   extracts: Amounts;
+  water: number;
   estimated: boolean;
 }
 
@@ -51,6 +54,8 @@ function recipeProcess(r: Recipe, body: Where): Process {
     delete inputs[m];
   }
   if (r.power > 0) inputs[POWER] = r.power;
+  const water = body === WATER_DRAWN_ON && r.water ? r.water / r.hours : 0;
+  if (water > 0) inputs[WATER] = (inputs[WATER] ?? 0) + water;
   const outputs = perHour(r.outputs, r.hours);
   if (r.generates) outputs[POWER] = r.generates;
   return {
@@ -61,6 +66,7 @@ function recipeProcess(r: Recipe, body: Where): Process {
     inputs,
     outputs,
     extracts,
+    water,
     estimated: r.estimated
   };
 }
@@ -111,6 +117,7 @@ function extractionProcess(materialId: string, b: Building): Process {
     inputs: { [POWER]: EXTRACT_KW },
     outputs: { [materialId]: extractRate(materialId) },
     extracts: { [materialId]: extractRate(materialId) },
+    water: 0,
     estimated: true
   };
 }

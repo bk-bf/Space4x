@@ -12,6 +12,7 @@
     setOn,
     touch,
     unlockedProcesses,
+    WATER,
     type Site
   } from '#lib/game/economy/index.ts';
   import { BUILDING_KIND_NAMES } from '#lib/gfx/icons/index.ts';
@@ -89,7 +90,7 @@
 
   const items = (amounts: Record<string, number>, share: number): IconItem[] =>
     Object.entries(amounts)
-      .filter(([m]) => m !== POWER)
+      .filter(([m, v]) => m !== POWER && v > 0)
       .map(([m, v]) => ({
         icon: mat(m),
         amount: rateText(m, v * share, ui.period),
@@ -98,7 +99,12 @@
   const chosen = $derived(sel?.actor);
   const power = $derived(chosen ? (chosen.inputs[POWER] ?? 0) * chosen.share : 0);
   const generated = $derived(chosen ? (chosen.outputs[POWER] ?? 0) * chosen.share : 0);
-  const inputs = $derived(chosen ? items(chosen.inputs, chosen.share) : []);
+  const water = $derived(chosen ? chosen.water * chosen.share : 0);
+  const inputs = $derived(
+    chosen
+      ? items({ ...chosen.inputs, [WATER]: (chosen.inputs[WATER] ?? 0) - chosen.water }, chosen.share)
+      : []
+  );
   const outputs = $derived(chosen ? items(chosen.outputs, chosen.share) : []);
   const recipeName = $derived(
     chosen?.group.process ? process(chosen.group.process, site.body).name : 'No recipe'
@@ -223,7 +229,10 @@
                 icon: 'bolt',
                 label: 'Power',
                 value: generated > 0 ? `+${fmt.power(generated)}` : fmt.power(power)
-              }
+              },
+              ...(chosen.water > 0
+                ? [{ icon: 'drop' as const, label: 'Water', value: rateText(WATER, water, ui.period) }]
+                : [])
             ]}
           />
         {/if}

@@ -139,6 +139,8 @@ export interface Recipe {
   product?: string;
   reaction?: string;
   source?: string;
+  water?: number;
+  waterSource?: string;
 }
 
 export type BuildingKind =

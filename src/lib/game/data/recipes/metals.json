@@ -169,6 +169,8 @@
     "outputs": { "machinery": 3000 },
     "power": 30000,
     "hours": 730.5,
+    "water": 1000000,
+    "waterSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L14",
     "reaction": "0.6 t stainless steel, 0.3 t nickel superalloy and 0.2 t Ti-6Al-4V make 1 t of machinery; the other 0.1 t is lost as swarf"
   }
 ]
