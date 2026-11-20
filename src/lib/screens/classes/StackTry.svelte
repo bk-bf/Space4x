@@ -23,9 +23,7 @@
 </script>
 
 <div id="stackTry">
-  {#if !drives}
-    <p class="dim" id="stackNone">Add an engine and a tank to try the class on a launch stack.</p>
-  {:else if plan}
+  {#if drives && plan}
     <div class="stages" id="stackStages">
       {#each plan.stages as s, i (s.vessel)}
         {@const top = i === plan.stages.length - 1}

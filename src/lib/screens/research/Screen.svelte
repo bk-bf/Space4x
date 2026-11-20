@@ -1,7 +1,7 @@
 <script lang="ts">
   import { milestones } from '#lib/game/data/index.ts';
   import { economy, flowsOf, homeSite, programmeDays } from '#lib/game/economy/index.ts';
-  import { Icon, Panel, ScreenGrid, Stat, Tabs, dim, fmt, tipText, type Tab } from '#lib/ui/index.ts';
+  import { Icon, Panel, ScreenGrid, Stat, Tabs, fmt, tipText, type Tab } from '#lib/ui/index.ts';
   import ProgrammeCard from './ProgrammeCard.svelte';
   import ProgrammeList from './ProgrammeList.svelte';
   import { openItems, statusOf } from './programme.ts';
@@ -44,7 +44,7 @@
           icon="flask"
           value="{economy.done.length} of {milestones.length}"
           label="milestones reached"
-          tip={tipText('Milestones', dim('The gates from present-day Earth to a stabilised jump point.'))}
+          tip="Researched"
         />
         <Stat
           compact
@@ -66,18 +66,9 @@
           value="{fmt.group(made)} cu"
           label="wants {fmt.group(wanted)} cu an hour"
           warn={wanted > made}
-          tip={tipText(
-            'Compute',
-            dim('Cycles made by data centres, against what running programmes and recipes draw.')
-          )}
+          tip="Compute"
         />
-        <Stat
-          compact
-          icon="box"
-          value={String(items)}
-          label="buildings and parts open"
-          tip={tipText('Unlocked', dim('Buildings and ship components that research has opened so far.'))}
-        />
+        <Stat compact icon="box" value={String(items)} label="buildings and parts open" tip="Unlocked" />
       </div>
       <Tabs {tabs} bind:active={research.tab} />
       <div class="split">

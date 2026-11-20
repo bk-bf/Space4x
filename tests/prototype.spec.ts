@@ -81,7 +81,7 @@ test.describe('the prototype on present-day Earth', () => {
     await expect(page.locator('#queue button.ui-tile')).toHaveCount(1);
     await expect(page.locator('#queue button.ui-tile')).toContainText('Alloy works');
     await page.locator(MONTH).click();
-    await expect(page.locator('#queueEmpty')).toBeVisible();
+    await expect(page.locator('#queue button.ui-tile')).toHaveCount(0);
     await tab(page, 'production');
     const built = group(page, 'GRCop');
     await expect(built).toHaveCount(1);

@@ -52,18 +52,14 @@
     {
       icon: 'clock',
       text: fmt.days(days),
-      tip: tipText('Programme length', dim('How long it runs once started.'))
+      tip: 'Programme length'
     },
-    { text: m.tier, tip: tipText(TIER_NAMES[m.tier], dim('How firm the science behind it is.')) },
+    { text: m.tier, tip: TIER_NAMES[m.tier] },
     {
       icon: 'chip',
       text: compute ? `${fmt.group(compute)} cu an hour` : 'no compute',
       tone: compute && supply < compute ? 'hot' : undefined,
-      tip: tipText(
-        'Compute',
-        dim('Cycles the programme draws while it runs.'),
-        compute ? `Made now ${fmt.group(supply)} cu an hour` : ''
-      )
+      tip: tipText('Compute', compute ? `Made now ${fmt.group(supply)} cu an hour` : '')
     }
   ]);
 
@@ -138,11 +134,6 @@
   <CardSection label={opens ? `Unlocks (${opens})` : 'Unlocks'}>
     {#if unlockItems.length}
       <IconList items={unlockItems} variant="icons" />
-    {:else}
-      <span class="dim">nothing new, it is a gate for later ones</span>
-    {/if}
-    {#if opened.alsoNeeds && unlockItems.length}
-      <div class="dim" id="alsoNeeds">Some also wait for their other prerequisites.</div>
     {/if}
   </CardSection>
 </Card>

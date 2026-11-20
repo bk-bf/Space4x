@@ -132,11 +132,7 @@
 
 {#snippet main()}
   <h3><Icon name="box" class="sm" />Make or import <small class="dim">{site.name}</small></h3>
-  {#if !off}
-    <p class="dim" id="supplyEarth">
-      Earth makes what it needs. Pick a site off Earth in the list to see what it would cost to import.
-    </p>
-  {:else if rows.length}
+  {#if off && rows.length}
     <div id="supplyTable">
       <TileGrid min={116} gap={5}>
         {#each rows as r (r.material)}
@@ -164,8 +160,6 @@
         {/each}
       </TileGrid>
     </div>
-  {:else}
-    <p class="dim" id="supplyNone">{site.name} needs nothing yet that a ship could bring.</p>
   {/if}
   {#if off}
     <h3><Icon name="flame" class="sm" />Propellant it can load <small class="dim">{fuels.length}</small></h3>
@@ -221,8 +215,6 @@
         {/each}
       </TileGrid>
     </div>
-  {:else}
-    <p class="dim" id="noRuns">No supply runs.</p>
   {/if}
 {/snippet}
 
@@ -338,9 +330,7 @@
       {#if message}<p class="hot" id="supplyMessage">{message}</p>{/if}
     </Card>
   {:else}
-    <Card title="Supply" subtitle="select a material tile">
-      <p class="dim">Pick what the site needs to see where it could come from.</p>
-    </Card>
+    <Card title="Supply" />
   {/if}
 {/snippet}
 

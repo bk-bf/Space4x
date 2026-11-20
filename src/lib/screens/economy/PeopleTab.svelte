@@ -14,18 +14,16 @@
   const people = (n: number) => fmt.population(n);
 
   const workforce = $derived(site.population * site.workforceShare);
-  const cohorts = $derived<{ name: string; icon: IconName; share: number; text: string }[]>([
+  const cohorts = $derived<{ name: string; icon: IconName; share: number }[]>([
     {
       name: 'Workforce',
       icon: 'gear',
-      share: site.workforceShare,
-      text: 'Of working age and available for jobs.'
+      share: site.workforceShare
     },
     {
       name: 'Not in the workforce',
       icon: 'clock',
-      share: 1 - site.workforceShare,
-      text: 'Children, students, carers and retired.'
+      share: 1 - site.workforceShare
     }
   ]);
   const jobs = $derived(kindTotals(views).filter((k) => k.workers > 0));
@@ -45,12 +43,7 @@
       <Icon name="people" class="sm" />Who lives here <small class="dim">{people(site.population)}</small>
     </h3>
     <TileGrid min={120} gap={5}>
-      <Tile
-        variant="q"
-        name="People"
-        value={people(site.population)}
-        tip={tipText('People', dim('Everyone at this site. They eat, work and grow in number while fed.'))}
-      >
+      <Tile variant="q" name="People" value={people(site.population)} tip="People">
         {#snippet art()}<span class="art"><Icon name="people" class="lg" /></span>{/snippet}
       </Tile>
       {#each cohorts as c (c.name)}
@@ -59,7 +52,7 @@
           name={c.name}
           value={people(site.population * c.share)}
           meter={c.share}
-          tip={tipText(c.name, dim(c.text), fmt.pct(c.share))}
+          tip={tipText(c.name, fmt.pct(c.share))}
         >
           {#snippet art()}<span class="art"><Icon name={c.icon} class="lg" /></span>{/snippet}
         </Tile>
@@ -87,8 +80,6 @@
           />
         {/each}
       </TileGrid>
-    {:else}
-      <p class="none">No building here needs workers yet.</p>
     {/if}
   {/snippet}
   {#snippet side()}
@@ -145,10 +136,6 @@
     align-items: center;
     height: 40px;
     color: var(--accent);
-  }
-  .none {
-    color: var(--dim);
-    margin: 0;
   }
   .bars {
     display: flex;

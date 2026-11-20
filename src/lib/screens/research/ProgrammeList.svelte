@@ -28,13 +28,6 @@
     }))
   );
 
-  const NONE: Record<ProgrammeStatus, string> = {
-    running: 'No programme is running.',
-    ready: 'None are ready.',
-    locked: 'None.',
-    done: 'None yet.'
-  };
-
   function foot(n: number, status: ProgrammeStatus): { note?: string; meter?: number; tone: 'cool' } {
     const m = milestone(n);
     if (status === 'running') {
@@ -90,8 +83,6 @@
         </div>
       {/each}
     </TileGrid>
-  {:else}
-    <p class="none">{NONE[g.status]}</p>
   {/if}
 {/each}
 
@@ -105,10 +96,6 @@
     font: 18px 'VT';
   }
   .dim {
-    color: var(--dim);
-  }
-  .none {
-    margin: 0 0 6px;
     color: var(--dim);
   }
   .slot {

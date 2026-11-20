@@ -22,7 +22,6 @@
     Pill,
     Tile,
     TileGrid,
-    dim,
     fmt,
     materialName,
     materialTip,
@@ -32,6 +31,7 @@
     tooltip
   } from '#lib/ui/index.ts';
   import GroupTile from './GroupTile.svelte';
+  import Facts from './Facts.svelte';
   import Field from './Field.svelte';
   import TabBody from './TabBody.svelte';
   import { KIND_ORDER, groupViews, kindIcon } from './model.ts';
@@ -130,30 +130,40 @@
             text: fmt.population(sel.building.workers * chosen.group.count),
             tip: tipText('Workers', `${sel.building.workers} a building`)
           },
-          ...(chosen.group.process
-            ? [
-                {
-                  icon: 'bolt' as const,
-                  text: generated > 0 ? `+${fmt.power(generated)}` : fmt.power(power),
-                  tip: generated > 0 ? 'Power generated' : 'Power used when running'
-                }
-              ]
-            : []),
           ...(chosen.group.process && isExtraction(chosen.group.process)
             ? [
                 {
                   icon: 'drop' as const,
                   text: `grade ${chosen.grade.toFixed(2)}`,
-                  tip: tipText(
-                    'Grade',
-                    dim('1 is the nominal yield of one extractor; 2 yields twice that for the same power.')
-                  )
+                  tip: 'Grade'
                 }
               ]
             : [])
         ]}
       >
-        <CardSection label="Running">
+        {#if chosen.group.process}
+          {#if outputs.length}
+            <CardSection label="Output">
+              <IconList items={outputs} plus={false} />
+            </CardSection>
+          {/if}
+          <CardSection label="Input">
+            {#if inputs.length}<IconList items={inputs} plus={false} />{:else}<Pill
+                icon="drop"
+                text="From the ground"
+              />{/if}
+          </CardSection>
+          <Facts
+            rows={[
+              {
+                icon: 'bolt',
+                label: 'Power',
+                value: generated > 0 ? `+${fmt.power(generated)}` : fmt.power(power)
+              }
+            ]}
+          />
+        {/if}
+        <CardSection label="Active">
           <div class="row">
             <Bar value={chosen.share} thick full tone={sel.warn ? 'hot' : 'accent'} />
             <span class:hot={sel.warn} class="share">{fmt.pct(chosen.share)}</span>
@@ -165,12 +175,6 @@
             </div>
           {/if}
         </CardSection>
-        {#if chosen.group.process}
-          <CardSection label="Recipe, {fmt.PERIODS[ui.period].word}">
-            {#if !inputs.length}<Pill icon="drop" text="From the ground" />{/if}
-            <IconList items={inputs} to={outputs} />
-          </CardSection>
-        {/if}
         <div class="btns">
           <button id="groupToggle" onclick={toggle}
             ><Icon name="power" />{chosen.group.on ? 'Switch off' : 'Switch on'}</button
@@ -225,7 +229,7 @@
         {/if}
       </Card>
     {:else}
-      <Card title="Buildings"><p class="dim">Select a building tile.</p></Card>
+      <Card title="Buildings" />
     {/if}
   {/snippet}
 </TabBody>
@@ -267,8 +271,5 @@
   }
   .dim {
     color: var(--dim);
-  }
-  p.dim {
-    margin: 0;
   }
 </style>

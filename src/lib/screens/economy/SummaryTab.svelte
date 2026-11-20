@@ -139,11 +139,7 @@
         icon="people"
         value={peopleText(site.population)}
         label="{growth >= 0 ? '+' : ''}{(growth * 100).toFixed(2)}% a year"
-        tip={tipText(
-          'People',
-          dim('Everyone at this site. They eat, work and grow in number while fed.'),
-          `Workforce ${peopleText(flows.workers.available)}`
-        )}
+        tip={tipText('People', `Workforce ${peopleText(flows.workers.available)}`)}
       />
       <Stat
         icon="grain"
@@ -152,7 +148,6 @@
         warn={spareFood < 0 || food.cover < 1}
         tip={tipText(
           'Food',
-          dim('Counted in food calories (kcal).'),
           `Need ${fmt.kcal(food.demand * period.hours)} ${period.word}, ${fmt.group(site.kcalPerPersonDay)} kcal a person a day`,
           `Made ${fmt.kcal(food.made * period.hours)} ${period.word}`,
           `Stored ${fmt.kcal(foodStockKcal)}`
@@ -165,7 +160,6 @@
         warn={spareKw < 0}
         tip={tipText(
           'Power',
-          dim('Grid plus generators, against what every running building draws.'),
           `Grid ${fmt.power(site.gridKw)}`,
           `Generated ${fmt.power(flows.power.supply - site.gridKw)}`,
           `Demand ${fmt.power(flows.power.demand)}`
@@ -178,7 +172,6 @@
         warn={flows.compute.demand > flows.compute.supply + 1e-9}
         tip={tipText(
           'Compute',
-          dim('Cycles for programmes and building. Made by data centres.'),
           `Made ${fmt.rate(flows.compute.supply, ui.period, 'cu')}`,
           `Wanted ${fmt.rate(flows.compute.demand, ui.period, 'cu')}`
         )}
@@ -190,7 +183,6 @@
         warn={flows.workers.share < 1}
         tip={tipText(
           'Staffing',
-          dim('Workers available against workers every running building needs.'),
           `Workforce ${peopleText(flows.workers.available)}`,
           `Needed ${peopleText(flows.workers.needed)}`
         )}
@@ -198,7 +190,7 @@
     </div>
 
     <h3>
-      <Icon name="grain" class="sm" />Food, counted in calories
+      <Icon name="grain" class="sm" />Food
       <small class="dim"
         >{fmt.group(kcalEach)} kcal a person a day made against {fmt.group(site.kcalPerPersonDay)} needed</small
       >
@@ -256,11 +248,7 @@
               name={materialName(d.material)}
               value={d.grade.toFixed(2)}
               cornerRight={d.where === 'Atmosphere' ? 'air' : undefined}
-              tip={materialTip(
-                d.material,
-                `${d.where}, grade ${d.grade.toFixed(2)}`,
-                dim('1 is the nominal yield of one extractor; 2 yields twice that for the same power.')
-              )}
+              tip={materialTip(d.material, `${d.where}, grade ${d.grade.toFixed(2)}`)}
             />
           {/each}
         </TileGrid>
@@ -277,7 +265,6 @@
           <StockTile {site} {id} onselect={() => pickMaterial(id)} />
         {/each}
       </TileGrid>
-      {#if !shortIds.length && !limited.length}<p class="none">Nothing is short.</p>{/if}
     </div>
     {#if limited.length}
       <div class="grid">
@@ -309,7 +296,7 @@
       <div>
         <h3>
           Programmes
-          <small class="dim">{economy.done.length} of {milestones.length} milestones reached</small>
+          <small class="dim">{economy.done.length} of {milestones.length} researched</small>
         </h3>
         {#if programmes.length}
           <TileGrid min={120} gap={5}>
@@ -334,8 +321,6 @@
               />
             {/each}
           </TileGrid>
-        {:else}
-          <p class="none">No programme is running. Start one from Research.</p>
         {/if}
         <h3>Building now</h3>
         {#if activeBuilds.length}
@@ -364,8 +349,6 @@
               />
             {/each}
           </TileGrid>
-        {:else}
-          <p class="none">Nothing is being built.</p>
         {/if}
       </div>
     </div>
@@ -395,10 +378,6 @@
   }
   .dim {
     color: var(--dim);
-  }
-  .none {
-    color: var(--dim);
-    margin: 0;
   }
   h3 :global(small) {
     font-weight: normal;

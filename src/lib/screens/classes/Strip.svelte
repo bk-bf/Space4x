@@ -56,8 +56,6 @@
         </span>
       </Tile>
     </div>
-  {:else}
-    <span class="none" id="noParts">Nothing yet. Click a component to add it.</span>
   {/each}
 </div>
 
@@ -75,9 +73,6 @@
   .strip > div {
     width: 86px;
     height: 104px;
-  }
-  .none {
-    color: var(--dim);
   }
   .cnt {
     display: flex;

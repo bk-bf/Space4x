@@ -1,6 +1,6 @@
 <script lang="ts">
   import { materialLook } from '#lib/gfx/icons/index.ts';
-  import { fmt, materialName, tipText, dim, tooltip } from '#lib/ui/index.ts';
+  import { fmt, materialName, tipText, tooltip } from '#lib/ui/index.ts';
   import { PERIODS, type Period } from '#lib/ui/format.ts';
 
   interface Part {
@@ -18,7 +18,6 @@
   const tip = $derived(
     tipText(
       'Calories made, by source',
-      dim('Each block is one food. The marker is what people need.'),
       parts.map((p) => `${materialName(p.id)} ${fmt.kcal(p.kcalPerHour * hours)} ${word}`),
       `Need ${fmt.kcal(need * hours)} ${word}`
     )

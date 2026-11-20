@@ -396,8 +396,6 @@
         {/each}
       </TileGrid>
     </div>
-  {:else}
-    <p class="dim" id="noVessels">No ships yet. Build one on the Shipyard tab.</p>
   {/if}
   <h3><Icon name="dome" class="sm" />Plan a site</h3>
   <FoundPlan />
@@ -591,9 +589,6 @@
               {/each}
             </ul>
           {/if}
-          {#if !loadSite}<span class="dim" id="loadNoSite"
-              >It is not at a site, so the load cannot be previewed.</span
-            >{/if}
         {/if}
       </CardSection>
 

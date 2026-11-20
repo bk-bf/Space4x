@@ -47,9 +47,6 @@
   const yards = $derived(
     design ? site.groups.filter((g) => g.building === design.yard).reduce((a, g) => a + g.count, 0) : 0
   );
-  const hasAnyYard = $derived(
-    site.groups.some((g) => g.building === 'rocket_factory' || g.building === 'orbital_shipyard')
-  );
 
   const designOfOrder = (o: YardOrder) => shipClasses().find((d) => d.id === o.design);
   const actorOf = (id: number) => flows.actors.find((x) => x.kind === 'yard' && x.order.id === id);
@@ -147,14 +144,6 @@
         {/each}
       </TileGrid>
     </div>
-  {:else}
-    <p class="dim" id="yardEmpty">
-      {#if hasAnyYard}
-        No ships are being built. Pick a locked design below and add it.
-      {:else}
-        This site has no yard.
-      {/if}
-    </p>
   {/if}
   <h3>
     <Icon name="ship" class="sm" />Designs <small class="dim">{designs.length} locked</small>
@@ -185,8 +174,6 @@
         {/each}
       </TileGrid>
     </div>
-  {:else}
-    <p class="dim" id="yardNone">No locked design. Lock one on the Ship classes screen.</p>
   {/if}
 {/snippet}
 
@@ -237,7 +224,7 @@
       ]}
     >
       {#snippet art()}<ShipArt {design} size="card" />{/snippet}
-      <CardSection label="Cost for one, have / need">
+      <CardSection label="Build cost">
         <IconList variant="have" items={costItems} size={16} />
       </CardSection>
       <div class="row">

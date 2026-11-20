@@ -32,7 +32,7 @@ test.describe('ship designer', () => {
   test('a class is built from nothing, its errors appear and resolve, and it locks', async ({ page }) => {
     await open(page, 'screen=classes');
     await expect(page.locator('#emptyDesign')).toBeVisible();
-    await expect(page.locator('#noClass')).toBeVisible();
+    await expect(page.locator('#clsName')).toHaveCount(0);
     await expect(lock(page)).toBeDisabled();
 
     await page.locator('[data-act="new"]').click();
@@ -109,7 +109,7 @@ test.describe('ship designer', () => {
     await expect(page.locator('#classList [data-class]')).toHaveText(['New class']);
     await page.locator('[data-act="delete"]').click();
     await expect(page.locator('#classList [data-class]')).toHaveCount(0);
-    await expect(page.locator('#noClass')).toBeVisible();
+    await expect(page.locator('#clsName')).toHaveCount(0);
     await expect(page.locator('[data-act="delete"]')).toBeDisabled();
   });
 

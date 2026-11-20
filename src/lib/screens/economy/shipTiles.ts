@@ -81,8 +81,7 @@ export function runText(lines: readonly RunLine[]): string {
 
 export function orderTip(o: Order): string | undefined {
   if (o.type === 'manifest') return tipText('Load manifest', ...o.lines.map(lineText));
-  if (o.type === 'unload' && o.item.kind === 'all-cargo')
-    return tipText('Unload all cargo', dim('Everything in the hold goes into the site stock'));
+  if (o.type === 'unload' && o.item.kind === 'all-cargo') return 'Unload all cargo';
   return undefined;
 }
 

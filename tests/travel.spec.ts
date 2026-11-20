@@ -68,7 +68,7 @@ test.describe('leaving Earth', () => {
     await page.locator('#recipeSwitch').click();
 
     await tab(page, 'yard');
-    await expect(page.locator('#yardEmpty')).toBeVisible();
+    await expect(page.locator('#yardQueue button')).toHaveCount(0);
     for (const name of ['Booster', 'Orbiter']) {
       await page.locator('#yardDesigns button', { hasText: name }).click();
       await page.locator('#yardAdd').click();
@@ -86,7 +86,7 @@ test.describe('leaving Earth', () => {
     await expect(page.locator('#yardPause')).toContainText('Pause');
     await expectCleanLayout(page);
     for (let i = 0; i < 2; i++) await page.locator(MONTH).click();
-    await expect(page.locator('#yardEmpty')).toBeVisible();
+    await expect(page.locator('#yardQueue button')).toHaveCount(0);
 
     await tab(page, 'ships');
     await expect(page.locator('#vessels button')).toHaveCount(2);
@@ -251,7 +251,7 @@ test.describe('ships and supply tabs', () => {
     await page.locator('#supplyShip button').first().click();
     await page.locator('#supplyStart').click();
     await expect(page.locator('#supplyMessage')).toContainText('launch site');
-    await expect(page.locator('#noRuns')).toBeVisible();
+    await expect(page.locator('#supplyRuns')).toHaveCount(0);
     await expectCleanLayout(page);
   });
 });

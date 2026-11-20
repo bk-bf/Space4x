@@ -72,13 +72,14 @@ async function freeCentre(page: Page) {
 test('the system panel lists the bodies of Sol and shows no fleets or contacts', async ({ page }) => {
   await open(page);
   await expect(page.locator('#sysSel option')).toHaveText(['Sol']);
-  await expect(page.locator('#noFleets')).toBeVisible();
+  await expect(page.locator('#tree [data-system="sol"] > summary small')).toHaveText('0 fleets');
+  await expect(page.locator('#shipList')).toHaveCount(0);
   await expect(label(page, 'Jump point A, unsurveyed')).toBeVisible();
   await win(page, 'side').locator('[data-tab="bodies"]').click();
   await expect(win(page, 'side').locator('table').first()).toContainText('Jupiter');
   await expect(win(page, 'side').locator('table').first()).toContainText('Earth');
   await win(page, 'side').locator('[data-tab="contacts"]').click();
-  await expect(page.locator('#noContacts')).toBeVisible();
+  await expect(win(page, 'side').locator('table')).toHaveCount(0);
   await expectCleanLayout(page);
 });
 test('the display toggles change what the map draws and the zoom buttons zoom', async ({ page }) => {

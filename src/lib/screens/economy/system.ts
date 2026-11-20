@@ -50,7 +50,7 @@ function withTroubles(chip: Chip, kind: SupplyKind): Chip {
   if (!first) return chip;
   return {
     ...chip,
-    title: [chip.title, ...list.map(troubleLine), `Click to open ${first.site.name}`].join('\n'),
+    title: [chip.title, ...list.map(troubleLine)].join('\n'),
     warn: true,
     open: { site: first.site.id, ...(first.material ? { material: first.material } : {}) }
   };

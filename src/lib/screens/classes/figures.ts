@@ -7,7 +7,7 @@ import {
   type ShipDesign
 } from '#lib/game/shipdesign/index.ts';
 import type { IconName } from '#lib/gfx/icons.ts';
-import { dim, fmt, tipText, warn } from '#lib/ui/index.ts';
+import { fmt, tipText, warn } from '#lib/ui/index.ts';
 import { formatAccel, formatDv, formatKw } from './facts.ts';
 
 export interface Figure {
@@ -92,11 +92,7 @@ export function primaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? formatDv(l.deltaV) : '-',
       label: main ? `Isp ${Math.round(main.isp)} s` : 'delta-v',
       warn: false,
-      tip: tipText(
-        'Delta-v',
-        dim('The rocket equation on full tanks with the payload shown.'),
-        !main && warn('No drive')
-      )
+      tip: tipText('Delta-v', !main && warn('No drive'))
     },
     {
       key: 'twr',
@@ -104,7 +100,7 @@ export function primaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? twrText(l.twr.earth) : '-',
       label: main ? formatAccel(l.acceleration) : 'thrust to weight',
       warn: false,
-      tip: tipText('Thrust to weight', dim('Sea-level thrust against weight on Earth, full tanks.'))
+      tip: 'Thrust to weight'
     },
     {
       key: 'thrust',
@@ -112,7 +108,7 @@ export function primaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? fmt.thrust(thrust) : '-',
       label: `${engines} engine${engines === 1 ? '' : 's'}`,
       warn: false,
-      tip: tipText('Thrust', dim('Vacuum thrust of the main drive, throttled to the power left.'))
+      tip: 'Thrust'
     },
     {
       key: 'crew',
@@ -146,7 +142,7 @@ export function primaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: fmt.mass(stats.propellantMass),
       label: propellantNames(stats) || 'propellant',
       warn: false,
-      tip: tipText('Propellant', dim('Loaded in the tanks.'))
+      tip: 'Propellant'
     },
     {
       key: 'heat',
@@ -154,7 +150,7 @@ export function primaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: heat.value,
       label: heat.label,
       warn: heatHot,
-      tip: tipText('Heat', dim('Waste heat against what the radiators and the hull shed.'))
+      tip: 'Heat'
     }
   ];
 }
@@ -171,7 +167,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? formatDv(stats.empty.deltaV) : '-',
       label: 'delta-v empty',
       warn: false,
-      tip: tipText('Delta-v empty', dim('Full tanks, nothing in the bay.'))
+      tip: 'Delta-v empty'
     },
     {
       key: 'payload',
@@ -179,7 +175,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: stats.payloadCapacity ? fmt.mass(stats.payloadCapacity) : 'none',
       label: 'bay capacity',
       warn: false,
-      tip: tipText('Payload', dim('What the cargo bays carry.'))
+      tip: 'Payload'
     },
     ...(['earth', 'moon', 'mars'] as const).map((body): Figure => ({
       key: `twr-${body}`,
@@ -187,10 +183,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? twrText(l.twr[body]) : '-',
       label: `${body[0]!.toUpperCase()}${body.slice(1)}, ${main ? lifts(stats.loaded.liftoff[body]) : 'no drive'}`,
       warn: false,
-      tip: tipText(
-        `Thrust to weight on ${body[0]!.toUpperCase()}${body.slice(1)}`,
-        dim('Lift-off needs 1.2.')
-      )
+      tip: tipText(`Thrust to weight on ${body[0]!.toUpperCase()}${body.slice(1)}`)
     })),
     {
       key: 'acceleration',
@@ -198,7 +191,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: main ? formatAccel(l.acceleration) : '-',
       label: 'acceleration',
       warn: false,
-      tip: tipText('Acceleration', dim('Thrust over mass at full tanks.'))
+      tip: 'Acceleration'
     },
     {
       key: 'endurance',
@@ -206,7 +199,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: endurance === undefined ? 'no crew' : `${Math.floor(endurance)} days`,
       label: 'life support',
       warn: false,
-      tip: tipText('Life support', dim('How long the stores and recycling keep the crew alive.'))
+      tip: 'Life support'
     },
     {
       key: 'built-at',
@@ -214,7 +207,7 @@ export function secondaryFigures(stats: DesignStats, l: Loaded): Figure[] {
       value: stats.builtAt.length ? stats.builtAt.map(yardName).join(', ') : 'nowhere',
       label: 'can be built at',
       warn: stats.builtAt.length === 0,
-      tip: tipText('Built at', dim('Yards that can build every part.'))
+      tip: 'Built at'
     }
   ];
 }

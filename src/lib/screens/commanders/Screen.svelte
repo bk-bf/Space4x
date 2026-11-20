@@ -110,13 +110,7 @@
     {/snippet}
     <div class="page">
       <div class="stats">
-        <Stat
-          compact
-          icon="star"
-          value={String(roster.officers.length)}
-          label="officers"
-          tip={tipText('Officers', dim('Everyone who can hold a post.'))}
-        />
+        <Stat compact icon="star" value={String(roster.officers.length)} label="officers" tip="Officers" />
         <Stat
           compact
           icon="check"
@@ -130,16 +124,10 @@
           value={String(vacant.length)}
           label="posts vacant"
           warn={vacant.length > 0}
-          tip={tipText('Vacant posts', dim('A vacant post gets none of its benefit.'))}
+          tip="Vacant posts"
         />
         <Stat compact icon="clock" value={String(averageAge)} label="average age" tip="Average age" />
-        <Stat
-          compact
-          icon="up"
-          value={String(flagOfficers)}
-          label="flag officers"
-          tip={tipText('Flag officers', dim('Vice admirals and admirals.'))}
-        />
+        <Stat compact icon="up" value={String(flagOfficers)} label="flag officers" tip="Flag officers" />
       </div>
       <Tabs {tabs} bind:active={roster.tab} />
       <div class="split">

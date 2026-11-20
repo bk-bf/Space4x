@@ -68,8 +68,6 @@
         {/each}
       </select>
     </label>
-  {:else}
-    <span class="none" id="noClass">No class open. Click a component or press New.</span>
   {/if}
 </div>
 
@@ -83,9 +81,6 @@
   }
   .classes button {
     margin: 0;
-  }
-  .none {
-    color: var(--dim);
   }
   .meta label {
     display: flex;

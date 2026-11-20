@@ -8,7 +8,7 @@
     grow?: boolean;
     body?: '' | 'col' | 'fill' | 'center';
     class?: string;
-    children: Snippet;
+    children?: Snippet;
   }
 
   let { title = '', head, tools, grow = false, body = '', class: extra = '', children }: Props = $props();
@@ -19,5 +19,5 @@
     {#if head}{@render head()}{:else}{title}{/if}
     {#if tools}{@render tools()}{/if}
   </h2>
-  <div class="pb {body}">{@render children()}</div>
+  <div class="pb {body}">{@render children?.()}</div>
 </section>

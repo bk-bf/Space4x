@@ -8,19 +8,17 @@
 </script>
 
 <div class="flags" id="issues">
-  {#if !design}
-    <div class="dim" id="noCheck">Nothing to check.</div>
-  {:else}
+  {#if design}
     {#each issues as i (i.code + i.text)}
       <div class="flag {i.level}" data-issue={i.code}>
         <Icon name="warn" /><span><b>{i.level === 'error' ? 'Error' : 'Warning'}</b> {i.text}</span>
       </div>
     {/each}
     {#if design.locked}
-      <div class="flag ok" id="isLocked"><Icon name="lock" /><span>Locked: it can only be copied.</span></div>
+      <div class="flag ok" id="isLocked"><Icon name="lock" /><span>Locked</span></div>
     {:else if !errors && design.parts.length}
       <div class="flag ok" id="noIssues">
-        <Icon name="check" /><span>Flyable: no errors, the class can be locked.</span>
+        <Icon name="check" /><span>Flyable</span>
       </div>
     {/if}
   {/if}

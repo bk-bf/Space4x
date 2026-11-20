@@ -53,13 +53,7 @@
       </select>
     </div>
   </div>
-{:else}
-  <p class="none">No unit selected.</p>
 {/if}
 
 <style>
-  .none {
-    margin: 0;
-    color: var(--dim);
-  }
 </style>

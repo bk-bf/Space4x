@@ -469,9 +469,7 @@ test.describe('commanders', () => {
 test.describe('intelligence', () => {
   test('with nothing seen beyond our own craft the screen says so', async ({ page }) => {
     await open(page, 'screen=intel');
-    await expect(page.locator('#noGroups')).toBeVisible();
-    await expect(page.locator('#noClasses')).toBeVisible();
-    await expect(page.locator('#noSightings')).toBeVisible();
+    await expect(page.locator('[data-screen="intel"] table')).toHaveCount(0);
     await expect(page.locator('#sightingCount')).toHaveText('0');
     await expect(page.locator('#showOnMap')).toBeDisabled();
     await expectCleanLayout(page);

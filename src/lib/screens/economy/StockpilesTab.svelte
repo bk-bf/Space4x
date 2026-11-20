@@ -13,8 +13,7 @@
     TileGrid,
     fmt,
     materialName,
-    type FilterItem,
-    tooltip
+    type FilterItem
   } from '#lib/ui/index.ts';
   import { PERIODS } from '#lib/ui/format.ts';
   import Facts from './Facts.svelte';
@@ -65,6 +64,8 @@
   const coverTone = $derived(
     view && Number.isFinite(view.cover) && view.cover < COVER_BAD_DAYS ? ('hot' as const) : undefined
   );
+  const HOURS_A_YEAR = 8766;
+  const inAYear = $derived(view ? view.stock + view.net * HOURS_A_YEAR : 0);
   const refs = (ids: string[]): { icon: IconRef }[] => ids.slice(0, 4).map((id) => ({ icon: mat(id) }));
 </script>
 
@@ -78,7 +79,6 @@
         type="button"
         class:on={ui.showEmpty}
         aria-pressed={ui.showEmpty}
-        use:tooltip={'Also list materials with no stock and no flow, to see the whole catalogue'}
         onclick={() => (ui.showEmpty = !ui.showEmpty)}><Icon name="filter" class="sm" />Show empty</button
       >
     </div>
@@ -132,6 +132,16 @@
               value: fmt.signedAmount(view.net * period.hours, picked.unit),
               tone: view.net < 0 ? ('hot' as const) : ('cool' as const)
             },
+            ...(view.stockless
+              ? []
+              : [
+                  {
+                    icon: 'box' as const,
+                    label: 'In a year',
+                    value: stockAmount(picked.id, Math.max(0, inAYear)),
+                    tone: inAYear <= 0 ? ('hot' as const) : undefined
+                  }
+                ]),
             ...(kcal
               ? [{ icon: 'grain' as const, label: 'Energy', value: `${fmt.group(kcal)} kcal a kg` }]
               : []),

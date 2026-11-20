@@ -83,10 +83,6 @@
   <div class="list">
     {#if !loaded}
       <div class="empty">Loading</div>
-    {:else if saves.length === 0}
-      <div class="empty">
-        {mode === 'save' ? 'No saves yet.' : 'No saves yet. The game saves itself once it has run a day.'}
-      </div>
     {:else}
       {#if mode === 'save'}
         <div class="hint">or overwrite a save:</div>

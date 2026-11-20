@@ -177,8 +177,6 @@
             />
           {/each}
         </TileGrid>
-      {:else}
-        <p class="none" id="queueEmpty">The queue is empty. Pick a building below and add it.</p>
       {/if}
     </div>
 
@@ -241,7 +239,7 @@
               {slowOf(selOrder)}
             </div>{/if}
         </CardSection>
-        <CardSection label="Cost, spent evenly while building">
+        <CardSection label="Build cost">
           <IconList variant="have" items={costItems(b.cost, 1)} />
         </CardSection>
         <div class="btns">
@@ -280,7 +278,7 @@
             : [])
         ]}
       >
-        <CardSection label="Cost for one, have / need">
+        <CardSection label="Build cost">
           <IconList variant="have" items={costItems(picked.cost, ui.quantity)} />
         </CardSection>
         {#if isOpen}
@@ -321,10 +319,6 @@
 </TabBody>
 
 <style>
-  .none {
-    color: var(--dim);
-    margin: 0 0 6px;
-  }
   .row {
     display: flex;
     align-items: center;

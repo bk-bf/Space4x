@@ -97,9 +97,7 @@
       >{pads > 0 ? `${freePads(site, game.elapsed)} of ${pads} pads free` : 'no launch site'}</small
     >
   </h3>
-  {#if pads <= 0}
-    <p class="dim" id="launchNone">{site.name} has no launch site, so nothing launches from here.</p>
-  {:else}
+  {#if pads > 0}
     {#if stages.length}
       <div id="stages">
         <TileGrid min={120} gap={5}>
@@ -128,11 +126,6 @@
           {/each}
         </TileGrid>
       </div>
-    {:else}
-      <p class="dim" id="stagesEmpty">
-        The stack is empty. Add the first stage, then the stages above it. Ships are built on the Shipyard
-        tab.
-      </p>
     {/if}
     <div class="row">
       <button
@@ -154,8 +147,6 @@
           {/each}
         </TileGrid>
       </div>
-    {:else}
-      <p class="dim" id="launchNoShips">No free ship here. Click a ship to add it as the next stage.</p>
     {/if}
     <h3><Icon name="box" class="sm" />Payload</h3>
     <div id="launchPayload">
@@ -216,8 +207,6 @@
               />
             {/each}
           </TileGrid>
-        {:else}
-          <p class="dim">No free ship here to carry.</p>
         {/if}
       </div>
     {/if}
@@ -235,8 +224,6 @@
         </div>
       {/each}
     </div>
-  {:else}
-    <p class="dim" id="launchNoneYet">Nothing has launched yet.</p>
   {/if}
 {/snippet}
 
@@ -342,8 +329,6 @@
           <button id="launchGo" disabled={!plan.ok} onclick={go}><Icon name="rocket" />Launch</button>
           {#if !plan.ok}<span class="hot">refused</span>{/if}
         </div>
-      {:else}
-        <p class="dim">Click ships under Ships at the pad to build the stack, first stage first.</p>
       {/if}
     </Card>
   {/if}

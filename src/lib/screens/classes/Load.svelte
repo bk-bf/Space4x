@@ -46,8 +46,6 @@
       }}>Fill</button
     >
   </div>
-{:else}
-  <p class="none" id="noTanks">Nothing to load yet: add an engine and a tank that holds its propellant.</p>
 {/each}
 <div class="row" data-payload-row>
   <span class="name">Payload (t)</span>
@@ -94,9 +92,5 @@
   }
   button {
     margin: 0;
-  }
-  .none {
-    margin: 0 0 4px;
-    color: var(--dim);
   }
 </style>

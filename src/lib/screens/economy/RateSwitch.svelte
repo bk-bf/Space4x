@@ -1,10 +1,10 @@
 <script lang="ts">
   import { PERIODS, type Period } from '#lib/ui/format.ts';
-  import { dim, tipText, tooltip } from '#lib/ui/index.ts';
+  import { tooltip } from '#lib/ui/index.ts';
   import { ui } from './state.svelte.ts';
 
   const periods = (Object.keys(PERIODS) as Period[]).reverse();
-  const tip = tipText('Rates', dim('Every rate on the economy screens is shown over this period.'));
+  const tip = 'Rates';
 </script>
 
 <span class="per" use:tooltip={tip}>

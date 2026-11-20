@@ -76,7 +76,6 @@
               <div class="empty" id="emptyDesign">
                 <Icon name="plus" class="lg" />
                 <div class="pf">New design</div>
-                <div>Click a component to add it. The ship draws itself from what you add.</div>
               </div>
             </div>
           {/if}
