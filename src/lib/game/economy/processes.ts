@@ -24,10 +24,15 @@ export const REAL_PLANTS_ON: Where = 'earth';
 
 const real = (body: Where): boolean => body === REAL_PLANTS_ON;
 
-export const scaleAt = (b: Building, body: Where): number => (real(body) ? (b.scale ?? 1) : 1);
+const sized = (b: Building, body: Where, recipeId: string): boolean =>
+  real(body) && b.scale?.[recipeId] !== undefined;
 
-export const workersAt = (b: Building, body: Where): number =>
-  real(body) ? b.workers : (b.away?.workers ?? b.workers);
+export const workersAt = (b: Building, body: Where, processId: string | null): number => {
+  const batch = b.batch?.workers ?? b.workers;
+  if (!real(body)) return batch;
+  if (processId === null || processId.startsWith('extract:') || !b.scale) return b.workers;
+  return sized(b, body, processId) ? b.workers : batch;
+};
 
 export interface Process {
   id: string;
@@ -56,24 +61,25 @@ const selfExtracted = (r: Recipe, body: Where): string[] =>
     material(m).sources?.some((s) => s.body === body && s.building === r.building)
   );
 
-function drawnWater(b: Building, body: Where, recipeWater: number, scale: number): number {
+function drawnWater(b: Building, body: Where, own: boolean, perScale: number, scale: number): number {
   if (body !== WATER_DRAWN_ON) return 0;
-  if (real(body) && b.water !== undefined) return b.water;
-  return recipeWater * scale;
+  if (own && b.water !== undefined) return b.water;
+  return perScale * scale;
 }
 
 function recipeProcess(r: Recipe, body: Where): Process {
   const b = building(r.building);
-  const scale = scaleAt(b, body);
+  const own = sized(b, body, r.id);
+  const scale = own ? (b.scale?.[r.id] ?? 1) : 1;
   const inputs = perHour(r.inputs, r.hours, scale);
   const extracts: Amounts = {};
   for (const m of selfExtracted(r, body)) {
     extracts[m] = inputs[m] ?? 0;
     delete inputs[m];
   }
-  const power = real(body) && b.power !== undefined ? b.power : r.power * scale;
+  const power = own && b.power !== undefined ? b.power : r.power * scale;
   if (power > 0) inputs[POWER] = power;
-  const water = drawnWater(b, body, r.water ? r.water / r.hours : 0, scale);
+  const water = drawnWater(b, body, own, r.water ? r.water / r.hours : 0, scale);
   if (water > 0) inputs[WATER] = (inputs[WATER] ?? 0) + water;
   const outputs = perHour(r.outputs, r.hours, scale);
   if (r.generates) outputs[POWER] = r.generates * scale;
@@ -132,7 +138,7 @@ function extractionProcess(materialId: string, b: Building, body: Where): Proces
   const own = real(body);
   const rate = (own ? b.extracts?.[materialId] : undefined) ?? extractRate(materialId);
   const power = own && b.power !== undefined ? b.power : EXTRACT_KW;
-  const water = materialId === WATER ? 0 : drawnWater(b, body, 0, 1);
+  const water = materialId === WATER ? 0 : drawnWater(b, body, own, 0, 1);
   const inputs: Amounts = power > 0 ? { [POWER]: power } : {};
   if (water > 0) inputs[WATER] = water;
   return {

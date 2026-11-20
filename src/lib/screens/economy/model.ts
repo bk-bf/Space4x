@@ -82,7 +82,7 @@ export function groupViews(site: Site, flows: SiteFlows): GroupView[] {
       return {
         actor,
         building: b,
-        workers: workersAt(b, site.body),
+        workers: workersAt(b, site.body, actor.group.process),
         main,
         plant: b.plant,
         label: proc?.name ?? b.name,

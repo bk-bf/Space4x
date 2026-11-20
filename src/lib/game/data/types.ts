@@ -192,12 +192,12 @@ export interface Building {
   cost: Amounts;
   parts?: string[];
   workers: number;
-  scale?: number;
+  scale?: Amounts;
   power?: number;
   water?: number;
   extracts?: Amounts;
   real?: RealPlant;
-  away?: { workers: number };
+  batch?: { workers: number };
   footprint?: { land?: number; habitat?: number };
   plant?: Plant;
   lab?: Lab;

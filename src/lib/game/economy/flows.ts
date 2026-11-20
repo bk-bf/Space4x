@@ -335,7 +335,7 @@ function eat(site: Site, net: Amounts, demand: number): Amounts {
 export function siteFlows(eco: Economy, site: Site): SiteFlows {
   const available = site.population * site.workforceShare;
   const needed = site.groups.reduce(
-    (a, g) => a + (g.on ? g.count * workersAt(building(g.building), site.body) : 0),
+    (a, g) => a + (g.on ? g.count * workersAt(building(g.building), site.body, g.process) : 0),
     0
   );
   const workerShare = needed > available ? available / needed : 1;
