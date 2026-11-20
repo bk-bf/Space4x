@@ -1,9 +1,10 @@
 import { building, milestone, type Amounts, type Component } from '#lib/game/data/index.ts';
 import { MIN_LANDING_TWR, MIN_LIFTOFF_TWR, shipDeltaV, type Ship } from '#lib/game/flight/index.ts';
 import { earth, mars, moon } from '#lib/game/flight/reference.ts';
-import { surfaceGravity, surfaceToOrbit } from '#lib/game/flight/wells.ts';
+import { surfaceGravity } from '#lib/game/flight/wells.ts';
 import type { FlightBody } from '#lib/game/flight/types.ts';
-import { component, isEngine, massOf } from './catalogue.ts';
+import { component, isBooster, isEngine, massOf } from './catalogue.ts';
+import { boostersOf, climbFrom, type Climb } from './climb.ts';
 import {
   isPropellant,
   massIn,
@@ -177,7 +178,8 @@ export function designStats(design: ShipDesign, unlocked: Unlocked = () => true)
     mass: massOf(c) * count,
     cost: scale(c.cost, count)
   }));
-  const dryMass = lines.reduce((total, l) => total + l.mass, 0);
+  const dryMass = items.reduce((total, { c, count }) => total + (isBooster(c) ? 0 : massOf(c) * count), 0);
+  const boosters = boostersOf(items);
   const tanks = items.filter(({ c }) => (c.design.volume ?? 0) > 0);
   const { carried, capacity } = allocate(tanks, design.load);
   const propellantMass = PROPELLANT_KINDS.reduce((total, k) => total + (carried[k] ?? 0), 0);
@@ -231,9 +233,12 @@ export function designStats(design: ShipDesign, unlocked: Unlocked = () => true)
   for (const k of PROPELLANT_KINDS) addTo(propellantCost, scale(PROPELLANTS[k].mix, carried[k] ?? 0));
 
   const main = loaded.mass > 0 ? mainLoaded : undefined;
+  const climb = climbWith({ dryMass, propellant: carried, main, boosters }, payloadCapacity);
   const base = {
     lines,
     dryMass,
+    boosters,
+    climb,
     propellant: carried,
     capacity,
     propellantMass,
@@ -269,6 +274,16 @@ export function designStats(design: ShipDesign, unlocked: Unlocked = () => true)
 }
 
 type Base = Omit<DesignStats, 'issues' | 'errors' | 'warnings'>;
+
+export function climbWith(
+  s: Pick<DesignStats, 'dryMass' | 'propellant' | 'main' | 'boosters'>,
+  payload: number
+): Climb {
+  const kind = s.main?.propellant;
+  const load = kind ? (s.propellant[kind] ?? 0) : 0;
+  const others = PROPELLANT_KINDS.filter((k) => k !== kind).reduce((t, k) => t + (s.propellant[k] ?? 0), 0);
+  return climbFrom(earth, s.boosters, { dry: s.dryMass + others + payload, propellant: load, drive: s.main });
+}
 
 function issuesOf(
   design: ShipDesign,
@@ -349,17 +364,17 @@ function issuesOf(
     error('no-yard', `${yardName(design.yard)} cannot build every one of these components.`);
   else {
     const body = YARD_BODY[design.yard];
-    if (body && s.main && !s.loaded.liftoff[body])
-      warn(
-        'no-liftoff',
-        `Alone this cannot leave ${BODY_NAMES[body]}: thrust to weight is ${s.loaded.thrustToWeight[body].toFixed(2)} and ${MIN_LIFTOFF_TWR} is needed. It must ride a lower stage in a launch stack.`
-      );
-    if (design.role === 'launcher' && s.main) {
-      const need = surfaceToOrbit(earth);
-      if (s.loaded.deltaV < need)
+    const climb = s.climb;
+    if (body && (s.main || s.boosters)) {
+      if (climb.twr < MIN_LIFTOFF_TWR)
+        warn(
+          'no-liftoff',
+          `Lift-off thrust to weight from ${BODY_NAMES[body]} is ${climb.twr.toFixed(2)} and ${MIN_LIFTOFF_TWR} is needed.`
+        );
+      if (climb.deltaV < climb.need)
         warn(
           'short-of-orbit',
-          `Delta-v is ${kms(s.loaded.deltaV)}; reaching low Earth orbit takes ${kms(need)}.`
+          `Delta-v to orbit is ${kms(climb.deltaV)}; reaching low Earth orbit takes ${kms(climb.need)}.`
         );
     }
   }

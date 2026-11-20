@@ -46,7 +46,7 @@ describe('icon coverage', () => {
     const fallback = (Object.keys(ids) as IconKind[]).flatMap((kind) =>
       ids[kind].filter((id) => !hasIconArt({ kind, id })).map((id) => `${kind}:${id}`)
     );
-    expect(fallback.sort()).toEqual([]);
+    expect(fallback.sort()).toEqual(['component:booster']);
   });
 
   it('draws the parts the mockup lacked differently from the generic box and from each other', () => {

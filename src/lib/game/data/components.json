@@ -118,6 +118,39 @@
     }
   },
   {
+    "id": "booster",
+    "name": "Booster",
+    "kind": "propulsion",
+    "milestone": 1,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory"],
+    "cost": {
+      "stainless_steel": 10000,
+      "nickel_superalloy": 400,
+      "grcop": 200
+    },
+    "performance": {
+      "engine": "Super Heavy Block 1, one of its 33 Raptor 2 engines",
+      "isp": 347,
+      "thrust": 2363000,
+      "thrustSeaLevel": 2227000,
+      "mass": 8333,
+      "basis": "flown",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Super_Heavy"
+    },
+    "design": {
+      "propellants": ["methalox"],
+      "boost": {
+        "propellant": "methalox",
+        "load": 103030
+      },
+      "basis": "One thirty-third of Super Heavy Block 1: 275 t empty, 3,400 t of methane and oxygen, 73.5 MN at lift-off, Isp 327 s at sea level and 347 s in vacuum; vacuum thrust scaled from sea-level thrust by the two Isp. The cost is the methalox engine bill and 10 t of stainless steel for the 6.7 t of tanks and structure.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Super_Heavy",
+      "estimated": true
+    }
+  },
+  {
     "id": "chemical_engine_hydrolox",
     "name": "Hydrolox engine",
     "kind": "propulsion",

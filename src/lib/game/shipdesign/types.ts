@@ -1,4 +1,5 @@
 import type { Amounts } from '#lib/game/data/index.ts';
+import type { Boosters, Climb } from './climb.ts';
 import type { PropellantKind } from './propellants.ts';
 
 export const ROLES = ['launcher', 'transfer', 'lander', 'capsule', 'freighter', 'probe'] as const;
@@ -100,6 +101,8 @@ export interface Condition {
 export interface DesignStats {
   lines: readonly Line[];
   dryMass: number;
+  boosters: Boosters | undefined;
+  climb: Climb;
   propellant: Readonly<Partial<Record<PropellantKind, number>>>;
   capacity: Readonly<Partial<Record<PropellantKind, number>>>;
   propellantMass: number;

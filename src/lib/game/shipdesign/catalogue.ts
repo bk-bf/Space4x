@@ -24,8 +24,11 @@ export const component = (id: string): Component | undefined => shipComponents.f
 
 export const massOf = (c: Component): number => c.design.mass ?? c.performance?.mass ?? 0;
 
+export const isBooster = (c: Component): c is Component & { performance: Propulsion } =>
+  c.design.boost !== undefined && c.performance !== undefined;
+
 export const isEngine = (c: Component): c is Component & { performance: Propulsion } =>
-  c.kind === 'propulsion' && c.performance !== undefined;
+  c.kind === 'propulsion' && c.performance !== undefined && c.design.boost === undefined;
 
 export const isTank = (c: Component): boolean => (c.design.volume ?? 0) > 0;
 
