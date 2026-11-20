@@ -123,7 +123,7 @@ test.describe('leaving Earth', () => {
     const ceiling = page.locator('#launchCeiling [data-ceiling]');
     const lifts = Number(await ceiling.getAttribute('data-ceiling'));
     expect(lifts).toBeGreaterThan(2_800);
-    await expect(ceiling).toContainText('2.5 t of 8 t');
+    await expect(ceiling).toContainText('2.8 t of 8 t');
     await page.locator('#launchShips button', { hasText: 'Orbiter' }).click();
     await expect(page.locator('#launchPlan')).toHaveCount(0);
     await page.locator('#launchShips button', { hasText: 'Orbiter' }).click();
@@ -256,7 +256,7 @@ test.describe('ships and supply tabs', () => {
     await expect(page.locator('#supplyTable button')).toHaveCount(4);
     await page.locator('#supplyTable button', { hasText: 'Stainless steel' }).click();
     await expect(page.locator('#supplySource option')).toHaveText(['Earth', 'Luna orbital station']);
-    await expect(page.locator('#supplyShip button')).toHaveCount(4);
+    await expect(page.locator('#supplyShip button')).toHaveCount(5);
     await page.locator('#supplyShip button').first().click();
     await page.locator('#supplyStart').click();
     await expect(page.locator('#supplyMessage')).toContainText('launch site');

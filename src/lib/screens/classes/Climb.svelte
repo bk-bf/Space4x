@@ -30,9 +30,6 @@
       <span>Boosters</span><span class="v">{climb.boosters}, {formatDv(climb.boosterDv)}</span>
     </div>
     <div class="fr">
-      <span>Own drive</span><span class="v">{formatDv(climb.shipDv)}</span>
-    </div>
-    <div class="fr">
       <span>Lift-off thrust to weight</span><span class="v" class:hot={climb.twr < 1.2}
         >{climb.twr.toFixed(2)}</span
       >
