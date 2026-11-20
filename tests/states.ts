@@ -109,6 +109,37 @@ const SHORT_WINDOW_QUERIES = [
   'screen=economy&tab=ships&scenario=travel'
 ];
 
+const NARROW_WINDOW: readonly [number, number] = [1100, 700];
+
+const NARROW_WINDOW_QUERIES = [
+  '',
+  'menu',
+  'sel=body:mars',
+  'sel=body:earth',
+  'sel=body:rhea&zoom=saturn:5e6',
+  'sel=body:ceres&zoom=belt',
+  'sel=ship:ship-4&scenario=travel',
+  'sel=base:orbit-earth&scenario=travel',
+  'screen=economy',
+  'screen=economy&tab=production',
+  'screen=economy&tab=construction',
+  'screen=economy&tab=stockpiles',
+  'screen=economy&tab=people',
+  'screen=economy&tab=yard&scenario=travel',
+  'screen=economy&tab=launch&scenario=travel',
+  'screen=economy&tab=ships&scenario=travel',
+  'screen=economy&tab=supply&colony=orbit-earth&scenario=travel',
+  'screen=research',
+  'screen=research&milestone=29&reached=28',
+  'screen=research&rtab=programmes&milestone=6',
+  'screen=research&rtab=unlocks&milestone=3',
+  'screen=classes',
+  'screen=classes&new=stage',
+  'screen=classes&new=stage&below=1',
+  'screen=classes&reached=6&new=crewed',
+  'screen=classes&reached=29'
+];
+
 const SITE_QUERIES = new Set([
   'zoom=sol-station',
   'zoom=battle',
@@ -145,5 +176,6 @@ const stateOf = (query: string, size?: readonly [number, number]): LayoutState =
 
 export const STATES: readonly LayoutState[] = [
   ...QUERIES.map((query) => stateOf(query)),
-  ...SHORT_WINDOW_QUERIES.map((query) => stateOf(query, SHORT_WINDOW))
+  ...SHORT_WINDOW_QUERIES.map((query) => stateOf(query, SHORT_WINDOW)),
+  ...NARROW_WINDOW_QUERIES.map((query) => stateOf(query, NARROW_WINDOW))
 ];
