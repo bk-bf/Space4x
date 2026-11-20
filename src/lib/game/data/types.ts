@@ -199,6 +199,7 @@ export interface ComponentDesign {
   automates?: boolean;
   surveys?: boolean;
   samples?: boolean;
+  boost?: { propellant: string; load: number };
   basis: string;
   source?: string;
   estimated: boolean;
