@@ -102,7 +102,8 @@ function applySegment(
   eco.ledger.built += flows.builtMass * hours;
   eco.ledger.eaten += flows.eatenMass * hours;
   site.population *= Math.exp(flows.growthPerHour * hours);
-  if (flows.growthPerHour > 0 && site.berths !== null) site.population = Math.min(site.population, site.berths);
+  if (flows.growthPerHour > 0 && site.berths !== null)
+    site.population = Math.min(site.population, site.berths);
 
   for (const a of flows.actors) {
     if (a.kind === 'build') {

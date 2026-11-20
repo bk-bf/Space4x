@@ -12,8 +12,7 @@ export const STARVE_PER_YEAR = 0.25;
 
 const ROOM_EPS = 1e-9;
 
-const hasRoom = (site: Site): boolean =>
-  site.berths === null || site.population < site.berths - ROOM_EPS;
+const hasRoom = (site: Site): boolean => site.berths === null || site.population < site.berths - ROOM_EPS;
 export const HOURS_PER_YEAR = 8766;
 
 export type Limit =
