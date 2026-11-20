@@ -32,17 +32,6 @@ export function formatPeople(n: number): string {
 
 export const formatCount = (n: number): string => (Math.abs(n) >= 1e6 ? formatPeople(n) : group(n));
 
-export function formatBodyMass(kg: number): string {
-  if (Math.abs(kg) < 0.5) return '0';
-  return scaled(kg, [
-    [1e12, 'Gt'],
-    [1e9, 'Mt'],
-    [1e6, 'kt'],
-    [1e3, 't'],
-    [1, 'kg']
-  ]);
-}
-
 export function formatAmount(id: string, amount: number): string {
   const unit = material(id).unit;
   if (unit === 'cu') return `${formatCount(amount)} cu`;

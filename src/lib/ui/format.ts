@@ -25,6 +25,37 @@ export const people = (n: number): string => `${group(n / 1e6)} M`;
 
 export const mass = (kg: number): string => `${Math.abs(kg) >= 10_000 ? group(kg / 1000) : num(kg / 1000)} t`;
 
+const SUPERSCRIPT: Record<string, string> = {
+  '-': '⁻',
+  '0': '⁰',
+  '1': '¹',
+  '2': '²',
+  '3': '³',
+  '4': '⁴',
+  '5': '⁵',
+  '6': '⁶',
+  '7': '⁷',
+  '8': '⁸',
+  '9': '⁹'
+};
+
+export function scientific(v: number): string {
+  const [mantissa = '0', exponent = '0'] = v.toExponential(2).split('e');
+  const power = String(Number(exponent))
+    .split('')
+    .map((c) => SUPERSCRIPT[c] ?? c)
+    .join('');
+  return `${mantissa}\u00a0×\u00a010${power}`;
+}
+
+export function earthMasses(ratio: number): string {
+  const text = ratio >= 0.001 ? String(Number(ratio.toPrecision(3))) : scientific(ratio);
+  return `${text}\u00a0${text === '1' ? 'Earth\u00a0mass' : 'Earth\u00a0masses'}`;
+}
+
+export const bodyMass = (kg: number, earthKg: number): string =>
+  `${earthMasses(kg / earthKg)} · ${scientific(kg / 1000)}\u00a0t`;
+
 export const power = (kw: number): string => `${num(kw / 1000)} MW`;
 
 export const thrust = (newtons: number): string => `${num(newtons / 1000)} kN`;

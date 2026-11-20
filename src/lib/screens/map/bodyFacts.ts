@@ -5,7 +5,12 @@ import { economy, minedOf, remainingMass } from '#lib/game/economy/index.ts';
 import { ships } from '#lib/game/ships/index.ts';
 import { isSurveyable, isSurveyed } from '#lib/game/survey.svelte.ts';
 import type { Body } from '#lib/game/types.ts';
-import { formatBodyMass } from '#lib/screens/economy/format.ts';
+import { G } from '#lib/game/asteroids.ts';
+import { earth } from '#lib/game/flight/reference.ts';
+import { bodyMass } from '#lib/ui/format.ts';
+
+const EARTH_KG = earth.gm / G;
+const formatBodyMass = (kg: number): string => bodyMass(kg, EARTH_KG);
 
 export function surveyText(b: Body): string {
   const type = bodyTypeOf(b.id);

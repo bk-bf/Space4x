@@ -5,7 +5,9 @@ import {
   days,
   duration,
   group,
+  bodyMass,
   mass,
+  scientific,
   num,
   kcal,
   people,
@@ -41,6 +43,16 @@ describe('numbers', () => {
     expect(num(0.0125)).toBe('0.013');
     expect(num(0.0004)).toBe('0');
     expect(num(-12.34)).toBe('-12.3');
+  });
+});
+
+describe('body mass', () => {
+  it('gives Earth masses and tonnes in scientific notation', () => {
+    const plain = (text: string) => text.replace(/\u00a0/g, ' ');
+    expect(plain(bodyMass(7.342e22, 5.9722e24))).toBe('0.0123 Earth masses · 7.34 × 10¹⁹ t');
+    expect(plain(bodyMass(5.9722e24, 5.9722e24))).toBe('1 Earth mass · 5.97 × 10²¹ t');
+    expect(plain(bodyMass(7.329e10, 5.9722e24))).toBe('1.23 × 10⁻¹⁴ Earth masses · 7.33 × 10⁷ t');
+    expect(plain(scientific(9.996e19))).toBe('1.00 × 10²⁰');
   });
 });
 

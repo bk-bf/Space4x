@@ -41,9 +41,7 @@
     </div>
   {:else}
     <p class="unknown" id="regionsUnknown">
-      Not surveyed. A ship with survey instruments in orbit finds the regions and their grades in {surveyDays(
-        world
-      )} days.
+      Not surveyed, {surveyDays(world)} days to survey
     </p>
   {/if}
 {/if}

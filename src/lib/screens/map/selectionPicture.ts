@@ -15,7 +15,7 @@ import { vesselById } from '#lib/game/ships/index.ts';
 import { drawStation } from '#lib/gfx/topdown/index.ts';
 
 export const PICTURE_W = 140;
-export const PICTURE_H = 72;
+export const PICTURE_H = 68;
 const FRAMES_PER_TICK = 3;
 const HALF_WIDTH = 62;
 const HALF_HEIGHT = 34;
