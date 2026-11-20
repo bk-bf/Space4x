@@ -125,6 +125,28 @@ test.describe('the prototype on present-day Earth', () => {
     await expectCleanLayout(page);
   });
 
+  test('runs Earth on power plants: the Power block, and a plant card that sets how many are active', async ({
+    page
+  }) => {
+    await open(page, 'screen=economy');
+    await expect(page.locator('#powerBlock')).toBeVisible();
+    await expect(page.locator('#generationBar i[data-source="coal_power_station"]')).toHaveCount(1);
+    await expect(page.locator('#powerFacts')).toContainText('Firm capacity');
+    await expect(page.locator('#powerFacts')).toContainText('GWh');
+    await tab(page, 'production');
+    const coal = group(page, 'Coal power station');
+    await coal.click();
+    await expect(coal).toHaveAttribute('aria-pressed', 'true');
+    const value = page.locator('#plantActive .val');
+    await expect(value).toHaveText('264 / 264');
+    await expect(page.locator('#plantMore')).toBeDisabled();
+    await page.locator('#plantFewer').click();
+    await expect(value).toHaveText('263 / 264');
+    await expect(coal).toContainText('263/264');
+    await expect(page.locator('#groupToggle')).toHaveCount(0);
+    await expectCleanLayout(page);
+  });
+
   test('stops growth when food runs short', async ({ page }) => {
     await open(page, 'screen=economy&scenario=famine');
     const people = page.locator('.chip[aria-label="People"]');

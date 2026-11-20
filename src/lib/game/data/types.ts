@@ -151,6 +151,15 @@ export type BuildingKind =
   | 'infrastructure'
   | 'special';
 
+export interface Plant {
+  capacityKw: number;
+  capacityFactor?: number;
+  storageKwh?: number;
+  firmShare: number;
+  co2PerMwh: number;
+  waterPerMwh: number;
+}
+
 export interface Building {
   id: string;
   name: string;
@@ -164,6 +173,7 @@ export interface Building {
   parts?: string[];
   workers: number;
   footprint?: { land?: number; habitat?: number };
+  plant?: Plant;
   bp?: number;
   bpSource?: string;
   bpBasis?: string;

@@ -1,5 +1,5 @@
 import { material } from '#lib/game/data/index.ts';
-import { POWER } from '#lib/game/economy/index.ts';
+import { activePlants, averageOutput, POWER } from '#lib/game/economy/index.ts';
 import { buildingTip, dim, fmt, materialName, materialTip, warn } from '#lib/ui/index.ts';
 import { PERIODS, type Period } from '#lib/ui/format.ts';
 import type { GroupView, StockView } from './model.ts';
@@ -32,6 +32,12 @@ export function stockTip(v: StockView, period: Period): string {
 
 export function groupTip(g: GroupView, period: Period): string {
   const a = g.actor;
+  if (g.plant)
+    return buildingTip(
+      g.building.id,
+      `${fmt.count(activePlants(a.group))} running of ${fmt.count(a.group.count)}`,
+      `Average output ${fmt.gigawatts(averageOutput(g.plant, activePlants(a.group)))}`
+    );
   if (!a.group.process)
     return buildingTip(g.building.id, 'No recipe set', `${fmt.count(a.group.count)} built`);
   return buildingTip(

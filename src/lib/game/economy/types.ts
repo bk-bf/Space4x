@@ -7,6 +7,7 @@ export interface Group {
   process: string | null;
   count: number;
   on: boolean;
+  active?: number;
 }
 
 export interface BuildOrder {
@@ -45,6 +46,7 @@ export type SitePlace = 'surface' | 'orbit' | 'point';
 export interface Alerts {
   food: boolean;
   power: boolean;
+  firm?: boolean;
   soon?: string[];
 }
 

@@ -35,6 +35,7 @@
   import { PERIODS } from '#lib/ui/format.ts';
   import CalorieBar from './CalorieBar.svelte';
   import GroupTile from './GroupTile.svelte';
+  import PowerBlock from './PowerBlock.svelte';
   import StockTile from './StockTile.svelte';
   import TabBody from './TabBody.svelte';
   import { type KindTotal, groupViews, kindIcon, kindTotals, milestoneIcon, stockView } from './model.ts';
@@ -159,8 +160,9 @@
         warn={spareKw < 0}
         tip={tipText(
           'Power',
-          `Grid ${fmt.power(site.gridKw)}`,
-          `Generated ${fmt.power(flows.power.supply - site.gridKw)}`,
+          flows.grid.capacity > 0 && `Power plants ${fmt.power(flows.grid.supply)}`,
+          site.gridKw > 0 && `Grid ${fmt.power(site.gridKw)}`,
+          `Generated ${fmt.power(flows.power.supply - site.gridKw - flows.grid.supply)}`,
           `Demand ${fmt.power(flows.power.demand)}`
         )}
       />
@@ -223,6 +225,10 @@
         {/each}
       </TileGrid>
     </div>
+
+    {#if flows.grid.capacity > 0}
+      <PowerBlock grid={flows.grid} />
+    {/if}
 
     {#if place || deposits.air.length}
       <h3 id="siteRegion">

@@ -68,8 +68,10 @@ function drawReserves(
 
 function placeBuilding(eco: Economy, site: Site, o: BuildOrder): void {
   const same = site.groups.find((g) => g.building === o.building && g.process === o.process && g.on);
-  if (same) same.count += 1;
-  else site.groups.push({ id: eco.nextId++, building: o.building, process: o.process, count: 1, on: true });
+  if (same) {
+    same.count += 1;
+    if (same.active !== undefined) same.active += 1;
+  } else site.groups.push({ id: eco.nextId++, building: o.building, process: o.process, count: 1, on: true });
 }
 
 function applySegment(
@@ -174,6 +176,18 @@ function checkAlerts(site: Site, flows: SiteFlows, at: number, log: LogFn, warnD
       dark ? { kind: 'shortage' } : undefined
     );
   site.alerts.power = dark;
+  const firm = flows.grid.firmShort;
+  if (firm !== (site.alerts.firm ?? false))
+    log(
+      firm
+        ? `${site.name}'s firm capacity is short of peak demand.`
+        : `${site.name}'s firm capacity covers peak demand again.`,
+      firm,
+      at,
+      site.id,
+      firm ? { kind: 'shortage' } : undefined
+    );
+  site.alerts.firm = firm;
   forecast(site, flows, at, log, warnDays);
 }
 

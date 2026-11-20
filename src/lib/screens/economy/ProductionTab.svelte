@@ -1,11 +1,14 @@
 <script lang="ts">
   import {
+    activePlants,
+    averageOutput,
     assign,
     economy,
     flowsOf,
     isExtraction,
     POWER,
     process,
+    setActive,
     setOn,
     touch,
     unlockedProcesses,
@@ -100,6 +103,47 @@
   const recipeName = $derived(
     chosen?.group.process ? process(chosen.group.process, site.body).name : 'No recipe'
   );
+
+  const plant = $derived(sel?.plant);
+  const active = $derived(chosen ? activePlants(chosen.group) : 0);
+  const HOURS_PER_YEAR = 8766;
+  const plantRows = $derived(
+    plant
+      ? [
+          { icon: 'bolt' as const, label: 'Capacity each', value: fmt.gigawatts(plant.capacityKw) },
+          plant.storageKwh !== undefined
+            ? { icon: 'box' as const, label: 'Storage each', value: fmt.gigawattHours(plant.storageKwh) }
+            : {
+                icon: 'clock' as const,
+                label: 'Capacity factor',
+                value: fmt.pct(plant.capacityFactor ?? 0)
+              },
+          { icon: 'check' as const, label: 'Firm share', value: fmt.pct(plant.firmShare) },
+          ...(plant.co2PerMwh
+            ? [{ icon: 'leaf' as const, label: 'CO₂', value: `${plant.co2PerMwh} t/MWh` }]
+            : []),
+          ...(plant.waterPerMwh
+            ? [{ icon: 'drop' as const, label: 'Water', value: `${plant.waterPerMwh} t/MWh` }]
+            : []),
+          {
+            icon: 'bolt' as const,
+            label: 'Average output',
+            value: fmt.gigawatts(averageOutput(plant, active))
+          },
+          {
+            icon: 'leaf' as const,
+            label: 'CO₂ a year',
+            value: `${(((averageOutput(plant, active) / 1000) * HOURS_PER_YEAR * plant.co2PerMwh) / 1e9).toFixed(2)} Gt`
+          }
+        ]
+      : []
+  );
+
+  function step(by: number) {
+    if (!sel || !chosen) return;
+    setActive(site, chosen.group.id, active + by);
+    touch();
+  }
 </script>
 
 <TabBody>
@@ -141,7 +185,25 @@
             : [])
         ]}
       >
-        {#if chosen.group.process}
+        {#if plant}
+          <Facts rows={plantRows} />
+          <div class="row sp" id="plantActive">
+            <span class="lbl">Active</span>
+            <span class="ctl">
+              <button
+                id="plantFewer"
+                disabled={active <= 0}
+                onclick={() => step(-1)}
+                use:tooltip={'One fewer'}><Icon name="minus" class="xs" /></button
+              ><span class="val">{fmt.count(active)} / {fmt.count(chosen.group.count)}</span><button
+                id="plantMore"
+                disabled={active >= chosen.group.count}
+                onclick={() => step(1)}
+                use:tooltip={'One more'}><Icon name="plus" class="xs" /></button
+              >
+            </span>
+          </div>
+        {:else if chosen.group.process}
           {#if outputs.length}
             <CardSection label="Output">
               <IconList items={outputs} plus={false} />
@@ -163,24 +225,26 @@
             ]}
           />
         {/if}
-        <CardSection label="Active">
-          <div class="row">
-            <Bar value={chosen.share} thick full tone={sel.warn ? 'hot' : 'accent'} />
-            <span class:hot={sel.warn} class="share">{fmt.pct(chosen.share)}</span>
-          </div>
-          {#if sel.limit}
-            <div class={sel.quiet ? 'dim' : 'hot'} id="groupLimit">
-              <Icon name={sel.quiet ? 'minus' : 'warn'} class="xs" />
-              {sel.limit}
+        {#if !plant}
+          <CardSection label="Active">
+            <div class="row">
+              <Bar value={chosen.share} thick full tone={sel.warn ? 'hot' : 'accent'} />
+              <span class:hot={sel.warn} class="share">{fmt.pct(chosen.share)}</span>
             </div>
-          {/if}
-        </CardSection>
-        <div class="btns">
-          <button id="groupToggle" onclick={toggle}
-            ><Icon name="power" />{chosen.group.on ? 'Switch off' : 'Switch on'}</button
-          >
-        </div>
-        {#if choices.length > 1 || !chosen.group.process}
+            {#if sel.limit}
+              <div class={sel.quiet ? 'dim' : 'hot'} id="groupLimit">
+                <Icon name={sel.quiet ? 'minus' : 'warn'} class="xs" />
+                {sel.limit}
+              </div>
+            {/if}
+          </CardSection>
+          <div class="btns">
+            <button id="groupToggle" onclick={toggle}
+              ><Icon name="power" />{chosen.group.on ? 'Switch off' : 'Switch on'}</button
+            >
+          </div>
+        {/if}
+        {#if !plant && (choices.length > 1 || !chosen.group.process)}
           <CardSection label="Switch recipe">
             <div class="recipes" id="recipes">
               {#each others.slice(0, 30) as p (p.id)}
@@ -271,5 +335,26 @@
   }
   .dim {
     color: var(--dim);
+  }
+  .sp {
+    justify-content: space-between;
+  }
+  .lbl {
+    color: var(--dim);
+    font-size: 15px;
+  }
+  .ctl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ctl button {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 5px;
+  }
+  .val {
+    min-width: 84px;
+    text-align: center;
   }
 </style>

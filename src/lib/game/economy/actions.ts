@@ -51,6 +51,14 @@ export function setOn(site: Site, groupId: number, on: boolean): void {
   if (g) g.on = on;
 }
 
+export function setActive(site: Site, groupId: number, active: number): void {
+  const g = site.groups.find((x) => x.id === groupId);
+  if (!g) return;
+  const n = Math.max(0, Math.min(g.count, Math.round(active)));
+  if (n === g.count) delete g.active;
+  else g.active = n;
+}
+
 export function switchSome(eco: Economy, site: Site, groupId: number, count: number): Group | undefined {
   const g = site.groups.find((x) => x.id === groupId);
   if (!g) return undefined;

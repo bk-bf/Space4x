@@ -17,7 +17,6 @@ export interface StartSite {
   workforceShare: number;
   kcalPerPersonDay: number;
   growthPerYear: number;
-  gridKw: number;
   stockDays: number;
   startStock: Record<string, number>;
   endProducts: Record<string, number>;
@@ -40,7 +39,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
     workforceShare: data.workforceShare,
     kcalPerPersonDay: data.kcalPerPersonDay,
     growthPerYear: data.growthPerYear,
-    gridKw: data.gridKw,
+    gridKw: 0,
     stock: {},
     groups: data.groups.map((g) => ({ id: eco.nextId++, ...g, on: true })),
     queue: [],

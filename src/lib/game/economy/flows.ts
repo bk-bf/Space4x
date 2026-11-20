@@ -2,6 +2,7 @@ import { building, material, milestone } from '#lib/game/data/index.ts';
 import type { Amounts } from '#lib/game/data/index.ts';
 import { buildCost, buildHours, BUILD_SLOTS } from './construction.ts';
 import { gradeAt, isDepleted, isReserveSpent } from './deposits.ts';
+import { activePlants, gridOf, isPlant, type Grid } from './grid.ts';
 import { foodIds, isExtraction, isMass, isStockless, POWER, process } from './processes.ts';
 import { programmeCompute } from './programmes.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
@@ -81,6 +82,7 @@ export interface SiteFlows {
   eatenMass: number;
   food: { demand: number; eaten: number; cover: number; made: number; eatenBy: Amounts; madeBy: Amounts };
   power: Balance;
+  grid: Grid;
   compute: Balance;
   workers: { available: number; needed: number; share: number };
   growthPerHour: number;
@@ -105,6 +107,18 @@ function deposit(site: Site, p: ReturnType<typeof process>): { grade: number; mi
 function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): GroupActor {
   const base = { kind: 'group' as const, group: g, share: 0, worst: 1, grade: 1 };
   if (!g.on) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'off' } };
+  if (isPlant(g.building)) {
+    const cap = g.count > 0 ? activePlants(g) / g.count : 0;
+    return {
+      ...base,
+      cap,
+      worst: cap,
+      inputs: {},
+      outputs: {},
+      extracts: {},
+      limit: cap > 0 ? null : { kind: 'off' }
+    };
+  }
   if (!g.process) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'idle' } };
   const p = process(g.process, site.body);
   const { grade, missing } = deposit(site, p);
@@ -191,11 +205,11 @@ function programmeActor(p: Programme): ProgrammeActor {
 
 const ITERATIONS = 200;
 
-function settle(site: Site, actors: Actor[]): void {
+function settle(site: Site, actors: Actor[], gridKw: number): void {
   const constrained = (m: string) => isStockless(m) || (site.stock[m] ?? 0) <= STOCK_EPS;
   for (const a of actors) a.share = a.cap;
   for (let i = 0; i < ITERATIONS; i++) {
-    const prod: Amounts = { [POWER]: site.gridKw };
+    const prod: Amounts = { [POWER]: site.gridKw + gridKw };
     const cons: Amounts = {};
     for (const a of actors) {
       if (a.share <= 0) continue;
@@ -273,7 +287,8 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     ...eco.running.filter((p) => p.site === site.id).map(programmeActor)
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);
-  settle(site, actors);
+  const grid = gridOf(site, wanted(POWER));
+  settle(site, actors, grid.supply);
 
   const produced: Amounts = {};
   const consumed: Amounts = {};
@@ -330,10 +345,11 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     eatenMass,
     food: { demand, eaten: eatenKcal, cover, made, eatenBy, madeBy },
     power: {
-      supply: site.gridKw + (produced[POWER] ?? 0),
-      demand: wanted(POWER),
+      supply: site.gridKw + grid.supply + (produced[POWER] ?? 0),
+      demand: grid.demand,
       used: consumed[POWER] ?? 0
     },
+    grid,
     compute: { supply: produced.compute ?? 0, demand: wanted('compute'), used: consumed.compute ?? 0 },
     workers: { available, needed, share: workerShare },
     growthPerHour

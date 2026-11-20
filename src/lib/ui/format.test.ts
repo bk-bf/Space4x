@@ -4,6 +4,8 @@ import {
   count,
   days,
   duration,
+  gigawattHours,
+  gigawatts,
   group,
   bodyMass,
   mass,
@@ -73,6 +75,12 @@ describe('units', () => {
     expect(power(1_500_000)).toBe('1,500 MW');
     expect(power(250)).toBe('0.25 MW');
     expect(power(0)).toBe('0 MW');
+  });
+
+  it('turns kilowatts into gigawatts and kilowatt-hours into gigawatt-hours', () => {
+    expect(gigawatts(422_050_000)).toBe('422 GW');
+    expect(gigawatts(1_000_000)).toBe('1 GW');
+    expect(gigawattHours(2_500_000)).toBe('2.5 GWh');
   });
 
   it('turns newtons into kilonewtons', () => {

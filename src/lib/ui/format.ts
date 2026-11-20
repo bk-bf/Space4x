@@ -58,6 +58,10 @@ export const bodyMass = (kg: number, earthKg: number): string =>
 
 export const power = (kw: number): string => `${num(kw / 1000)} MW`;
 
+export const gigawatts = (kw: number): string => `${num(kw / 1e6)} GW`;
+
+export const gigawattHours = (kwh: number): string => `${num(kwh / 1e6)} GWh`;
+
 export const thrust = (newtons: number): string => `${num(newtons / 1000)} kN`;
 
 export const pct = (fraction: number): string => `${Math.round(fraction * 100)}%`;

@@ -1,0 +1,222 @@
+[
+  {
+    "id": "coal_power_station",
+    "name": "Coal power station",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.55,
+      "firmShare": 0.9,
+      "co2PerMwh": 0.95,
+      "waterPerMwh": 2.6
+    },
+    "bp": 2,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW coal power station, 2 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "gas_power_station",
+    "name": "Gas power station",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.4,
+      "firmShare": 0.9,
+      "co2PerMwh": 0.43,
+      "waterPerMwh": 0.75
+    },
+    "bp": 1,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW gas power station, 1 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "oil_power_station",
+    "name": "Oil power station",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.2,
+      "firmShare": 0.9,
+      "co2PerMwh": 0.75,
+      "waterPerMwh": 2.6
+    },
+    "bp": 1.2,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW oil power station, 1.2 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "nuclear_power_station",
+    "name": "Nuclear power station",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.82,
+      "firmShare": 0.9,
+      "co2PerMwh": 0,
+      "waterPerMwh": 2.5
+    },
+    "bp": 8,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW nuclear power station, 8 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "hydroelectric_dam",
+    "name": "Hydroelectric dam",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.37,
+      "firmShare": 0.9,
+      "co2PerMwh": 0,
+      "waterPerMwh": 0
+    },
+    "bp": 3,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW hydroelectric dam, 3 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "bioenergy_plant",
+    "name": "Bioenergy plant",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.55,
+      "firmShare": 0.9,
+      "co2PerMwh": 0,
+      "waterPerMwh": 2
+    },
+    "bp": 3,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW bioenergy plant, 3 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "wind_farm",
+    "name": "Wind farm",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.25,
+      "firmShare": 0.1,
+      "co2PerMwh": 0,
+      "waterPerMwh": 0
+    },
+    "bp": 1.4,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW wind farm, 1.4 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "solar_farm",
+    "name": "Solar farm",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "capacityFactor": 0.13,
+      "firmShare": 0.05,
+      "co2PerMwh": 0,
+      "waterPerMwh": 0.1
+    },
+    "bp": 0.8,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW solar farm, 0.8 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "battery_storage",
+    "name": "Battery storage",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "storageKwh": 2500000,
+      "firmShare": 0.6,
+      "co2PerMwh": 0,
+      "waterPerMwh": 0
+    },
+    "bp": 0.6,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW battery storage, 0.6 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  },
+  {
+    "id": "pumped_hydro_storage",
+    "name": "Pumped hydro storage",
+    "kind": "power",
+    "where": ["earth"],
+    "milestone": 1,
+    "start": true,
+    "estimated": true,
+    "cost": {},
+    "workers": 0,
+    "plant": {
+      "capacityKw": 1000000,
+      "storageKwh": 48000000,
+      "firmShare": 1,
+      "co2PerMwh": 0,
+      "waterPerMwh": 0
+    },
+    "bp": 2.5,
+    "bpSource": "https://github.com/bk-bf/Space4x/blob/a833ac65ed86e05085b536cf85c517ed45228696/mockup/sketch/js/sketch-model.js#L12",
+    "bpBasis": "The design sketch's build cost for a 1 GW pumped hydro storage, 2.5 BP, as #76 gives it; no published capital cost is cited for it yet",
+    "bpEstimated": true
+  }
+]

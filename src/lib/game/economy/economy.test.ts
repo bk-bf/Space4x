@@ -18,7 +18,11 @@ import {
   startEconomy,
   startProgramme,
   isUnlocked,
+  isPlant,
+  PEAK_RATIO,
+  plantOf,
   POWER,
+  setActive,
   unlockedProcesses,
   type Economy,
   type GroupActor,
@@ -185,6 +189,7 @@ describe('production', () => {
     const site = earthOf(eco);
     site.stock.silicon = 1e9;
     const demand = siteFlows(eco, site).power.demand;
+    for (const g of site.groups) if (isPlant(g.building)) setOn(site, g.id, false);
     site.gridKw = demand / 2;
     const f = siteFlows(eco, site);
     close(f.power.used, site.gridKw, 1e-9);
@@ -525,5 +530,90 @@ describe("Earth's reserves", () => {
     const eco = startEconomy();
     expect(reserveLeft(eco, 'earth', 'water')).toBe(Infinity);
     expect(reserveLeft(eco, 'luna', 'iron')).toBe(Infinity);
+  });
+});
+
+describe('power plants', () => {
+  const plantGroup = (site: Site, id: string) => {
+    const g = site.groups.find((x) => x.building === id);
+    if (!g) throw new Error(`no ${id}`);
+    return g;
+  };
+  const powered = (eco: Economy, site: Site) =>
+    siteFlows(eco, site).actors.filter((a) => (a.inputs[POWER] ?? 0) > 0 && a.cap > 0);
+
+  it('give Earth the 2024 mix with average generation 5% over the start demand and firm capacity over the peak', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    expect(site.gridKw).toBe(0);
+    const f = siteFlows(eco, site);
+    expect(f.grid.average / f.grid.demand).toBeGreaterThan(1.04);
+    expect(f.grid.average / f.grid.demand).toBeLessThan(1.06);
+    expect(f.grid.firm).toBeGreaterThan(f.grid.peak);
+    expect(f.grid.firmShort).toBe(false);
+    close(f.grid.peak, PEAK_RATIO * f.power.demand);
+    close(f.power.supply, f.grid.average);
+    expect(f.power.used).toBeCloseTo(f.power.demand, 0);
+    const coal = plantGroup(site, 'coal_power_station');
+    close(f.grid.bySource.coal_power_station ?? 0, coal.count * 1e6 * 0.55);
+    close(
+      f.grid.storage,
+      plantGroup(site, 'battery_storage').count * 2.5e6 +
+        plantGroup(site, 'pumped_hydro_storage').count * 4.8e7
+    );
+  });
+
+  it('supply no more than average generation, and every powered building runs at the same share', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    for (const k of Object.keys(site.stock)) site.stock[k] = 1e15;
+    for (const g of site.groups) if (isPlant(g.building)) setActive(site, g.id, Math.floor(g.count * 0.6));
+    const pumped = plantGroup(site, 'pumped_hydro_storage');
+    pumped.count = 1000;
+    delete pumped.active;
+    const f = siteFlows(eco, site);
+    expect(f.grid.supply).toBe(f.grid.average);
+    expect(f.grid.firmShort).toBe(false);
+    const share = f.grid.average / f.power.demand;
+    expect(share).toBeLessThan(1);
+    close(f.power.used, f.grid.average, 1e-6);
+    const actors = powered(eco, site);
+    expect(actors.length).toBeGreaterThan(20);
+    for (const a of actors) close(a.share / a.cap, share, 1e-6);
+  });
+
+  it('supply no more than firm capacity over the peak ratio, and warn while firm capacity is short of peak', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    for (const k of Object.keys(site.stock)) site.stock[k] = 1e15;
+    for (const g of site.groups)
+      if (isPlant(g.building) && (plantOf(g.building)?.firmShare ?? 0) >= 0.6)
+        setActive(site, g.id, Math.floor(g.count * 0.4));
+    plantGroup(site, 'solar_farm').count = 4000;
+    const f = siteFlows(eco, site);
+    expect(f.grid.average).toBeGreaterThan(f.grid.demand);
+    expect(f.grid.firm).toBeLessThan(f.grid.peak);
+    expect(f.grid.firmShort).toBe(true);
+    close(f.grid.supply, f.grid.firm / PEAK_RATIO);
+    const share = f.grid.supply / f.power.demand;
+    expect(share).toBeLessThan(1);
+    for (const a of powered(eco, site)) close(a.share / a.cap, share, 1e-6);
+    const said: string[] = [];
+    advanceEconomy(eco, DAY, (text, warn) => warn && said.push(text));
+    expect(said).toContain("Earth's firm capacity is short of peak demand.");
+  });
+
+  it('count only active plants, and a finished plant joins the active ones', () => {
+    const eco = startEconomy();
+    const site = earthOf(eco);
+    const nuclear = plantGroup(site, 'nuclear_power_station');
+    const before = siteFlows(eco, site).grid;
+    setActive(site, nuclear.id, nuclear.count - 10);
+    close(before.average - siteFlows(eco, site).grid.average, 10 * 1e6 * 0.82);
+    queueBuilding(eco, site, 'nuclear_power_station', null);
+    advanceEconomy(eco, 20 * DAY, () => {});
+    expect(nuclear.active).toBe(nuclear.count - 10);
+    setActive(site, nuclear.id, nuclear.count);
+    expect(nuclear.active).toBeUndefined();
   });
 });

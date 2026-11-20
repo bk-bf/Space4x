@@ -288,6 +288,46 @@ describe('recipes', () => {
 });
 
 describe('buildings and components', () => {
+  it('hold the ten power plants and storage of #76 at 1 GW each, standing on Earth from the start', () => {
+    const table: [string, number | undefined, number, number, number, number, number | undefined][] = [
+      ['coal_power_station', 0.55, 0.9, 0.95, 2.6, 2, undefined],
+      ['gas_power_station', 0.4, 0.9, 0.43, 0.75, 1, undefined],
+      ['oil_power_station', 0.2, 0.9, 0.75, 2.6, 1.2, undefined],
+      ['nuclear_power_station', 0.82, 0.9, 0, 2.5, 8, undefined],
+      ['hydroelectric_dam', 0.37, 0.9, 0, 0, 3, undefined],
+      ['bioenergy_plant', 0.55, 0.9, 0, 2, 3, undefined],
+      ['wind_farm', 0.25, 0.1, 0, 0, 1.4, undefined],
+      ['solar_farm', 0.13, 0.05, 0, 0.1, 0.8, undefined],
+      ['battery_storage', undefined, 0.6, 0, 0, 0.6, 2.5e6],
+      ['pumped_hydro_storage', undefined, 1, 0, 0, 2.5, 4.8e7]
+    ];
+    expect(
+      buildings
+        .filter((b) => b.plant)
+        .map((b) => b.id)
+        .sort()
+    ).toEqual(table.map((t) => t[0]).sort());
+    const counts = new Map(earth.groups.map((g) => [g.building, g.count]));
+    for (const [id, cf, firm, co2, water, bp, kwh] of table) {
+      const b = buildings.find((x) => x.id === id)!;
+      expect([b.plant, b.bp, b.start, b.kind, b.where], id).toEqual([
+        {
+          capacityKw: 1e6,
+          ...(cf === undefined ? {} : { capacityFactor: cf }),
+          ...(kwh === undefined ? {} : { storageKwh: kwh }),
+          firmShare: firm,
+          co2PerMwh: co2,
+          waterPerMwh: water
+        },
+        bp,
+        true,
+        'power',
+        ['earth']
+      ]);
+      expect(counts.get(id), id).toBeGreaterThan(0);
+    }
+  });
+
   it('cost known materials and parts, and unlock at a known milestone', () => {
     for (const b of buildings) {
       expect(unknown(Object.keys(b.cost), materialIds), `${b.id} cost`).toEqual([]);

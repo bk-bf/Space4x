@@ -754,6 +754,20 @@ const BLD: Record<string, Draw> = {
   }
 };
 
+const LIKE: Record<string, string> = {
+  coal_power_station: 'fission_reactor',
+  gas_power_station: 'fission_reactor',
+  oil_power_station: 'fission_reactor',
+  nuclear_power_station: 'fission_reactor',
+  hydroelectric_dam: 'fission_reactor',
+  bioenergy_plant: 'fission_reactor',
+  wind_farm: 'solar_power_station',
+  solar_farm: 'solar_power_station',
+  battery_storage: 'solar_power_station',
+  pumped_hydro_storage: 'solar_power_station'
+};
+for (const [id, like] of Object.entries(LIKE)) BLD[id] = BLD[like]!;
+
 const SPACE = new Set([
   'orbital_shipyard',
   'jump_point_stabiliser',

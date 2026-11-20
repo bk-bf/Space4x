@@ -1,5 +1,5 @@
 import { building, milestone } from '#lib/game/data/index.ts';
-import type { Building, BuildingKind } from '#lib/game/data/index.ts';
+import type { Building, BuildingKind, Plant } from '#lib/game/data/index.ts';
 import {
   isStockless,
   POWER,
@@ -58,6 +58,7 @@ export interface GroupView {
   actor: GroupActor;
   building: Building;
   main: string | undefined;
+  plant: Plant | undefined;
   label: string;
   warn: boolean;
   quiet: boolean;
@@ -80,6 +81,7 @@ export function groupViews(site: Site, flows: SiteFlows): GroupView[] {
         actor,
         building: b,
         main,
+        plant: b.plant,
         label: proc?.name ?? b.name,
         warn: !!actor.limit && !quiet,
         quiet,
