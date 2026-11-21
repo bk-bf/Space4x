@@ -22,7 +22,7 @@ describe('game and gallery modes', () => {
 
   it('lists every screen and every mock site in the gallery', async () => {
     const { list, world } = await load(true);
-    expect(list.SCREENS).toHaveLength(8);
+    expect(list.SCREENS).toHaveLength(9);
     expect(list.isScreenId('galaxy')).toBe(true);
     expect(world.sites).toHaveLength(6);
   });
