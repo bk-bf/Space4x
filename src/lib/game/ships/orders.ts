@@ -1,3 +1,4 @@
+import { robotName } from '#lib/game/robots/index.ts';
 import { economy, type Site } from '#lib/game/economy/index.ts';
 import { material } from '#lib/game/data/index.ts';
 import type { Profile } from '#lib/game/flight/index.ts';
@@ -96,16 +97,18 @@ export function goTo(v: Vessel, to: Site, profile: Profile = 'cheapest'): Order[
 export const itemName = (i: Item | AllCargo): string =>
   i.kind === 'crew'
     ? 'crew'
-    : i.kind === 'all-cargo'
-      ? 'cargo'
-      : i.kind === 'cargo'
-        ? material(i.id).name
-        : PROPELLANTS[i.id].name.toLowerCase();
+    : i.kind === 'robot'
+      ? robotName(i.id)
+      : i.kind === 'all-cargo'
+        ? 'cargo'
+        : i.kind === 'cargo'
+          ? material(i.id).name
+          : PROPELLANTS[i.id].name.toLowerCase();
 
 const amountText = (item: Item | AllCargo, amount: number | null): string =>
   amount === null
     ? 'all'
-    : item.kind === 'crew'
+    : item.kind === 'crew' || item.kind === 'robot'
       ? `${Math.round(amount)}`
       : `${Math.round(amount).toLocaleString('en-US')} kg`;
 

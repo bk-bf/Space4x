@@ -28,6 +28,8 @@ import {
   reach,
   recipes,
   recipesProducing,
+  robotParts,
+  digClasses,
   shipComponents,
   subjects,
   tagOpen,
@@ -121,12 +123,14 @@ describe('ids', () => {
   });
 
   it('never collide between materials, buildings, components and recipes', () => {
-    const all = [...materials, ...buildings, ...shipComponents, ...recipes].map((x) => x.id);
+    const all = [...materials, ...buildings, ...shipComponents, ...recipes, ...robotParts].map((x) => x.id);
     expect(duplicates(all)).toEqual([]);
   });
 
   it('are snake_case everywhere', () => {
-    const all = [...materials, ...recipes, ...buildings, ...shipComponents, ...projects].map((x) => x.id);
+    const all = [...materials, ...recipes, ...buildings, ...shipComponents, ...projects, ...robotParts].map(
+      (x) => x.id
+    );
     expect(all.filter((id) => !SNAKE.test(id))).toEqual([]);
   });
 });
@@ -385,7 +389,7 @@ describe('buildings and components', () => {
     }
   });
 
-  it('cost build points with a source and a basis, except the buildings open on #72, #88 and #91', () => {
+  it('cost build points with a source and a basis, except the buildings open on #72, #88, #91 and #101', () => {
     const open = new Set([
       'university',
       'mine_earth',
@@ -409,7 +413,8 @@ describe('buildings and components', () => {
       'sinter_printer',
       'asteroid_processor',
       'metal_refinery',
-      'biosphere'
+      'biosphere',
+      'charging_station'
     ]);
     expect(unknown([...open], buildingIds)).toEqual([]);
     for (const b of buildings) {
@@ -1097,5 +1102,71 @@ describe('the survey instrument', () => {
     expect(suites[0]?.design.source).toMatch(/^https:\/\//);
     expect(suites[0]?.research).toBe(num('remote_sensing_instruments'));
     expect(project(num('asteroid_sampling')).requires).toContain(num('remote_sensing_instruments'));
+  });
+});
+
+describe('robot parts', () => {
+  const URL = /^https:\/\//;
+
+  it('cost known materials, open with a known project and say how their figures come about', () => {
+    for (const p of robotParts) {
+      expect(known.has(p.research), p.id).toBe(true);
+      expect(p.basis.length, p.id).toBeGreaterThan(20);
+      if (p.source) expect(p.source, p.id).toMatch(URL);
+      if (p.component) {
+        expect(componentIds.has(p.component), p.id).toBe(true);
+        expect(p.cost, p.id).toBeUndefined();
+        expect(p.mass, p.id).toBeUndefined();
+      } else {
+        expect(unknown(Object.keys(p.cost ?? {}), materialIds), p.id).toEqual([]);
+        expect(p.mass, p.id).toBeGreaterThan(0);
+      }
+      expect(!!p.rates, p.id).toBe(p.kind === 'tool');
+      expect(!!p.chassis, p.id).toBe(p.kind === 'chassis');
+    }
+  });
+
+  it('are made from what their own project and its ancestors open', () => {
+    for (const p of robotParts) {
+      const got = reach({ tags: tagsOf(p.research) });
+      const cost = p.component ? shipComponents.find((c) => c.id === p.component)!.cost : (p.cost ?? {});
+      expect(unknown(Object.keys(cost), got.materials), p.id).toEqual([]);
+    }
+  });
+
+  it('take the figures the owner settled on #101', () => {
+    const part = (id: string) => robotParts.find((p) => p.id === id)!;
+    expect(part('drum_excavator').rates).toEqual({ loose: 42 });
+    expect(part('drill_oven').rates).toEqual({ loose: 10, hard: 5, ice: 5 });
+    expect(part('drill_oven').bakes).toBe(0.8);
+    expect(part('regolith_scoop').rates).toEqual({ loose: 15, looseIce: 15 });
+    expect([part('radioisotope_generator').generates, part('radioisotope_generator').mass]).toEqual([
+      0.11, 45
+    ]);
+    expect([part('robot_computer').compute, part('robot_computer').power]).toEqual([0.002, 0.13]);
+    expect(part('robot_solar_array').component).toBe('solar_array');
+    expect(
+      new Set(
+        robotParts
+          .filter((p) => p.id !== 'radioisotope_generator' && p.id !== 'battery_dock')
+          .map((p) => p.research)
+      )
+    ).toEqual(new Set([num('autonomous_operations')]));
+    expect(part('radioisotope_generator').research).toBe(num('small_modular_fission'));
+    expect(part('battery_dock').research).toBe(num('space_batteries'));
+    const station = buildings.find((b) => b.id === 'charging_station')!;
+    expect(station.charger?.kw).toBe(10);
+    expect(station.charger?.source).toMatch(URL);
+    expect(station.research).toBe(num('autonomous_operations'));
+  });
+
+  it('dig only known materials that some region holds', () => {
+    const held = new Set(regions.flatMap((r) => r.deposits.map((d) => d.material)));
+    for (const ids of Object.values(digClasses))
+      for (const id of ids) {
+        expect(materialIds.has(id), id).toBe(true);
+        expect(held.has(id), id).toBe(true);
+      }
+    for (const id of digClasses.looseIce) expect(digClasses.ice, id).toContain(id);
   });
 });

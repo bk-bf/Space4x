@@ -1,4 +1,4 @@
-import { siteFlows, type SiteFlows } from './flows.ts';
+import { siteFlows, teleopShare, type SiteFlows } from './flows.ts';
 import { acceptOffer, paidShare } from './market.ts';
 import { isFood } from './processes.ts';
 import { startEconomy } from './start.ts';
@@ -22,7 +22,8 @@ export function flowsOf(site: Site): SiteFlows {
   }
   const hit = cache[site.id];
   if (hit) return hit;
-  const made = siteFlows(economy, site);
+  const home = economy.sites[0];
+  const made = siteFlows(economy, site, home && home !== site ? teleopShare(flowsOf(home)) : 1);
   cache[site.id] = made;
   return made;
 }

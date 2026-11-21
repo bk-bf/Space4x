@@ -19,7 +19,17 @@ import { growthScale } from '#lib/game/suitability.ts';
 import { berthsOf } from './housing.ts';
 import { MONTH_HOURS } from './calendar.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
-import type { BuildOrder, Economy, Group, Programme, Site, YardOrder } from './types.ts';
+import {
+  chassisFor,
+  digRate,
+  isNearEarth,
+  robotStatsOf,
+  runsOnboard,
+  wearPerHour,
+  WEAR_MATERIAL
+} from '#lib/game/robots/index.ts';
+import { chargingKw, earthOperated, robotsWorkHere } from './robots.ts';
+import type { BuildOrder, Economy, Group, Programme, RobotGroup, Site, YardOrder } from './types.ts';
 
 export const STOCK_EPS = 1e-6;
 export const STARVE_PER_YEAR = 0.25;
@@ -43,7 +53,10 @@ export type Limit =
   | { kind: 'deposit'; id: string }
   | { kind: 'depleted' }
   | { kind: 'slot' }
-  | { kind: 'paused' };
+  | { kind: 'paused' }
+  | { kind: 'chassis' }
+  | { kind: 'tool' }
+  | { kind: 'charging' };
 
 interface ActorBase {
   cap: number;
@@ -80,7 +93,18 @@ export interface YardActor extends ActorBase {
   hours: number;
 }
 
-export type Actor = GroupActor | BuildActor | ProgrammeActor | YardActor;
+export interface RobotActor extends ActorBase {
+  kind: 'robot';
+  robots: RobotGroup;
+  grade: number;
+  remote: boolean;
+}
+
+export interface TeleopActor extends ActorBase {
+  kind: 'teleop';
+}
+
+export type Actor = GroupActor | BuildActor | ProgrammeActor | YardActor | RobotActor | TeleopActor;
 
 export interface Balance {
   supply: number;
@@ -248,6 +272,72 @@ function programmeActor(eco: Economy, site: Site, p: Programme): ProgrammeActor 
   };
 }
 
+function chargeShare(site: Site): number {
+  let draw = 0;
+  for (const r of site.robots) {
+    const stats = r.material ? robotStatsOf(r.design) : undefined;
+    if (stats?.power.dock) draw += stats.power.used * r.count;
+  }
+  return draw > 0 ? Math.min(1, chargingKw(site) / draw) : 1;
+}
+
+function robotActor(eco: Economy, site: Site, r: RobotGroup, operated: number, charge: number): RobotActor {
+  const base = { kind: 'robot' as const, robots: r, share: 0, worst: 1, grade: 0, remote: false };
+  const none = { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {} };
+  const stats = robotStatsOf(r.design);
+  const m = r.material;
+  if (!stats || !m || !robotsWorkHere(site)) return { ...none, limit: { kind: 'idle' } };
+  const grade = gradeAt(site, m);
+  if (grade === undefined) return { ...none, limit: { kind: 'deposit', id: m } };
+  if (isDepleted(eco, site.worldBody) || isReserveSpent(eco, site.worldBody, m))
+    return { ...none, limit: { kind: 'depleted' } };
+  if (stats.chassis !== chassisFor(site.worldBody)) return { ...none, limit: { kind: 'chassis' } };
+  const rate = digRate(stats, m);
+  if (rate <= 0) return { ...none, limit: { kind: 'tool' } };
+  const remote = !runsOnboard(stats);
+  if (remote && !isNearEarth(site.worldBody)) return { ...none, remote, limit: { kind: 'compute' } };
+  const powered = stats.power.dock ? charge : 1;
+  const cap = (remote ? operated : 1) * powered;
+  const dug = rate * grade * r.count;
+  return {
+    ...base,
+    grade,
+    remote,
+    cap,
+    worst: cap,
+    inputs: {
+      [WEAR_MATERIAL]: wearPerHour(stats) * r.count,
+      ...(stats.power.dock ? { [POWER]: stats.power.used * r.count } : {})
+    },
+    outputs: { [m]: dug },
+    extracts: { [m]: dug },
+    limit:
+      remote && operated < 1 - 1e-9 ? { kind: 'compute' } : powered < 1 - 1e-9 ? { kind: 'charging' } : null
+  };
+}
+
+function teleopActor(need: number): TeleopActor {
+  return {
+    kind: 'teleop',
+    cap: 1,
+    share: 0,
+    worst: 1,
+    inputs: { compute: need },
+    outputs: {},
+    extracts: {},
+    limit: null
+  };
+}
+
+export const teleopShare = (flows: SiteFlows): number =>
+  flows.actors.find((a) => a.kind === 'teleop')?.share ?? 1;
+
+const operatedFrom = (eco: Economy, site: Site): number => {
+  const home = eco.sites[0];
+  if (!home || home === site || !isNearEarth(site.worldBody) || !site.robots.length) return 1;
+  return teleopShare(siteFlows(eco, home));
+};
+
 const ITERATIONS = 200;
 
 function plantsRunning(actors: Actor[]): number {
@@ -347,7 +437,17 @@ function eat(site: Site, net: Amounts, demand: number): Amounts {
   return eaten;
 }
 
-export function siteFlows(eco: Economy, site: Site): SiteFlows {
+function robotActors(eco: Economy, site: Site, operated: number): Actor[] {
+  const charge = chargeShare(site);
+  const actors: Actor[] = site.robots.map((r) => robotActor(eco, site, r, operated, charge));
+  if (eco.sites[0] === site) {
+    const need = earthOperated(eco);
+    if (need > 0) actors.push(teleopActor(need));
+  }
+  return actors;
+}
+
+export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco, site)): SiteFlows {
   const available = site.population * site.workforceShare;
   const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * building(g.building).workers : 0), 0);
   const workerShare = needed > available ? available / needed : 1;
@@ -355,7 +455,8 @@ export function siteFlows(eco: Economy, site: Site): SiteFlows {
     ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
     ...activeOrders(site).map((o) => buildActor(eco, site, o)),
     ...activeYardOrders(site).map((o) => yardActor(eco, site, o)),
-    ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : [])
+    ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : []),
+    ...robotActors(eco, site, operated)
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);
   const grid = gridOf(site, wanted(POWER));

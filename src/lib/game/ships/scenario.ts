@@ -39,6 +39,7 @@ function vessel(d: ShipDesign, at: Vessel['at'], fill: Partial<Vessel> = {}): Ve
     trip: null,
     propellant: {},
     cargo: {},
+    robots: {},
     crew: 0,
     boosters: statsFor(d).boosters?.count ?? 0,
     orders: [],

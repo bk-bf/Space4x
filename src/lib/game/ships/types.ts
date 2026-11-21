@@ -7,7 +7,10 @@ export type Whereabouts =
   | { kind: 'surface'; body: string; region?: string };
 
 export type Item =
-  { kind: 'cargo'; id: string } | { kind: 'propellant'; id: PropellantKind } | { kind: 'crew' };
+  | { kind: 'cargo'; id: string }
+  | { kind: 'propellant'; id: PropellantKind }
+  | { kind: 'crew' }
+  | { kind: 'robot'; id: string };
 
 export interface AllCargo {
   kind: 'all-cargo';
@@ -59,6 +62,7 @@ export interface Vessel {
   trip: Trip | null;
   propellant: Partial<Record<PropellantKind, number>>;
   cargo: Record<string, number>;
+  robots: Record<string, number>;
   crew: number;
   boosters: number;
   orders: Order[];

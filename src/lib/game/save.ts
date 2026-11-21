@@ -5,6 +5,7 @@ import { economy, resetEconomy, touch, type Economy } from './economy/index.ts';
 import type { FlightSystem, TripOption } from './flight/index.ts';
 import { mockEvents } from './mock/events.ts';
 import { mockWorld } from './mock/world.ts';
+import { robots, type RobotDesign } from './robots/index.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 import {
   clearSupplyCache,
@@ -21,7 +22,7 @@ import type { Game } from './state.svelte.ts';
 import { resetSurvey, survey } from './survey.svelte.ts';
 import type { GameEvent } from './types.ts';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 type SavedTrip = Omit<TripOption, 'system'> & { system: number };
 
@@ -41,6 +42,7 @@ export interface SaveData {
   systems: number[][];
   trips: [string, SavedTrip][];
   classes: { saved: readonly ShipDesign[]; counter: number };
+  robots: { saved: readonly RobotDesign[]; counter: number };
   survey: Record<string, number>;
   alerts?: { pauseOn: PauseKinds; warnDays: number };
 }
@@ -69,6 +71,7 @@ export function serialise(game: Game): SaveData {
     systems: systems.map((s) => s.bodies.map((b) => b.angle)),
     trips,
     classes: { saved: classes.saved, counter: classes.counter },
+    robots: { saved: robots.saved, counter: robots.counter },
     survey: survey.levels,
     alerts: { pauseOn: game.pauseOn, warnDays: game.warnDays }
   });
@@ -80,6 +83,8 @@ export function resetGame(game: Game): void {
   resetSurvey();
   classes.saved = [];
   classes.counter = 0;
+  robots.saved = [];
+  robots.counter = 0;
   clearTripOptions();
   clearSupplyCache();
   const fresh = mockWorld();
@@ -130,6 +135,8 @@ export function checkSave(raw: unknown, game: Game): string | null {
   if (!isObject(s) || !Array.isArray(s.vessels) || !Array.isArray(s.launches)) return 'its ships are missing';
   const c = raw.classes;
   if (!isObject(c) || !Array.isArray(c.saved) || !isNumber(c.counter)) return 'its ship classes are missing';
+  const r = raw.robots;
+  if (!isObject(r) || !Array.isArray(r.saved) || !isNumber(r.counter)) return 'its robots are missing';
   if (!isObject(raw.survey)) return 'its survey is missing';
   if (!Array.isArray(raw.systems) || !raw.systems.every(isNumbers)) return 'its trips are missing';
   if (!Array.isArray(raw.trips)) return 'its trips are missing';
@@ -172,6 +179,8 @@ export function restore(game: Game, data: SaveData): void {
   Object.assign(ships, saved.ships);
   classes.saved = saved.classes.saved;
   classes.counter = saved.classes.counter;
+  robots.saved = saved.robots.saved;
+  robots.counter = saved.robots.counter;
   survey.levels = saved.survey;
   restoreAlerts(game, saved.alerts);
   forgetFlightSystem(game);

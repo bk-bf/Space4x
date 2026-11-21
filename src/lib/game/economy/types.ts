@@ -10,6 +10,13 @@ export interface Group {
   active?: number;
 }
 
+export interface RobotGroup {
+  id: number;
+  design: string;
+  count: number;
+  material: string | null;
+}
+
 export interface BuildOrder {
   id: number;
   building: string;
@@ -32,6 +39,7 @@ export interface YardOrder {
   done: number;
   paused: boolean;
   stalled: string | null;
+  robot?: boolean;
 }
 
 export interface Delivery {
@@ -66,6 +74,7 @@ export interface Site {
   gridKw: number;
   stock: Record<string, number>;
   groups: Group[];
+  robots: RobotGroup[];
   queue: BuildOrder[];
   yard: YardOrder[];
   launches: number[];

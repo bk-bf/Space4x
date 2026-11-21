@@ -1,4 +1,5 @@
 import { classes, START_TIME, type Game, type GameEvent } from '#lib/game/index.ts';
+import { robots } from '#lib/game/robots/index.ts';
 import { checkSave, serialise, type SaveData } from '#lib/game/save.ts';
 import { prefs } from './uiPrefs.svelte.ts';
 
@@ -44,24 +45,32 @@ const logDirty = (game: Game): boolean => logMark(game.events) !== savedLogMark;
 interface Baseline {
   elapsed: number;
   classes: unknown;
+  robots: unknown;
   log: string;
 }
 
 let baseline: Baseline | null = null;
 
 export function markClean(game: Game): void {
-  baseline = { elapsed: game.elapsed, classes: classes.saved, log: logMark(game.events) };
+  baseline = {
+    elapsed: game.elapsed,
+    classes: classes.saved,
+    robots: robots.saved,
+    log: logMark(game.events)
+  };
 }
 
 export const hasChanged = (game: Game): boolean =>
   !baseline ||
   baseline.elapsed !== game.elapsed ||
   baseline.classes !== classes.saved ||
+  baseline.robots !== robots.saved ||
   baseline.log !== logMark(game.events);
 
 export const sinceSaved = (game: Game): number => (baseline ? game.elapsed - baseline.elapsed : Infinity);
 
-export const classesEdited = (): boolean => !baseline || baseline.classes !== classes.saved;
+export const classesEdited = (): boolean =>
+  !baseline || baseline.classes !== classes.saved || baseline.robots !== robots.saved;
 
 let activeSaveId: string | null = null;
 let activeCommitted = true;
