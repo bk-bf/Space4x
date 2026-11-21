@@ -74,7 +74,8 @@ export const EFFECT_NAMES: Record<Effect, string> = {
   data_centre_compute: 'compute a data centre',
   solar_array_output: 'solar array output',
   battery_storage: 'battery storage',
-  electrolysis_power: 'power a kilogram of hydrogen'
+  electrolysis_power: 'power a kilogram of hydrogen',
+  elevator_throughput: 'elevator throughput'
 };
 
 export const effectLines = (p: Project): string[] =>

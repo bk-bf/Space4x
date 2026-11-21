@@ -4,6 +4,7 @@
     averageOutput,
     assign,
     economy,
+    elevatorTop,
     flowsOf,
     groupWorkers,
     isBiosphere,
@@ -116,6 +117,9 @@
       : []
   );
   const outputs = $derived(chosen ? items(chosen.outputs, chosen.share) : []);
+  const lifted = $derived(chosen ? items(chosen.lifts, chosen.share) : []);
+  const top = $derived(elevatorTop(economy, site));
+  const climb = $derived(sel?.building.elevator);
   const recipeName = $derived(
     chosen?.group.process ? process(chosen.group.process, site.body).name : 'No recipe'
   );
@@ -265,12 +269,19 @@
               <IconList items={outputs} plus={false} />
             </CardSection>
           {/if}
-          <CardSection label="Input">
-            {#if inputs.length}<IconList items={inputs} plus={false} />{:else}<Pill
-                icon="drop"
-                text="From the ground"
-              />{/if}
-          </CardSection>
+          {#if lifted.length}
+            <CardSection label={top ? `To ${top.name}` : 'Lifted'}>
+              <IconList items={lifted} plus={false} />
+            </CardSection>
+          {/if}
+          {#if !lifted.length}
+            <CardSection label="Input">
+              {#if inputs.length}<IconList items={inputs} plus={false} />{:else}<Pill
+                  icon="drop"
+                  text="From the ground"
+                />{/if}
+            </CardSection>
+          {/if}
           <Facts
             rows={[
               {
@@ -280,6 +291,17 @@
               },
               ...(chosen.water > 0
                 ? [{ icon: 'drop' as const, label: 'Water', value: rateText(WATER, water, ui.period) }]
+                : []),
+              ...(climb
+                ? [
+                    {
+                      icon: 'rocket' as const,
+                      label: 'Climbers',
+                      value: fmt.count(climb.climbers * chosen.group.count)
+                    },
+                    { icon: 'box' as const, label: 'Payload each', value: fmt.mass(climb.payload) },
+                    { icon: 'clock' as const, label: 'Climb', value: fmt.days(climb.climbDays) }
+                  ]
                 : [])
             ]}
           />
@@ -307,7 +329,7 @@
           <CardSection label="Switch recipe">
             <div class="recipes" id="recipes">
               {#each others.slice(0, 30) as p (p.id)}
-                {@const o = Object.keys(p.outputs).filter((m) => m !== POWER)[0]}
+                {@const o = Object.keys({ ...p.outputs, ...p.lifts }).filter((m) => m !== POWER)[0]}
                 <Tile
                   icons={o ? [mat(o)] : [bld(sel.building.id)]}
                   iconSize={32}

@@ -1,9 +1,12 @@
 import { classes } from './classes.svelte.ts';
-import { building, material, regionsOf } from './data/index.ts';
+import { building, material, projectById, regionsOf } from './data/index.ts';
 import {
   assign,
   economy,
+  ELEVATOR,
   extractionId,
+  flowsOf,
+  liftId,
   queueBuilding,
   setOn,
   siteAt,
@@ -11,6 +14,8 @@ import {
   touch,
   unlockedProcesses,
   unlockedTag,
+  type GroupActor,
+  type Group,
   type Site
 } from './economy/index.ts';
 import { Player, withBoosters } from './play.ts';
@@ -41,6 +46,8 @@ export const HEAVY_CHUNK_KG = 90_000;
 const TANKER_LOAD_KG = 160_000;
 const TANKER_CARGO_KG = 20_000;
 const UPKEEP_DAYS = 1100;
+const ELEVATOR_STALL_DAYS = 30;
+const LIFT_EPS = 1e-9;
 
 const MOON_KIT: Record<string, number> = {
   stainless_steel: 8800,
@@ -89,6 +96,7 @@ export interface PathReport {
   sites: string[];
   comparison?: { earth: number | null; moon: number | null; chose: 'earth' | 'moon' };
   lunarLox: number;
+  lifted: number;
   fills: { at: number; kind: string; kg: number; launches: number; fromStock: number }[];
 }
 
@@ -97,7 +105,7 @@ type Parts = readonly (readonly [string, number])[];
 export type Payload = { kind: 'ship'; ship: string } | { kind: 'cargo'; cargo: Record<string, number> };
 
 export class PathPlayer extends Player {
-  readonly path: PathReport = { sites: [], lunarLox: 0, fills: [] };
+  readonly path: PathReport = { sites: [], lunarLox: 0, lifted: 0, fills: [] };
 
   protected design(
     id: string,
@@ -207,7 +215,63 @@ export class PathPlayer extends Player {
     return ok && !v.blocked;
   }
 
-  protected cargoToStation(cargo: Record<string, number>): void {
+  protected raiseElevator(): void {
+    const earth = this.earth;
+    if (!economy.done.includes(projectById('space_elevator').number) || !this.orbital()) return;
+    if (standing(earth, ELEVATOR) > 0 || earth.queue.some((o) => o.building === ELEVATOR)) return;
+    if (queueBuilding(economy, earth, ELEVATOR, null).length) this.say('queued a space elevator');
+  }
+
+  protected research(): void {
+    super.research();
+    this.raiseElevator();
+  }
+
+  protected liftedPerHour(g: Group): number {
+    const a = flowsOf(this.earth).actors.find(
+      (x): x is GroupActor => x.kind === 'group' && x.group.id === g.id
+    );
+    return a ? Object.values(a.lifts).reduce((sum, v) => sum + v, 0) * a.share : 0;
+  }
+
+  protected liftToStation(cargo: Record<string, number>): Record<string, number> {
+    const earth = this.earth;
+    const g = earth.groups.find((x) => x.building === ELEVATOR && x.count > 0);
+    if (!g) return cargo;
+    const left: Record<string, number> = {};
+    for (const [m, kg] of Object.entries(cargo)) {
+      if (kg <= 0) continue;
+      this.supply({ [m]: kg });
+      if (g.process !== liftId(m) && !assign(economy, earth, g.id, liftId(m), g.count)) {
+        left[m] = kg;
+        continue;
+      }
+      setOn(earth, g.id, true);
+      touch();
+      let lifted = 0;
+      let stalled = 0;
+      while (kg - lifted > LIFT_EPS * kg && stalled < ELEVATOR_STALL_DAYS) {
+        const per = this.liftedPerHour(g);
+        if (per <= 0) {
+          stalled++;
+          this.supply({ [m]: kg - lifted });
+        }
+        const step = per > 0 ? Math.min(1, (kg - lifted) / per / 24) : 1;
+        this.days(step);
+        lifted += per * 24 * step;
+      }
+      setOn(earth, g.id, false);
+      touch();
+      if (kg - lifted > LIFT_EPS * kg) left[m] = kg - lifted;
+      this.path.lifted += lifted;
+      this.say(`lifted ${Math.round(lifted / 100) / 10} t of ${material(m).name} by elevator`);
+    }
+    return left;
+  }
+
+  protected cargoToStation(whole: Record<string, number>): void {
+    const cargo = this.liftToStation(whole);
+    if (!Object.keys(cargo).length) return;
     this.supply(cargo);
     const up = this.launchHeavy({ kind: 'cargo', cargo });
     if (!up) return;

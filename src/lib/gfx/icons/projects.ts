@@ -12,7 +12,8 @@ const EFFECT_ICONS: Record<Effect, IconRef | undefined> = {
   data_centre_compute: { kind: 'building', id: 'data_centre' },
   solar_array_output: { kind: 'component', id: 'solar_array' },
   battery_storage: { kind: 'component', id: 'battery_pack' },
-  electrolysis_power: { kind: 'building', id: 'electrolysis_plant' }
+  electrolysis_power: { kind: 'building', id: 'electrolysis_plant' },
+  elevator_throughput: { kind: 'building', id: 'space_elevator' }
 };
 
 const NAMED: Record<string, IconRef> = {

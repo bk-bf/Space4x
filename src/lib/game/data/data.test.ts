@@ -473,7 +473,8 @@ const EFFECTS = [
   'data_centre_compute',
   'solar_array_output',
   'battery_storage',
-  'electrolysis_power'
+  'electrolysis_power',
+  'elevator_throughput'
 ];
 const opens = (n: number) => {
   const u = unlockedAt(n);
@@ -584,10 +585,10 @@ describe('research projects', () => {
     }
   });
 
-  it('hold the 39 projects of the tree and the 30 levels of the ten boost lines', () => {
-    expect(unlocks).toHaveLength(39);
-    expect(levels).toHaveLength(30);
-    expect(new Set(levels.map((p) => p.line)).size).toBe(10);
+  it('hold the 40 projects of the tree and the 34 levels of the eleven boost lines', () => {
+    expect(unlocks).toHaveLength(40);
+    expect(levels).toHaveLength(34);
+    expect(new Set(levels.map((p) => p.line)).size).toBe(11);
   });
 
   it("cost a rung of Aurora's engine ladder by their place in their lane", () => {

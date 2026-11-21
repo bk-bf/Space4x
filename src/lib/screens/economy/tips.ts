@@ -47,6 +47,9 @@ export function groupTip(g: GroupView, period: Period): string {
     ...Object.entries(a.outputs)
       .filter(([m]) => m !== POWER)
       .map(([m, v]) => `Makes ${rateText(m, v * a.share, period)} ${materialName(m).toLowerCase()}`),
+    ...Object.entries(a.lifts).map(
+      ([m, v]) => `Lifts ${rateText(m, v * a.share, period)} ${materialName(m).toLowerCase()}`
+    ),
     g.limit && (g.quiet ? dim(g.limit) : warn(g.limit))
   );
 }

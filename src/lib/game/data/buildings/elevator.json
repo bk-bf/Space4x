@@ -1,0 +1,48 @@
+[
+  {
+    "id": "space_elevator",
+    "name": "Space elevator",
+    "kind": "infrastructure",
+    "where": [
+      "earth",
+      "moon",
+      "mercury",
+      "mars",
+      "io",
+      "titan",
+      "icy-moon",
+      "comet",
+      "asteroid-c",
+      "asteroid-s",
+      "asteroid-m"
+    ],
+    "research": 70,
+    "estimated": true,
+    "cost": {
+      "cnt_fibre": 750000,
+      "cfrp": 4686,
+      "aluminium": 2704,
+      "mj_solar_cell": 1893,
+      "machinery": 6309,
+      "rad_hard_ic": 5408
+    },
+    "workers": 140,
+    "elevator": {
+      "kgPerDay": 5000,
+      "payload": 13000,
+      "climbDays": 7,
+      "climbers": 3,
+      "climberMass": 7000,
+      "powerKw": 20000,
+      "basis": "Edwards' NIAC elevator: a ribbon of 750 t that holds a 20 t climber, 7 t of climber with 13 t of payload, a week to the top and about 5 t a day. Three climbers keep 5 t a day on a week's climb (5 t times 7 days over 13 t); each climber is Edwards' first-climber breakdown without its cable and splicing, scaled to 7 t: structure as CFRP, thermal control as aluminium, the photovoltaic receiver as multi-junction cells, the motors as machinery, attitude, command and power control as radiation-hardened ICs. It draws the 20 MW of Edwards' power beaming stations and is run by his 140 people on two platforms. Cargo only; the same on every body",
+      "source": "https://www.niac.usra.edu/files/studies/final_report/472Edwards.pdf",
+      "powerSource": "https://NSS.org/wp-content/uploads/2017/07/2003-Space-Elevator-NIAC-phase2.pdf",
+      "climberSource": "https://www.thespacereview.com/article/47/2",
+      "estimated": true
+    },
+    "bp": 10,
+    "bpSource": "https://NSS.org/wp-content/uploads/2017/07/2003-Space-Elevator-NIAC-phase2.pdf",
+    "bpBasis": "Edwards' estimate: the space elevator could be operational in 15 years for $10B",
+    "bpEstimated": true
+  }
+]

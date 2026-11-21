@@ -50,6 +50,7 @@ describe('icon coverage', () => {
       'building:biosphere',
       'building:charging_station',
       'building:research_lab',
+      'building:space_elevator',
       'building:university',
       'component:booster',
       'component:heavy_cargo_bay',

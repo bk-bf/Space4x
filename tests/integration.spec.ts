@@ -68,7 +68,7 @@ test.describe('the top bar', () => {
     await expect(people).not.toHaveText(before);
     await expect(chip(page, 'People')).toHaveText((await people.textContent())!);
     await goTo(page, 'research');
-    await expect(page.locator('[data-screen="research"]')).toContainText('0 of 69 researched');
+    await expect(page.locator('[data-screen="research"]')).toContainText('0 of 74 researched');
   });
 
   test('the Summary counts food in calories and the top bar agrees', async ({ page }) => {

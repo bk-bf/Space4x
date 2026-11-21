@@ -10,6 +10,7 @@ import {
 } from '#lib/game/data/index.ts';
 import type { Amounts, Building, Recipe, Site as Where } from '#lib/game/data/index.ts';
 import type { Economy } from './types.ts';
+import { ELEVATOR, elevatorFigures, liftKgPerHour } from './elevator.ts';
 
 export const POWER = '@power';
 export const COMPUTE = 'compute';
@@ -29,6 +30,7 @@ export interface Process {
   inputs: Amounts;
   outputs: Amounts;
   extracts: Amounts;
+  lifts: Amounts;
   water: number;
   upkeep: number;
   estimated: boolean;
@@ -39,6 +41,14 @@ const EXTRACT = 'extract:';
 export const extractionId = (materialId: string): string => `${EXTRACT}${materialId}`;
 
 export const isExtraction = (id: string): boolean => id.startsWith(EXTRACT);
+
+const LIFT = 'lift:';
+
+export const liftId = (materialId: string): string => `${LIFT}${materialId}`;
+
+export const isLift = (id: string): boolean => id.startsWith(LIFT);
+
+export const liftedMaterial = (id: string): string => id.slice(LIFT.length);
 
 const perHour = (amounts: Amounts, hours: number): Amounts =>
   Object.fromEntries(Object.entries(amounts).map(([k, v]) => [k, k === COMPUTE ? v : v / hours]));
@@ -68,6 +78,7 @@ function recipeProcess(r: Recipe, body: Where): Process {
     inputs,
     outputs,
     extracts,
+    lifts: {},
     water,
     upkeep: r.upkeep ?? 0,
     estimated: r.estimated
@@ -120,6 +131,24 @@ function extractionProcess(materialId: string, b: Building): Process {
     inputs: { [POWER]: EXTRACT_KW },
     outputs: { [materialId]: extractRate(materialId) },
     extracts: { [materialId]: extractRate(materialId) },
+    lifts: {},
+    water: 0,
+    upkeep: 0,
+    estimated: true
+  };
+}
+
+function liftProcess(materialId: string): Process {
+  const rate = liftKgPerHour();
+  return {
+    id: liftId(materialId),
+    name: `Lift ${material(materialId).name}`,
+    building: ELEVATOR,
+    research: building(ELEVATOR).research,
+    inputs: { [materialId]: rate, [POWER]: elevatorFigures().powerKw },
+    outputs: {},
+    extracts: {},
+    lifts: { [materialId]: rate },
     water: 0,
     upkeep: 0,
     estimated: true
@@ -138,7 +167,8 @@ export function process(id: string, body: Where): Process {
     const source = material(m).sources?.find((s) => s.body === body);
     if (!source) throw new Error(`${m} cannot be extracted on ${body}`);
     made = extractionProcess(m, building(source.building));
-  } else made = recipeProcess(recipe(id), body);
+  } else if (isLift(id)) made = liftProcess(liftedMaterial(id));
+  else made = recipeProcess(recipe(id), body);
   cache.set(key, made);
   return made;
 }
@@ -174,7 +204,7 @@ const scaleWhere = (amounts: Amounts, k: number, pick: (id: string) => boolean):
 
 export function boosted(eco: Economy, p: Process, buildingId: string): Process {
   const done = eco.done;
-  let { inputs, outputs, extracts } = p;
+  let { inputs, outputs, extracts, lifts } = p;
   if (isExtraction(p.id)) {
     const f = boostOf(done, 'extraction');
     if (f !== 1) {
@@ -194,6 +224,11 @@ export function boosted(eco: Economy, p: Process, buildingId: string): Process {
   const electrolysis = boostOf(done, 'electrolysis_power');
   if (p.id === ELECTROLYSIS && electrolysis !== 1)
     inputs = scaleWhere(inputs, electrolysis, (m) => m === POWER);
-  if (inputs === p.inputs && outputs === p.outputs && extracts === p.extracts) return p;
-  return { ...p, inputs, outputs, extracts };
+  const lift = boostOf(done, 'elevator_throughput');
+  if (isLift(p.id) && lift !== 1) {
+    inputs = scaleWhere(inputs, lift, (m) => m !== POWER);
+    lifts = scaleWhere(lifts, lift, () => true);
+  }
+  if (inputs === p.inputs && outputs === p.outputs && extracts === p.extracts && lifts === p.lifts) return p;
+  return { ...p, inputs, outputs, extracts, lifts };
 }

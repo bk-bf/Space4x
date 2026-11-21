@@ -3,7 +3,8 @@ import { building, depletableRecord, finiteContent, material, project } from '#l
 import { DEPLETED_EPS, remainingMass, reserveLeft } from './deposits.ts';
 import { finishProgramme, RP_EPS, trimLabs } from './programmes.ts';
 import { isStockless } from './processes.ts';
-import { siteFlows, STOCK_EPS, teleopShare, type SiteFlows } from './flows.ts';
+import { arrivalsAt, siteFlows, STOCK_EPS, teleopShare, type SiteFlows } from './flows.ts';
+import { elevatorBases } from './elevator.ts';
 import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
 import { chargeUpkeep, marketEvents, marketHours } from './market.ts';
 import { startShips } from './yard.ts';
@@ -223,13 +224,27 @@ function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: nu
 
 const statesOf = (eco: Economy, log?: LogFn): SiteState[] => {
   trimLabs(eco);
+  if (log) for (const site of eco.sites) startShips(eco, site, eco.elapsed, log);
   let operated = 1;
-  return eco.sites.map((site, i) => {
-    if (log) startShips(eco, site, eco.elapsed, log);
-    const flows = siteFlows(eco, site, i === 0 ? 1 : operated);
-    if (i === 0) operated = teleopShare(flows);
-    return { site, flows };
+  const flows = new Map<Site, SiteFlows>();
+  const receiving = eco.sites.filter((site) => elevatorBases(eco, site).length > 0);
+  eco.sites.forEach((site, i) => {
+    if (receiving.includes(site)) return;
+    const f = siteFlows(eco, site, i === 0 ? 1 : operated, {});
+    if (i === 0) operated = teleopShare(f);
+    flows.set(site, f);
   });
+  for (const site of receiving)
+    flows.set(
+      site,
+      siteFlows(
+        eco,
+        site,
+        operated,
+        arrivalsAt(eco, site, (base) => flows.get(base) ?? siteFlows(eco, base, operated, {}))
+      )
+    );
+  return eco.sites.map((site) => ({ site, flows: flows.get(site)! }));
 };
 
 export function economyHorizon(eco: Economy, warnDays = WARN_DAYS): number {

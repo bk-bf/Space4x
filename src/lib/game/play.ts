@@ -1,6 +1,7 @@
 import { DAY, formatClock } from './clock.ts';
 import { classes } from './classes.svelte.ts';
 import {
+  ancestorsOf,
   building,
   material,
   project,
@@ -24,6 +25,7 @@ import {
   extractionId,
   extractRate,
   isExtraction,
+  isLift,
   isStockless,
   flowsOf,
   homeSite,
@@ -97,9 +99,20 @@ const LAB_ORDERS = 1;
 const RESEARCH_WAIT_STEPS = 3000;
 const COMPUTE_MARGIN = 1.1;
 
+const ELEVATOR_BEFORE_STAGE = 11;
+
+const elevatorProjects = (): number[] => {
+  const n = projectById('space_elevator').number;
+  return [...[...ancestorsOf(n)].sort((a, b) => a - b), n];
+};
+
 export function researchPlan(): number[] {
   const out: number[] = [];
-  for (const s of stages) for (const n of ownProjects(s)) if (!out.includes(n)) out.push(n);
+  for (const s of stages) {
+    if (s.number === ELEVATOR_BEFORE_STAGE)
+      for (const n of elevatorProjects()) if (!out.includes(n)) out.push(n);
+    for (const n of ownProjects(s)) if (!out.includes(n)) out.push(n);
+  }
   for (const n of SETTLING.map((id) => projectById(id).number)) if (!out.includes(n)) out.push(n);
   for (const line of BOOST_ORDER) for (const p of projects.filter((x) => x.line === line)) out.push(p.number);
   return out;
@@ -170,6 +183,7 @@ export class Player {
   protected trimmedAt = -Infinity;
 
   protected trimmable(processId: string): string | undefined {
+    if (isLift(processId)) return undefined;
     const p = process(processId, this.earth.body);
     const finite = (m: string) => (reserveOf(m)?.content ?? null) !== null;
     const outputs = Object.entries(p.outputs).sort((a, b) => b[1] - a[1]);

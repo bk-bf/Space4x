@@ -78,14 +78,17 @@ describe('the scripted player from the start state', () => {
     expect(researched(17)).toEqual([]);
 
     const perKg = (f: { launches: number; kg: number }) => f.launches / f.kg;
-    const fills = player.path.fills.filter((f) => f.kind === 'methalox' && f.launches > 0);
-    const before = fills.filter((f) => f.at <= lunarLoxAt);
+    const fills = player.path.fills.filter((f) => f.kind === 'methalox');
+    const before = fills.filter((f) => f.at <= lunarLoxAt && f.launches > 0);
     const after = fills.filter((f) => f.at > lunarLoxAt);
     expect(before.length).toBeGreaterThan(3);
     expect(after.length).toBeGreaterThan(0);
     expect(after.some((f) => f.fromStock > 10_000)).toBe(true);
     const mean = (list: typeof fills) => list.reduce((a, f) => a + perKg(f), 0) / list.length;
     expect(Math.min(...after.map(perKg))).toBeLessThan(mean(before));
+
+    expect(standing(economy.sites[0]!, 'space_elevator')).toBe(1);
+    expect(player.path.lifted).toBeGreaterThan(100_000);
 
     const bennu = siteAt(economy, 'bennu', 'surface')!;
     const hertha = siteAt(economy, 'hertha', 'surface')!;
@@ -212,9 +215,9 @@ describe('the scripted player from the start state', () => {
     expect([...times].sort((a, b) => a - b)).toEqual(times);
     expect(year(times.at(-1)!)).toBeLessThan(2200);
 
-    expect(player.report.launches.length).toBeGreaterThan(100);
+    expect(player.report.launches.length).toBeGreaterThan(50);
     expect(player.report.launches.length).toBeLessThan(500);
-    expect(player.report.tonnes).toBeGreaterThan(1500);
+    expect(player.report.tonnes + player.path.lifted / 1000).toBeGreaterThan(1500);
     expect(
       ships.vessels
         .filter((v) => v.at.kind !== 'site' || v.at.site !== 'earth')
@@ -252,6 +255,8 @@ describe('the scripted player from the start state', () => {
       player.report.launches.length,
       'tonnes',
       player.report.tonnes.toFixed(0),
+      'lifted',
+      (player.path.lifted / 1000).toFixed(0),
       'sites',
       economy.sites.map((s) => s.id).join(','),
       'leases',

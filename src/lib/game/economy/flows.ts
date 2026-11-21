@@ -7,6 +7,7 @@ import {
   boosted,
   foodIds,
   isExtraction,
+  isLift,
   isMass,
   isStockless,
   POWER,
@@ -29,6 +30,7 @@ import {
   WEAR_MATERIAL
 } from '#lib/game/robots/index.ts';
 import { chargingKw, earthOperated, robotsWorkHere } from './robots.ts';
+import { elevatorBases, elevatorTop } from './elevator.ts';
 import type { BuildOrder, Economy, Group, Programme, RobotGroup, Site, YardOrder } from './types.ts';
 
 export const STOCK_EPS = 1e-6;
@@ -73,6 +75,7 @@ export interface GroupActor extends ActorBase {
   group: Group;
   grade: number;
   water: number;
+  lifts: Amounts;
 }
 
 export interface BuildActor extends ActorBase {
@@ -104,7 +107,12 @@ export interface TeleopActor extends ActorBase {
   kind: 'teleop';
 }
 
-export type Actor = GroupActor | BuildActor | ProgrammeActor | YardActor | RobotActor | TeleopActor;
+export interface ArrivalActor extends ActorBase {
+  kind: 'arrival';
+}
+
+export type Actor =
+  GroupActor | BuildActor | ProgrammeActor | YardActor | RobotActor | TeleopActor | ArrivalActor;
 
 export interface Balance {
   supply: number;
@@ -147,7 +155,7 @@ function deposit(site: Site, p: ReturnType<typeof process>): { grade: number; mi
 }
 
 function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): GroupActor {
-  const base = { kind: 'group' as const, group: g, share: 0, worst: 1, grade: 1, water: 0 };
+  const base = { kind: 'group' as const, group: g, share: 0, worst: 1, grade: 1, water: 0, lifts: {} };
   if (!g.on) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: { kind: 'off' } };
   const plant = plantOf(g.building);
   if (plant) {
@@ -182,6 +190,7 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
   const p = boosted(eco, process(g.process, site.body), g.building);
   const { grade, missing } = deposit(site, p);
   const none = { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {} };
+  if (isLift(g.process) && !elevatorTop(eco, site)) return { ...none, limit: { kind: 'idle' } };
   if (missing) return { ...none, grade: 0, limit: { kind: 'deposit', id: missing } };
   const extracted = Object.keys(p.extracts);
   if (
@@ -203,6 +212,7 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
     inputs: scaled(p.inputs, g.count),
     outputs: scaled(p.outputs, g.count * rich),
     extracts: scaled(p.extracts, g.count * rich),
+    lifts: scaled(p.lifts, g.count),
     limit: gradeLimited
       ? { kind: 'deposit', id: Object.keys(p.extracts)[0] ?? '' }
       : paid < 1
@@ -449,7 +459,38 @@ function robotActors(eco: Economy, site: Site, operated: number): Actor[] {
   return actors;
 }
 
-export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco, site)): SiteFlows {
+export function liftedFrom(flows: SiteFlows): Amounts {
+  const out: Amounts = {};
+  for (const a of flows.actors)
+    if (a.kind === 'group' && a.share > 0)
+      for (const [m, v] of Object.entries(a.lifts)) out[m] = (out[m] ?? 0) + v * a.share;
+  return out;
+}
+
+export function arrivalsAt(eco: Economy, top: Site, flowsOf: (base: Site) => SiteFlows): Amounts {
+  const out: Amounts = {};
+  for (const base of elevatorBases(eco, top))
+    for (const [m, v] of Object.entries(liftedFrom(flowsOf(base)))) out[m] = (out[m] ?? 0) + v;
+  return out;
+}
+
+const arrivalActor = (arrivals: Amounts): ArrivalActor => ({
+  kind: 'arrival',
+  cap: 1,
+  share: 1,
+  worst: 1,
+  inputs: {},
+  outputs: arrivals,
+  extracts: {},
+  limit: null
+});
+
+export function siteFlows(
+  eco: Economy,
+  site: Site,
+  operated = operatedFrom(eco, site),
+  arrivals: Amounts = arrivalsAt(eco, site, (base) => siteFlows(eco, base))
+): SiteFlows {
   const available = site.population * site.workforceShare;
   const need = (first: boolean) =>
     site.groups.reduce((a, g) => a + (g.on && isBiosphere(g) === first ? groupWorkers(site, g) : 0), 0);
@@ -464,7 +505,8 @@ export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco,
     ...activeOrders(site).map((o) => buildActor(eco, site, o)),
     ...activeYardOrders(site).map((o) => yardActor(eco, site, o)),
     ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : []),
-    ...robotActors(eco, site, operated)
+    ...robotActors(eco, site, operated),
+    ...(Object.keys(arrivals).length ? [arrivalActor(arrivals)] : [])
   ];
   const wanted = (m: string) => actors.reduce((a, x) => a + (x.inputs[m] ?? 0) * x.cap, 0);
   const grid = gridOf(site, wanted(POWER));
@@ -479,10 +521,12 @@ export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco,
     if (a.share <= 0) continue;
     for (const [m, v] of Object.entries(a.outputs)) produced[m] = (produced[m] ?? 0) + v * a.share;
     for (const [m, v] of Object.entries(a.inputs)) consumed[m] = (consumed[m] ?? 0) + v * a.share;
+    if (a.kind === 'arrival') continue;
     const extracted = massOf(a.extracts) * a.share;
     extractedMass += extracted;
+    const lifted = a.kind === 'group' ? massOf(a.lifts) * a.share : 0;
     if (a.kind === 'build' || a.kind === 'yard') builtMass += massOf(a.inputs) * a.share;
-    else lostMass += massOf(a.inputs) * a.share + extracted - massOf(a.outputs) * a.share;
+    else lostMass += massOf(a.inputs) * a.share + extracted - massOf(a.outputs) * a.share - lifted;
   }
   const net: Amounts = {};
   for (const m of new Set([...Object.keys(produced), ...Object.keys(consumed)]))

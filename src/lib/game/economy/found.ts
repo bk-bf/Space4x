@@ -7,6 +7,7 @@ import { earthStart } from './start.ts';
 import type { Economy, Site, SitePlace } from './types.ts';
 import { holdsHere } from './housing.ts';
 import { isUnlocked } from './unlocks.ts';
+import { ELEVATOR, elevatorStands } from './elevator.ts';
 
 export const FOUNDING_CREW_SHARE = 1;
 
@@ -52,6 +53,7 @@ export function firstBuildings(
           !b.kit &&
           isUnlocked(eco, b) &&
           holdsHere(b.id, worldBody) &&
+          elevatorStands(eco, b.id, worldBody, place) &&
           workableHere(b.id, where, worldBody, region)
       )
     : [];
@@ -104,9 +106,14 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
 
 export function standFirst(eco: Economy, site: Site, buildingId: string): boolean {
   const b = building(buildingId);
-  if (!b.where.includes(site.body) || !isUnlocked(eco, b) || !holdsHere(buildingId, site.worldBody))
+  if (
+    !b.where.includes(site.body) ||
+    !isUnlocked(eco, b) ||
+    !holdsHere(buildingId, site.worldBody) ||
+    !elevatorStands(eco, buildingId, site.worldBody, site.place)
+  )
     return false;
-  const process = unlockedProcesses(eco, site, buildingId)[0]?.id ?? null;
+  const process = buildingId === ELEVATOR ? null : (unlockedProcesses(eco, site, buildingId)[0]?.id ?? null);
   const same = site.groups.find((g) => g.building === buildingId && g.process === process && g.on);
   if (same) same.count += 1;
   else site.groups.push({ id: eco.nextId++, building: buildingId, process, count: 1, on: true });

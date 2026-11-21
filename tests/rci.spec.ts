@@ -34,11 +34,11 @@ test.describe('research', () => {
     page.locator(`[data-screen="research"] [data-tab="${id}"]`).click();
   const READY_AT_START = [1, 3, 7, 9, 20, 41, 45, 53, 57, 65];
 
-  test('shows the 69 projects as tiles in a dependency tree, and a tile click selects one', async ({
+  test('shows the 74 projects as tiles in a dependency tree, and a tile click selects one', async ({
     page
   }) => {
     await open(page, 'screen=research');
-    await expect(page.locator('#techTree .tpos')).toHaveCount(69);
+    await expect(page.locator('#techTree .tpos')).toHaveCount(74);
     await expect(slot(page, 1)).toHaveAttribute('data-status', 'ready');
     await expect(slot(page, 2)).toHaveAttribute('data-status', 'locked');
     await expect(title(page)).toHaveText('1. Booster recovery');
@@ -59,7 +59,7 @@ test.describe('research', () => {
     await expect(tile(page, 49)).toHaveClass(/feeds/);
     await expect(tile(page, 7)).not.toHaveClass(/needs|feeds/);
     await expect(page.locator('#techTree path.e.into')).toHaveCount(2);
-    await expect(page.locator('#techTree path.e.out')).toHaveCount(5);
+    await expect(page.locator('#techTree path.e.out')).toHaveCount(6);
     await expect(page.locator('#techTree path.e.done')).toHaveCount(0);
     await open(page, 'screen=research&project=12&reached=3');
     await expect(page.locator('#techTree path.e.done').first()).toHaveAttribute('d', /^M/);
@@ -75,7 +75,7 @@ test.describe('research', () => {
       const boxes = await page
         .locator('#techTree .tpos button')
         .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect));
-      expect(boxes).toHaveLength(69);
+      expect(boxes).toHaveLength(74);
       for (const [i, b] of boxes.entries()) {
         expect(b.width, `project ${i + 1}`).toBe(144);
         expect(b.height, `project ${i + 1}`).toBe(56);
@@ -157,13 +157,13 @@ test.describe('research', () => {
     page
   }) => {
     await open(page, 'screen=research');
-    await expect(kpi(page, 'researched').locator('.big')).toHaveText('0 of 69');
+    await expect(kpi(page, 'researched').locator('.big')).toHaveText('0 of 74');
     await expect(kpi(page, 'none running')).toBeVisible();
     await expect(kpi(page, 'labs assigned').locator('.big')).toHaveText('0 / 4');
     await expect(kpi(page, '6 unassigned')).toBeVisible();
     await expect(page.locator('#chips [data-chip="labs"]')).toContainText('0 / 4');
     await open(page, 'screen=research&reached=3&start=4');
-    await expect(kpi(page, 'researched').locator('.big')).toHaveText('3 of 69');
+    await expect(kpi(page, 'researched').locator('.big')).toHaveText('3 of 74');
     await expect(kpi(page, 'labs assigned').locator('.big')).toHaveText('3 / 4');
     await expect(kpi(page, '5 unassigned')).toBeVisible();
     await expect(kpi(page, 'to labs').locator('.big')).toHaveText('54 EFLOP/s');
@@ -175,7 +175,7 @@ test.describe('research', () => {
     await expect(page.locator('h3[data-group="running"]')).toContainText('0');
     await expect(page.locator('h3[data-group]')).toHaveCount(6);
     await expect(group('ready')).toHaveCount(READY_AT_START.length);
-    await expect(group('locked')).toHaveCount(69 - READY_AT_START.length);
+    await expect(group('locked')).toHaveCount(74 - READY_AT_START.length);
     await page.locator('.slot[data-project="6"] button').click();
     await expect(title(page)).toHaveText('6. Remote-sensing instruments');
     await expectCleanLayout(page);

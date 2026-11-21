@@ -245,7 +245,7 @@
     "name": "Carbon nanotube fibre",
     "subject": "chemistry",
     "rp": 120,
-    "requires": [13, 14]
+    "requires": [3]
   },
   {
     "id": "nuclear_electric_propulsion",
@@ -793,5 +793,77 @@
     "tier": "E",
     "rp": 600,
     "requires": [21, 24]
+  },
+  {
+    "id": "space_elevator",
+    "number": 70,
+    "name": "Space elevator",
+    "subject": "launch",
+    "rp": 240,
+    "requires": [4, 16, 31]
+  },
+  {
+    "id": "elevator_throughput_1",
+    "number": 71,
+    "name": "Elevator throughput 1",
+    "subject": "launch",
+    "rp": 180,
+    "requires": [70],
+    "line": "elevator_throughput",
+    "level": 1,
+    "effects": {
+      "elevator_throughput": 1.2
+    },
+    "basis": "The construction line's 1.2, 1.4, 1.6 and 2, from Aurora's construction rate; Edwards widens a ribbon by climbers that add to it, with no published series of throughput",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": true
+  },
+  {
+    "id": "elevator_throughput_2",
+    "number": 72,
+    "name": "Elevator throughput 2",
+    "subject": "launch",
+    "rp": 300,
+    "requires": [71],
+    "line": "elevator_throughput",
+    "level": 2,
+    "effects": {
+      "elevator_throughput": 1.4
+    },
+    "basis": "The construction line's 1.2, 1.4, 1.6 and 2, from Aurora's construction rate; Edwards widens a ribbon by climbers that add to it, with no published series of throughput",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": true
+  },
+  {
+    "id": "elevator_throughput_3",
+    "number": 73,
+    "name": "Elevator throughput 3",
+    "subject": "launch",
+    "rp": 600,
+    "requires": [72],
+    "line": "elevator_throughput",
+    "level": 3,
+    "effects": {
+      "elevator_throughput": 1.6
+    },
+    "basis": "The construction line's 1.2, 1.4, 1.6 and 2, from Aurora's construction rate; Edwards widens a ribbon by climbers that add to it, with no published series of throughput",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": true
+  },
+  {
+    "id": "elevator_throughput_4",
+    "number": 74,
+    "name": "Elevator throughput 4",
+    "subject": "launch",
+    "rp": 1200,
+    "requires": [73],
+    "line": "elevator_throughput",
+    "level": 4,
+    "effects": {
+      "elevator_throughput": 2
+    },
+    "basis": "The construction line's 1.2, 1.4, 1.6 and 2, from Aurora's construction rate; Edwards widens a ribbon by climbers that add to it, with no published series of throughput",
+    "source": "https://erikevenson.github.io/aurora-manual/6-economy-and-industry/6.3-construction.html",
+    "estimated": true
   }
 ]

@@ -207,6 +207,20 @@ export interface RobotPart {
   source?: string;
 }
 
+export interface Elevator {
+  kgPerDay: number;
+  payload: number;
+  climbDays: number;
+  climbers: number;
+  climberMass: number;
+  powerKw: number;
+  basis: string;
+  source: string;
+  powerSource: string;
+  climberSource: string;
+  estimated: boolean;
+}
+
 export interface Biosphere {
   people: number;
   residentKw: number;
@@ -242,6 +256,7 @@ export interface Building {
   lab?: Lab;
   biosphere?: Biosphere;
   kit?: Kit;
+  elevator?: Elevator;
   charger?: Charger;
   bp?: number;
   bpSource?: string;
@@ -318,7 +333,8 @@ export type Effect =
   | 'data_centre_compute'
   | 'solar_array_output'
   | 'battery_storage'
-  | 'electrolysis_power';
+  | 'electrolysis_power'
+  | 'elevator_throughput';
 
 export interface ScientistRecord {
   name: string;

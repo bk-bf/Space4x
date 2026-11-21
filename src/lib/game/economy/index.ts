@@ -3,6 +3,7 @@ export * from './actions.ts';
 export * from './calendar.ts';
 export * from './construction.ts';
 export * from './deposits.ts';
+export * from './elevator.ts';
 export * from './yard.ts';
 export * from './found.ts';
 export * from './flows.ts';

@@ -79,7 +79,7 @@ export function groupViews(site: Site, flows: SiteFlows): GroupView[] {
       const quiet = actor.limit?.kind === 'off' || actor.limit?.kind === 'idle';
       const proc = actor.group.process ? process(actor.group.process, site.body) : undefined;
       const main = proc
-        ? Object.entries(proc.outputs)
+        ? Object.entries({ ...proc.outputs, ...proc.lifts })
             .filter(([m]) => m !== POWER)
             .sort((x, y) => y[1] - x[1])[0]?.[0]
         : undefined;
