@@ -56,17 +56,6 @@ export function robotFigures(s: RobotStats): Figure[] {
   ];
 }
 
-export function rateFigures(s: RobotStats): Figure[] {
-  return DIG_CLASSES.map((k) => ({
-    key: `rate-${k}`,
-    icon: 'hammer' as IconName,
-    value: s.rates[k] > 0 ? kgPerDay(s.rates[k]) : '0',
-    label: DIG_CLASS_NAMES[k].toLowerCase(),
-    warn: false,
-    tip: tipText(DIG_CLASS_NAMES[k], `${kgPerDay(s.rates[k])}`)
-  }));
-}
-
 export function factList(f: Figures): string[] {
   const lines = [`Mass ${f.mass.toLocaleString('en-US')} kg`];
   if (f.power) lines.push(`Uses ${kw(f.power)}`);
