@@ -96,6 +96,7 @@ describe('biospheres', () => {
     const eco = startEconomy();
     research(eco);
     const earth = eco.sites[0]!;
+    earth.groups = earth.groups.filter((g) => g.building === 'machine_shop');
     for (const [m, kg] of Object.entries(buildCost(BIOSPHERE))) earth.stock[m] = (earth.stock[m] ?? 0) + kg;
     const before = stockMass(earth);
     expect(queueBuilding(eco, earth, BIOSPHERE, null)).toHaveLength(1);
