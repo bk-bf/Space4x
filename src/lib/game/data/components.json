@@ -813,7 +813,8 @@
       "housing": 100,
       "supports": 102,
       "stores": 3000,
-      "basis": "SpaceX states 100 people per Starship in about 1,000 cubic metres; the shell is 1,000 cubic metres at the B330's 60 kg per cubic metre (about 20 t for 330), plus 17 life support units, 0.75 t a person against the crew capsule's 1.6. The stores are 30 days for 100 at the regenerated 1 kg a person a day. The shell takes the habitat module's materials and the life support those of 17 life support units, scaled by mass.",
+      "power": 83,
+      "basis": "SpaceX states 100 people per Starship in about 1,000 cubic metres; the shell is 1,000 cubic metres at the B330's 60 kg per cubic metre (about 20 t for 330), plus 17 life support units, 0.75 t a person against the crew capsule's 1.6. The stores are 30 days for 100 at the regenerated 1 kg a person a day. The shell takes the habitat module's materials and the life support those of 17 life support units, scaled by mass. It draws 83 kW, 0.83 kW a person, the biosphere's figure.",
       "source": "https://en.wikipedia.org/wiki/SpaceX_Starship_(spacecraft)",
       "estimated": true
     }

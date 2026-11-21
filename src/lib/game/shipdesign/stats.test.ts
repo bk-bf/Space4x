@@ -163,6 +163,13 @@ describe('crew, power and heat', () => {
     expect(crewed.heat.balance).toBeGreaterThan(0);
   });
 
+  it('draws 0.83 kW a person for the passenger cabin', () => {
+    const cabin = designStats(build([...crewedVehicle, ['passenger_cabin', 1]], { role: 'capsule' }));
+    expect(cabin.power.used - crewed.power.used).toBeCloseTo(0.83 * 100, 6);
+    expect(cabin.heat.produced - crewed.heat.produced).toBeCloseTo(83, 6);
+    expect(cabin.issues.map((i) => i.code)).toContain('power-deficit');
+  });
+
   it('throttles an electric drive to the power left over', () => {
     const s = designStats(
       build([
