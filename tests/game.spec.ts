@@ -31,10 +31,12 @@ for (const id of MOCK_SCREENS) {
 
 test('the F keys of mock screens do nothing', async ({ page }) => {
   await open(page);
-  for (const key of ['F5', 'F6', 'F7', 'F8', 'F9']) {
+  for (const key of ['F6', 'F7', 'F8', 'F9']) {
     await page.keyboard.press(key);
     await expect(page.locator('[data-nav="map"]')).toHaveClass(/on/);
   }
+  await page.keyboard.press('F5');
+  await expect(page.locator('[data-nav="robots"]')).toHaveClass(/on/);
 });
 
 test('the map has no site marker, fly-to button or scene', async ({ page }) => {
