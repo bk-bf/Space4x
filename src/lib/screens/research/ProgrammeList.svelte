@@ -65,6 +65,8 @@
   }
 </script>
 
+{#snippet blank()}{/snippet}
+
 {#each groups as g (g.status)}
   <h3 data-group={g.status}>
     <Icon name={ICON[g.status]} class="sm" />{GROUP_NAMES[g.status]}
@@ -83,6 +85,7 @@
             mark={ICON[g.status]}
             markTone={TONE[g.status]}
             icons={icon ? [icon] : []}
+            art={icon ? undefined : blank}
             name={p.name}
             note={f.note}
             meter={f.meter}

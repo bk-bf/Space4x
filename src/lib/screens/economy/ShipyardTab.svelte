@@ -262,7 +262,7 @@
     {@const st = status(sel)}
     <Card
       title={sel.name}
-      subtitle="order {selIndex + 1}, {st.text.toLowerCase()}"
+      subtitle="order {selIndex + 1}, {st.text.charAt(0).toLowerCase()}{st.text.slice(1)}"
       chips={[
         {
           icon: 'yard',

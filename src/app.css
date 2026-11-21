@@ -998,6 +998,9 @@ div.ui-tile {
 .ui-net {
   font-size: 15px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   line-height: 1;
   margin-bottom: 1px;
 }
