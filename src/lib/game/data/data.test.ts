@@ -608,9 +608,8 @@ describe('research projects', () => {
     for (const p of projects) for (const r of p.requires) expect(dependentsOf(r), p.id).toContain(p.number);
   });
 
-  it('give each unlock project something to open, but booster recovery and helium-3 extraction', () => {
+  it('give each unlock project something to open, but helium-3 extraction', () => {
     expect(unlocks.filter((p) => opens(p.number).length === 0).map((p) => p.id)).toEqual([
-      'booster_recovery',
       'helium_3_extraction'
     ]);
   });

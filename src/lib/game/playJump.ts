@@ -13,7 +13,7 @@ import {
 } from './economy/index.ts';
 import { PathPlayer } from './playPath.ts';
 import { addOrder, installModule, orderShips, ships, type Vessel } from './ships/index.ts';
-import { SOUTH_POLE, type Payload } from './playPath.ts';
+import { HEAVY_CHUNK_KG, SOUTH_POLE, type Payload } from './playPath.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 
 const BARGE = 'jump-barge';
@@ -24,9 +24,7 @@ const XENON_KG = 150_000;
 const FOOD_MIN_DAYS = 700;
 const FOOD_TOP_UP_DAYS = 2_300;
 const MOON_FOOD_KG = 7_500;
-const FOOD_RESERVE_LAUNCHES = 14;
-const FOOD_RESERVE_CHUNK_KG = 36_000;
-const XENON_CHUNK_KG = 36_000;
+const FOOD_RESERVE_KG = 504_000;
 const BARGE_METHALOX_KG = 9_000;
 const STEEL_LOAD_KG = 52_000;
 const BARGE_CARBON_KG = 3_000;
@@ -99,7 +97,7 @@ export class JumpPlayer extends PathPlayer {
     let guard = 0;
     while (this.station().stock.xenon === undefined || (this.station().stock.xenon ?? 0) < XENON_KG - 2000) {
       if (guard++ > 12) break;
-      this.cargoToStation({ xenon: XENON_CHUNK_KG });
+      this.cargoToStation({ xenon: HEAVY_CHUNK_KG });
     }
     this.cargoToStation({ carbon: BARGE_CARBON_KG });
     this.stationPropellant('methalox', BARGE_METHALOX_KG);
@@ -238,7 +236,7 @@ export class JumpPlayer extends PathPlayer {
   }
 
   protected foodReserve(): void {
-    for (let i = 0; i < FOOD_RESERVE_LAUNCHES; i++) this.cargoToStation({ wheat: FOOD_RESERVE_CHUNK_KG });
+    for (const part of this.chunks({ wheat: FOOD_RESERVE_KG }, HEAVY_CHUNK_KG)) this.cargoToStation(part);
     this.say(
       `the station holds ${Math.round((this.station().stock.wheat ?? 0) / 1000)} t of wheat in reserve`
     );
@@ -304,7 +302,7 @@ export class JumpPlayer extends PathPlayer {
     const need = Object.fromEntries(
       Object.entries(cargo).filter(([m, kg]) => kg > 1e-6 && m !== 'asteroidal_steel' && !isStockless(m))
     );
-    for (const part of this.chunks(need, 36_000)) this.cargoToStation(part);
+    for (const part of this.chunks(need, HEAVY_CHUNK_KG)) this.cargoToStation(part);
   }
 
   protected stationBuild(id: string, count = 1, process: string | null = null): boolean {

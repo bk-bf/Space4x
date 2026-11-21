@@ -36,7 +36,8 @@ import {
 
 const REACTORS = 3;
 const CREW = 4;
-const LAUNCH_CARGO_KG = 38_000;
+const LAUNCH_CARGO_KG = 95_000;
+export const HEAVY_CHUNK_KG = 90_000;
 const TANKER_LOAD_KG = 160_000;
 const TANKER_CARGO_KG = 20_000;
 const UPKEEP_DAYS = 1100;
@@ -172,9 +173,9 @@ export class PathPlayer extends Player {
   protected heavyDesign(): ShipDesign {
     return this.design(HEAVY, 'Heavy freighter', 'freighter', [
       ['chemical_engine_methalox', 3],
-      ['propellant_tank', 30],
+      ['large_tank', 1],
       ['structure_truss', 1],
-      ['cargo_bay', 10]
+      ['heavy_cargo_bay', 1]
     ]);
   }
 

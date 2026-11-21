@@ -40,6 +40,27 @@
     }
   },
   {
+    "id": "large_tank",
+    "name": "Large tank",
+    "kind": "structure",
+    "research": 1,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "al_li_alloy": 18000,
+      "cfrp": 4500
+    },
+    "design": {
+      "mass": 15000,
+      "volume": 1000,
+      "propellants": ["kerolox", "methalox", "hydrolox", "hypergolic", "hydrogen", "deuterium"],
+      "basis": "A tank of 1,000 cubic metres at about 15 kg per cubic metre, against 25 for the propellant tank; Starship's stainless tanks hold about 1,200 t of propellant. The structure figure is estimated and the materials are the propellant tank's, scaled by mass.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Starship_(spacecraft)",
+      "estimated": true
+    }
+  },
+  {
     "id": "copv",
     "name": "Composite overwrapped pressure vessel",
     "kind": "structure",
@@ -687,6 +708,25 @@
     }
   },
   {
+    "id": "heavy_cargo_bay",
+    "name": "Heavy cargo bay",
+    "kind": "structure",
+    "research": 1,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "al_li_alloy": 11430,
+      "cfrp": 3570
+    },
+    "design": {
+      "mass": 10000,
+      "cargo": 100000,
+      "basis": "Starship is stated to carry 100 to 150 t to orbit; a bay of 10 t carries 100 t, ten times its mass against the cargo bay's 5.7. The structure share of 10% is estimated and the materials are the cargo bay's, scaled by mass.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Starship_(spacecraft)",
+      "estimated": true
+    }
+  },
+  {
     "id": "landing_legs",
     "name": "Landing legs",
     "kind": "structure",
@@ -703,6 +743,26 @@
       "landing": 20000,
       "basis": "A set of four deployable legs, as the Falcon 9 first stage carries, rated for 20 t landed.",
       "source": "https://en.wikipedia.org/wiki/Falcon_9_Full_Thrust",
+      "estimated": true
+    }
+  },
+  {
+    "id": "heavy_landing_legs",
+    "name": "Heavy landing legs",
+    "kind": "structure",
+    "research": 17,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "stainless_steel": 3600,
+      "cfrp": 3600,
+      "titanium": 1800
+    },
+    "design": {
+      "mass": 6000,
+      "landing": 200000,
+      "basis": "A set of legs rated for 200 t landed, as Starship HLS lands tens of tonnes of cargo on the Moon; the mass of about 6 t is estimated and the materials are the landing legs', scaled by mass.",
+      "source": "https://en.wikipedia.org/wiki/Starship_HLS",
       "estimated": true
     }
   },
@@ -728,6 +788,33 @@
       "power": 3,
       "basis": "Crew Dragon: four seats on station flights, ten days of free flight; the stores are four people for ten days at 5 kg a day without a regenerative loop.",
       "source": "https://en.wikipedia.org/wiki/SpaceX_Dragon_2",
+      "estimated": true
+    }
+  },
+  {
+    "id": "passenger_cabin",
+    "name": "Passenger cabin",
+    "kind": "habitat",
+    "research": 16,
+    "thin": true,
+    "estimated": true,
+    "builtAt": ["rocket_factory", "orbital_shipyard"],
+    "cost": {
+      "al_li_alloy": 83330,
+      "fused_silica": 5000,
+      "polyimide": 1670,
+      "copper": 1680,
+      "stainless_steel": 8500,
+      "amine_sorbent": 1700,
+      "platinum": 17
+    },
+    "design": {
+      "mass": 75300,
+      "housing": 100,
+      "supports": 102,
+      "stores": 3000,
+      "basis": "SpaceX states 100 people per Starship in about 1,000 cubic metres; the shell is 1,000 cubic metres at the B330's 60 kg per cubic metre (about 20 t for 330), plus 17 life support units, 0.75 t a person against the crew capsule's 1.6. The stores are 30 days for 100 at the regenerated 1 kg a person a day. The shell takes the habitat module's materials and the life support those of 17 life support units, scaled by mass.",
+      "source": "https://en.wikipedia.org/wiki/SpaceX_Starship_(spacecraft)",
       "estimated": true
     }
   }

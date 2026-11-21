@@ -50,7 +50,11 @@ describe('icon coverage', () => {
       'building:biosphere',
       'building:research_lab',
       'building:university',
-      'component:booster'
+      'component:booster',
+      'component:heavy_cargo_bay',
+      'component:heavy_landing_legs',
+      'component:large_tank',
+      'component:passenger_cabin'
     ]);
   });
 

@@ -13,7 +13,7 @@ import {
   type Site
 } from './economy/index.ts';
 import { JumpPlayer } from './playJump.ts';
-import { SOUTH_POLE } from './playPath.ts';
+import { HEAVY_CHUNK_KG, SOUTH_POLE } from './playPath.ts';
 import type { ShipDesign } from './shipdesign/index.ts';
 import {
   addOrder,
@@ -40,7 +40,6 @@ export const JUMP = 'sol-a';
 export const GIANT = 'uranus';
 
 const SEPARATORS = 200;
-const DEUTERIUM_CHUNK_KG = 36_000;
 const HAULER_DEUTERIUM_KG = 140_000;
 const HAULER_STEEL_KG = 240_000;
 const HAULER_METHALOX_KG = 18_000;
@@ -105,7 +104,7 @@ export class OuterPlayer extends JumpPlayer {
     while (propellantAvailable(st, 'deuterium') < kg - 5 && guard++ < 12) {
       this.separators();
       this.cargoToStation({
-        deuterium: Math.min(DEUTERIUM_CHUNK_KG, kg - propellantAvailable(st, 'deuterium'))
+        deuterium: Math.min(HEAVY_CHUNK_KG, kg - propellantAvailable(st, 'deuterium'))
       });
     }
   }
@@ -133,8 +132,8 @@ export class OuterPlayer extends JumpPlayer {
     return this.fusionDesign(HAULER, 'Fusion hauler', 'freighter', [
       ['fusion_drive', 1],
       ['radiator', 45],
-      ['cargo_bay', 60],
-      ['propellant_tank', 48],
+      ['heavy_cargo_bay', 3],
+      ['large_tank', 1],
       ['structure_truss', 4],
       ['avionics', 1],
       ['chemical_engine_methalox', 1]
@@ -596,10 +595,10 @@ export class OuterPlayer extends JumpPlayer {
   protected settlerDesign(): ShipDesign {
     return this.design(SETTLER, 'Biosphere freighter', 'lander', [
       ['chemical_engine_methalox', 2],
-      ['propellant_tank', 16],
+      ['large_tank', 1],
       ['structure_truss', 1],
-      ['landing_legs', 3],
-      ['cargo_bay', 8],
+      ['heavy_landing_legs', 1],
+      ['heavy_cargo_bay', 1],
       ['solar_array', 1],
       ['avionics', 1]
     ]);
