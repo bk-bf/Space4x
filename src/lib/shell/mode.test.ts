@@ -13,7 +13,7 @@ afterEach(() => vi.unstubAllEnvs());
 describe('game and gallery modes', () => {
   it('lists only the real screens and shows no mock site in the game', async () => {
     const { list, world } = await load(false);
-    expect(list.SCREENS.map((s) => s.id)).toEqual(['map', 'economy', 'research', 'classes']);
+    expect(list.SCREENS.map((s) => s.id)).toEqual(['map', 'economy', 'research', 'classes', 'robots']);
     for (const mock of ['ground', 'commanders', 'intel', 'galaxy']) {
       expect(list.isScreenId(mock)).toBe(false);
     }
@@ -22,7 +22,7 @@ describe('game and gallery modes', () => {
 
   it('lists every screen and every mock site in the gallery', async () => {
     const { list, world } = await load(true);
-    expect(list.SCREENS).toHaveLength(8);
+    expect(list.SCREENS).toHaveLength(9);
     expect(list.isScreenId('galaxy')).toBe(true);
     expect(world.sites).toHaveLength(6);
   });

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { material } from '#lib/game/data/index.ts';
   import { economy, isMass, touch } from '#lib/game/economy/index.ts';
+  import { robotName } from '#lib/game/robots/index.ts';
   import { className, game } from '#lib/game/index.ts';
   import { PROPELLANTS, PROPELLANT_KINDS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
   import {
@@ -211,6 +212,13 @@
     ].filter((m) => isMass(m))
   );
 
+  const robotIds = $derived([
+    ...new Set([
+      ...Object.keys(vessel?.robots ?? {}),
+      ...(here?.robots ?? []).filter((r) => r.material === null && r.count > 0).map((r) => r.design)
+    ])
+  ]);
+
   type Choice = { key: string; label: string; item: Item | AllCargo };
   const items = $derived<Choice[]>([
     ...(orderType === 'unload'
@@ -228,6 +236,11 @@
       key: `cargo:${m}`,
       label: material(m).name,
       item: { kind: 'cargo', id: m } as Item
+    })),
+    ...robotIds.map((id) => ({
+      key: `robot:${id}`,
+      label: robotName(id),
+      item: { kind: 'robot', id } as Item
     }))
   ]);
   const item = $derived(items.find((i) => i.key === itemKey) ?? items[0]);
@@ -367,11 +380,18 @@
       ? 'Crew'
       : l.item.kind === 'cargo'
         ? material(l.item.id).name
-        : PROPELLANTS[l.item.id].name;
+        : l.item.kind === 'robot'
+          ? robotName(l.item.id)
+          : PROPELLANTS[l.item.id].name;
   const takesText = (l: ManifestLine, n: number): string =>
-    l.item.kind === 'crew' ? `${n} people` : fmt.mass(n);
+    l.item.kind === 'crew' ? `${n} people` : l.item.kind === 'robot' ? `${n}` : fmt.mass(n);
   const askedText = (l: ManifestLine): string =>
-    l.item.kind === 'crew' ? `${l.amount} people` : fmt.mass(l.amount ?? 0);
+    l.item.kind === 'crew'
+      ? `${l.amount} people`
+      : l.item.kind === 'robot'
+        ? `${l.amount}`
+        : fmt.mass(l.amount ?? 0);
+  const aboardRobots = $derived(Object.entries(vessel?.robots ?? {}).filter(([, n]) => n > 0));
 
   const ORDER_TYPES: FilterItem[] = [
     { id: 'load', label: 'Load' },
@@ -424,8 +444,11 @@
         {/if}
       </CardSection>
       <CardSection label="Cargo">
-        {#if cargo.length}
-          <IconList items={cargo} size={16} />
+        {#if cargo.length || aboardRobots.length}
+          {#if cargo.length}<IconList items={cargo} size={16} />{/if}
+          {#each aboardRobots as [id, n] (id)}
+            <div class="robots" data-robots={id}><Icon name="wrench" class="sm" />{n} {robotName(id)}</div>
+          {/each}
         {:else}
           <span class="dim">Empty</span>
         {/if}
@@ -568,6 +591,8 @@
                     <PixIcon kind="material" id={line.item.id} />
                   {:else if line.item.kind === 'propellant'}
                     <PixIcon {...propellantIcon(line.item.id)} tip={propellantTip(line.item.id)} />
+                  {:else if line.item.kind === 'robot'}
+                    <Icon name="wrench" class="sm" />
                   {:else}
                     <Icon name="people" class="sm" />
                   {/if}
@@ -744,6 +769,11 @@
 <TabBody {main} {side} />
 
 <style>
+  .robots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
   .dim {
     color: var(--dim);
   }

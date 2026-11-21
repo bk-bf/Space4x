@@ -1,4 +1,5 @@
-import { berthsOf, type Site } from '#lib/game/economy/index.ts';
+import { addRobots, berthsOf, economy, idleRobots, takeRobots, type Site } from '#lib/game/economy/index.ts';
+import { robotStatsOf } from '#lib/game/robots/index.ts';
 import { PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { cargoRoom, propellantRoom, statsOf } from './model.ts';
 import type { AllCargo, Item, ManifestLine, Vessel } from './types.ts';
@@ -35,6 +36,14 @@ const take = (want: number | null, ...limits: number[]): number =>
   Math.max(0, Math.min(want ?? Infinity, ...limits));
 
 export function loadItem(site: Site, v: Vessel, item: Item, amount: number | null): number {
+  if (item.kind === 'robot') {
+    const mass = robotStatsOf(item.id)?.mass ?? 0;
+    const fits = mass > 0 ? Math.floor(cargoRoom(v) / mass + 1e-9) : 0;
+    const n = takeRobots(site, item.id, Math.floor(take(amount, idleRobots(site, item.id), fits)));
+    if (n <= 0) return 0;
+    v.robots[item.id] = (v.robots[item.id] ?? 0) + n;
+    return n;
+  }
   if (item.kind === 'cargo') {
     const n = take(amount, site.stock[item.id] ?? 0, cargoRoom(v));
     if (n <= 0) return 0;
@@ -61,7 +70,16 @@ export function unloadItem(site: Site, v: Vessel, item: Item | AllCargo, amount:
   if (item.kind === 'all-cargo') {
     let moved = 0;
     for (const id of Object.keys(v.cargo)) moved += unloadItem(site, v, { kind: 'cargo', id }, null);
+    for (const id of Object.keys(v.robots)) moved += unloadItem(site, v, { kind: 'robot', id }, null);
     return moved;
+  }
+  if (item.kind === 'robot') {
+    const n = Math.floor(take(amount, v.robots[item.id] ?? 0));
+    if (n <= 0) return 0;
+    v.robots[item.id] = (v.robots[item.id] ?? 0) - n;
+    if ((v.robots[item.id] ?? 0) <= 0) delete v.robots[item.id];
+    addRobots(economy, site, item.id, n);
+    return n;
   }
   if (item.kind === 'cargo') {
     const n = take(amount, v.cargo[item.id] ?? 0);
@@ -98,7 +116,12 @@ export function loadManifest(site: Site, v: Vessel, lines: ManifestLine[]): Mani
 }
 
 export function previewLoad(site: Site, v: Vessel, lines: ManifestLine[]): ManifestResult[] {
-  const siteCopy: Site = { ...site, stock: { ...site.stock } };
-  const vesselCopy: Vessel = { ...v, cargo: { ...v.cargo }, propellant: { ...v.propellant } };
+  const siteCopy: Site = { ...site, stock: { ...site.stock }, robots: site.robots.map((r) => ({ ...r })) };
+  const vesselCopy: Vessel = {
+    ...v,
+    cargo: { ...v.cargo },
+    robots: { ...v.robots },
+    propellant: { ...v.propellant }
+  };
   return loadManifest(siteCopy, vesselCopy, lines);
 }

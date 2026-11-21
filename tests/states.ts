@@ -92,6 +92,11 @@ const QUERIES = [
   'screen=classes&new=stage',
   'screen=classes&reached=6&new=crewed',
   'screen=classes&reached=69',
+  'screen=robots',
+  'screen=robots&robot=excavator',
+  'screen=economy&tab=production&scenario=robots',
+  'screen=economy&tab=yard&colony=earth&scenario=robots',
+  'screen=robots&reached=69&robot=driller&lock=1',
   'screen=ground',
   'screen=commanders',
   'screen=commanders&cmd=3',
@@ -116,6 +121,7 @@ const SHORT_WINDOW_QUERIES = [
   'screen=classes',
   'screen=classes&new=stage',
   'screen=classes&reached=6&new=crewed',
+  'screen=robots&robot=excavator',
   'screen=economy&tab=launch&scenario=travel&launch=1',
   'screen=economy&tab=ships&scenario=travel'
 ];
@@ -153,7 +159,9 @@ const NARROW_WINDOW_QUERIES = [
   'screen=classes&new=stage',
   'screen=classes&new=stage&below=1',
   'screen=classes&reached=6&new=crewed',
-  'screen=classes&reached=69'
+  'screen=classes&reached=69',
+  'screen=robots&robot=excavator',
+  'screen=robots&reached=69&robot=driller'
 ];
 
 const SITE_QUERIES = new Set([

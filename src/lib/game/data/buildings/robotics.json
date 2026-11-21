@@ -1,0 +1,29 @@
+[
+  {
+    "id": "charging_station",
+    "name": "Charging station",
+    "kind": "infrastructure",
+    "where": [
+      "moon",
+      "mercury",
+      "mars",
+      "io",
+      "titan",
+      "icy-moon",
+      "comet",
+      "asteroid-c",
+      "asteroid-s",
+      "asteroid-m"
+    ],
+    "research": 5,
+    "estimated": true,
+    "cost": { "aluminium": 150, "stainless_steel": 80, "copper": 40, "rad_hard_ic": 1 },
+    "workers": 0,
+    "charger": {
+      "kw": 10,
+      "basis": "Feeds docked robots up to 10 kW of average draw from the site's power, the 10 kW of one of Astrobotic's VSAT solar towers (VSAT-XL aims at 50 kW). Range is not modelled. Materials estimated.",
+      "source": "https://www.astrobotic.com/astrobotic-awarded-lunar-power-study-with-vsat-xl/",
+      "estimated": true
+    }
+  }
+]

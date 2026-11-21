@@ -174,6 +174,39 @@ export interface Lab {
   source: string;
 }
 
+export interface Charger {
+  kw: number;
+  basis: string;
+  source: string;
+  estimated: boolean;
+}
+
+export type RobotPartKind = 'tool' | 'chassis' | 'power' | 'computer';
+
+export type DigClass = 'loose' | 'hard' | 'ice' | 'looseIce';
+
+export interface RobotPart {
+  id: string;
+  name: string;
+  kind: RobotPartKind;
+  research: number;
+  estimated: boolean;
+  component?: string;
+  cost?: Amounts;
+  mass?: number;
+  power?: number;
+  generates?: number;
+  storage?: number;
+  dock?: boolean;
+  compute?: number;
+  rates?: Partial<Record<DigClass, number>>;
+  bakes?: number;
+  gravity?: 'surface' | 'any';
+  chassis?: 'wheeled' | 'anchored';
+  basis: string;
+  source?: string;
+}
+
 export interface Biosphere {
   people: number;
   powerKw: number;
@@ -205,6 +238,7 @@ export interface Building {
   plant?: Plant;
   lab?: Lab;
   biosphere?: Biosphere;
+  charger?: Charger;
   bp?: number;
   bpSource?: string;
   bpBasis?: string;

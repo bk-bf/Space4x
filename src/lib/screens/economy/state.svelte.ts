@@ -8,7 +8,7 @@ import {
 } from '#lib/game/economy/index.ts';
 import { game } from '#lib/game/index.ts';
 import { completeSurvey, resetSurvey } from '#lib/game/survey.svelte.ts';
-import { resetShips, seedBelt, seedJump, seedTravel, ships } from '#lib/game/ships/index.ts';
+import { resetShips, seedBelt, seedJump, seedRobots, seedTravel, ships } from '#lib/game/ships/index.ts';
 import type { Tab } from '#lib/ui/index.ts';
 import { launchUi } from './launchState.svelte.ts';
 import type { Period } from '#lib/ui/format.ts';
@@ -47,6 +47,7 @@ interface EconomyUi {
   tab: TabId;
   period: Period;
   group: number | null;
+  robots: number | null;
   groupKind: string;
   target: string;
   switchCount: number;
@@ -70,6 +71,7 @@ const initial = (): EconomyUi => ({
   tab: 'summary',
   period: 'day',
   group: null,
+  robots: null,
   groupKind: 'all',
   target: '',
   switchCount: 1,
@@ -105,6 +107,11 @@ export function applyEconomyParams(params: URLSearchParams): void {
   if (scenario === 'belt') {
     seedBelt(game, params.has('outpost'), params.get('asteroid') ?? undefined);
     ui.vessel ??= ships.vessels[0]?.id ?? null;
+  }
+  if (scenario === 'robots') {
+    seedRobots(game);
+    const moon = siteById('luna');
+    if (moon) ui.site = moon.id;
   }
   if (scenario === 'jump') {
     seedJump(game, params.has('outpost'));

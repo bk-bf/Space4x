@@ -1,7 +1,17 @@
 import components from './components.json';
 import projectRecords from './research.json';
+import robotRecords from './robots.json';
 import scientistRecords from './scientists.json';
-import type { Building, Component, Material, Project, Recipe, ScientistRecord } from './types.ts';
+import type {
+  Building,
+  Component,
+  DigClass,
+  Material,
+  Project,
+  Recipe,
+  RobotPart,
+  ScientistRecord
+} from './types.ts';
 
 const files = <T>(modules: Record<string, T[]>): { name: string; items: T[] }[] =>
   Object.entries(modules)
@@ -22,6 +32,8 @@ export const materials: Material[] = materialFiles.flatMap((f) => f.items);
 export const recipes: Recipe[] = recipeFiles.flatMap((f) => f.items);
 export const buildings: Building[] = buildingFiles.flatMap((f) => f.items);
 export const shipComponents = components as unknown as Component[];
+export const robotParts = robotRecords.parts as RobotPart[];
+export const digClasses = robotRecords.classes as Readonly<Record<DigClass, readonly string[]>>;
 export const startScientists = scientistRecords as ScientistRecord[];
 export const projects = (projectRecords as Project[]).slice().sort((a, b) => a.number - b.number);
 
@@ -31,6 +43,7 @@ const materialIndex = index(materials);
 const recipeIndex = index(recipes);
 const buildingIndex = index(buildings);
 const componentIndex = index(shipComponents);
+const robotPartIndex = index(robotParts);
 
 const lookup =
   <T>(kind: string, map: Map<string, T>) =>
@@ -44,6 +57,7 @@ export const material = lookup('material', materialIndex);
 export const recipe = lookup('recipe', recipeIndex);
 export const building = lookup('building', buildingIndex);
 export const shipComponent = lookup('component', componentIndex);
+export const robotPart = lookup('robot part', robotPartIndex);
 const projectIndex = new Map(projects.map((p) => [p.number, p]));
 
 export const project = (number: number): Project => {
@@ -64,3 +78,4 @@ export const hasMaterial = (id: string) => materialIndex.has(id);
 export const hasRecipe = (id: string) => recipeIndex.has(id);
 export const hasBuilding = (id: string) => buildingIndex.has(id);
 export const hasComponent = (id: string) => componentIndex.has(id);
+export const hasRobotPart = (id: string) => robotPartIndex.has(id);

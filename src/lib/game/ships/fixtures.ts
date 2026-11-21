@@ -59,6 +59,7 @@ export function spawn(
     trip: null,
     propellant: {},
     cargo: {},
+    robots: {},
     crew: 0,
     boosters: d ? (statsFor(d).boosters?.count ?? 0) : 0,
     orders: [],

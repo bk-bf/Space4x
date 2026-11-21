@@ -89,6 +89,7 @@ export function newSite(eco: Economy, f: Foundation): Site | undefined {
     gridKw: 0,
     stock: {},
     groups: [],
+    robots: [],
     queue: [],
     yard: [],
     launches: [],

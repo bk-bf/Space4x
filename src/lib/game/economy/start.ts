@@ -51,6 +51,7 @@ export function startSite(eco: Economy, id: string, worldBody: string, data: Sta
     gridKw: 0,
     stock: {},
     groups: data.groups.map((g) => ({ id: eco.nextId++, ...g, on: true })),
+    robots: [],
     queue: [],
     yard: [],
     launches: [],

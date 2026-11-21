@@ -33,5 +33,8 @@ export function limitText(limit: Limit | null): string {
   if (limit.kind === 'deposit') return `No ${materialName(limit.id).toLowerCase()} in this region`;
   if (limit.kind === 'depleted') return 'Mined out';
   if (limit.kind === 'slot') return 'Waiting for a crew';
+  if (limit.kind === 'chassis') return 'Wrong chassis for this gravity';
+  if (limit.kind === 'tool') return 'No tool for this material';
+  if (limit.kind === 'charging') return 'Short of charging stations';
   return 'Paused';
 }

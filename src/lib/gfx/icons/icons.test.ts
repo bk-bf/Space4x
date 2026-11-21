@@ -48,6 +48,7 @@ describe('icon coverage', () => {
     );
     expect(fallback.sort()).toEqual([
       'building:biosphere',
+      'building:charging_station',
       'building:research_lab',
       'building:university',
       'component:booster',

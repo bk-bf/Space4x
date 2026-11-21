@@ -1,0 +1,173 @@
+{
+  "parts": [
+    {
+      "id": "drum_excavator",
+      "name": "Drum excavator",
+      "kind": "tool",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "stainless_steel": 5,
+        "aluminium": 4,
+        "copper": 1.0
+      },
+      "mass": 10,
+      "power": 0.1,
+      "rates": {
+        "loose": 42
+      },
+      "gravity": "surface",
+      "basis": "Counter-rotating bucket drums of NASA's ISRU Pilot Excavator, a 30 kg-class robot building on RASSOR 2 that digs 42 kg of regolith an hour; the drums need gravity to hold the regolith, so they work on the Moon and Mars. Mass taken as a third of the robot and power not published: both estimated.",
+      "source": "https://www.nasa.gov/ipex/"
+    },
+    {
+      "id": "drill_oven",
+      "name": "Drill with oven",
+      "kind": "tool",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "stainless_steel": 14,
+        "titanium": 6,
+        "copper": 1.5,
+        "rad_hard_ic": 0.5
+      },
+      "mass": 26.5,
+      "power": 0.05,
+      "rates": {
+        "loose": 10,
+        "hard": 5,
+        "ice": 5
+      },
+      "bakes": 0.8,
+      "gravity": "any",
+      "basis": "Honeybee TRIDENT, the 1 m rotary-percussive drill of PRIME-1 and VIPER: 26.5 kg with its avionics, 50 W of rotary power (Zacny 2025); PVEx bakes out 80 percent of the water of the ice it cuts. Rates estimated; the oven's power is not published.",
+      "source": "https://icedrill.org/sites/default/files/Zacny_2025_TRIDENT%20Ice%20Mining%20Drill%20for%20Lunar%20Volatile%20Prospecting%20for%20PRIME-1%20and%20VIPER%20Missions.pdf"
+    },
+    {
+      "id": "regolith_scoop",
+      "name": "Scoop",
+      "kind": "tool",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "aluminium": 3,
+        "stainless_steel": 1.5,
+        "copper": 0.5
+      },
+      "mass": 5,
+      "power": 0.03,
+      "rates": {
+        "loose": 15,
+        "looseIce": 15
+      },
+      "gravity": "any",
+      "basis": "A scoop on an arm, lighter and cheaper than the drum excavator; it works in any gravity, microgravity included, on loose material and loose ice only. Rate, mass and power estimated."
+    },
+    {
+      "id": "wheeled_chassis",
+      "name": "Wheeled chassis",
+      "kind": "chassis",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "aluminium": 7,
+        "stainless_steel": 3,
+        "copper": 2.0
+      },
+      "mass": 12,
+      "power": 0.05,
+      "chassis": "wheeled",
+      "basis": "The four-wheel skid-steer base of the ISRU Pilot Excavator, without suspension or steering actuators, for the Moon and Mars. Mass and power estimated.",
+      "source": "https://ntrs.nasa.gov/api/citations/20240008162/downloads/ASCEND24_IPEx%20TRL%205%20Design%20Overview.pdf"
+    },
+    {
+      "id": "anchored_chassis",
+      "name": "Anchored chassis",
+      "kind": "chassis",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "titanium": 4,
+        "aluminium": 3,
+        "copper": 1
+      },
+      "mass": 8,
+      "power": 0.02,
+      "chassis": "anchored",
+      "basis": "A frame that anchors itself to the surface of an asteroid or comet, where microgravity gives no traction. Mass and power estimated."
+    },
+    {
+      "id": "robot_solar_array",
+      "name": "Solar array",
+      "kind": "power",
+      "research": 5,
+      "estimated": true,
+      "component": "solar_array",
+      "basis": "The ship's solar array, with its figures."
+    },
+    {
+      "id": "radioisotope_generator",
+      "name": "Radioisotope generator",
+      "kind": "power",
+      "research": 10,
+      "estimated": true,
+      "cost": {
+        "pu238": 4.8,
+        "stainless_steel": 20,
+        "aluminium": 15,
+        "lead": 5
+      },
+      "mass": 45,
+      "generates": 0.11,
+      "basis": "NASA's Multi-Mission Radioisotope Thermoelectric Generator: about 110 W at the start of a mission from 4.8 kg of plutonium-238 dioxide, 45 kg. The materials besides the plutonium are estimated. Opened with Small modular fission, which opens plutonium-238.",
+      "source": "https://science.nasa.gov/wp-content/uploads/2024/02/mmrtg-factsheet-updated-5-18-20-1.pdf"
+    },
+    {
+      "id": "battery_dock",
+      "name": "Battery and docking port",
+      "kind": "power",
+      "research": 20,
+      "estimated": true,
+      "cost": {
+        "li_ion_cell": 6.7,
+        "copper": 0.3,
+        "aluminium": 0.2
+      },
+      "mass": 7.2,
+      "storage": 1,
+      "dock": true,
+      "basis": "A 1 kWh battery at about 150 Wh a kilogram and the robot's side of a wireless charging dock, as Astrobotic's lunar wireless charger with WiBotic (125 W, under 3.3 kg for the whole system); it recharges at a charging station. Battery size estimated. Opened with Space batteries, which opens lithium-ion cells.",
+      "source": "https://www.allaboutcircuits.com/news/the-first-wireless-charging-system-for-the-moon-cleared-for-flight/"
+    },
+    {
+      "id": "robot_computer",
+      "name": "Computer",
+      "kind": "computer",
+      "research": 5,
+      "estimated": true,
+      "cost": {
+        "rad_hard_ic": 1,
+        "aluminium": 2
+      },
+      "mass": 3,
+      "power": 0.13,
+      "compute": 0.002,
+      "basis": "An NVIDIA Jetson AGX Thor class computer: 2,070 TFLOP/s of FP4 at up to 130 W. Mass with its carrier and housing estimated.",
+      "source": "https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/"
+    }
+  ],
+  "classes": {
+    "loose": ["lunar_regolith", "martian_regolith"],
+    "hard": [
+      "basalt",
+      "anorthite",
+      "ilmenite",
+      "carbonaceous_chondrite",
+      "ordinary_chondrite",
+      "fe_ni_metal"
+    ],
+    "ice": ["water", "comet_ice"],
+    "looseIce": ["comet_ice"]
+  }
+}

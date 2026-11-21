@@ -13,8 +13,10 @@
     touch,
     unlockedProcesses,
     WATER,
+    type RobotActor,
     type Site
   } from '#lib/game/economy/index.ts';
+  import { robotName } from '#lib/game/robots/index.ts';
   import { BUILDING_KIND_NAMES } from '#lib/gfx/icons/index.ts';
   import {
     Bar,
@@ -37,6 +39,8 @@
   import GroupTile from './GroupTile.svelte';
   import Facts from './Facts.svelte';
   import Field from './Field.svelte';
+  import RobotCard from './RobotCard.svelte';
+  import { limitText } from './view.ts';
   import TabBody from './TabBody.svelte';
   import { KIND_ORDER, groupViews, kindIcon } from './model.ts';
   import { bld, mat } from './refs.ts';
@@ -49,6 +53,8 @@
   const views = $derived(groupViews(site, flows));
   const kinds = $derived(KIND_ORDER.filter((k) => views.some((v) => v.building.kind === k)));
   const shown = $derived(views.filter((v) => ui.groupKind === 'all' || v.building.kind === ui.groupKind));
+  const robotActors = $derived(flows.actors.filter((a): a is RobotActor => a.kind === 'robot'));
+  const robotSel = $derived(robotActors.find((a) => a.robots.id === ui.robots));
   const sel = $derived(views.find((v) => v.actor.group.id === ui.group) ?? shown[0]);
   const chips = $derived<FilterItem[]>([
     { id: 'all', label: 'All', count: views.length },
@@ -66,6 +72,7 @@
   const count = $derived(Math.min(Math.max(1, ui.switchCount), sel?.actor.group.count ?? 1));
 
   function pick(id: number, groupCount: number) {
+    ui.robots = null;
     ui.group = id;
     ui.target = '';
     ui.switchCount = groupCount;
@@ -166,9 +173,42 @@
         {/each}
       </TileGrid>
     </div>
+    {#if robotActors.length}
+      <h3><Icon name="wrench" class="sm" />Robots</h3>
+      <div id="robotGroups">
+        <TileGrid min={104} gap={6}>
+          {#each robotActors as a (a.robots.id)}
+            {@const warned = !!a.limit && a.limit.kind !== 'idle'}
+            <Tile
+              variant="prod"
+              icons={a.robots.material ? [mat(a.robots.material)] : []}
+              name={a.robots.material ? materialName(a.robots.material) : 'Idle'}
+              sub={robotName(a.robots.design)}
+              value={fmt.count(a.robots.count)}
+              meter={a.robots.material ? a.share : undefined}
+              note={a.robots.material ? undefined : 'idle'}
+              meterTone={warned ? 'hot' : 'accent'}
+              badge={warned ? 'warn' : undefined}
+              badgeTone="hot"
+              warn={warned}
+              idle={!a.robots.material}
+              selected={robotSel?.robots.id === a.robots.id}
+              tip={tipText(
+                robotName(a.robots.design),
+                `${fmt.count(a.robots.count)} robots`,
+                limitText(a.limit)
+              )}
+              onselect={() => (ui.robots = a.robots.id)}
+            />
+          {/each}
+        </TileGrid>
+      </div>
+    {/if}
   {/snippet}
   {#snippet side()}
-    {#if sel && chosen}
+    {#if robotSel}
+      <RobotCard {site} actor={robotSel} />
+    {:else if sel && chosen}
       <Card
         title={sel.building.name}
         subtitle={plant ? (BUILDING_KIND_NAMES[sel.building.kind] ?? '') : recipeName}

@@ -7,6 +7,7 @@ import {
   type PropellantKind,
   type ShipDesign
 } from '#lib/game/shipdesign/index.ts';
+import { robotStatsOf } from '#lib/game/robots/index.ts';
 import type { Vessel } from './types.ts';
 
 export const designOf = (v: Vessel): ShipDesign | undefined => classes.find(v.design);
@@ -19,7 +20,10 @@ export const statsOf = (v: Vessel): DesignStats | undefined => {
 const total = (r: Readonly<Record<string, number | undefined>>): number =>
   Object.values(r).reduce<number>((a, x) => a + (x ?? 0), 0);
 
-export const cargoMass = (v: Vessel): number => total(v.cargo);
+export const robotsMass = (robots: Readonly<Record<string, number>>): number =>
+  Object.entries(robots).reduce((a, [id, n]) => a + (robotStatsOf(id)?.mass ?? 0) * n, 0);
+
+export const cargoMass = (v: Vessel): number => total(v.cargo) + robotsMass(v.robots);
 
 export const propellantMass = (v: Vessel): number => total(v.propellant);
 

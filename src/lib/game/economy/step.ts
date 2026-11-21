@@ -3,10 +3,11 @@ import { building, depletableRecord, finiteContent, material, project } from '#l
 import { DEPLETED_EPS, remainingMass, reserveLeft } from './deposits.ts';
 import { finishProgramme, RP_EPS, trimLabs } from './programmes.ts';
 import { isStockless } from './processes.ts';
-import { siteFlows, STOCK_EPS, type SiteFlows } from './flows.ts';
+import { siteFlows, STOCK_EPS, teleopShare, type SiteFlows } from './flows.ts';
 import { nextWarning, supplyText, supplyWarnings } from './forecast.ts';
 import { chargeUpkeep, marketEvents, marketHours } from './market.ts';
 import { startShips } from './yard.ts';
+import { addRobots } from './robots.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
 import { berthsOf } from './housing.ts';
 
@@ -134,7 +135,8 @@ function applySegment(
       o.done = Math.min(1, o.done + (a.share * hours) / a.hours);
       if (o.done >= 1 - 1e-9) {
         site.yard.splice(site.yard.indexOf(o), 1);
-        eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
+        if (o.robot) addRobots(eco, site, o.design, 1);
+        else eco.delivered.push({ site: site.id, design: o.design, order: o.id, at });
         log(`${site.name} finished a ${o.name}.`, false, at, site.id, { kind: 'finished' });
       }
     }
@@ -224,9 +226,12 @@ function segmentHours(eco: Economy, all: SiteState[], left: number, warnDays: nu
 
 const statesOf = (eco: Economy, log?: LogFn): SiteState[] => {
   trimLabs(eco);
-  return eco.sites.map((site) => {
+  let operated = 1;
+  return eco.sites.map((site, i) => {
     if (log) startShips(eco, site, eco.elapsed, log);
-    return { site, flows: siteFlows(eco, site) };
+    const flows = siteFlows(eco, site, i === 0 ? 1 : operated);
+    if (i === 0) operated = teleopShare(flows);
+    return { site, flows };
   });
 };
 

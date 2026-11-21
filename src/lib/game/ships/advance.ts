@@ -56,6 +56,7 @@ export function spawnDeliveries(game: Game): void {
       trip: null,
       propellant: {},
       cargo: {},
+      robots: {},
       crew: 0,
       boosters: statsFor(design).boosters?.count ?? 0,
       orders: [],

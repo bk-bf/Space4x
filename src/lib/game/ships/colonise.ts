@@ -1,6 +1,7 @@
 import { building, material, region as regionRecord, regionsOf } from '#lib/game/data/index.ts';
 import type { Building, Region } from '#lib/game/data/index.ts';
 import {
+  addRobots,
   addsModuleBerths,
   buildCost,
   economy,
@@ -91,6 +92,7 @@ export function foundOptions(v: Vessel, region: string | null = null): FoundOpti
 function absorb(site: Site, v: Vessel): void {
   const stats = statsOf(v);
   for (const [m, kg] of Object.entries(v.cargo)) site.stock[m] = (site.stock[m] ?? 0) + kg;
+  for (const [id, n] of Object.entries(v.robots)) addRobots(economy, site, id, n);
   for (const k of PROPELLANT_KINDS)
     if ((v.propellant[k] ?? 0) > 0) returnPropellant(site, k, v.propellant[k] ?? 0);
   site.population += v.crew;
