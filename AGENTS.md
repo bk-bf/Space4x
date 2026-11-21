@@ -20,7 +20,7 @@ Nothing mock is shown in the game build. `VITE_SPACE4X_GALLERY=1` selects the ga
 
 Every entry in `screens/list.ts` carries `mock: boolean`. To make a screen real, change its `mock` to `false`; nothing else. New mock content (a scene, a list, a button) is wrapped in `gallery` so the game build never renders it. `./launch.sh --gallery` builds the gallery and opens it in the desktop shell (see The desktop build).
 
-Tests: Playwright has two projects, each with its own dev server. `gallery` runs everything but `tests/game.spec.ts`; `game` runs `tests/layout.spec.ts` (states marked `mock` in `tests/states.ts` are skipped) and `tests/game.spec.ts`. A layout state that needs a mock screen or site goes in `tests/states.ts` as before; a site-only query also goes in `SITE_QUERIES`. Vitest runs with the gallery on (`vitest.config.ts`); `src/lib/shell/mode.test.ts` covers the game mode.
+Tests: Playwright has two projects, each with its own dev server. `gallery` runs everything but `tests/game.spec.ts`, `belt.spec.ts`, `save.spec.ts` and `outpost.spec.ts`; `game` runs `tests/layout.spec.ts` (states marked `mock` in `tests/states.ts` are skipped) and those four. `tests/outpost.spec.ts` plays a new game from the main menu to a founded outpost at the Moon's south pole by clicks alone (research, a research lab, a lander with boosters, the GRCop switch its cost needs, launch with the planned site's cargo, the trip, the founding); keep it passing when a screen on that path changes. A layout state that needs a mock screen or site goes in `tests/states.ts` as before; a site-only query also goes in `SITE_QUERIES`. Vitest runs with the gallery on (`vitest.config.ts`); `src/lib/shell/mode.test.ts` covers the game mode.
 
 ## Layout of `src/lib/`
 

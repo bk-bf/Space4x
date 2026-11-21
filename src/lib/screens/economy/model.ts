@@ -54,6 +54,10 @@ export function stockView(site: Site, flows: SiteFlows, id: string): StockView {
   };
 }
 
+export const stalledMaterials = (site: Site): string[] => [
+  ...new Set([...site.queue, ...site.yard].map((o) => o.stalled).filter((m): m is string => m !== null))
+];
+
 export interface GroupView {
   actor: GroupActor;
   building: Building;

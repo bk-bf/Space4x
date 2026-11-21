@@ -40,7 +40,7 @@
   import StockTile from './StockTile.svelte';
   import TabBody from './TabBody.svelte';
   import { projectIcon } from '#lib/gfx/icons/index.ts';
-  import { type KindTotal, groupViews, kindIcon, kindTotals, stockView } from './model.ts';
+  import { type KindTotal, groupViews, kindIcon, kindTotals, stalledMaterials, stockView } from './model.ts';
   import { bld, mat } from './refs.ts';
   import { ui } from './state.svelte.ts';
   import { limitText } from './view.ts';
@@ -89,11 +89,15 @@
   ]);
 
   const shortIds = $derived(
-    materials
-      .map((m) => stockView(site, flows, m.id))
-      .filter((v) => v.short && !v.empty)
-      .slice(0, 14)
-      .map((v) => v.id)
+    [
+      ...new Set([
+        ...stalledMaterials(site),
+        ...materials
+          .map((m) => stockView(site, flows, m.id))
+          .filter((v) => v.short && !v.empty)
+          .map((v) => v.id)
+      ])
+    ].slice(0, 14)
   );
   const limited = $derived(views.filter((v) => v.warn));
 
