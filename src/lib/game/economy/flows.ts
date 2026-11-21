@@ -165,6 +165,8 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
     };
   }
   if (g.building === LAB) return { ...base, cap: 0, inputs: {}, outputs: {}, extracts: {}, limit: null };
+  if (building(g.building).charger)
+    return { ...base, cap: 1, inputs: {}, outputs: {}, extracts: {}, limit: null };
   const biosphere = building(g.building).biosphere;
   if (biosphere)
     return {

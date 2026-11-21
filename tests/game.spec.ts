@@ -173,3 +173,25 @@ test('a station running out of food pauses the game and warns in the top bar, wh
     'true'
   );
 });
+
+test('robots at an outpost dig the material they are switched to, and are queued at the rocket factory', async ({
+  page
+}) => {
+  await open(page, 'screen=economy&tab=production&scenario=robots');
+  const tiles = page.locator('#robotGroups .ui-tile');
+  await expect(tiles).toHaveCount(2);
+  await tiles.filter({ hasText: 'Idle' }).click();
+  await expect(page.locator('#robotLimit')).toBeVisible();
+  await page.locator('#robotMaterials .ui-tile').first().click();
+  await page.locator('#robotSwitch').click();
+  await expect(tiles.filter({ hasText: 'Idle' })).toHaveCount(0);
+
+  await page.locator('[data-nav="robots"]').click();
+  await expect(page.locator('#robotList button')).toHaveCount(2);
+  await page.locator('[data-nav="economy"]').click();
+  await page.locator('[data-site="earth"]').click();
+  await page.locator('[data-tab="yard"]').click();
+  await page.locator('#yardRobots .ui-tile').first().click();
+  await page.locator('#yardAdd').click();
+  await expect(page.locator('#yardQueue .ui-tile')).toHaveCount(1);
+});

@@ -2,6 +2,8 @@ import { classes, statsFor } from '#lib/game/classes.svelte.ts';
 import { regionsOf } from '#lib/game/data/index.ts';
 import { stageProjects, stages } from '#lib/game/stages.ts';
 import {
+  addRobots,
+  assignRobots,
   economy,
   homeSite,
   newSite,
@@ -10,6 +12,7 @@ import {
   standFirst,
   touch
 } from '#lib/game/economy/index.ts';
+import { lockRobot, newRobot, robots, setRobotCount, type RobotDesign } from '#lib/game/robots/index.ts';
 import { lock, newDesign, setCount, type ShipDesign } from '#lib/game/shipdesign/index.ts';
 import { completeSurvey } from '#lib/game/survey.svelte.ts';
 import type { Game } from '#lib/game/state.svelte.ts';
@@ -186,6 +189,48 @@ export function seedJump(game: Game, outpost = false): void {
   }
   vessel(probe, { kind: 'orbit', body: jump.id, angle: 0 }, { propellant: { methalox: 3000 } });
   vessel(probe, { kind: 'orbit', body: 'earth', angle: 0 }, { propellant: { methalox: 3000 } });
+  game.advance(86400);
+  touch();
+}
+
+function robotDesign(id: string, name: string, parts: [string, number][]): RobotDesign {
+  const d = lockRobot(parts.reduce((x, [p, n]) => setRobotCount(x, p, n), newRobot(id, name)));
+  robots.add(d);
+  return d;
+}
+
+export function seedRobots(game: Game): void {
+  if (robots.saved.length > 0) return;
+  economy.done = [...new Set([...stageProjects(14), 20])];
+  const digger = robotDesign('robot-digger', 'Regolith digger', [
+    ['drum_excavator', 1],
+    ['wheeled_chassis', 1],
+    ['battery_dock', 1]
+  ]);
+  robotDesign('robot-driller', 'Asteroid driller', [
+    ['drill_oven', 1],
+    ['anchored_chassis', 1],
+    ['radioisotope_generator', 3],
+    ['robot_computer', 1]
+  ]);
+  const site = newSite(economy, {
+    worldBody: 'luna',
+    bodyName: game.body('luna')?.name ?? 'Moon',
+    place: 'surface',
+    region: 'luna-south-pole',
+    angle: 0
+  });
+  if (site) {
+    const moon = game.body('luna');
+    if (moon) moon.colony = true;
+    standFirst(economy, site, 'charging_station');
+    site.gridKw = 10;
+    site.stock.machinery = 500;
+    addRobots(economy, site, digger.id, 8);
+    const working = site.robots[0];
+    if (working) assignRobots(economy, site, working.id, null, 2);
+  }
+  addRobots(economy, economy.sites[0]!, digger.id, 3);
   game.advance(86400);
   touch();
 }

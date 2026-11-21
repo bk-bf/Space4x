@@ -94,6 +94,8 @@ const QUERIES = [
   'screen=classes&reached=69',
   'screen=robots',
   'screen=robots&robot=excavator',
+  'screen=economy&tab=production&scenario=robots',
+  'screen=economy&tab=yard&colony=earth&scenario=robots',
   'screen=robots&reached=69&robot=driller&lock=1',
   'screen=ground',
   'screen=commanders',

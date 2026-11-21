@@ -8,6 +8,8 @@
     hasYard,
     moveShipOrder,
     pauseShipOrder,
+    queueRobots,
+    ROBOT_YARD,
     removeShipOrder,
     setShipPercent,
     shipyardsFor,
@@ -22,6 +24,7 @@
   import { game, shipClasses, statsFor } from '#lib/game/index.ts';
   import { YARDS, builtMass, yardName, type Yard } from '#lib/game/shipdesign/index.ts';
   import { orderShips } from '#lib/game/ships/index.ts';
+  import { robots, robotStatsFor } from '#lib/game/robots/index.ts';
   import {
     Bar,
     Card,
@@ -49,7 +52,11 @@
   const flows = $derived(flowsOf(site));
   const designs = $derived(shipClasses().filter((d) => d.locked));
   let choice = $state('');
-  const design = $derived(designs.find((d) => d.id === choice) ?? designs[0]);
+  const robotDesigns = $derived(hasYard(site, ROBOT_YARD) ? robots.saved.filter((d) => d.locked) : []);
+  let robotChoice = $state('');
+  const robot = $derived(robotDesigns.find((d) => d.id === robotChoice));
+  const robotStats = $derived(robot ? robotStatsFor(robot) : undefined);
+  const design = $derived(robot ? undefined : (designs.find((d) => d.id === choice) ?? designs[0]));
   let quantity = $state(1);
   let refusal = $state('');
   const selIndex = $derived(site.yard.findIndex((o) => o.id === ui.yardOrder));
@@ -100,12 +107,13 @@
     return `${formatDay(at)} ${new Date(at).getUTCFullYear()}`;
   }
 
+  const cost = $derived(robotStats?.cost ?? stats?.cost);
   const covers = $derived(
-    stats ? Object.keys(stats.cost).every((m) => (site.stock[m] ?? 0) >= (stats.cost[m] ?? 0)) : false
+    cost ? Object.keys(cost).every((m) => (site.stock[m] ?? 0) >= (cost[m] ?? 0)) : false
   );
   const costItems = $derived(
-    stats
-      ? Object.entries(stats.cost)
+    cost
+      ? Object.entries(cost)
           .sort((a, b) => b[1] - a[1])
           .map(([m, need]) => {
             const have = site.stock[m] ?? 0;
@@ -121,8 +129,12 @@
   );
 
   function add() {
-    if (!design) return;
-    const made = orderShips(site, design.id, quantity);
+    const made = robot
+      ? queueRobots(economy, site, robot.id, quantity)
+      : design
+        ? orderShips(site, design.id, quantity)
+        : undefined;
+    if (!made) return;
     if (typeof made === 'string') {
       refusal = made;
       return;
@@ -247,7 +259,10 @@
               `Needs ${shipyardsFor(builtMass(s))} ${yardPlural(d.yard)}`,
               s.main ? `Delta-v ${kms(s.main.deltaV)} at design load` : warn('No drive')
             )}
-            onselect={() => (choice = d.id)}
+            onselect={() => {
+              choice = d.id;
+              robotChoice = '';
+            }}
           >
             {#snippet art()}<ShipArt design={d} />{/snippet}
           </Tile>
@@ -255,6 +270,39 @@
       </TileGrid>
     </div>
   {/if}
+  {#if robotDesigns.length}
+    <h3><Icon name="wrench" class="sm" />Robots <small class="dim">{robotDesigns.length} locked</small></h3>
+    <div id="yardRobots">
+      <TileGrid min={104} gap={6}>
+        {#each robotDesigns as d (d.id)}
+          {@const s = robotStatsFor(d)}
+          {@const costs = Object.entries(s.cost).sort((a, b) => b[1] - a[1])}
+          <Tile
+            variant="bld"
+            name={d.name}
+            corner={fmt.mass(s.mass)}
+            minis={costs.slice(0, 3).map(([m]) => ({ kind: 'material' as const, id: m }))}
+            minisMore={Math.max(0, costs.length - 3)}
+            selected={robot?.id === d.id}
+            tip={tipText(d.name, yardName(ROBOT_YARD), dim(`Mass ${fmt.mass(s.mass)}`))}
+            onselect={() => (robotChoice = d.id)}
+          />
+        {/each}
+      </TileGrid>
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet orderRow()}
+  <CardSection label="Build cost">
+    <IconList variant="have" items={costItems} size={16} />
+  </CardSection>
+  <div class="row">
+    <Field label="Quantity" bind:value={quantity} width={5} name="yardQuantity" />
+    <button id="yardAdd" onclick={add}><Icon name="plus" />Add to queue</button>
+    {#if !covers}<span class="hot">short of material</span>{/if}
+  </div>
+  {#if refusal}<p class="hot" id="yardRefusal">{refusal}</p>{/if}
 {/snippet}
 
 {#snippet side()}
@@ -330,15 +378,16 @@
       ]}
     >
       {#snippet art()}<ShipArt {design} size="card" />{/snippet}
-      <CardSection label="Build cost">
-        <IconList variant="have" items={costItems} size={16} />
-      </CardSection>
-      <div class="row">
-        <Field label="Quantity" bind:value={quantity} width={5} name="yardQuantity" />
-        <button id="yardAdd" onclick={add}><Icon name="plus" />Add to queue</button>
-        {#if !covers}<span class="hot">short of material</span>{/if}
-      </div>
-      {#if refusal}<p class="hot" id="yardRefusal">{refusal}</p>{/if}
+      {@render orderRow()}
+    </Card>
+  {/if}
+  {#if robot && robotStats}
+    <Card
+      title={robot.name}
+      subtitle={yardName(ROBOT_YARD)}
+      chips={[{ icon: 'box', text: fmt.mass(robotStats.mass), tip: 'Mass' }]}
+    >
+      {@render orderRow()}
     </Card>
   {/if}
 {/snippet}
