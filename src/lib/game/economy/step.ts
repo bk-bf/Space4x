@@ -9,7 +9,7 @@ import { chargeUpkeep, marketEvents, marketHours } from './market.ts';
 import { startShips } from './yard.ts';
 import { addRobots } from './robots.ts';
 import type { BuildOrder, Economy, LogFn, Site } from './types.ts';
-import { berthsOf } from './housing.ts';
+import { addBuildings, berthsOf, kitOf, packKit, standsHere } from './housing.ts';
 
 export const SEGMENT_HOURS = 24;
 const MAX_SEGMENTS = 100_000;
@@ -69,11 +69,8 @@ function drawReserves(
 }
 
 function placeBuilding(eco: Economy, site: Site, o: BuildOrder): void {
-  const same = site.groups.find((g) => g.building === o.building && g.process === o.process && g.on);
-  if (same) {
-    same.count += 1;
-    if (same.active !== undefined) same.active += 1;
-  } else site.groups.push({ id: eco.nextId++, building: o.building, process: o.process, count: 1, on: true });
+  if (kitOf(o.building) && !standsHere(o.building, site)) packKit(eco, site, o.building);
+  else addBuildings(eco, site, o.building, o.process, 1);
 }
 
 function applySegment(

@@ -27,7 +27,7 @@
       share: 1 - site.workforceShare
     }
   ]);
-  const jobs = $derived(kindTotals(views).filter((k) => k.workers > 0));
+  const jobs = $derived(kindTotals(site, views).filter((k) => k.workers > 0));
   const totalJobs = $derived(jobs.reduce((a, j) => a + j.workers, 0));
   const spare = $derived(Math.max(0, flows.workers.available - flows.workers.needed));
   const growth = $derived(flows.growthPerHour * 8766);

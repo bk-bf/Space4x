@@ -1,4 +1,12 @@
-import { addRobots, berthsOf, economy, idleRobots, takeRobots, type Site } from '#lib/game/economy/index.ts';
+import {
+  addRobots,
+  berthsOf,
+  economy,
+  idleRobots,
+  standKits,
+  takeRobots,
+  type Site
+} from '#lib/game/economy/index.ts';
 import { robotStatsOf } from '#lib/game/robots/index.ts';
 import { PROPELLANTS, type PropellantKind } from '#lib/game/shipdesign/index.ts';
 import { cargoRoom, propellantRoom, statsOf } from './model.ts';
@@ -87,6 +95,7 @@ export function unloadItem(site: Site, v: Vessel, item: Item | AllCargo, amount:
     v.cargo[item.id] = (v.cargo[item.id] ?? 0) - n;
     if ((v.cargo[item.id] ?? 0) <= EPS) delete v.cargo[item.id];
     site.stock[item.id] = (site.stock[item.id] ?? 0) + n;
+    standKits(economy, site);
     return n;
   }
   if (item.kind === 'propellant') {

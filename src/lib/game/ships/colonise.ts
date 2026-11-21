@@ -9,8 +9,8 @@ import {
   newSite,
   siteIn,
   standFirst,
+  standKits,
   touch,
-  whereOf,
   type Site,
   type SitePlace
 } from '#lib/game/economy/index.ts';
@@ -64,11 +64,10 @@ export function foundOptionsAt(
 ): FoundOption[] {
   if (siteIn(economy, p.worldBody, p.place, p.place === 'surface' ? region : null)) return [];
   if (placeNeedsRegion(p) && !region) return [];
-  const where = whereOf(p.worldBody, p.place);
   return firstBuildings(economy, p.worldBody, p.place, region).map((b) => ({
     building: b,
-    cost: buildCost(b.id, where),
-    missing: Object.entries(buildCost(b.id, where))
+    cost: buildCost(b.id),
+    missing: Object.entries(buildCost(b.id))
       .filter(([m, need]) => (cargo[m] ?? 0) + 1e-9 < need)
       .map(([id, need]) => ({ id, need, have: cargo[id] ?? 0 }))
   }));
@@ -98,6 +97,7 @@ function absorb(site: Site, v: Vessel): void {
   site.population += v.crew;
   if (addsModuleBerths(site)) site.berths = (site.berths ?? 0) + (stats?.berths ?? 0);
   site.gridKw += Math.max(0, stats?.power.made ?? 0);
+  standKits(economy, site);
   ships.vessels = ships.vessels.filter((x) => x !== v);
   clearTripOption(v.id);
 }

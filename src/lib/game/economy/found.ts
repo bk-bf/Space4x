@@ -49,7 +49,10 @@ export function firstBuildings(
   return where
     ? buildingsAt(where).filter(
         (b) =>
-          isUnlocked(eco, b) && holdsHere(b.id, worldBody) && workableHere(b.id, where, worldBody, region)
+          !b.kit &&
+          isUnlocked(eco, b) &&
+          holdsHere(b.id, worldBody) &&
+          workableHere(b.id, where, worldBody, region)
       )
     : [];
 }

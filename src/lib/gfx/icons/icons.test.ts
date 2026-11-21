@@ -55,7 +55,8 @@ describe('icon coverage', () => {
       'component:heavy_cargo_bay',
       'component:heavy_landing_legs',
       'component:large_tank',
-      'component:passenger_cabin'
+      'component:passenger_cabin',
+      'material:biosphere_kit'
     ]);
   });
 

@@ -3,10 +3,10 @@ import { building, projectById } from './data/index.ts';
 import {
   assign,
   biospheresAt,
+  buildMass,
   economy,
   extractionId,
   queueBuilding,
-  setOn,
   siteIn,
   standing,
   touch,
@@ -32,8 +32,7 @@ const FOUNDER = 'jump-founder';
 const POWER_SHIP = 'jump-power';
 const SETTLER = 'jump-settler';
 const BIOSPHERE = 'biosphere';
-const DIGGER = 'regolith_excavator';
-const REGOLITH = extractionId('lunar_regolith');
+const KIT = 'biosphere_kit';
 
 export const MARIA = 'luna-maria';
 export const JUMP = 'sol-a';
@@ -577,16 +576,14 @@ export class OuterPlayer extends JumpPlayer {
     if (this.settling || this.feeding || this.building > 0) return;
     if (!economy.done.includes(projectById(BIOSPHERE).number)) return;
     const site = economy.sites.find(
-      (s) =>
-        s.place === 'surface' &&
-        s.worldBody === 'luna' &&
-        s.population >= 0.5 &&
-        biospheresAt(s) + s.queue.filter((o) => o.building === BIOSPHERE).length === 0
+      (s) => s.place === 'surface' && s.worldBody === 'luna' && s.population >= 0.5 && biospheresAt(s) === 0
     );
     if (!site) return;
     this.settling = true;
     try {
-      this.raiseBiosphere(site);
+      const need = buildMass(BIOSPHERE) - (site.stock[KIT] ?? 0);
+      if ((this.earth.stock[KIT] ?? 0) >= need - 1e-6) this.shipBiosphere(site, need);
+      else if (!this.earth.queue.some((o) => o.building === BIOSPHERE)) this.orderBiosphere();
     } finally {
       this.settling = false;
     }
@@ -604,28 +601,21 @@ export class OuterPlayer extends JumpPlayer {
     ]);
   }
 
-  protected digsRegolith(site: Site): boolean {
-    return site.groups.some((g) => g.building === DIGGER && g.process === REGOLITH);
+  protected orderBiosphere(): void {
+    this.supply(building(BIOSPHERE).cost);
+    if (queueBuilding(economy, this.earth, BIOSPHERE, null).length) this.say('queued a biosphere at Earth');
+    touch();
   }
 
-  protected raiseBiosphere(site: Site): void {
+  protected shipBiosphere(site: Site, kg: number): void {
     const design = this.settlerDesign();
-    const digger = !this.digsRegolith(site);
-    const need: Record<string, number> = {};
-    for (const cost of [building(BIOSPHERE).cost, ...(digger ? [building(DIGGER).cost] : [])])
-      for (const [m, kg] of Object.entries(cost)) need[m] = (need[m] ?? 0) + kg;
-    for (const m of Object.keys(need)) need[m] = Math.max(0, need[m]! - (site.stock[m] ?? 0));
-    const cargo = Object.fromEntries(Object.entries(need).filter(([, kg]) => kg > 1e-6));
-    for (const part of this.chunks(cargo, statsFor(design).payloadCapacity))
+    for (const part of this.chunks({ [KIT]: kg }, statsFor(design).payloadCapacity))
       if (!this.ferry(design, part, site.region ?? SOUTH_POLE)) {
-        this.say(`the biosphere kit did not reach ${site.name}`);
+        this.say(`the biosphere did not reach ${site.name}`);
         return;
       }
-    if (digger) queueBuilding(economy, site, DIGGER, REGOLITH);
-    for (const g of site.groups) if (g.building === DIGGER && g.process === REGOLITH) setOn(site, g.id, true);
-    queueBuilding(economy, site, BIOSPHERE, null);
-    this.biospheres.push({ site: site.id, at: this.game.time });
-    this.say(`queued a biosphere at ${site.name}`);
+    if (biospheresAt(site) > 0) this.biospheres.push({ site: site.id, at: this.game.time });
+    this.say(`set up a biosphere at ${site.name}`);
     touch();
   }
 
@@ -642,7 +632,7 @@ export class OuterPlayer extends JumpPlayer {
     addOrder(v, { type: 'fly', body: 'luna', angle: 0 });
     addOrder(v, { type: 'land', body: 'luna', region });
     addOrder(v, { type: 'unload', item: { kind: 'all-cargo' }, amount: null });
-    if (!this.fly(v, `${v.name} with a biosphere kit`)) return false;
+    if (!this.fly(v, `${v.name} with a biosphere`)) return false;
     const done = installModule(this.game, v);
     if (done) this.say(done);
     touch();

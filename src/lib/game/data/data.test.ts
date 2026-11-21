@@ -274,8 +274,11 @@ describe('materials', () => {
     }
   });
 
-  it('are either extractable somewhere or produced by some recipe', () => {
-    const orphans = materials.filter((m) => !m.sources?.length && recipesProducing(m.id).length === 0);
+  it('are either extractable somewhere, produced by some recipe or a building packed as cargo', () => {
+    const kits = new Set(buildings.flatMap((b) => (b.kit ? [b.kit.material] : [])));
+    const orphans = materials.filter(
+      (m) => !m.sources?.length && recipesProducing(m.id).length === 0 && !kits.has(m.id)
+    );
     expect(orphans.map((m) => m.id)).toEqual([]);
   });
 
@@ -413,7 +416,6 @@ describe('buildings and components', () => {
       'sinter_printer',
       'asteroid_processor',
       'metal_refinery',
-      'biosphere',
       'charging_station'
     ]);
     expect(unknown([...open], buildingIds)).toEqual([]);
@@ -534,35 +536,38 @@ describe('the biosphere', () => {
   const b = buildings.find((x) => x.id === 'biosphere')!;
   const bio = b.biosphere!;
 
-  it('opens with the Biosphere project, holds 300 people at full suitability and needs nine workers', () => {
+  it('opens with the Biosphere project, holds 1,000 people at full suitability, 9 workers and 0.83 kW a resident', () => {
     expect(b.research).toBe(num('biosphere'));
-    expect(bio.people).toBe(300);
-    expect(bio.powerKw).toBe(83);
-    expect(bio.volume).toBe(6700);
-    expect(b.workers).toBe(9);
+    expect(bio.people).toBe(1000);
+    expect(bio.residentKw).toBe(0.83);
+    expect(bio.residentWorkers).toBe(0.09);
+    expect(bio.residentVolume).toBe(25);
+    expect(b.bp).toBe(0.35);
     expect(b.where).not.toContain('earth');
     expect(b.where).not.toContain('orbit');
   });
 
-  it('costs the inflatable habitat scaled to its 406 t shell and 17 life support units', () => {
-    const habitat = shipComponents.find((c) => c.id === 'inflatable_habitat')!;
-    const support = shipComponents.find((c) => c.id === 'life_support_unit')!;
-    const k = bio.shell / habitat.design.mass!;
-    for (const [m, kg] of Object.entries(habitat.cost)) expect(b.cost[m], m).toBeCloseTo(kg * k, -1);
-    for (const [m, kg] of Object.entries(support.cost)) expect(b.cost[m], m).toBe(kg * 17);
-    expect(support.design.mass! * 17).toBeCloseTo(15_000, -3);
+  it('is built from goods, 500 t of fibres, 50 t of machinery and 1 t of ICs, the same on every body', () => {
+    const fibres = (b.cost.vectran ?? 0) + (b.cost.aramid ?? 0) + (b.cost.polyimide ?? 0);
+    expect(fibres).toBe(500_000);
+    expect(b.cost.machinery).toBe(50_000);
+    expect(b.cost.rad_hard_ic).toBe(1000);
+    expect(Object.keys(b.cost).sort()).toEqual([
+      'aramid',
+      'machinery',
+      'polyimide',
+      'rad_hard_ic',
+      'vectran'
+    ]);
+    for (const url of [bio.source, bio.volumeSource, bio.shellSource, bio.workersSource])
+      expect(url).toMatch(/^https:\/\//);
   });
 
-  it('shields with 8,500 t of a material dug where it stands, for every body type it stands on', () => {
-    expect(bio.shield).toBe(8_500_000);
-    expect(Object.keys(bio.shieldMaterial).sort()).toEqual([...b.where].sort());
-    for (const [where, m] of Object.entries(bio.shieldMaterial))
-      expect(
-        material(m!).sources?.some((s) => s.body === where),
-        `${m} on ${where}`
-      ).toBe(true);
-    for (const url of [bio.source, bio.shellSource, bio.shieldSource, bio.workersSource])
-      expect(url).toMatch(/^https:\/\//);
+  it('is built where a flight machine shop stands and ships as a material of its own', () => {
+    expect(b.kit).toEqual({ material: 'biosphere_kit', builtWith: 'machine_shop' });
+    expect(material(b.kit!.material).name).toBe('Biosphere');
+    expect(material(b.kit!.material).unit).toBeUndefined();
+    expect(buildings.some((x) => x.id === b.kit!.builtWith)).toBe(true);
   });
 });
 

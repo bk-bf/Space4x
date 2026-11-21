@@ -16,7 +16,7 @@ import {
 } from './processes.ts';
 import { labFigures, LAB, researchSite, rpPerHour } from './programmes.ts';
 import { growthScale } from '#lib/game/suitability.ts';
-import { berthsOf } from './housing.ts';
+import { berthsOf, groupWorkers, isBiosphere, residentsOf } from './housing.ts';
 import { MONTH_HOURS } from './calendar.ts';
 import { activeYardOrders, yardPointsPerDay } from './yard.ts';
 import {
@@ -173,7 +173,7 @@ function groupActor(eco: Economy, site: Site, g: Group, workerShare: number): Gr
       ...base,
       cap: workerShare,
       worst: workerShare,
-      inputs: { [POWER]: biosphere.powerKw * g.count },
+      inputs: { [POWER]: biosphere.residentKw * residentsOf(site, g) },
       outputs: {},
       extracts: {},
       limit: workerShare < 1 ? { kind: 'workers' } : null
@@ -234,14 +234,14 @@ function yardActor(eco: Economy, site: Site, o: YardOrder): YardActor {
 }
 
 function buildActor(eco: Economy, site: Site, o: BuildOrder): BuildActor {
-  const hours = buildHours(o.building, site.body) / boostOf(eco.done, 'build_speed');
+  const hours = buildHours(o.building) / boostOf(eco.done, 'build_speed');
   return {
     kind: 'build',
     order: o,
     hours,
     cap: 1,
     share: 0,
-    inputs: scaled(buildCost(o.building, site.body), 1 / hours),
+    inputs: scaled(buildCost(o.building), 1 / hours),
     outputs: {},
     extracts: {},
     limit: null,
@@ -451,10 +451,16 @@ function robotActors(eco: Economy, site: Site, operated: number): Actor[] {
 
 export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco, site)): SiteFlows {
   const available = site.population * site.workforceShare;
-  const needed = site.groups.reduce((a, g) => a + (g.on ? g.count * building(g.building).workers : 0), 0);
-  const workerShare = needed > available ? available / needed : 1;
+  const need = (first: boolean) =>
+    site.groups.reduce((a, g) => a + (g.on && isBiosphere(g) === first ? groupWorkers(site, g) : 0), 0);
+  const reserved = need(true);
+  const housingShare = reserved > available ? available / reserved : 1;
+  const left = available - reserved * housingShare;
+  const rest = need(false);
+  const workerShare = rest > left ? left / rest : 1;
+  const needed = reserved + rest;
   const actors: Actor[] = [
-    ...site.groups.map((g) => groupActor(eco, site, g, workerShare)),
+    ...site.groups.map((g) => groupActor(eco, site, g, isBiosphere(g) ? housingShare : workerShare)),
     ...activeOrders(site).map((o) => buildActor(eco, site, o)),
     ...activeYardOrders(site).map((o) => yardActor(eco, site, o)),
     ...(researchSite(eco) === site ? eco.running.map((p) => programmeActor(eco, site, p)) : []),
@@ -525,7 +531,7 @@ export function siteFlows(eco: Economy, site: Site, operated = operatedFrom(eco,
     },
     grid,
     compute: { supply: produced.compute ?? 0, demand: wanted('compute'), used: consumed.compute ?? 0 },
-    workers: { available, needed, share: workerShare },
+    workers: { available, needed, share: needed > available ? available / needed : 1 },
     growthPerHour
   };
 }

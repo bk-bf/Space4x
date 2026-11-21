@@ -8,5 +8,13 @@
     "thin": true,
     "why": "Motors, pumps, valves and turbopumps machined from nickel superalloy",
     "source": "https://en.wikipedia.org/wiki/Turbopump"
+  },
+  {
+    "id": "biosphere_kit",
+    "name": "Biosphere",
+    "category": "machinery",
+    "tier": "E",
+    "why": "A biosphere packed as cargo: its fibre shell, life support and electronics, built where there is a flight machine shop and set up where it is unloaded",
+    "source": "https://en.wikipedia.org/wiki/B330"
   }
 ]

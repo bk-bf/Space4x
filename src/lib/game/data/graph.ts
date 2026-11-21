@@ -66,6 +66,7 @@ export const reach = ({ upTo = Infinity, tags, thinOnly = false, site }: ReachOp
         (Object.keys(b.cost).every((m) => have.has(m)) && (b.parts ?? []).every((p) => made.has(p)));
       if (affordable) {
         built.add(b.id);
+        if (b.kit && wanted(b.kit.material)) have.add(b.kit.material);
         changed = true;
       }
     }

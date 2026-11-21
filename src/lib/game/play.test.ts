@@ -10,6 +10,7 @@ import { ships } from './ships/index.ts';
 import type { Game } from './state.svelte.ts';
 import { stageProjects } from './stages.ts';
 import { isSurveyed } from './survey.svelte.ts';
+import { biospherePeople } from './suitability.ts';
 
 const year = (ms: number) => new Date(ms).getUTCFullYear();
 const date = (ms: number) => new Date(ms).toISOString().slice(0, 10);
@@ -227,7 +228,7 @@ describe('the scripted player from the start state', () => {
     for (const id of ['luna', 'luna-maria']) {
       const site = economy.sites.find((x) => x.id === id)!;
       expect(standing(site, 'biosphere'), id).toBe(1);
-      expect(berthsOf(site), id).toBe(100);
+      expect(berthsOf(site), id).toBe(biospherePeople('luna'));
     }
     for (const id of [
       'jump-hauler',

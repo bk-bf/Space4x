@@ -1,8 +1,8 @@
-import { building } from '#lib/game/data/index.ts';
+import { building, buildings } from '#lib/game/data/index.ts';
 import { gradeAt } from './deposits.ts';
-import { buildingsAt, processesAt, type Process } from './processes.ts';
+import { processesAt, type Process } from './processes.ts';
 import type { BuildOrder, Economy, Group, Site } from './types.ts';
-import { holdsHere } from './housing.ts';
+import { makesHere } from './housing.ts';
 import { isUnlocked } from './unlocks.ts';
 
 export const holdsDeposits = (site: Site, p: Process): boolean =>
@@ -11,12 +11,11 @@ export const holdsDeposits = (site: Site, p: Process): boolean =>
 export const unlockedProcesses = (eco: Economy, site: Site, buildingId: string) =>
   processesAt(buildingId, site.body).filter((p) => isUnlocked(eco, p) && holdsDeposits(site, p));
 
-const standsAt = (site: Site) => buildingsAt(site.body).filter((b) => holdsHere(b.id, site.worldBody));
+const makesAt = (site: Site) => buildings.filter((b) => makesHere(b.id, site));
 
-export const buildable = (eco: Economy, site: Site) => standsAt(site).filter((b) => isUnlocked(eco, b));
+export const buildable = (eco: Economy, site: Site) => makesAt(site).filter((b) => isUnlocked(eco, b));
 
-export const lockedBuildings = (eco: Economy, site: Site) =>
-  standsAt(site).filter((b) => !isUnlocked(eco, b));
+export const lockedBuildings = (eco: Economy, site: Site) => makesAt(site).filter((b) => !isUnlocked(eco, b));
 
 export function assign(
   eco: Economy,
@@ -92,8 +91,7 @@ export function queueBuilding(
   count = 1
 ): BuildOrder[] {
   const b = building(buildingId);
-  if (!isUnlocked(eco, b) || !b.where.includes(site.body) || !holdsHere(buildingId, site.worldBody))
-    return [];
+  if (!isUnlocked(eco, b) || !makesHere(buildingId, site)) return [];
   const process = processId ?? unlockedProcesses(eco, site, buildingId)[0]?.id ?? null;
   const made: BuildOrder[] = [];
   for (let i = 0; i < Math.max(1, Math.floor(count)); i++) {

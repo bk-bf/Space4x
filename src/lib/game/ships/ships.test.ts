@@ -3,6 +3,7 @@ import '#lib/screens/economy/system.ts';
 import { classes } from '#lib/game/classes.svelte.ts';
 import { DAY } from '#lib/game/clock.ts';
 import { projectById } from '#lib/game/data/index.ts';
+import { biospherePeople } from '#lib/game/suitability.ts';
 import {
   berthsOf,
   economy,
@@ -426,20 +427,21 @@ describe('colonists', () => {
     economy.done.push(projectById('biosphere').number);
     site.groups.push({ id: economy.nextId++, building: 'biosphere', process: null, count: 1, on: true });
     touch();
-    expect(berthsOf(site)).toBe(100);
+    const room = biospherePeople('luna');
+    expect(berthsOf(site)).toBe(room);
     addOrder(v, { type: 'unload', item: { kind: 'crew' }, amount: null });
     g.advance(DAY);
     expect(site.population).toBeCloseTo(8, 3);
     expect(v.crew).toBe(0);
     expect(installModule(g, v)).toBeUndefined();
     expect(site.berths).toBe(0);
-    expect(berthsOf(site)).toBe(100);
+    expect(berthsOf(site)).toBe(room);
     const before = site.population;
     g.advance(30 * DAY);
     expect(site.population).toBeCloseTo(before * Math.exp((earth.growthPerYear * 30) / 365.25), 6);
-    site.population = 99.999;
+    site.population = room - 0.001;
     g.advance(30 * DAY);
-    expect(site.population).toBeCloseTo(100, 9);
+    expect(site.population).toBeCloseTo(room, 9);
   });
 
   it('keep the berths of a module installed at an orbital station', () => {

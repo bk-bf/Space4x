@@ -209,17 +209,20 @@ export interface RobotPart {
 
 export interface Biosphere {
   people: number;
-  powerKw: number;
-  volume: number;
-  shell: number;
-  shield: number;
-  shieldMaterial: Partial<Record<Site, string>>;
+  residentKw: number;
+  residentWorkers: number;
+  residentVolume: number;
   basis: string;
   source: string;
+  volumeSource: string;
   shellSource: string;
-  shieldSource: string;
   workersSource: string;
   estimated: boolean;
+}
+
+export interface Kit {
+  material: string;
+  builtWith: string;
 }
 
 export interface Building {
@@ -238,6 +241,7 @@ export interface Building {
   plant?: Plant;
   lab?: Lab;
   biosphere?: Biosphere;
+  kit?: Kit;
   charger?: Charger;
   bp?: number;
   bpSource?: string;

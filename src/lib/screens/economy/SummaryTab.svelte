@@ -101,7 +101,7 @@
   );
   const limited = $derived(views.filter((v) => v.warn));
 
-  const kinds = $derived(kindTotals(views));
+  const kinds = $derived(kindTotals(site, views));
   const maxPower = $derived(Math.max(1, ...kinds.map((k) => k.power)));
 
   const programmes = $derived(researchSite(economy) === site ? economy.running : []);

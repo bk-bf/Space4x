@@ -1,6 +1,8 @@
 import { building } from '#lib/game/data/index.ts';
 import type { Building, BuildingKind, Plant } from '#lib/game/data/index.ts';
 import {
+  groupWorkers,
+  isBiosphere,
   isStockless,
   POWER,
   process,
@@ -109,7 +111,7 @@ export interface KindTotal {
   power: number;
 }
 
-export function kindTotals(views: readonly GroupView[]): KindTotal[] {
+export function kindTotals(site: Site, views: readonly GroupView[]): KindTotal[] {
   const by: Partial<Record<BuildingKind, KindTotal>> = {};
   for (const v of views) {
     const kind = v.building.kind;
@@ -117,7 +119,7 @@ export function kindTotals(views: readonly GroupView[]): KindTotal[] {
     const g = v.actor.group;
     row.count += g.count;
     row.groups++;
-    row.workers += g.on && g.process ? g.count * v.building.workers : 0;
+    row.workers += g.on && (g.process || isBiosphere(g)) ? groupWorkers(site, g) : 0;
     row.power += (v.actor.inputs[POWER] ?? 0) * v.actor.share;
   }
   return KIND_ORDER.flatMap((k) => (by[k] ? [by[k]] : []));

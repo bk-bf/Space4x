@@ -39,12 +39,11 @@ describe('colony suitability', () => {
     expect(s('ceres').cc).toBeGreaterThanOrEqual(1);
   });
 
-  it('holds 300 times the suitability in a biosphere', () => {
-    expect(biospherePeople('luna')).toBe(100);
-    expect(biospherePeople('mars')).toBe(93);
-    expect(biospherePeople('mercury')).toBe(47);
-    expect(biospherePeople('titan')).toBe(37);
-    expect(biospherePeople('ceres')).toBe(Math.floor(150 * s('ceres').s));
+  it('holds 1,000 times the suitability in a biosphere', () => {
+    for (const w of ['luna', 'mars', 'mercury', 'titan'])
+      expect(biospherePeople(w), w).toBe(Math.floor(1000 * s(w).s));
+    expect(biospherePeople('luna')).toBe(333);
+    expect(biospherePeople('ceres')).toBe(Math.floor(500 * s('ceres').s));
     expect(biospherePeople('bennu')).toBe(0);
   });
 
