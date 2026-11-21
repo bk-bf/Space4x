@@ -34,6 +34,7 @@ const TEST_PARAMS = [
   'reached',
   'start',
   'new',
+  'robot',
   'surveyed',
   'outpost',
   'asteroid',

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const REAL = ['map', 'economy', 'research', 'classes'];
+const REAL = ['map', 'economy', 'research', 'classes', 'robots'];
 const MOCK_SCREENS = ['ground', 'commanders', 'intel', 'galaxy'];
 const SITES = ['sol-station', 'deep-well', 'battle', 'boarding', 'salvage', 'gate'];
 
